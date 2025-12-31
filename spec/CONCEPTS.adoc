@@ -1,0 +1,279 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= Reposystem Concepts
+:toc: preamble
+:toclevels: 3
+
+The mental model and core concepts for Reposystem.
+
+== The Railway Yard Model
+
+Reposystem treats your repository ecosystem as a **railway yard**:
+
+* **Repos are "yards"** — collections of slots and providers
+* **Edges are "tracks"** — connections declaring what uses what
+* **Switches are "points"** — selectors between alternative tracks
+
+=== Repos as Yards
+
+A repo isn't just a repo: it's a collection of:
+
+* **Slots** — places something can plug in
+* **Providers** — things that can satisfy a slot
+
+.Example Slots
+[cols="1,2"]
+|===
+|Slot |Options
+
+|Container runtime
+|podman, docker, cerro-torre
+
+|Router module
+|cadre-router, cadre-tea-router, nginx
+
+|Docs builder
+|my-ssg, mkdocs, docusaurus
+
+|CI pipeline
+|rhodium, github-actions, gitlab-ci
+|===
+
+.Example Providers
+[cols="1,2"]
+|===
+|Provider |What It Provides
+
+|cerro-torre
+|Container runtime
+
+|cadre-router
+|Router module
+
+|my-ssg
+|Static site generator
+|===
+
+=== Edges as Tracks
+
+A connection declares: "this project uses that provider for this slot, with constraints."
+
+----
+Project A —(slot: container-runtime)—> cerro-torre
+Project A —(slot: router)—> cadre-router
+----
+
+=== Switches as Points
+
+A switch selects between tracks:
+
+[cols="1,3"]
+|===
+|Switch Position |Behaviour
+
+|**Local**
+|Use repo's default provider
+
+|**Ecosystem**
+|Use selected provider from your ecosystem
+
+|**Auto**
+|Choose best provider by policy ("prefer signed+tested, else fallback")
+
+|**Emergency fallback**
+|Revert to local if health checks fail
+|===
+
+== Aspect Tagging
+
+Aspect tagging adds a **second orthogonal graph** on top of the dependency graph:
+
+* **Dependency graph**: repo A uses provider B for slot X
+* **Aspect graph**: these nodes/edges contribute to aspect Y
+
+=== How It Works
+
+The UI can "flip layers" to:
+
+* Show only security-relevant edges
+* Highlight single points of failure
+* Compare A/B component choices by how they shift aspect scores
+
+=== The Win
+
+Explainable focus: "this is the weak link" instead of vague gut feel.
+
+=== Keeping It Simple
+
+For MVP, tags are:
+
+* **Finite** — small curated set
+* **Composable** — multiple tags per thing
+* **Attached to evidence** — why is this tagged?
+
+=== Where Tags Attach
+
+* Repo
+* Slot
+* Provider
+* Adapter
+* Edge (the integration itself is often the risky bit)
+
+=== Tag Metadata
+
+Each tag optionally carries:
+
+* `reason` — short text
+* `evidence_ref` — file path, rule id, URL, CI result
+* `weight` — 0–3 (keep it coarse)
+
+== Scenarios
+
+A scenario is a **parallel reality**, not an edit-in-place.
+
+=== Core Scenarios
+
+[cols="1,3"]
+|===
+|Scenario |Description
+
+|Local default
+|Use each repo's built-in providers
+
+|Ecosystem provision
+|Swap in your implementations
+
+|Fallback safe
+|Prefer stable over cutting-edge
+
+|A/B variant
+|Test alternative configurations
+|===
+
+=== Properties
+
+Each scenario is:
+
+* Comparable
+* Exportable
+* Reversible
+* Never silently mutates "truth"
+
+== Visual Grouping
+
+Grouping is as important as wiring. You're not just drawing edges — you're saying:
+
+* "These belong together conceptually"
+* "This is one operational unit even if it's many repos"
+
+Groups are first-class citizens, not just UI sugar.
+
+== Weak Link Detection
+
+Without pretending to have perfect metrics, define "weak link" as:
+
+* **High aspect weight + high centrality** — e.g., something tagged `security:3` that sits on many paths
+* **Single provider for a critical slot** — "only one container runtime option exists"
+
+This is explainable, doesn't require numeric fantasy scoring, and improves as you add evidence.
+
+== Design Principles
+
+=== Everything is Declarative
+
+* Don't "edit repos" by hand
+* Generate a patch plan (or overlay) that can be applied/reverted
+
+=== Every Substitution is Typed
+
+* A provider only plugs into a compatible slot
+* Compatibility is explicit: interface version + constraints
+
+=== Reversibility is First-Class
+
+* "Revert to local" must be one action
+* "Show me exactly what changed" (diff)
+
+=== No Hidden Channels
+
+* If repo A "talks" to repo B, that's an explicit edge
+* Declared mechanism: API, artifact, file, pipeline output
+* The visualisation becomes a governance tool
+
+== Aspect View Philosophy
+
+Make aspect view **additive, not exclusive**.
+
+Instead of: "You are now in Security view"
+
+Prefer:
+
+* Base view = neutral structural graph
+* Aspects toggle overlays:
+** Colour
+** Edge thickness
+** Annotations
+** Dimming of irrelevant nodes
+
+This avoids "I'm losing context when I change view" and fits the goal of reasoning, not just reacting.
+
+== Integration with git-visor and git-seo
+
+.Clean Boundaries
+[cols="1,3"]
+|===
+|Tool |Responsibility
+
+|**git-visor**
+|HUD for interacting with forges: issues, PRs, repo metadata, actions
+
+|**reposystem** (git-dispatcher)
+|Wiring + switching layer: plans, substitutions, graph
+
+|**git-seo**
+|Discoverability artifacts: metadata pages, indices, sitemaps, topic maps
+|===
+
+Reposystem becomes the **source-of-truth dependency graph** that both visor and seo can consume.
+
+== What Makes This Not Turn Into Chaos
+
+=== Non-Negotiables
+
+1. **Everything is declarative** — Generate patch plans, not manual edits
+2. **Every substitution is typed** — Provider plugs into compatible slot only
+3. **Reversibility is first-class** — "Revert to local" is one action
+4. **No hidden channels** — All integration is explicit and declared
+
+=== Seam Checks
+
+Given the cross-stage seam discipline:
+
+[cols="1,3"]
+|===
+|Seam |Invariant
+
+|A: Inventory ↔ Slot extraction
+|If a repo is imported, slot detection must be explainable ("found Dockerfile", "found CI uses podman")
+
+|B: Slot ↔ Provider
+|Provider must declare compatibility and be testable
+
+|C: Plan ↔ Apply ↔ Rollback
+|Plan must be replayable, diffable, reversible, and auditable
+|===
+
+Make these "freeze gates" for each stage.
+
+== Doctrine: Manual First, Guarded Automation Later
+
+For this product, the danger is over-automation early.
+
+=== Good Doctrine
+
+* Manual edges/tags are truth
+* Auto-detection only proposes
+* Every proposal must say why (file evidence / rule id)
+* Everything remains reversible and exportable
+
+This aligns with "LLM helps design the rule, never is the rule."

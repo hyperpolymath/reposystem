@@ -1,0 +1,87 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+#
+# Reposystem Development Container
+# ================================
+# Full development environment for reposystem
+# Use this for development; Containerfile for production
+#
+# Build: nerdctl build -f Containerfile.dev -t reposystem:dev .
+# Run:   nerdctl run -it --rm -v $(pwd):/workspace reposystem:dev
+
+FROM cgr.dev/chainguard/wolfi-base:latest
+
+# ============================================================================
+# Development Dependencies
+# ============================================================================
+# Note: Wolfi packages differ from Alpine
+# - rustup provides rust + cargo
+# - Some packages may not be available; we install what's there
+RUN apk add --no-cache \
+    # Rust toolchain (rustup bundles cargo)
+    rustup \
+    # Deno runtime
+    deno \
+    # Version control
+    git \
+    git-lfs \
+    # Graph visualization
+    graphviz \
+    # Scheme runtime
+    guile \
+    # Build tools (just may not be in Wolfi, use make as fallback)
+    make \
+    # Shell utilities
+    bash \
+    coreutils \
+    findutils \
+    grep \
+    jq \
+    yq \
+    # Security tools
+    cosign \
+    # Editor
+    busybox
+
+# ============================================================================
+# Create development user
+# ============================================================================
+RUN addgroup -g 1000 dev && \
+    adduser -u 1000 -G dev -D -s /bin/bash dev
+
+# ============================================================================
+# Development directories
+# ============================================================================
+RUN mkdir -p /workspace /data /home/dev/.cache /home/dev/.cargo && \
+    chown -R dev:dev /workspace /data /home/dev
+
+# ============================================================================
+# Switch to dev user
+# ============================================================================
+USER dev
+WORKDIR /workspace
+
+# ============================================================================
+# Environment
+# ============================================================================
+ENV SHELL=/bin/bash
+ENV TERM=xterm-256color
+ENV EDITOR=busybox
+ENV CARGO_HOME=/home/dev/.cargo
+ENV RUSTUP_HOME=/home/dev/.rustup
+ENV DENO_DIR=/home/dev/.deno
+ENV PATH="${CARGO_HOME}/bin:${DENO_DIR}/bin:${PATH}"
+
+# Set up Rust toolchain via rustup (as dev user)
+RUN rustup-init -y --default-toolchain stable
+
+# ============================================================================
+# Default command
+# ============================================================================
+CMD ["/bin/bash"]
+
+# ============================================================================
+# Labels
+# ============================================================================
+LABEL org.opencontainers.image.title="Reposystem Dev"
+LABEL org.opencontainers.image.description="Development environment for reposystem"

@@ -1,0 +1,432 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= Reposystem Data Model Specification
+:toc: preamble
+:toclevels: 3
+
+Version 0.1.0 — UI-agnostic core model
+
+== Design Goals and Invariants
+
+=== Invariants (Non-Negotiable)
+
+[cols="1,3"]
+|===
+|Invariant |Description
+
+|Stable IDs
+|Node IDs must be deterministic across imports
+
+|Explainability
+|Any non-manual tag must carry evidence
+
+|Scenario Isolation
+|Scenarios don't mutate baseline; they reference it
+
+|Reversibility
+|Every scenario change can be expressed as a small delta
+
+|UI-Agnostic
+|Model doesn't assume visual layout; layout is optional metadata
+|===
+
+=== Model Layering
+
+1. **Baseline graph**: "what exists"
+2. **Scenario deltas**: "what I would do"
+3. **Aspects**: "how I see it" (annotations, not structure)
+
+== Core Entities (v1)
+
+=== 1. Repo (Node Subtype)
+
+Represents a repository as an addressable unit.
+
+[source,json]
+----
+{
+  "kind": "Repo",
+  "id": "repo:gh:hyperpolymath/cadre-router",
+  "forge": "github",
+  "owner": "hyperpolymath",
+  "name": "cadre-router",
+  "default_branch": "main",
+  "visibility": "public",
+  "tags": ["router", "rescript"],
+  "imports": {
+    "source": "local-scan",
+    "path_hint": "../src/cadre-router",
+    "imported_at": "2025-12-28T00:00:00Z"
+  }
+}
+----
+
+==== ID Format Rules (Deterministic)
+
+* Forge-hosted: `repo:<forge>:<owner>/<name>`
+* Local-only: `repo:local:<canonical-path-hash>` (with mapping preserved)
+
+==== Supported Forges
+
+* `gh` — GitHub
+* `gl` — GitLab
+* `bb` — Bitbucket
+* `cb` — Codeberg
+* `sr` — Sourcehut
+* `local` — Local filesystem only
+
+=== 2. Component (Node Subtype, Optional in v1)
+
+A component is a logical thing provided by or consumed by a repo.
+
+NOTE: Components can be deferred to f2; schema exists now for forward-compatibility.
+
+[source,json]
+----
+{
+  "kind": "Component",
+  "id": "comp:repo:gh:hyperpolymath/cadre-router#router.core",
+  "repo_id": "repo:gh:hyperpolymath/cadre-router",
+  "name": "router.core",
+  "type": "router",
+  "version": "0.1.0",
+  "interfaces": ["router:v1"]
+}
+----
+
+=== 3. Group (Cluster)
+
+Groups are first-class so that "systems" exist above repos.
+
+[source,json]
+----
+{
+  "kind": "Group",
+  "id": "group:docs-stack",
+  "name": "Docs Stack",
+  "description": "SSG + newsroom + deploy",
+  "members": [
+    "repo:gh:hyperpolymath/my-ssg",
+    "repo:gh:hyperpolymath/my-newsroom"
+  ]
+}
+----
+
+IMPORTANT: Groups can overlap — a repo can belong to multiple groups.
+
+== Edges (Relationships)
+
+Edges represent relationships between nodes (repos and/or components).
+
+=== 4. Edge
+
+[source,json]
+----
+{
+  "kind": "Edge",
+  "id": "edge:6a2f...",
+  "from": "repo:gh:hyperpolymath/my-newsroom",
+  "to": "repo:gh:hyperpolymath/my-ssg",
+  "rel": "uses",
+  "channel": "artifact",
+  "label": "publishes via",
+  "evidence": [
+    {
+      "type": "file",
+      "ref": ".github/workflows/deploy.yml",
+      "excerpt": "uses my-ssg build",
+      "confidence": 0.6
+    }
+  ],
+  "meta": {
+    "created_by": "manual",
+    "created_at": "2025-12-28T00:00:00Z"
+  }
+}
+----
+
+==== Edge ID Rule
+
+Content-hash of `(from, to, rel, channel, label)` — stable if unchanged.
+
+==== Channel Types
+
+[cols="1,3"]
+|===
+|Channel |Description
+
+|`api`
+|REST/GraphQL/gRPC endpoint consumption
+
+|`artifact`
+|Build output, binary, package
+
+|`config`
+|Configuration file or environment variable
+
+|`runtime`
+|Container, process, service dependency
+
+|`human`
+|Documentation, manual process handoff
+
+|`unknown`
+|Detected but unclassified
+|===
+
+This is your "no hidden channels" surface.
+
+==== Relationship Types
+
+* `uses` — A depends on B
+* `provides` — A implements interface for B
+* `extends` — A builds on B
+* `mirrors` — A is a mirror/fork of B
+* `replaces` — A can substitute for B
+
+== Aspect Tagging (Annotations)
+
+=== 5. Aspect (Definition)
+
+[source,json]
+----
+{
+  "kind": "Aspect",
+  "id": "aspect:security",
+  "name": "Security",
+  "description": "Authn/authz, vuln exposure, secrets handling, trust boundaries"
+}
+----
+
+==== Initial Aspect Set (Curated)
+
+[cols="1,3"]
+|===
+|Aspect |Description
+
+|`security`
+|Authentication, authorization, vulnerability exposure
+
+|`reliability`
+|Uptime, fault tolerance, recovery
+
+|`maintainability`
+|Code quality, test coverage, documentation
+
+|`portability`
+|Cross-platform, containerization, dependencies
+
+|`performance`
+|Speed, resource usage, scalability
+
+|`observability`
+|Logging, metrics, tracing
+
+|`ux`
+|User experience, accessibility
+
+|`docs`
+|Documentation quality and coverage
+
+|`supply-chain`
+|Dependency provenance, SBOM, signing
+
+|`automation`
+|CI/CD, deployment, testing automation
+|===
+
+=== 6. AspectAnnotation
+
+Applies to node OR edge.
+
+[source,json]
+----
+{
+  "kind": "AspectAnnotation",
+  "id": "aa:9c13...",
+  "target": "edge:6a2f...",
+  "aspect_id": "aspect:security",
+  "weight": 3,
+  "polarity": "risk",
+  "reason": "Edge crosses trust boundary without auth",
+  "evidence": [
+    { "type": "manual", "ref": "note", "confidence": 1.0 }
+  ],
+  "source": {
+    "mode": "manual",
+    "who": "user",
+    "when": "2025-12-28T00:00:00Z",
+    "rule_id": null
+  }
+}
+----
+
+==== Annotation Fields
+
+[cols="1,1,3"]
+|===
+|Field |Values |Description
+
+|`weight`
+|0–3
+|Coarse importance (0=informational, 3=critical)
+
+|`polarity`
+|`risk`, `strength`, `neutral`
+|Is this a weakness, strength, or observation?
+
+|`source.mode`
+|`manual`, `inferred`, `imported`
+|How was this annotation created?
+|===
+
+IMPORTANT: If `source.mode` is `inferred`, must include `rule_id` and `evidence[]`.
+
+== Scenarios (A/B, Local vs Ecosystem)
+
+A scenario is a delta over the baseline graph, not a rewrite.
+
+=== 7. Scenario
+
+[source,json]
+----
+{
+  "kind": "Scenario",
+  "id": "scenario:ecosystem-secure",
+  "name": "Ecosystem Secure",
+  "base": "scenario:baseline",
+  "description": "Prefer ecosystem providers for security-critical slots; fallback to local",
+  "created_at": "2025-12-28T00:00:00Z"
+}
+----
+
+=== 8. ChangeSet (Scenario Operations)
+
+A scenario holds a list of operations. For v1, keep simple:
+
+* `add_edge`
+* `remove_edge`
+* `add_annotation`
+* `remove_annotation`
+* `set_group_membership` (optional)
+
+[source,json]
+----
+{
+  "kind": "ChangeSet",
+  "scenario_id": "scenario:ecosystem-secure",
+  "ops": [
+    {
+      "op": "add_edge",
+      "edge": {
+        "from": "repo:gh:hyperpolymath/proj-a",
+        "to": "repo:gh:hyperpolymath/cerro-torre",
+        "rel": "uses",
+        "channel": "runtime",
+        "label": "container runtime (ecosystem)",
+        "evidence": [
+          { "type": "manual", "ref": "scenario decision", "confidence": 1.0 }
+        ]
+      }
+    },
+    {
+      "op": "remove_edge",
+      "edge_id": "edge:oldhash..."
+    }
+  ]
+}
+----
+
+This supports:
+
+* "local default" scenario = no ops
+* A/B = two scenarios differing by ops
+* fallback = scenario that adds backup edges (priority can come later)
+
+== Optional: Layout Metadata
+
+Kept separate so UI can store node positions without polluting the model.
+
+=== 9. Layout
+
+[source,json]
+----
+{
+  "kind": "Layout",
+  "id": "layout:main-canvas",
+  "applies_to": "scenario:baseline",
+  "positions": {
+    "repo:gh:hyperpolymath/my-ssg": { "x": 120, "y": 340 },
+    "repo:gh:hyperpolymath/my-newsroom": { "x": 420, "y": 340 }
+  }
+}
+----
+
+== File Format & Storage
+
+=== Recommended Structure
+
+[source]
+----
+reposystem/
+├── graph.json           # Repos, Groups, Edges
+├── aspects.json         # Aspect definitions + annotations
+├── scenarios/
+│   ├── baseline.json
+│   ├── ecosystem-secure.json
+│   └── fallback-safe.json
+└── layouts/
+    └── main-canvas.json
+----
+
+=== Alternative: Single File
+
+`dispatcher.graph.json` with all entities.
+
+Given the "immutable core + additive modules" preference, split files are recommended.
+
+== Validation Rules (MUST for f1 Freeze)
+
+1. Every object has: `kind`, `id`
+2. Every edge references existing nodes
+3. Every annotation references existing target (node or edge)
+4. Every inferred annotation has:
+   * `source.rule_id`
+   * `evidence[]`
+5. Scenario ops must validate against base graph
+
+== Future: Slots/Providers/Adapters
+
+Without changing v1:
+
+* Slots/providers become Components
+* Substitution becomes edges:
+** `repo -> component` (provides)
+** `repo -> component` (consumes)
+** Scenario ops change which provider satisfies a consumer slot
+
+Ship f1 without any of this.
+
+== Guile Scheme Representation
+
+For STATE.scm integration, the graph can be represented as:
+
+[source,scheme]
+----
+(define-module (reposystem graph)
+  #:export (make-repo make-edge make-group))
+
+(define (make-repo id forge owner name)
+  `((kind . "Repo")
+    (id . ,id)
+    (forge . ,forge)
+    (owner . ,owner)
+    (name . ,name)))
+
+(define (make-edge from to rel channel)
+  `((kind . "Edge")
+    (from . ,from)
+    (to . ,to)
+    (rel . ,rel)
+    (channel . ,channel)))
+----

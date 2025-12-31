@@ -1,0 +1,810 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= Reposystem Version Roadmap
+:toc: preamble
+:toclevels: 3
+
+Version progression from current state to 10.0.0.
+
+== Spot Moment (v0.0.1 — Now)
+
+Current state: Specification complete, no implementation.
+
+=== MUST (Before Any Code)
+
+[cols="1,3,1"]
+|===
+|ID |Task |Status
+
+|SM-01
+|Consolidate git-dispatcher into reposystem OR decide relationship
+|⏳ Pending
+
+|SM-02
+|Set up ReScript project structure with deno.json
+|⏳ Pending
+
+|SM-03
+|Set up Rust CLI crate with Cargo.toml
+|⏳ Pending
+
+|SM-04
+|Create .github/workflows for CI
+|⏳ Pending
+
+|SM-05
+|Push spec/ files to repo
+|⏳ Pending
+
+|SM-06
+|Push all .scm files to repo
+|⏳ Pending
+|===
+
+=== SHOULD (This Week)
+
+[cols="1,3"]
+|===
+|ID |Task
+
+|SW-01
+|Define JSON schema for graph entities (repo, edge, group)
+
+|SW-02
+|Write first ReScript type definitions
+
+|SW-03
+|Write first Rust CLI scaffold (clap-based)
+
+|SW-04
+|Create test fixtures (sample repos for import testing)
+
+|SW-05
+|Set up pre-commit hooks via Mustfile
+|===
+
+=== COULD (Nice to Have Now)
+
+[cols="1,3"]
+|===
+|ID |Task
+
+|CN-01
+|ASCII art logo
+
+|CN-02
+|Project website placeholder
+
+|CN-03
+|Discord/Matrix channel
+
+|CN-04
+|OpenSSF Scorecard baseline
+|===
+
+---
+
+== v0.1.0 — Hello Yard
+
+The first working version: import, view, export.
+
+=== MUST
+
+[cols="1,3,1"]
+|===
+|ID |Deliverable |Acceptance Criteria
+
+|0.1-01
+|`reposystem scan PATH`
+|Imports 50+ repos in <30s
+
+|0.1-02
+|Graph JSON persistence
+|Save/load produces identical graph
+
+|0.1-03
+|`reposystem list`
+|Lists repos with forge/owner/name
+
+|0.1-04
+|`reposystem export --format dot`
+|Valid DOT output, renders in Graphviz
+
+|0.1-05
+|`reposystem export --format json`
+|Valid JSON, matches schema
+
+|0.1-06
+|Basic error handling
+|Clear error messages, no panics
+|===
+
+=== SHOULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.1-07
+|`reposystem status` — show repo count, edge count
+
+|0.1-08
+|Progress indicators for long operations
+
+|0.1-09
+|`--verbose` flag for debugging
+
+|0.1-10
+|README with installation instructions
+|===
+
+=== COULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.1-11
+|Shell completions (bash, zsh, fish)
+
+|0.1-12
+|Man page generation
+
+|0.1-13
+|Homebrew formula
+|===
+
+---
+
+== v0.2.0 — Manual Wiring
+
+Add edges and groups manually.
+
+=== MUST
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.2-01
+|`reposystem edge add FROM TO --rel uses --channel artifact`
+
+|0.2-02
+|`reposystem edge remove EDGE_ID`
+
+|0.2-03
+|`reposystem edge list`
+
+|0.2-04
+|`reposystem group create NAME --members A,B,C`
+
+|0.2-05
+|`reposystem group delete NAME`
+
+|0.2-06
+|`reposystem group list`
+
+|0.2-07
+|Edge validation (nodes must exist)
+|===
+
+=== SHOULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.2-08
+|`reposystem edge add --evidence "reason"`
+
+|0.2-09
+|Group overlap support (repo in multiple groups)
+
+|0.2-10
+|`reposystem view --group NAME`
+|===
+
+=== COULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.2-11
+|Edge suggestion from package.json/Cargo.toml
+
+|0.2-12
+|Bulk edge import from CSV
+|===
+
+---
+
+== v0.3.0 — Aspect Tagging
+
+Add the orthogonal aspect layer.
+
+=== MUST
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.3-01
+|`reposystem tag add TARGET --aspect security --weight 2`
+
+|0.3-02
+|`reposystem tag remove TAG_ID`
+
+|0.3-03
+|`reposystem tag list`
+
+|0.3-04
+|`reposystem view --aspect security`
+
+|0.3-05
+|All 10 core aspects defined
+
+|0.3-06
+|Tags attach to nodes AND edges
+|===
+
+=== SHOULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.3-07
+|`--reason` field for tags
+
+|0.3-08
+|`--polarity risk|strength|neutral`
+
+|0.3-09
+|Tag weight sorting in view
+
+|0.3-10
+|Aspect overlay in DOT export (colours)
+|===
+
+=== COULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.3-11
+|Aspect legend in SVG output
+
+|0.3-12
+|Custom aspect definitions
+|===
+
+---
+
+== v0.4.0 — Scenarios
+
+Multiple configurations, A/B testing.
+
+=== MUST
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.4-01
+|`reposystem scenario create NAME`
+
+|0.4-02
+|`reposystem scenario list`
+
+|0.4-03
+|`reposystem scenario switch NAME`
+
+|0.4-04
+|`reposystem scenario diff A B`
+
+|0.4-05
+|Scenarios as deltas (not full copies)
+
+|0.4-06
+|Baseline scenario (read-only)
+|===
+
+=== SHOULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.4-07
+|`reposystem scenario add-op NAME add_edge ...`
+
+|0.4-08
+|`reposystem scenario remove-op NAME OP_ID`
+
+|0.4-09
+|Scenario export/import
+
+|0.4-10
+|Aspect impact comparison between scenarios
+|===
+
+=== COULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.4-11
+|Scenario branching (fork from existing)
+
+|0.4-12
+|Scenario templates
+|===
+
+---
+
+== v0.5.0 — Interactive TUI
+
+The HUD-lite experience.
+
+=== MUST
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.5-01
+|TUI main screen with graph view
+
+|0.5-02
+|Navigation: move between nodes
+
+|0.5-03
+|Selection: select node/edge
+
+|0.5-04
+|Info panel: show selected item details
+
+|0.5-05
+|Group panel: show/filter by groups
+
+|0.5-06
+|Aspect selector: flip between aspects
+|===
+
+=== SHOULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.5-07
+|Keyboard shortcuts (vim-like)
+
+|0.5-08
+|Search: find repo by name
+
+|0.5-09
+|Quick actions: create edge, tag
+
+|0.5-10
+|Export from TUI
+
+|0.5-11
+|Scenario picker
+|===
+
+=== COULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.5-12
+|Mouse support
+
+|0.5-13
+|Theme customisation
+
+|0.5-14
+|Split view for scenario diff
+|===
+
+---
+
+== v0.6.0 — Slots & Providers
+
+The component substitution model.
+
+=== MUST
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.6-01
+|Slot definitions in registry
+
+|0.6-02
+|Provider definitions in registry
+
+|0.6-03
+|`reposystem slot list`
+
+|0.6-04
+|`reposystem provider list`
+
+|0.6-05
+|Link provider to repo
+
+|0.6-06
+|Link consumer to slot
+|===
+
+=== SHOULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.6-07
+|Slot compatibility checking
+
+|0.6-08
+|Visual overlay for slots/providers
+
+|0.6-09
+|`reposystem slot alternatives SLOT` — list providers
+|===
+
+=== COULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.6-10
+|Adapter definitions
+
+|0.6-11
+|Provider health checks
+|===
+
+---
+
+== v0.7.0 — Plan Generation
+
+Generate change plans without applying.
+
+=== MUST
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.7-01
+|`reposystem plan --scenario NAME`
+
+|0.7-02
+|Plan output shows all changes
+
+|0.7-03
+|`reposystem plan --dry-run` (default)
+
+|0.7-04
+|Plan validation against graph
+
+|0.7-05
+|Rollback plan generation
+|===
+
+=== SHOULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.7-06
+|Patch preview (show file diffs)
+
+|0.7-07
+|Risk assessment per change
+
+|0.7-08
+|Plan export to YAML
+|===
+
+=== COULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.7-09
+|Plan approval workflow
+
+|0.7-10
+|Plan history
+|===
+
+---
+
+== v0.8.0 — Apply & Rollback
+
+Execute plans on actual repos.
+
+=== MUST
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.8-01
+|`reposystem apply PLAN`
+
+|0.8-02
+|`reposystem rollback PLAN`
+
+|0.8-03
+|Confirmation before apply
+
+|0.8-04
+|Audit log of all applies
+
+|0.8-05
+|Backup before apply
+|===
+
+=== SHOULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.8-06
+|Staged apply (one repo at a time)
+
+|0.8-07
+|Health check after apply
+
+|0.8-08
+|Auto-rollback on failure
+|===
+
+=== COULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.8-09
+|Parallel apply for independent changes
+
+|0.8-10
+|Notification on completion
+|===
+
+---
+
+== v0.9.0 — Weak Link Detection
+
+Automated risk analysis.
+
+=== MUST
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.9-01
+|`reposystem lint --check weak-links`
+
+|0.9-02
+|Centrality calculation for nodes
+
+|0.9-03
+|Single-point-of-failure detection
+
+|0.9-04
+|Trust boundary crossing detection
+
+|0.9-05
+|Report generation
+|===
+
+=== SHOULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.9-06
+|Weak link visualisation in TUI
+
+|0.9-07
+|Recommendations for each weak link
+
+|0.9-08
+|Historical tracking (is it getting better?)
+|===
+
+=== COULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|0.9-09
+|CI integration (fail if weak links exceed threshold)
+
+|0.9-10
+|Comparison with industry benchmarks
+|===
+
+---
+
+== v1.0.0 — Production Ready
+
+Stable, documented, deployable.
+
+=== MUST
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|1.0-01
+|All v0.x features stable
+
+|1.0-02
+|Comprehensive documentation
+
+|1.0-03
+|API stability guarantee
+
+|1.0-04
+|Migration guide from git-dispatcher
+
+|1.0-05
+|Performance benchmarks
+
+|1.0-06
+|Security audit passed
+
+|1.0-07
+|OpenSSF Scorecard ≥ 7.0
+|===
+
+=== SHOULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|1.0-08
+|Published to crates.io
+
+|1.0-09
+|Published to Homebrew
+
+|1.0-10
+|Docker image
+
+|1.0-11
+|Integration examples (CI/CD)
+|===
+
+=== COULD
+
+[cols="1,3"]
+|===
+|ID |Deliverable
+
+|1.0-12
+|VS Code extension (basic)
+
+|1.0-13
+|GitHub Action
+|===
+
+---
+
+== v2.0.0 — Forge Integration
+
+Connect to actual forges.
+
+=== Key Features
+
+* GitHub API integration
+* GitLab API integration
+* Bitbucket/Codeberg support
+* Live repo metadata sync
+* Issue/PR awareness
+* Remote edge detection from CI configs
+
+---
+
+== v3.0.0 — Federation
+
+Multi-org, multi-forge unified view.
+
+=== Key Features
+
+* Multiple accounts/tokens
+* Cross-org dependency tracking
+* Unified graph across forges
+* Access control for shared graphs
+
+---
+
+== v5.0.0 — GUI Railway Yard
+
+Full graphical interface.
+
+=== Key Features
+
+* Web-based UI (Tauri or Dioxus)
+* Drag-and-drop canvas
+* Animated routing
+* Real-time updates
+* Multi-user collaboration
+
+---
+
+== v10.0.0 — Enterprise & AI
+
+Full ecosystem intelligence.
+
+=== Key Features
+
+* Enterprise SSO/SAML
+* Role-based access control
+* AI-assisted recommendations
+* Predictive analysis ("this will break")
+* Integration with enterprise architecture tools
+* Custom aspect definition language
+* Plugin system
+* Federated graphs across organisations
+* SLA tracking for critical paths
+* Automated compliance reporting
+* Cost estimation for scenarios
+* Carbon footprint tracking (supply chain)
+
+---
+
+== Version Timeline (Suggested)
+
+----
+           NOW                    6mo                    1yr                    2yr
+            |                      |                      |                      |
+            v                      v                      v                      v
+    ┌───────┬──────────────────────┬──────────────────────┬──────────────────────┐
+    │ 0.1.0 │        0.5.0         │        1.0.0         │        2.0.0+        │
+    │Hello  │         TUI          │    Production        │   Forge Integration  │
+    │ Yard  │                      │       Ready          │                      │
+    └───────┴──────────────────────┴──────────────────────┴──────────────────────┘
+
+    Focus:     Foundation           Usability              Stability              Scale
+----
+
+No time estimates — this shows relative ordering and focus areas.
+
+---
+
+== Migration Path
+
+=== From git-dispatcher
+
+1. Archive git-dispatcher repo
+2. Redirect README to reposystem
+3. Migrate any existing issues
+4. Update ECOSYSTEM.scm relationships
+
+=== From Manual Processes
+
+1. Export existing dependency docs
+2. Import into reposystem
+3. Validate edges
+4. Add aspect tags incrementally

@@ -1,0 +1,98 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+#
+# Reposystem Mustfile
+# ===================
+# Mandatory pre-commit and pre-push checks
+# See: github.com/hyperpolymath/mustfile
+
+# Format: MUST <check-id> <severity> <command>
+# Severity: BLOCK (fails build) | WARN (continues with warning) | INFO (logs only)
+
+# ============================================================================
+# PRE-COMMIT CHECKS
+# ============================================================================
+
+[pre-commit]
+
+# Code formatting
+MUST FMT-001 BLOCK deno fmt --check src/
+MUST FMT-002 BLOCK cargo fmt --check
+MUST FMT-003 WARN nickel format --check *.ncl
+
+# Linting
+MUST LINT-001 BLOCK deno lint src/
+MUST LINT-002 BLOCK cargo clippy -- -D warnings
+MUST LINT-003 WARN shellcheck scripts/*.sh
+
+# Type checking
+MUST TYPE-001 BLOCK deno check src/**/*.ts
+MUST TYPE-002 BLOCK cargo check
+
+# License headers
+MUST LIC-001 BLOCK scripts/check-spdx-headers.sh
+
+# No secrets
+MUST SEC-001 BLOCK git secrets --scan
+
+# Schema validation
+MUST SCHEMA-001 WARN nickel export config.ncl | nickel typecheck
+
+# ============================================================================
+# PRE-PUSH CHECKS
+# ============================================================================
+
+[pre-push]
+
+# Full test suite
+MUST TEST-001 BLOCK deno test
+MUST TEST-002 BLOCK cargo test
+
+# Build verification
+MUST BUILD-001 BLOCK just build
+
+# Documentation build
+MUST DOC-001 WARN just docs
+
+# Security audit
+MUST SEC-002 BLOCK cargo audit
+MUST SEC-003 WARN deno audit
+
+# ============================================================================
+# CI CHECKS (additional checks for CI pipeline)
+# ============================================================================
+
+[ci]
+
+# Coverage threshold
+MUST COV-001 WARN cargo tarpaulin --threshold 60
+
+# Dependency freshness
+MUST DEP-001 INFO cargo outdated
+
+# Binary size check
+MUST SIZE-001 INFO scripts/check-binary-size.sh
+
+# SBOM generation
+MUST SBOM-001 WARN cargo sbom > sbom.json
+
+# ============================================================================
+# RELEASE CHECKS
+# ============================================================================
+
+[release]
+
+# Version consistency
+MUST VER-001 BLOCK scripts/check-version-consistency.sh
+
+# Changelog updated
+MUST CHANGE-001 BLOCK test -s CHANGELOG.adoc
+
+# No TODO/FIXME in release
+MUST TODO-001 WARN ! grep -rn "TODO\|FIXME" src/
+
+# All tests pass
+MUST TEST-003 BLOCK just test-all
+
+# Documentation current
+MUST DOC-002 BLOCK just docs-check

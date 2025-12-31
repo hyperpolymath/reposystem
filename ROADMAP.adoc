@@ -1,0 +1,432 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= Reposystem Roadmap
+:toc: preamble
+:toclevels: 3
+
+f/i staged development plan for Reposystem — the railway yard for your repository ecosystem.
+
+== Vision
+
+A visual wiring layer that sits above individual repos, allowing you to:
+
+1. **Import** repositories (yours + upstreams)
+2. **Identify** components/slots/providers
+3. **Rewire** projects by switching providers (local ↔ ecosystem ↔ fallback)
+4. **Tag** with aspects (security, reliability, etc.) and flip views
+5. **Reason** about the dependency graph including contingency paths
+
+== Technology Stack
+
+Per Rhodium Standard Repository (RSR) language policy:
+
+[cols="1,2,2"]
+|===
+|Layer |Language |Notes
+
+|Core data model
+|ReScript
+|Type-safe, compiles to ES6 modules
+
+|CLI
+|Rust
+|Performance, cross-platform
+
+|Runtime
+|Deno
+|Replaces Node/npm
+
+|Config
+|Nickel
+|Complex configuration
+
+|State files
+|Guile Scheme
+|STATE.scm, META.scm, ECOSYSTEM.scm
+
+|Graph export
+|DOT/SVG + JSON
+|Standard formats
+|===
+
+== f/i Staged Plan
+
+=== f1 — Freeze: MVC Graph + Tagging + Export
+
+The minimum viable cockpit: visualise, group, tag, export.
+
+==== MUST (Freeze Criteria)
+
+* [ ] **Repo importer** — Import from local folder of git clones
+* [ ] **Persistent graph store** — Nodes, edges, groups in JSON
+* [ ] **Manual edges** — Create relationships between repos
+* [ ] **Manual groups** — Cluster repos into logical units
+* [ ] **Manual aspect tags** — Tag nodes/edges with aspects
+* [ ] **View filters** — Filter by group, by aspect
+* [ ] **Export DOT** — Graphviz-compatible output
+* [ ] **Export JSON** — Machine-readable graph export
+* [ ] **Re-import fidelity** — Re-import exported JSON → identical graph
+
+==== SHOULD
+
+* [ ] Lightweight auto-suggestions (non-authoritative):
+** Detect "container-ish" repos (Dockerfile/Containerfile)
+** Detect "CI-ish" repos (.github/workflows, .gitlab-ci.yml)
+** Propose tags with "why" shown, user must accept
+* [ ] Basic edge auto-detection from package.json / deno.json imports
+
+==== COULD
+
+* [ ] Basic "weak link" lens:
+** Show nodes/edges with highest security weight
+** Show nodes tagged supply-chain with "unknown provenance"
+* [ ] Simple TUI for interactive exploration
+
+==== Freeze Criteria
+
+You can import 50+ repos, group them, tag them, export the graph, re-open it later unchanged.
+
+==== Deliverables
+
+[source]
+----
+src/
+├── importers/
+│   └── local_scan.res      # Scan local clones
+├── graph/
+│   ├── types.res           # Repo, Edge, Group, Aspect types
+│   ├── store.res           # Graph persistence
+│   └── validation.res      # Invariant checks
+├── export/
+│   ├── dot.res             # DOT format export
+│   └── json.res            # JSON export
+└── cli/
+    └── main.rs             # Rust CLI wrapper
+----
+
+---
+
+=== i1 — Seam Review: Graph ↔ Evidence ↔ Export
+
+Cross-stage seam checks before proceeding.
+
+==== Invariants to Verify
+
+[cols="1,3"]
+|===
+|Seam |Check
+
+|Graph determinism
+|Same repo set → same node IDs
+
+|Tag provenance
+|Every non-manual tag carries rule + evidence
+
+|Export fidelity
+|Re-import exported JSON → identical graph (isomorphic)
+
+|Edge consistency
+|All edges reference existing nodes
+|===
+
+==== Backpatch
+
+Anything that violates reversibility/explainability.
+
+---
+
+=== f2 — Freeze: Slots/Providers Registry
+
+Define the component model (still no applying changes).
+
+==== MUST
+
+* [ ] **Slot definitions** — Declare what can be swapped
+* [ ] **Provider definitions** — Declare what provides a slot
+* [ ] **Repo-to-provider links** — Provider X is implemented by repo Y
+* [ ] **Slot/provider overlay in graph** — Visual indication
+
+==== SHOULD
+
+* [ ] Compatibility metadata (version, interface kind)
+* [ ] Adapter stubs (declared, not executed)
+
+==== COULD
+
+* [ ] Scenario snapshots (local vs ecosystem) in graph only
+* [ ] "What if" visualisation without actual changes
+
+==== Deliverables
+
+[source]
+----
+src/
+├── slots/
+│   ├── types.res           # Slot, Provider, Adapter types
+│   ├── registry.res        # Slot/provider registry
+│   └── compatibility.res   # Version/interface matching
+└── spec/
+    └── registry.ncl        # Nickel schema for registry
+----
+
+---
+
+=== i2 — Seam Review: Slot Model ↔ Aspect Model
+
+==== Invariants to Verify
+
+[cols="1,3"]
+|===
+|Seam |Check
+
+|Provider substitution
+|Changing a provider changes edges, not repo identity
+
+|Aspect attachment
+|Aspects can attach to slots/providers/edges without ambiguity
+
+|No hidden edges
+|No "inferred" edges without explanation
+|===
+
+---
+
+=== f3 — Freeze: Plan Generation + Dry-Run Diff
+
+Generate and preview plans (apply comes later).
+
+==== MUST
+
+* [ ] **Create plan from scenario** — Choose switches, generate plan
+* [ ] **Dry-run diff** — Show intended file changes as patches
+* [ ] **Rollback plan** — Define reversal (even if not executed yet)
+
+==== SHOULD
+
+* [ ] Validate plan against compatibility + smoke-test hooks (declared)
+* [ ] Risk assessment per edge change
+
+==== COULD
+
+* [ ] Auto-fallback logic (policy-level, not implementation-level)
+* [ ] Plan comparison between scenarios
+
+==== Deliverables
+
+[source]
+----
+src/
+├── plans/
+│   ├── types.res           # Plan, ChangeSet, Op types
+│   ├── generator.res       # Generate plan from scenario
+│   ├── diff.res            # Generate diffs
+│   └── rollback.res        # Rollback plan generation
+└── cli/
+    ├── plan.rs             # `reposystem plan` command
+    └── diff.rs             # `reposystem diff` command
+----
+
+---
+
+=== i3 — Seam Review: Plan ↔ Apply ↔ Rollback
+
+==== Invariants to Verify
+
+[cols="1,3"]
+|===
+|Seam |Check
+
+|Plan replayability
+|Same inputs → same plan output
+
+|Diff accuracy
+|Generated diff matches actual changes
+
+|Rollback completeness
+|Rollback plan undoes all changes in apply plan
+|===
+
+---
+
+=== f4 — Freeze: Apply + Rollback Execution
+
+Actually execute changes (carefully).
+
+==== MUST
+
+* [ ] **Apply plan** — Execute changes to repos
+* [ ] **Rollback** — Revert to previous state
+* [ ] **Audit log** — Record all applied changes
+
+==== SHOULD
+
+* [ ] Health checks post-apply
+* [ ] Auto-rollback on failure
+
+==== COULD
+
+* [ ] Staged apply (one repo at a time with confirmation)
+* [ ] Backup before apply
+
+---
+
+=== f5 — Freeze: Interactive TUI
+
+A "HUD-lite" for interactive exploration.
+
+==== MUST
+
+* [ ] Switch toggles (local/ecosystem/auto)
+* [ ] Preview diffs before apply
+* [ ] Show risk flags per change
+
+==== SHOULD
+
+* [ ] Aspect flip views
+* [ ] Scenario comparison side-by-side
+
+==== COULD
+
+* [ ] Keyboard navigation
+* [ ] Mouse support
+
+---
+
+=== f6 — Freeze: GUI Railway Yard
+
+The full visual experience (post-MVP).
+
+==== COULD
+
+* [ ] Drag-and-drop canvas
+* [ ] Point-switches with visual feedback
+* [ ] Animated routing preview
+* [ ] Contingency paths visualisation
+
+== "Hello Yard" Milestone
+
+The concrete first deliverable to maintain momentum.
+
+=== Scope
+
+Pick one slot and support it end-to-end:
+
+* **Slot**: `container.runtime`
+* **Providers**: `podman` (local), `cerro-torre` (ecosystem)
+* **Consumer repos**: 2–3 repos that do container work
+
+=== Deliverables
+
+1. `spec/DATA-MODEL.adoc` — Done ✓
+2. `spec/CONCEPTS.adoc` — Done ✓
+3. `registry.adoc` — Slot + provider declarations
+4. CLI commands:
+** `reposystem scan` — Import repos
+** `reposystem plan --repo X --slot container.runtime --provider cerro-torre`
+** `reposystem apply`
+** `reposystem rollback`
+** `reposystem graph --format dot`
+
+== MVP Definition
+
+=== What's In
+
+* Import repos from local folder
+* Create graph (nodes = repos, edges = relationships)
+* Group repos manually
+* Tag nodes/edges with aspects manually
+* "Flip view" to show chosen aspect
+* Export to DOT + JSON
+
+=== What's Out (for Now)
+
+* Auto-detection of slots/providers
+* Actual substitution/patching
+* Forge API integration (GitHub/GitLab)
+* GUI (TUI first)
+
+== Existing Tool Mapping
+
+Where existing tools can help:
+
+[cols="1,2,2"]
+|===
+|Component |Existing Tool |Notes
+
+|Graph storage
+|SQLite / JSON files
+|Simple, portable
+
+|Graph visualization
+|Graphviz, D2, Mermaid
+|DOT export target
+
+|TUI framework
+|Ratatui (Rust)
+|Terminal UI
+
+|Diagramming
+|Structurizr, PlantUML
+|Reference for concepts
+
+|Dependency analysis
+|dep-tree, Madge
+|Inspiration only
+|===
+
+== Gap Analysis
+
+What doesn't exist yet (the value proposition):
+
+[cols="1,3"]
+|===
+|Gap |What Reposystem Provides
+
+|Multi-repo component graph
+|Graph of repos + components + programmable switches
+
+|Aspect tagging
+|Orthogonal view layers on dependency graph
+
+|Component substitution with rollback
+|Built-in provider swap with reversibility
+
+|Scenario comparison
+|A/B testing with aspect impact analysis
+|===
+
+== Success Criteria
+
+=== f1 Complete When
+
+1. Can import 50+ repos in under 30 seconds
+2. Can create/edit/delete edges and groups
+3. Can tag with all 10 aspects
+4. Export produces valid DOT and JSON
+5. Re-import JSON produces identical graph
+
+=== MVP Complete When
+
+1. All f1 criteria met
+2. At least one slot/provider pair working
+3. `reposystem plan` generates valid diff
+4. Documentation covers all commands
+
+== Related Projects
+
+[cols="1,2"]
+|===
+|Project |Relationship
+
+|git-visor
+|Consumes graph for forge HUD
+
+|git-seo
+|Consumes graph for discoverability
+
+|rhodium-standard-repositories
+|Standards this tool helps enforce
+
+|gitvisor
+|Existing related work (examine for patterns)
+|===

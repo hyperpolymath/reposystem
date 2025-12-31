@@ -1,63 +1,390 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
-= vex-SATELLITE_NAME
-
-image:https://img.shields.io/badge/license-AGPL--3.0-blue.svg[AGPL-3.0,link="https://www.gnu.org/licenses/agpl-3.0"] image:https://img.shields.io/badge/philosophy-Palimpsest-purple.svg[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-licence"]
+= Reposystem
 :toc: preamble
-:toclevels: 2
+:toclevels: 3
 
-TAGLINE
+image:https://img.shields.io/badge/license-AGPL--3.0-blue.svg[AGPL-3.0,link="https://www.gnu.org/licenses/agpl-3.0"]
+image:https://img.shields.io/badge/philosophy-Palimpsest-purple.svg[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-licence"]
+image:https://img.shields.io/badge/status-specification-yellow.svg[Specification Phase]
 
-== Overview
+**Railway yard for your repository ecosystem** — visual wiring layer for multi-repo component management with aspect tagging and scenario comparison.
 
-DESCRIPTION
+== The Problem
 
-=== Vexometer Integration
+You have 50+ repositories. Some depend on each other. Some could use your own implementations instead of external ones. You want to:
 
-This satellite targets the following vexometer metrics:
+* *See* the connections between everything
+* *Switch* between "use theirs" and "use mine" for components
+* *Understand* security, reliability, supply-chain implications
+* *Compare* alternative configurations before committing
 
-* TARGET_METRICS
+No tool currently does all of this.
 
-Integration with vexometer is *optional*. This tool works standalone.
+== The Solution
+
+Reposystem treats your repository ecosystem as a *railway yard*:
+
+----
+                            ┌─────────────────────────────────────────────────────────┐
+                            │                   REPOSYSTEM                            │
+                            │              "Railway Yard View"                        │
+                            └─────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐           ┌──────────────┐           ┌──────────────┐
+    │   my-ssg     │           │  my-newsroom │           │  my-deploy   │
+    │  [provider]  │◄─artifact─┤  [consumer]  │─artifact─►│  [consumer]  │
+    │              │           │              │           │              │
+    └──────────────┘           └───────┬──────┘           └──────────────┘
+                                       │
+                                       │ runtime
+                                       ▼
+              ┌──────────────────────────────────────────┐
+              │              SWITCH POINT                │
+              │   ○ Local (podman)                       │
+              │   ● Ecosystem (cerro-torre)  ◄── active  │
+              │   ○ Fallback (docker)                    │
+              └──────────────────────────────────────────┘
+                               │
+                               ▼
+                      ┌──────────────┐
+                      │ cerro-torre  │
+                      │  [provider]  │
+                      └──────────────┘
+----
+
+== Ecosystem Position
+
+----
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         HYPERPOLYMATH ECOSYSTEM                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│    ┌─────────────┐                                                          │
+│    │  git-visor  │◄───────────────┐                                         │
+│    │    (HUD)    │                │                                         │
+│    └─────────────┘                │                                         │
+│          │                        │                                         │
+│          │ consumes               │ source-of-truth                         │
+│          ▼                        │ dependency graph                        │
+│    ┌─────────────┐         ┌──────┴──────┐                                  │
+│    │   Forges    │         │ REPOSYSTEM  │◄─── YOU ARE HERE                 │
+│    │ (GH/GL/BB)  │         │  (wiring)   │                                  │
+│    └─────────────┘         └──────┬──────┘                                  │
+│                                   │                                         │
+│                                   │ consumes                                │
+│                                   ▼                                         │
+│                            ┌─────────────┐                                  │
+│                            │   git-seo   │                                  │
+│                            │ (discovery) │                                  │
+│                            └─────────────┘                                  │
+│                                   │                                         │
+│                                   │ generates                               │
+│                                   ▼                                         │
+│                            ┌─────────────┐                                  │
+│                            │  Metadata   │                                  │
+│                            │  Artifacts  │                                  │
+│                            └─────────────┘                                  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+----
+
+== Core Concepts
+
+=== 1. Repos as Yards
+
+Each repo has *slots* (things it needs) and may be a *provider* (things it offers):
+
+----
+┌────────────────────────────────────────────────┐
+│              my-newsroom                       │
+├────────────────────────────────────────────────┤
+│  NEEDS (slots):                                │
+│    • container.runtime ──► [podman|cerro-torre]│
+│    • static-site.generator ──► [my-ssg|hugo]   │
+│    • router.core ──► [cadre-router|nginx]      │
+├────────────────────────────────────────────────┤
+│  PROVIDES:                                     │
+│    • (nothing - pure consumer)                 │
+└────────────────────────────────────────────────┘
+----
+
+=== 2. Edges as Tracks
+
+Connections declare what uses what:
+
+----
+    Project A                              Project B
+   ┌─────────┐                            ┌─────────┐
+   │         │──────── uses ─────────────►│         │
+   │         │     channel: artifact      │         │
+   │         │     evidence: CI config    │         │
+   └─────────┘                            └─────────┘
+----
+
+=== 3. Switches as Points
+
+Select between providers at junction points:
+
+----
+                    ┌─────────────────────────┐
+                    │     SWITCH: runtime     │
+                    ├─────────────────────────┤
+     ──────────────►│  ○ podman (local)       │
+                    │  ● cerro-torre (eco)    │──────────►
+                    │  ○ docker (fallback)    │
+                    └─────────────────────────┘
+----
+
+=== 4. Aspect Tagging
+
+Flip views to see different concerns:
+
+----
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  ASPECT: Security                                          [weight: 3/3]    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│     ┌─────────┐           ┌─────────┐           ┌─────────┐                │
+│     │ proj-a  │──────────►│ proj-b  │──────────►│ external│                │
+│     │  [1]    │           │  [2]    │   [!3!]   │  [3]    │                │
+│     └─────────┘           └─────────┘           └─────────┘                │
+│                                 ▲                                           │
+│                                 │                                           │
+│                        ⚠ TRUST BOUNDARY                                     │
+│                        (crosses with no auth)                               │
+│                                                                             │
+│  Legend: [n] = security weight, [!n!] = flagged edge                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+----
+
+== Mock UI: TUI View
+
+----
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  REPOSYSTEM v0.1.0                                    [scenario: baseline]  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  GROUPS                    │  GRAPH                                         │
+│  ─────────────────────────│───────────────────────────────────────────────  │
+│  ▼ docs-stack (3)         │                                                 │
+│    ├─ my-ssg              │      ┌───────┐      ┌───────┐                   │
+│    ├─ my-newsroom         │      │my-ssg │◄────►│deploy │                   │
+│    └─ my-deploy           │      └───┬───┘      └───────┘                   │
+│  ▼ infra (2)              │          │                                      │
+│    ├─ cerro-torre         │          ▼                                      │
+│    └─ cadre-router        │      ┌────────────┐                             │
+│  ▶ services (5)           │      │my-newsroom │                             │
+│                           │      └─────┬──────┘                             │
+│                           │            │                                    │
+│  ASPECTS                  │            ▼                                    │
+│  ─────────────────────────│      ┌───────────┐                              │
+│  [●] All                  │      │cerro-torre│                              │
+│  [ ] Security             │      └───────────┘                              │
+│  [ ] Reliability          │                                                 │
+│  [ ] Supply-chain         │                                                 │
+│                           │                                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  STATUS: 47 repos │ 23 edges │ 5 groups │ [q]uit [e]xport [s]cenario [?]    │
+└─────────────────────────────────────────────────────────────────────────────┘
+----
+
+== Mock UI: Scenario Comparison
+
+----
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  SCENARIO COMPARISON: baseline ↔ ecosystem-secure                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  BASELINE                           ECOSYSTEM-SECURE                        │
+│  ────────────────────               ────────────────────                    │
+│                                                                             │
+│   proj-a ──► podman                  proj-a ──► cerro-torre                 │
+│              ~~~~~~                             ~~~~~~~~~~~~                │
+│                                                                             │
+│   proj-b ──► docker                  proj-b ──► cerro-torre                 │
+│              ~~~~~~                             ~~~~~~~~~~~~                │
+│                                                                             │
+│  CHANGES: 2 edges modified                                                  │
+│                                                                             │
+│  ASPECT IMPACT:                                                             │
+│    Security:    ████████░░ (7/10) → ██████████ (10/10) ▲                    │
+│    Reliability: ██████████ (10/10) → ████████░░ (8/10) ▼                    │
+│    Portability: ████░░░░░░ (4/10) → ██████░░░░ (6/10) ▲                     │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  [a]pply ecosystem-secure    [d]iff details    [b]ack                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+----
+
+== Mock UI: Weak Link Detection
+
+----
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  WEAK LINK ANALYSIS                                    [aspect: security]   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ⚠ HIGH RISK ITEMS (weight ≥ 3)                                             │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│                                                                             │
+│  1. EDGE: my-newsroom → external-api                                        │
+│     Reason: Crosses trust boundary without authentication                   │
+│     Evidence: src/api/client.rs:42                                          │
+│     Centrality: HIGH (blocks 12 downstream repos)                           │
+│     Recommendation: Add authentication layer or replace with internal API   │
+│                                                                             │
+│  2. NODE: legacy-auth                                                       │
+│     Reason: Single point of failure for 8 services                          │
+│     Evidence: Dependency analysis                                           │
+│     Centrality: CRITICAL                                                    │
+│     Recommendation: Create fallback or migrate to distributed auth          │
+│                                                                             │
+│  3. EDGE: data-pipeline → third-party-etl                                   │
+│     Reason: Unvetted supply chain dependency                                │
+│     Evidence: Cargo.toml:15                                                 │
+│     Centrality: MEDIUM                                                      │
+│     Recommendation: Consider forking or alternative                         │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Total: 3 high-risk │ 7 medium │ 12 low                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+----
 
 == Installation
 
 [source,bash]
 ----
-# Using Alire (Ada)
-alr get vex-SATELLITE_NAME
+# Using Cargo (Rust CLI)
+cargo install reposystem
 
-# Using Cargo (Rust)
-cargo install vex-SATELLITE_NAME
+# Using Deno (library)
+deno add @hyperpolymath/reposystem
 
-# Using Nix
-nix profile install github:hyperpolymath/vex-SATELLITE_NAME
-----
-
-== Usage
-
-[source,bash]
-----
-# Basic usage
-vex-SATELLITE_NAME analyse input.txt
-
-# With vexometer trace output
-vex-SATELLITE_NAME --trace before.json after.json
-----
-
-== Building
-
-[source,bash]
-----
-# Build
+# From source
+git clone https://github.com/hyperpolymath/reposystem
+cd reposystem
 just build
-
-# Test
-just test
-
-# Check (lint + type check)
-just check
 ----
+
+== Quick Start
+
+[source,bash]
+----
+# 1. Scan your repos
+reposystem scan ~/repos
+
+# 2. View the graph
+reposystem view
+
+# 3. Create a group
+reposystem group create "docs-stack" --members my-ssg,my-newsroom,my-deploy
+
+# 4. Tag for security review
+reposystem tag add my-newsroom --aspect security --weight 2 --reason "External API access"
+
+# 5. View security aspect
+reposystem view --aspect security
+
+# 6. Export
+reposystem export --format dot > ecosystem.dot
+dot -Tsvg ecosystem.dot -o ecosystem.svg
+----
+
+== Commands
+
+[cols="1,2"]
+|===
+|Command |Description
+
+|`reposystem scan PATH`
+|Import repos from local folder
+
+|`reposystem list`
+|List all repos, groups, edges
+
+|`reposystem view`
+|Interactive graph view
+
+|`reposystem view --aspect NAME`
+|View filtered by aspect
+
+|`reposystem group create NAME`
+|Create logical group
+
+|`reposystem edge add FROM TO`
+|Create edge between repos
+
+|`reposystem tag add TARGET`
+|Add aspect tag
+
+|`reposystem scenario create NAME`
+|Create new scenario
+
+|`reposystem scenario diff A B`
+|Compare scenarios
+
+|`reposystem export --format FMT`
+|Export (dot, json, svg)
+|===
+
+== Technology Stack
+
+[cols="1,2,2"]
+|===
+|Layer |Language |Notes
+
+|Core data model
+|ReScript
+|Type-safe, compiles to ES6
+
+|CLI
+|Rust
+|Cross-platform, fast
+
+|Runtime
+|Deno
+|No Node.js/npm
+
+|Config
+|Nickel
+|Complex configurations
+
+|State files
+|Guile Scheme
+|STATE.scm, META.scm, ECOSYSTEM.scm
+|===
+
+== Project Structure
+
+[source]
+----
+reposystem/
+├── src/
+│   ├── importers/       # Repo scanners
+│   ├── graph/           # Core data model
+│   ├── aspects/         # Aspect tagging
+│   ├── scenarios/       # Scenario management
+│   ├── export/          # DOT, JSON, SVG export
+│   └── cli/             # Rust CLI
+├── spec/
+│   ├── DATA-MODEL.adoc  # Entity specifications
+│   └── CONCEPTS.adoc    # Mental model
+├── STATE.scm            # Project state
+├── ECOSYSTEM.scm        # Ecosystem position
+├── META.scm             # Architecture decisions
+├── PLAYBOOK.scm         # Operational runbooks
+├── AGENTIC.scm          # AI agent patterns
+├── NEUROSYM.scm         # Neural-symbolic integration
+├── ROADMAP.adoc         # f/i staged plan
+├── Mustfile             # Build recipes
+└── justfile             # Development tasks
+----
+
+== Related Projects
+
+* link:https://github.com/hyperpolymath/git-visor[git-visor] — HUD for forge interaction
+* link:https://github.com/hyperpolymath/git-seo[git-seo] — Repository discoverability
+* link:https://github.com/hyperpolymath/rhodium-standard-repositories[RSR] — Standards this enforces
 
 == License
 

@@ -4,8 +4,11 @@
 
 use anyhow::Result;
 use std::path::Path;
+use crate::graph::Repo;
 
-pub fn scan_path(path: &Path) -> Result<Vec<crate::types::Repo>> {
+/// Scan a path for git repositories
+pub fn scan_path(path: &Path) -> Result<Vec<Repo>> {
     // TODO: Implement scanning
+    let _ = path; // silence unused warning
     Ok(vec![])
 }

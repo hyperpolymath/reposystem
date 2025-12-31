@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+
+# Build artifacts
+target/
+*.rlib
+*.rmeta
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentation build artifacts
+site/
+_site/
+
+# Container files (not needed in container)
+Containerfile*
+.dockerignore
+
+# Cache directories
+.cache/
+.cargo/registry/
+.cargo/git/
+
+# Local development
+*.log
+*.tmp
+.env
+.env.*
+
+# Test artifacts
+test-results/
+coverage/

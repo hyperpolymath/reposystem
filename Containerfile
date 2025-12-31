@@ -9,31 +9,21 @@
 # Run with:   nerdctl run -it --rm -v ~/repos:/data reposystem:dev scan /data
 
 # ============================================================================
-# Stage 1: Builder (Rust + Deno)
+# Stage 1: Builder (Rust)
 # ============================================================================
-FROM cgr.dev/chainguard/wolfi-base@sha256:0d8efc73b806c780206b69d62e1b8cb10e9e2eefa0e4452db81b9fa00b1a5175 AS builder
+FROM cgr.dev/chainguard/rust:latest AS builder
 
-# Install build dependencies
-RUN apk add --no-cache \
-    rust \
-    cargo \
-    deno \
-    git \
-    graphviz \
-    guile \
-    nickel
+# Note: Chainguard Rust image includes rust + cargo + git
+# The image runs as nonroot user (uid 65532)
 
 # Set up working directory
-WORKDIR /build
+WORKDIR /home/nonroot/build
 
-# Copy source files
-COPY . .
+# Copy source files and fix ownership for nonroot user
+COPY --chown=nonroot:nonroot . .
 
 # Build Rust CLI
 RUN cargo build --release
-
-# Build ReScript (via Deno)
-RUN deno task build || true
 
 # ============================================================================
 # Stage 2: Runtime (Minimal Wolfi)
@@ -42,9 +32,7 @@ FROM cgr.dev/chainguard/wolfi-base@sha256:0d8efc73b806c780206b69d62e1b8cb10e9e2e
 
 # Install runtime dependencies only
 RUN apk add --no-cache \
-    deno \
     graphviz \
-    guile \
     libgcc
 
 # Create non-root user
@@ -52,13 +40,12 @@ RUN addgroup -g 1000 reposystem && \
     adduser -u 1000 -G reposystem -D reposystem
 
 # Copy built artifacts
-COPY --from=builder /build/target/release/reposystem /usr/local/bin/reposystem
-COPY --from=builder /build/src/_build /app/lib
+COPY --from=builder /home/nonroot/build/target/release/reposystem /usr/local/bin/reposystem
 
 # Copy documentation and specs
-COPY --from=builder /build/README.adoc /app/
-COPY --from=builder /build/spec /app/spec
-COPY --from=builder /build/*.scm /app/
+COPY --from=builder /home/nonroot/build/README.adoc /app/
+COPY --from=builder /home/nonroot/build/spec /app/spec
+COPY --from=builder /home/nonroot/build/*.scm /app/
 
 # Set permissions
 RUN chown -R reposystem:reposystem /app

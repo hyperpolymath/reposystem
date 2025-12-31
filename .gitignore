@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# RSR-compliant .gitignore
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Build
+/target/
+/_build/
+/build/
+/dist/
+/out/
+
+# Dependencies
+/node_modules/
+/vendor/
+/deps/
+
+# Rust
+# Cargo.lock  # Keep for binaries
+
+# Secrets
+.env
+.env.*
+*.pem
+*.key
+secrets/
+
+# Test/Coverage
+/coverage/
+htmlcov/
+*.profraw
+*.profdata
+
+# Logs
+*.log
+/logs/
+
+# Temp
+/tmp/
+*.tmp
+*.bak
+
+# Vexometer traces (keep examples)
+/vexometer/*.json
+!/vexometer/example-*.json

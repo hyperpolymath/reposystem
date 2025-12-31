@@ -1,0 +1,72 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= Efficacy Report: vex-SATELLITE_NAME
+:toc:
+
+== Summary
+
+This document tracks the measured effectiveness of vex-SATELLITE_NAME
+in reducing the target vexometer metrics.
+
+== Target Metrics
+
+[cols="1,2,1"]
+|===
+| Metric | Description | Target Reduction
+
+| TARGET_METRIC
+| METRIC_DESCRIPTION
+| XX%
+|===
+
+== Methodology
+
+=== Test Corpus
+
+* Source: DESCRIBE_TEST_DATA_SOURCE
+* Size: N samples
+* Selection criteria: CRITERIA
+
+=== Measurement Process
+
+1. Generate vexometer trace for original content (`before/`)
+2. Apply vex-SATELLITE_NAME intervention
+3. Generate vexometer trace for modified content (`after/`)
+4. Compare metric scores
+
+== Results
+
+=== Aggregate
+
+[cols="1,1,1,1"]
+|===
+| Metric | Before (avg) | After (avg) | Reduction
+
+| TARGET_METRIC
+| X.XX
+| X.XX
+| XX%
+|===
+
+=== Example Traces
+
+==== Example 1: EXAMPLE_NAME
+
+Before::
+  `vexometer/before/example-1.json`
+
+After::
+  `vexometer/after/example-1.json`
+
+Reduction::
+  TARGET_METRIC: X.XX -> X.XX (XX%)
+
+== Limitations
+
+* LIMITATION_1
+* LIMITATION_2
+
+== Future Work
+
+* IMPROVEMENT_1
+* IMPROVEMENT_2

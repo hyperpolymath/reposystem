@@ -1,0 +1,68 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= vex-SATELLITE_NAME
+
+image:https://img.shields.io/badge/license-AGPL--3.0-blue.svg[AGPL-3.0,link="https://www.gnu.org/licenses/agpl-3.0"] image:https://img.shields.io/badge/philosophy-Palimpsest-purple.svg[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-licence"]
+:toc: preamble
+:toclevels: 2
+
+TAGLINE
+
+== Overview
+
+DESCRIPTION
+
+=== Vexometer Integration
+
+This satellite targets the following vexometer metrics:
+
+* TARGET_METRICS
+
+Integration with vexometer is *optional*. This tool works standalone.
+
+== Installation
+
+[source,bash]
+----
+# Using Alire (Ada)
+alr get vex-SATELLITE_NAME
+
+# Using Cargo (Rust)
+cargo install vex-SATELLITE_NAME
+
+# Using Nix
+nix profile install github:hyperpolymath/vex-SATELLITE_NAME
+----
+
+== Usage
+
+[source,bash]
+----
+# Basic usage
+vex-SATELLITE_NAME analyse input.txt
+
+# With vexometer trace output
+vex-SATELLITE_NAME --trace before.json after.json
+----
+
+== Building
+
+[source,bash]
+----
+# Build
+just build
+
+# Test
+just test
+
+# Check (lint + type check)
+just check
+----
+
+== License
+
+AGPL-3.0-or-later. See link:LICENSE.txt[LICENSE.txt].
+
+== Contributing
+
+See link:CONTRIBUTING.adoc[CONTRIBUTING.adoc].

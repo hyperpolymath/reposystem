@@ -1,0 +1,198 @@
+.\" SPDX-License-Identifier: AGPL-3.0-or-later
+.\" SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+.\"
+.\" reposystem.1 - Manual page for reposystem
+.\"
+.TH REPOSYSTEM 1 "December 2025" "reposystem 0.1.0" "User Commands"
+.SH NAME
+reposystem \- railway yard for your repository ecosystem
+.SH SYNOPSIS
+.B reposystem
+[\fIOPTIONS\fR] \fICOMMAND\fR [\fIARGS\fR]
+.SH DESCRIPTION
+.B reposystem
+is a visual wiring layer for multi-repo component management with aspect
+tagging and scenario comparison. It treats your repository ecosystem as a
+railway yard: repos as yards, dependencies as tracks, and component switches
+as points.
+.PP
+Key capabilities:
+.IP \(bu 2
+Import and visualize repository connections
+.IP \(bu 2
+Switch between component providers (local/ecosystem/fallback)
+.IP \(bu 2
+Tag dependencies with aspects (security, reliability, performance)
+.IP \(bu 2
+Compare configuration scenarios before committing
+.IP \(bu 2
+Export to DOT/Graphviz, JSON, and other formats
+.SH COMMANDS
+.TP
+.B scan \fIPATH\fR
+Scan repositories at PATH and build dependency graph.
+.TP
+.B view
+Launch interactive TUI to explore the ecosystem graph.
+.TP
+.B export \fB\-\-format\fR \fIFORMAT\fR [\fB\-o\fR \fIFILE\fR]
+Export graph to specified format (dot, json, yaml, toml).
+.TP
+.B group \fIACTION\fR \fINAME\fR [\fIREPOS\fR...]
+Manage repository groups. Actions: create, delete, add, remove, list.
+.TP
+.B aspect \fB\-\-filter\fR \fIASPECT\fR
+Filter view by aspect (security, reliability, performance, supply-chain).
+.TP
+.B scenario \fIACTION\fR \fINAME\fR
+Manage scenarios. Actions: create, delete, switch, compare.
+.TP
+.B weak-links \fB\-\-aspect\fR \fIASPECT\fR
+Identify weak links in the ecosystem for a given aspect.
+.TP
+.B config \fIKEY\fR [\fIVALUE\fR]
+Get or set configuration values.
+.TP
+.B completions \fISHELL\fR
+Generate shell completions (bash, zsh, fish, powershell).
+.SH OPTIONS
+.TP
+.B \-h, \-\-help
+Print help information.
+.TP
+.B \-V, \-\-version
+Print version information.
+.TP
+.B \-v, \-\-verbose
+Increase verbosity (can be repeated: -vv, -vvv).
+.TP
+.B \-q, \-\-quiet
+Decrease verbosity.
+.TP
+.B \-c, \-\-config \fIFILE\fR
+Use alternate configuration file.
+.TP
+.B \-\-data\-dir \fIDIR\fR
+Override data directory.
+.TP
+.B \-\-no\-color
+Disable colored output.
+.TP
+.B \-\-json
+Output in JSON format (where applicable).
+.SH TUI KEYBINDINGS
+.TP
+.B 1, 2, 3, 4
+Switch view mode (Graph, List, Detail, Scenario).
+.TP
+.B h, j, k, l
+Navigate (vim-style).
+.TP
+.B a, s, r, p
+Filter by aspect (All, Security, Reliability, Performance).
+.TP
+.B Enter
+Select/activate item.
+.TP
+.B /
+Search.
+.TP
+.B ?
+Show help.
+.TP
+.B q
+Quit.
+.SH CONFIGURATION
+Configuration is stored in:
+.PP
+.nf
+$XDG_CONFIG_HOME/reposystem/config.toml
+~/.config/reposystem/config.toml (fallback)
+.fi
+.PP
+Or specified via Nickel:
+.PP
+.nf
+$XDG_CONFIG_HOME/reposystem/config.ncl
+.fi
+.SH ENVIRONMENT
+.TP
+.B REPOSYSTEM_DATA_DIR
+Override default data directory.
+.TP
+.B REPOSYSTEM_CONFIG
+Path to configuration file.
+.TP
+.B REPOSYSTEM_LOG
+Log level (trace, debug, info, warn, error).
+.TP
+.B NO_COLOR
+Disable colored output if set.
+.SH FILES
+.TP
+.I ~/.local/share/reposystem/
+Default data directory containing ecosystem state.
+.TP
+.I ~/.cache/reposystem/
+Cache directory for graph computations.
+.TP
+.I ~/.config/reposystem/config.toml
+User configuration file.
+.SH EXAMPLES
+.PP
+Scan repositories and view the graph:
+.PP
+.nf
+$ reposystem scan ~/repos
+$ reposystem view
+.fi
+.PP
+Export ecosystem to DOT and render as SVG:
+.PP
+.nf
+$ reposystem export --format dot -o ecosystem.dot
+$ dot -Tsvg ecosystem.dot -o ecosystem.svg
+.fi
+.PP
+Identify security weak links:
+.PP
+.nf
+$ reposystem weak-links --aspect security
+.fi
+.PP
+Compare two scenarios:
+.PP
+.nf
+$ reposystem scenario create baseline
+$ reposystem scenario create proposed --base baseline
+$ reposystem scenario modify proposed --switch mylib:external
+$ reposystem scenario compare baseline proposed
+.fi
+.SH INTEGRATION
+.SS TortoiseGit
+.PP
+Enable context menu integration:
+.PP
+.nf
+$ reposystem integrations install tortoisegit
+.fi
+.SS IDE Plugins
+.PP
+.nf
+$ reposystem integrations install vscode
+$ reposystem integrations install jetbrains
+.fi
+.SH SEE ALSO
+.BR git (1),
+.BR dot (1),
+.BR graphviz (7)
+.SH BUGS
+Report bugs at: https://github.com/hyperpolymath/reposystem/issues
+.SH AUTHOR
+Jonathan D.A. Jewell <hyperpolymath>
+.SH COPYRIGHT
+Copyright \(co 2025 Jonathan D.A. Jewell.
+License AGPL-3.0-or-later.
+.PP
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.

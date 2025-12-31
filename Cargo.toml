@@ -1,0 +1,86 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+
+[package]
+name = "reposystem"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+authors = ["Jonathan D.A. Jewell <hyperpolymath>"]
+description = "Railway yard for your repository ecosystem"
+documentation = "https://github.com/hyperpolymath/reposystem#readme"
+homepage = "https://github.com/hyperpolymath/reposystem"
+repository = "https://github.com/hyperpolymath/reposystem"
+license = "AGPL-3.0-or-later"
+keywords = ["git", "dependency", "graph", "visualization", "tui"]
+categories = ["command-line-utilities", "development-tools", "visualization"]
+readme = "README.adoc"
+
+[dependencies]
+# CLI
+clap = { version = "4.4", features = ["derive", "env", "wrap_help"] }
+clap_complete = "4.4"
+
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+
+# TUI
+ratatui = "0.26"
+crossterm = "0.27"
+
+# Graph processing
+petgraph = "0.6"
+
+# File system
+walkdir = "2.4"
+ignore = "0.4"
+globset = "0.4"
+
+# Git
+gix = { version = "0.58", default-features = false, features = ["max-performance-safe"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Config
+directories = "5.0"
+config = "0.14"
+
+# Colors
+owo-colors = "4.0"
+
+[dev-dependencies]
+tempfile = "3.9"
+assert_cmd = "2.0"
+predicates = "3.0"
+insta = { version = "1.34", features = ["yaml"] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[[bin]]
+name = "reposystem"
+path = "src/main.rs"
+
+[features]
+default = []
+full = ["lsp", "web"]
+lsp = []
+web = []

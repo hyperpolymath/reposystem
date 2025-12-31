@@ -1,0 +1,99 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= Reposystem Cookbooks
+:toc: left
+:toclevels: 3
+
+Comprehensive recipes for common reposystem workflows.
+
+== Quick Reference
+
+[cols="1,2,1"]
+|===
+| Cookbook | Purpose | Runner
+
+| `scan.just` | Repository scanning workflows | just
+| `export.just` | Graph export recipes | just
+| `scenario.just` | Scenario management | just
+| `security.just` | Security analysis | just
+| `ci.just` | CI/CD integration | just
+| `integrations.just` | IDE/tool integration | just
+| `must-checks.ncl` | Pre-commit/push checks | Mustfile
+| `recipes.ncl` | Nickel-based recipes | nickel
+|===
+
+== Usage
+
+=== Via Just
+
+[source,bash]
+----
+# List all recipes
+just --list
+
+# Run a cookbook recipe
+just -f cookbooks/scan.just scan-deep
+
+# Import into main justfile
+import 'cookbooks/scan.just'
+----
+
+=== Via Mustfile
+
+[source,bash]
+----
+# Run pre-commit checks
+must pre-commit
+
+# Run pre-push checks
+must pre-push
+----
+
+=== Via Nickel
+
+[source,bash]
+----
+# Validate recipes
+nickel typecheck cookbooks/recipes.ncl
+
+# Export as JSON
+nickel export cookbooks/recipes.ncl --format json
+----
+
+== Cookbook Index
+
+=== Scanning
+
+* `scan-shallow` - Quick scan (no deep analysis)
+* `scan-deep` - Full recursive scan with metadata
+* `scan-incremental` - Only scan changed repos
+* `scan-workspace` - Scan Cargo/npm workspaces
+
+=== Exporting
+
+* `export-dot` - Export to Graphviz DOT
+* `export-json` - Export to JSON
+* `export-yaml` - Export to YAML
+* `export-svg` - Render to SVG
+* `export-all` - All formats
+
+=== Scenarios
+
+* `scenario-baseline` - Create baseline scenario
+* `scenario-compare` - Compare two scenarios
+* `scenario-switch` - Switch component provider
+* `scenario-rollback` - Rollback to previous
+
+=== Security
+
+* `audit-deps` - Audit dependencies
+* `audit-supply-chain` - Supply chain analysis
+* `weak-links` - Find weak links
+* `sbom-generate` - Generate SBOM
+
+=== CI/CD
+
+* `ci-full` - Full CI pipeline
+* `ci-quick` - Quick checks only
+* `cd-release` - Release pipeline
+* `cd-deploy` - Deploy artifacts

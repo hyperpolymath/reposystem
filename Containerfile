@@ -11,7 +11,7 @@
 # ============================================================================
 # Stage 1: Builder (Rust + Deno)
 # ============================================================================
-FROM cgr.dev/chainguard/wolfi-base:latest AS builder
+FROM cgr.dev/chainguard/wolfi-base@sha256:0d8efc73b806c780206b69d62e1b8cb10e9e2eefa0e4452db81b9fa00b1a5175 AS builder
 
 # Install build dependencies
 RUN apk add --no-cache \
@@ -38,7 +38,7 @@ RUN deno task build || true
 # ============================================================================
 # Stage 2: Runtime (Minimal Wolfi)
 # ============================================================================
-FROM cgr.dev/chainguard/wolfi-base:latest AS runtime
+FROM cgr.dev/chainguard/wolfi-base@sha256:0d8efc73b806c780206b69d62e1b8cb10e9e2eefa0e4452db81b9fa00b1a5175 AS runtime
 
 # Install runtime dependencies only
 RUN apk add --no-cache \

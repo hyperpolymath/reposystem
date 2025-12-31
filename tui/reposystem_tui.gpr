@@ -1,0 +1,52 @@
+-- SPDX-License-Identifier: AGPL-3.0-or-later
+-- SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+--
+-- reposystem_tui.gpr - GNAT project file for Ada/SPARK TUI
+
+project Reposystem_TUI is
+
+   for Source_Dirs use ("src");
+   for Object_Dir use "obj";
+   for Exec_Dir use "bin";
+   for Main use ("reposystem_tui-main.adb");
+
+   type Build_Mode is ("debug", "release", "spark");
+   Mode : Build_Mode := external ("MODE", "debug");
+
+   package Compiler is
+      case Mode is
+         when "debug" =>
+            for Default_Switches ("Ada") use
+              ("-g", "-gnatwa", "-gnatVa", "-gnata",
+               "-gnatyo", "-gnatyM120", "-gnatyu");
+         when "release" =>
+            for Default_Switches ("Ada") use
+              ("-O3", "-gnatn", "-gnatp", "-gnatwa");
+         when "spark" =>
+            for Default_Switches ("Ada") use
+              ("-g", "-gnatwa", "-gnatVa", "-gnata",
+               "-gnatyo", "-gnatyM120");
+      end case;
+   end Compiler;
+
+   package Binder is
+      for Default_Switches ("Ada") use ("-Es");
+   end Binder;
+
+   package Linker is
+      case Mode is
+         when "debug" =>
+            for Default_Switches ("Ada") use ("-g");
+         when "release" =>
+            for Default_Switches ("Ada") use ("-s");
+         when "spark" =>
+            for Default_Switches ("Ada") use ("-g");
+      end case;
+   end Linker;
+
+   package Prove is
+      for Proof_Switches ("Ada") use
+        ("--level=2", "--timeout=60", "--steps=0");
+   end Prove;
+
+end Reposystem_TUI;

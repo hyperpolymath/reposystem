@@ -1,0 +1,55 @@
+; SPDX-License-Identifier: AGPL-3.0-or-later
+; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+;
+; tortoisegit.reg - TortoiseGit context menu integration
+;
+; Install: regedit /s tortoisegit.reg
+; Or via: reposystem integrations install tortoisegit
+
+Windows Registry Editor Version 5.00
+
+; Reposystem context menu for directories
+[HKEY_CLASSES_ROOT\Directory\shell\reposystem]
+@="Reposystem"
+"Icon"="reposystem.exe,0"
+"SubCommands"=""
+
+[HKEY_CLASSES_ROOT\Directory\shell\reposystem\shell]
+
+[HKEY_CLASSES_ROOT\Directory\shell\reposystem\shell\scan]
+@="Scan Repository"
+
+[HKEY_CLASSES_ROOT\Directory\shell\reposystem\shell\scan\command]
+@="reposystem scan \"%V\""
+
+[HKEY_CLASSES_ROOT\Directory\shell\reposystem\shell\view]
+@="View Ecosystem"
+
+[HKEY_CLASSES_ROOT\Directory\shell\reposystem\shell\view\command]
+@="reposystem view"
+
+[HKEY_CLASSES_ROOT\Directory\shell\reposystem\shell\export]
+@="Export Graph"
+
+[HKEY_CLASSES_ROOT\Directory\shell\reposystem\shell\export\command]
+@="reposystem export --format dot -o \"%V\\ecosystem.dot\""
+
+[HKEY_CLASSES_ROOT\Directory\shell\reposystem\shell\weaklinks]
+@="Find Weak Links"
+
+[HKEY_CLASSES_ROOT\Directory\shell\reposystem\shell\weaklinks\command]
+@="reposystem weak-links --aspect security"
+
+; Background context menu
+[HKEY_CLASSES_ROOT\Directory\Background\shell\reposystem]
+@="Reposystem"
+"Icon"="reposystem.exe,0"
+"SubCommands"=""
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\reposystem\shell]
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\reposystem\shell\scan]
+@="Scan This Directory"
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\reposystem\shell\scan\command]
+@="reposystem scan \"%V\""

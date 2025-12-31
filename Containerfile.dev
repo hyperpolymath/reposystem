@@ -9,7 +9,7 @@
 # Build: nerdctl build -f Containerfile.dev -t reposystem:dev .
 # Run:   nerdctl run -it --rm -v $(pwd):/workspace reposystem:dev
 
-FROM cgr.dev/chainguard/wolfi-base:latest
+FROM cgr.dev/chainguard/wolfi-base@sha256:0d8efc73b806c780206b69d62e1b8cb10e9e2eefa0e4452db81b9fa00b1a5175
 
 # ============================================================================
 # Development Dependencies

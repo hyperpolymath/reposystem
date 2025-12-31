@@ -1,0 +1,38 @@
+{
+  "// SPDX-License-Identifier": "AGPL-3.0-or-later",
+  "// SPDX-FileCopyrightText": "2025 Jonathan D.A. Jewell",
+
+  "reposystem.enable": true,
+  "reposystem.scanOnOpen": true,
+  "reposystem.dataDir": "${env:XDG_DATA_HOME}/reposystem",
+
+  "reposystem.graph.layout": "dagre",
+  "reposystem.graph.theme": "dark",
+  "reposystem.graph.showLabels": true,
+
+  "reposystem.aspects.default": "all",
+  "reposystem.aspects.colors": {
+    "security": "#ff6b6b",
+    "reliability": "#4ecdc4",
+    "performance": "#45b7d1",
+    "supply-chain": "#dda0dd"
+  },
+
+  "reposystem.integrations.tortoisegit": true,
+  "reposystem.integrations.gitLens": true,
+
+  "reposystem.tasks": {
+    "scan": {
+      "label": "Reposystem: Scan",
+      "command": "reposystem scan ${workspaceFolder}"
+    },
+    "view": {
+      "label": "Reposystem: View Graph",
+      "command": "reposystem view"
+    },
+    "export": {
+      "label": "Reposystem: Export",
+      "command": "reposystem export --format dot -o ecosystem.dot"
+    }
+  }
+}

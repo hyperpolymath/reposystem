@@ -264,6 +264,9 @@ deno add @hyperpolymath/reposystem
 git clone https://github.com/hyperpolymath/reposystem
 cd reposystem
 just build
+
+# Clone via Radicle (decentralized)
+rad clone rad:z2GwqZb3PsYKNkBgCbFZB2sEBSP6i
 ----
 
 == Quick Start

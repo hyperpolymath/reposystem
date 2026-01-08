@@ -3,14 +3,11 @@
 //
 //! Reposystem CLI - Railway yard for your repository ecosystem
 
-use clap::{Parser, Subcommand};
 use anyhow::Result;
+use clap::{Parser, Subcommand};
 
-mod commands;
-mod config;
-mod graph;
-mod scanner;
-mod tui;
+// Use the library modules
+use reposystem::commands;
 
 #[derive(Parser)]
 #[command(name = "reposystem")]

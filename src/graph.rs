@@ -366,4 +366,115 @@ mod tests {
         assert!(dot.contains("digraph ecosystem"));
         assert!(dot.contains("example"));
     }
+
+    #[test]
+    fn test_save_load_fidelity() {
+        use crate::types::{
+            AnnotationSource, AspectAnnotation, Evidence, Polarity,
+        };
+
+        // Create a graph with repos, edges, groups, and annotations
+        let mut graph = EcosystemGraph::new();
+
+        // Add repos
+        let repo_a = make_test_repo("alpha");
+        let repo_b = make_test_repo("beta");
+        let repo_c = make_test_repo("gamma");
+        graph.add_repo(repo_a.clone());
+        graph.add_repo(repo_b.clone());
+        graph.add_repo(repo_c.clone());
+
+        // Add edge
+        let edge = Edge {
+            kind: "Edge".into(),
+            id: "edge:fidelity-test".into(),
+            from: repo_a.id.clone(),
+            to: repo_b.id.clone(),
+            rel: RelationType::Uses,
+            channel: Channel::Api,
+            label: Some("fidelity test edge".into()),
+            evidence: vec![Evidence {
+                evidence_type: "test".into(),
+                reference: "test-ref".into(),
+                excerpt: Some("test excerpt".into()),
+                confidence: 0.9,
+            }],
+            meta: EdgeMeta {
+                created_by: "test".into(),
+                created_at: Utc::now(),
+            },
+        };
+        graph.add_edge(edge).unwrap();
+
+        // Add group
+        let group = Group {
+            kind: "Group".into(),
+            id: "group:test-group".into(),
+            name: "Test Group".into(),
+            description: Some("A test group".into()),
+            members: vec![repo_a.id.clone(), repo_c.id.clone()],
+        };
+        graph.add_group(group);
+
+        // Add aspect annotation
+        let annotation = AspectAnnotation {
+            kind: "AspectAnnotation".into(),
+            id: "aa:test-ann".into(),
+            target: repo_b.id.clone(),
+            aspect_id: "aspect:security".into(),
+            weight: 2,
+            polarity: Polarity::Risk,
+            reason: "Test annotation reason".into(),
+            evidence: vec![],
+            source: AnnotationSource {
+                mode: "manual".into(),
+                who: "test".into(),
+                when: Utc::now(),
+                rule_id: None,
+            },
+        };
+        graph.aspects.annotations.push(annotation);
+
+        // Save to temp directory
+        let temp_dir = std::env::temp_dir().join("reposystem-fidelity-test");
+        std::fs::create_dir_all(&temp_dir).unwrap();
+        graph.save(&temp_dir).unwrap();
+
+        // Load back
+        let loaded = EcosystemGraph::load(&temp_dir).unwrap();
+
+        // Verify repos
+        assert_eq!(loaded.store.repos.len(), 3);
+        assert!(loaded.get_repo(&repo_a.id).is_some());
+        assert!(loaded.get_repo(&repo_b.id).is_some());
+        assert!(loaded.get_repo(&repo_c.id).is_some());
+
+        // Verify edge
+        assert_eq!(loaded.store.edges.len(), 1);
+        let loaded_edge = &loaded.store.edges[0];
+        assert_eq!(loaded_edge.id, "edge:fidelity-test");
+        assert_eq!(loaded_edge.label, Some("fidelity test edge".into()));
+        assert_eq!(loaded_edge.evidence.len(), 1);
+        assert_eq!(loaded_edge.evidence[0].confidence, 0.9);
+
+        // Verify group
+        assert_eq!(loaded.store.groups.len(), 1);
+        let loaded_group = &loaded.store.groups[0];
+        assert_eq!(loaded_group.name, "Test Group");
+        assert_eq!(loaded_group.members.len(), 2);
+
+        // Verify annotation
+        assert_eq!(loaded.aspects.annotations.len(), 1);
+        let loaded_ann = &loaded.aspects.annotations[0];
+        assert_eq!(loaded_ann.target, repo_b.id);
+        assert_eq!(loaded_ann.weight, 2);
+        assert_eq!(loaded_ann.reason, "Test annotation reason");
+
+        // Verify petgraph structure rebuilt correctly
+        assert_eq!(loaded.node_count(), 3);
+        assert_eq!(loaded.edge_count(), 1);
+
+        // Clean up
+        std::fs::remove_dir_all(&temp_dir).ok();
+    }
 }

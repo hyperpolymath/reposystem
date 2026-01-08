@@ -85,9 +85,39 @@ enum Commands {
         aspect: Option<String>,
     },
 
+    /// Manage edges (relationships) between repositories
+    Edge {
+        /// Action: add, remove, list
+        action: String,
+
+        /// Source repository (name or ID)
+        #[arg(long)]
+        from: Option<String>,
+
+        /// Target repository (name or ID)
+        #[arg(long)]
+        to: Option<String>,
+
+        /// Relationship type: uses, provides, extends, mirrors, replaces
+        #[arg(long, default_value = "uses")]
+        rel: Option<String>,
+
+        /// Channel type: api, artifact, config, runtime, human, unknown
+        #[arg(long)]
+        channel: Option<String>,
+
+        /// Human-readable label
+        #[arg(long)]
+        label: Option<String>,
+
+        /// Evidence reference (file path, URL, etc.)
+        #[arg(long)]
+        evidence: Option<String>,
+    },
+
     /// Manage repository groups
     Group {
-        /// Action: create, delete, add, remove, list
+        /// Action: create, add, remove, delete, list, show
         action: String,
 
         /// Group name
@@ -97,11 +127,34 @@ enum Commands {
         repos: Vec<String>,
     },
 
-    /// Filter view by aspect
+    /// Manage aspect annotations
     Aspect {
-        /// Aspect filter
+        /// Action: tag, remove, list, show, filter
+        action: String,
+
+        /// Target repository or edge (name or ID)
         #[arg(long)]
-        filter: String,
+        target: Option<String>,
+
+        /// Aspect name (security, reliability, etc.)
+        #[arg(long)]
+        aspect: Option<String>,
+
+        /// Weight (0-3)
+        #[arg(long)]
+        weight: Option<u8>,
+
+        /// Polarity: risk, strength, neutral
+        #[arg(long)]
+        polarity: Option<String>,
+
+        /// Reason for annotation
+        #[arg(long)]
+        reason: Option<String>,
+
+        /// Evidence reference
+        #[arg(long)]
+        evidence: Option<String>,
     },
 
     /// Manage scenarios
@@ -171,11 +224,20 @@ fn main() -> Result<()> {
         Commands::Export { format, output, aspect } => {
             commands::export::run(&format, output, aspect)
         }
+        Commands::Edge { action, from, to, rel, channel, label, evidence } => {
+            commands::edge::run(&action, from, to, rel, channel, label, evidence)
+        }
         Commands::Group { action, name, repos } => {
             commands::group::run(&action, name, repos)
         }
-        Commands::Aspect { filter } => {
-            commands::aspect::run(&filter)
+        Commands::Aspect { action, target, aspect, weight, polarity, reason, evidence } => {
+            let args = commands::aspect::AspectArgs {
+                weight,
+                polarity,
+                reason,
+                evidence,
+            };
+            commands::aspect::run(&action, target, aspect, args)
         }
         Commands::Scenario { action, name, base } => {
             commands::scenario::run(&action, &name, base)

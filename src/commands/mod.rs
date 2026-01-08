@@ -3,12 +3,13 @@
 //
 //! Command implementations
 
-pub mod scan;
-pub mod view;
+pub mod aspect;
+pub mod completions;
+pub mod config;
+pub mod edge;
 pub mod export;
 pub mod group;
-pub mod aspect;
+pub mod scan;
 pub mod scenario;
+pub mod view;
 pub mod weak_links;
-pub mod config;
-pub mod completions;

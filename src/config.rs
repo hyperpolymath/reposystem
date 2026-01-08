@@ -5,10 +5,14 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
+/// Application configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
+    /// Directory for persistent data (graph, aspects)
     pub data_dir: std::path::PathBuf,
+    /// Directory for cached data
     pub cache_dir: std::path::PathBuf,
+    /// Log level (trace, debug, info, warn, error)
     pub log_level: String,
 }
 
@@ -26,6 +30,7 @@ impl Default for Config {
     }
 }
 
+/// Load configuration from disk or use defaults
 pub fn load() -> Result<Config> {
     Ok(Config::default())
 }

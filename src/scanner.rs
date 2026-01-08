@@ -5,7 +5,7 @@
 use crate::types::{Forge, ImportMeta, Repo, Visibility};
 use anyhow::{Context, Result};
 use chrono::Utc;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use tracing::{debug, info, warn};
 use walkdir::WalkDir;
 

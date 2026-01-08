@@ -192,9 +192,13 @@ pub fn run(action: &str, target: Option<String>, aspect: Option<String>, args: A
 /// Additional arguments for aspect commands
 #[derive(Default)]
 pub struct AspectArgs {
+    /// Weight of the annotation (0-3)
     pub weight: Option<u8>,
+    /// Polarity: risk, strength, or neutral
     pub polarity: Option<String>,
+    /// Human-readable reason for the annotation
     pub reason: Option<String>,
+    /// Evidence reference (file path, URL, etc.)
     pub evidence: Option<String>,
 }
 

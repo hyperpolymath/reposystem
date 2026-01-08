@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+//! Configuration management commands
 
 use anyhow::Result;
 
+/// Get or set a configuration value
 pub fn run(key: &str, value: Option<String>) -> Result<()> {
     match value {
         Some(v) => tracing::info!("Setting {} = {}", key, v),

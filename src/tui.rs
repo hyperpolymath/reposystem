@@ -4,6 +4,7 @@
 
 use anyhow::Result;
 
+/// Run the TUI application
 pub fn run() -> Result<()> {
     // TODO: Implement TUI with ratatui
     Ok(())

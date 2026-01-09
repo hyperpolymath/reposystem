@@ -13,7 +13,7 @@
      (version . "0.1.0")
      (schema-version . "1.0")
      (created . "2025-12-31")
-     (updated . "2026-01-09")
+     (updated . "2026-01-09-b")
      (project . "reposystem")
      (repo . "github.com/hyperpolymath/reposystem"))
 
@@ -64,7 +64,7 @@
        "Scenario create/delete/list/show/compare"
        "Weak links detection (risk annotations, SPOFs, missing evidence)"
        "Interactive TUI view with tabs and detail panels"
-       "13 tests passing (9 unit + 4 integration)"
+       "35 tests passing (9 unit + 4 integration + 22 invariant)"
        "Re-import fidelity verified")))
 
     (route-to-mvp
@@ -95,14 +95,14 @@
          (status . "complete"))))
       ((id . "i1")
        (name . "Seam Review: Graph invariants")
-       (status . "pending")
+       (status . "complete")
        (items
         ((task . "Graph determinism check")
-         (status . "pending"))
+         (status . "complete"))
         ((task . "Tag provenance check")
-         (status . "pending"))
+         (status . "complete"))
         ((task . "Export fidelity check")
-         (status . "pending"))))
+         (status . "complete"))))
       ((id . "f2")
        (name . "Slots/Providers Registry")
        (status . "pending"))
@@ -131,16 +131,16 @@
 
     (critical-next-actions
      (immediate
-      ((action . "Start i1 seam review: graph invariants")
+      ((action . "Start f2 slots/providers registry design")
        (owner . "dev")
        (blocked-by . ())))
      (this-week
       ((action . "Push to GitLab and Bitbucket mirrors")
        (owner . "dev"))
-      ((action . "Begin f2 slots/providers registry design")
+      ((action . "Begin f2 implementation")
        (owner . "dev")))
      (this-month
-      ((action . "Start f2 slots/providers registry")
+      ((action . "Complete f2 slots/providers registry")
        (owner . "dev"))
       ((action . "Hello Yard milestone")
        (owner . "dev"))))
@@ -152,8 +152,12 @@
         "Implemented weak links detection (risk annotations, SPOFs, missing evidence)"
         "Implemented TUI view with ratatui (4 tabs, navigation, detail panels)"
         "Added 4 integration tests for CLI commands"
-        "All 13 tests passing (9 unit + 4 integration)"
-        "Completed f1 milestone to 100%")))
+        "Completed f1 milestone to 100%"
+        "Implemented i1 seam review with 22 invariant tests"
+        "Graph determinism: repo/edge ID generation, idempotent operations"
+        "Tag provenance: valid source metadata, aspect validation, weight bounds"
+        "Export fidelity: JSON/DOT round-trip, empty graph handling, scenarios"
+        "All 35 tests passing (9 unit + 4 integration + 22 invariant)"))))
      ((date . "2026-01-08")
       (accomplishments
        ("Implemented full scanner with gix and walkdir"

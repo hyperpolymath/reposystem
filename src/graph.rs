@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 //! Graph data structures and algorithms for the ecosystem graph
 
-use crate::types::{AspectStore, Edge, GraphStore, Group, PlanStore, Repo, SlotStore};
+use crate::types::{AspectStore, AuditStore, Edge, GraphStore, Group, PlanStore, Repo, SlotStore};
 use anyhow::{Context, Result};
 use petgraph::graph::{DiGraph, NodeIndex};
 use std::collections::HashMap;
@@ -23,6 +23,8 @@ pub struct EcosystemGraph {
     pub slots: SlotStore,
     /// Plan store
     pub plans: PlanStore,
+    /// Audit log store
+    pub audit: AuditStore,
 }
 
 impl Default for EcosystemGraph {
@@ -42,15 +44,17 @@ impl EcosystemGraph {
             aspects: AspectStore::default(),
             slots: SlotStore::default(),
             plans: PlanStore::default(),
+            audit: AuditStore::default(),
         }
     }
 
-    /// Load graph from a directory containing graph.json, aspects.json, slots.json, plans.json
+    /// Load graph from a directory containing graph.json, aspects.json, slots.json, plans.json, audit.json
     pub fn load(dir: &Path) -> Result<Self> {
         let graph_path = dir.join("graph.json");
         let aspects_path = dir.join("aspects.json");
         let slots_path = dir.join("slots.json");
         let plans_path = dir.join("plans.json");
+        let audit_path = dir.join("audit.json");
 
         let store: GraphStore = if graph_path.exists() {
             let content = fs::read_to_string(&graph_path)
@@ -88,6 +92,15 @@ impl EcosystemGraph {
             PlanStore::default()
         };
 
+        let audit: AuditStore = if audit_path.exists() {
+            let content = fs::read_to_string(&audit_path)
+                .with_context(|| format!("Failed to read {}", audit_path.display()))?;
+            serde_json::from_str(&content)
+                .with_context(|| format!("Failed to parse {}", audit_path.display()))?
+        } else {
+            AuditStore::default()
+        };
+
         let mut ecosystem = Self {
             graph: DiGraph::new(),
             node_indices: HashMap::new(),
@@ -95,6 +108,7 @@ impl EcosystemGraph {
             aspects,
             slots,
             plans,
+            audit,
         };
 
         // Build petgraph from store
@@ -112,6 +126,7 @@ impl EcosystemGraph {
         let aspects_path = dir.join("aspects.json");
         let slots_path = dir.join("slots.json");
         let plans_path = dir.join("plans.json");
+        let audit_path = dir.join("audit.json");
 
         let graph_json = serde_json::to_string_pretty(&self.store)
             .context("Failed to serialize graph")?;
@@ -132,6 +147,11 @@ impl EcosystemGraph {
             .context("Failed to serialize plans")?;
         fs::write(&plans_path, plans_json)
             .with_context(|| format!("Failed to write {}", plans_path.display()))?;
+
+        let audit_json = serde_json::to_string_pretty(&self.audit)
+            .context("Failed to serialize audit log")?;
+        fs::write(&audit_path, audit_json)
+            .with_context(|| format!("Failed to write {}", audit_path.display()))?;
 
         Ok(())
     }

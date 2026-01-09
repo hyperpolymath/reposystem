@@ -271,6 +271,27 @@ enum Commands {
         description: Option<String>,
     },
 
+    /// Apply plans and manage execution
+    Apply {
+        /// Action: apply, undo, status
+        action: String,
+
+        /// Plan name or ID
+        name: Option<String>,
+
+        /// Dry-run mode (show what would happen)
+        #[arg(long)]
+        dry_run: bool,
+
+        /// Auto-rollback on failure
+        #[arg(long)]
+        auto_rollback: bool,
+
+        /// Skip health check after apply
+        #[arg(long)]
+        skip_health_check: bool,
+    },
+
     /// Identify weak links in ecosystem
     WeakLinks {
         /// Aspect to analyze
@@ -380,6 +401,14 @@ fn main() -> Result<()> {
                 description,
             };
             commands::plan::run(&action, name, args)
+        }
+        Commands::Apply { action, name, dry_run, auto_rollback, skip_health_check } => {
+            let args = commands::apply::ApplyArgs {
+                dry_run,
+                auto_rollback,
+                skip_health_check,
+            };
+            commands::apply::run(&action, name, args)
         }
         Commands::WeakLinks { aspect, severity } => {
             commands::weak_links::run(aspect, severity)

@@ -1103,6 +1103,140 @@ pub mod types {
     }
 
     // =========================================================================
+    // Audit Log (f4)
+    // =========================================================================
+
+    /// Result of executing a single operation
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct OpResult {
+        /// Index of the operation in the plan
+        pub op_index: usize,
+        /// Whether the operation succeeded
+        pub success: bool,
+        /// Error message if failed
+        pub error: Option<String>,
+        /// When this operation was executed
+        pub executed_at: DateTime<Utc>,
+    }
+
+    /// Result of applying a plan
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+    #[serde(rename_all = "lowercase")]
+    pub enum ApplyResult {
+        /// All operations succeeded
+        Success,
+        /// Some operations failed, partial apply
+        PartialFailure,
+        /// All operations failed
+        Failure,
+        /// Plan was rolled back (manually or auto)
+        RolledBack,
+    }
+
+    /// Audit log entry for a plan application
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct AuditEntry {
+        /// Always "AuditEntry"
+        pub kind: String,
+        /// Unique identifier: audit:<plan_id>:<timestamp>
+        pub id: String,
+        /// Plan that was applied
+        pub plan_id: String,
+        /// Overall result
+        pub result: ApplyResult,
+        /// Results for each operation
+        pub op_results: Vec<OpResult>,
+        /// When the apply started
+        pub started_at: DateTime<Utc>,
+        /// When the apply finished
+        pub finished_at: DateTime<Utc>,
+        /// Who initiated the apply
+        pub applied_by: String,
+        /// Whether auto-rollback was triggered
+        pub auto_rollback_triggered: bool,
+        /// Rollback plan ID if rollback was executed
+        pub rollback_plan_id: Option<String>,
+        /// Health check results (if performed)
+        pub health_check_passed: Option<bool>,
+        /// Any notes or warnings
+        pub notes: Vec<String>,
+    }
+
+    impl AuditEntry {
+        /// Generate a deterministic audit entry ID
+        #[must_use]
+        pub fn generate_id(plan_id: &str) -> String {
+            let plan_short = plan_id.replace("plan:", "");
+            let timestamp = Utc::now().format("%Y%m%d%H%M%S");
+            format!("audit:{}:{}", plan_short, timestamp)
+        }
+
+        /// Count successful operations
+        #[must_use]
+        pub fn success_count(&self) -> usize {
+            self.op_results.iter().filter(|r| r.success).count()
+        }
+
+        /// Count failed operations
+        #[must_use]
+        pub fn failure_count(&self) -> usize {
+            self.op_results.iter().filter(|r| !r.success).count()
+        }
+
+        /// Get all error messages
+        #[must_use]
+        pub fn errors(&self) -> Vec<&str> {
+            self.op_results
+                .iter()
+                .filter_map(|r| r.error.as_deref())
+                .collect()
+        }
+    }
+
+    /// Audit log store - persists to audit.json
+    #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+    pub struct AuditStore {
+        /// All audit entries
+        #[serde(default)]
+        pub entries: Vec<AuditEntry>,
+    }
+
+    impl AuditStore {
+        /// Get audit entries for a plan
+        #[must_use]
+        pub fn entries_for_plan(&self, plan_id: &str) -> Vec<&AuditEntry> {
+            self.entries.iter().filter(|e| e.plan_id == plan_id).collect()
+        }
+
+        /// Get the latest audit entry for a plan
+        #[must_use]
+        pub fn latest_for_plan(&self, plan_id: &str) -> Option<&AuditEntry> {
+            self.entries
+                .iter()
+                .filter(|e| e.plan_id == plan_id)
+                .max_by_key(|e| e.finished_at)
+        }
+
+        /// Get all failed applications
+        #[must_use]
+        pub fn failed_entries(&self) -> Vec<&AuditEntry> {
+            self.entries
+                .iter()
+                .filter(|e| matches!(e.result, ApplyResult::Failure | ApplyResult::PartialFailure))
+                .collect()
+        }
+
+        /// Get entries within a time range
+        #[must_use]
+        pub fn entries_between(&self, start: DateTime<Utc>, end: DateTime<Utc>) -> Vec<&AuditEntry> {
+            self.entries
+                .iter()
+                .filter(|e| e.started_at >= start && e.finished_at <= end)
+                .collect()
+        }
+    }
+
+    // =========================================================================
     // Graph Store
     // =========================================================================
 

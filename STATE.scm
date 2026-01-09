@@ -13,7 +13,7 @@
      (version . "0.1.0")
      (schema-version . "1.0")
      (created . "2025-12-31")
-     (updated . "2026-01-09-d")
+     (updated . "2026-01-09-e")
      (project . "reposystem")
      (repo . "github.com/hyperpolymath/reposystem"))
 
@@ -47,7 +47,7 @@
       ((name . "cli")
        (status . "complete")
        (completion . 100)
-       (notes . "All f1+f2+f3 commands working: scan, export, edge, group, aspect, scenario, weak-links, view, slot, provider, binding, plan"))
+       (notes . "All f1+f2+f3+f4 commands: scan, export, edge, group, aspect, scenario, weak-links, view, slot, provider, binding, plan, apply"))
       ((name . "dot-export")
        (status . "complete")
        (completion . 100)
@@ -60,6 +60,10 @@
        (status . "complete")
        (completion . 100)
        (notes . "Plan, PlanOp, PlanDiff types with rollback generation and risk assessment"))
+      ((name . "audit-store")
+       (status . "complete")
+       (completion . 100)
+       (notes . "AuditEntry, OpResult, ApplyResult types with JSON persistence"))
       ((name . "tui-view")
        (status . "complete")
        (completion . 100)
@@ -79,7 +83,12 @@
        "Plan create/list/show/diff/rollback/delete"
        "Risk assessment per plan operation"
        "Rollback plan generation"
-       "55 tests passing (9 unit + 4 integration + 42 invariant)"
+       "Apply apply/undo/status commands"
+       "Apply execution with operation-level tracking"
+       "Auto-rollback on failure"
+       "Health checks post-apply"
+       "Audit log with full execution history"
+       "63 tests passing (9 unit + 4 integration + 50 invariant)"
        "Re-import fidelity verified")))
 
     (route-to-mvp
@@ -162,6 +171,26 @@
          (status . "complete"))
         ((task . "Invariant tests for f3")
          (status . "complete"))))
+      ((id . "f4")
+       (name . "Apply + Rollback Execution")
+       (status . "complete")
+       (items
+        ((task . "AuditLog types (OpResult, ApplyResult, AuditEntry, AuditStore)")
+         (status . "complete"))
+        ((task . "Apply plan execution with operation tracking")
+         (status . "complete"))
+        ((task . "Rollback execution (manual undo)")
+         (status . "complete"))
+        ((task . "Auto-rollback on failure")
+         (status . "complete"))
+        ((task . "Health checks post-apply")
+         (status . "complete"))
+        ((task . "Apply CLI commands (apply/undo/status)")
+         (status . "complete"))
+        ((task . "AuditStore persistence (audit.json)")
+         (status . "complete"))
+        ((task . "Invariant tests for f4")
+         (status . "complete"))))
       ((id . "hello-yard")
        (name . "Hello Yard milestone")
        (status . "pending")
@@ -184,18 +213,18 @@
 
     (critical-next-actions
      (immediate
-      ((action . "Start f4 Apply + Rollback Execution design")
+      ((action . "Push f4 changes to GitHub")
        (owner . "dev")
        (blocked-by . ())))
      (this-week
       ((action . "Push to GitLab and Bitbucket mirrors")
        (owner . "dev"))
-      ((action . "Begin f4 implementation")
+      ((action . "Begin Hello Yard milestone")
        (owner . "dev")))
      (this-month
-      ((action . "Complete f4 Apply + Rollback Execution")
+      ((action . "Hello Yard milestone - one slot end-to-end")
        (owner . "dev"))
-      ((action . "Hello Yard milestone")
+      ((action . "Documentation improvements")
        (owner . "dev"))))
 
     (session-history
@@ -224,7 +253,16 @@
         "Plan CLI commands (create/list/show/diff/rollback/delete)"
         "PlanStore with JSON persistence (plans.json)"
         "Added 8 new f3 invariant tests"
-        "All 55 tests passing (9 unit + 4 integration + 42 invariant)")))
+        "Completed f4 Apply + Rollback Execution milestone"
+        "AuditEntry, OpResult, ApplyResult, AuditStore types"
+        "Apply plan execution with operation-level tracking"
+        "Rollback execution for undoing applied plans"
+        "Auto-rollback on failure with rollback plan generation"
+        "Health checks post-apply (binding validation, version checks)"
+        "Apply CLI commands (apply/undo/status)"
+        "AuditStore with JSON persistence (audit.json)"
+        "Added 8 new f4 invariant tests"
+        "All 63 tests passing (9 unit + 4 integration + 50 invariant)")))
      ((date . "2026-01-08")
       (accomplishments
        ("Implemented full scanner with gix and walkdir"

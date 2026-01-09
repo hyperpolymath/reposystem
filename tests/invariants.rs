@@ -10,9 +10,9 @@
 use chrono::Utc;
 use reposystem::graph::EcosystemGraph;
 use reposystem::types::{
-    AnnotationSource, AspectAnnotation, BindingMode, Channel, Edge, EdgeMeta, Evidence,
-    Forge, Group, ImportMeta, Polarity, Provider, ProviderType, RelationType, Repo,
-    Slot, SlotBinding, Visibility,
+    AnnotationSource, ApplyResult, AspectAnnotation, AuditEntry, AuditStore, BindingMode,
+    Channel, Edge, EdgeMeta, Evidence, Forge, Group, ImportMeta, OpResult, Polarity,
+    Provider, ProviderType, RelationType, Repo, Slot, SlotBinding, Visibility,
 };
 use std::collections::HashSet;
 use tempfile::TempDir;
@@ -1409,4 +1409,311 @@ fn test_empty_plan_store_round_trip() {
 
     assert!(loaded.plans.plans.is_empty());
     assert!(loaded.plans.diffs.is_empty());
+}
+
+// =============================================================================
+// f4 Invariant Tests - Apply + Rollback Execution
+// =============================================================================
+
+#[test]
+fn test_audit_entry_structure() {
+    // Audit entries should have all required fields
+    let entry = AuditEntry {
+        kind: "AuditEntry".into(),
+        id: "audit:plan:test:123".into(),
+        plan_id: "plan:test".into(),
+        result: ApplyResult::Success,
+        op_results: vec![
+            OpResult {
+                op_index: 0,
+                success: true,
+                error: None,
+                executed_at: Utc::now(),
+            },
+            OpResult {
+                op_index: 1,
+                success: true,
+                error: None,
+                executed_at: Utc::now(),
+            },
+        ],
+        started_at: Utc::now() - chrono::Duration::seconds(5),
+        finished_at: Utc::now(),
+        applied_by: "test".into(),
+        auto_rollback_triggered: false,
+        rollback_plan_id: None,
+        health_check_passed: Some(true),
+        notes: vec!["Test note".into()],
+    };
+
+    assert_eq!(entry.kind, "AuditEntry");
+    assert_eq!(entry.op_results.len(), 2);
+    assert!(entry.op_results.iter().all(|r| r.success));
+    assert_eq!(entry.result, ApplyResult::Success);
+}
+
+#[test]
+fn test_apply_result_variants() {
+    // All ApplyResult variants should serialize correctly
+    let results = [
+        ApplyResult::Success,
+        ApplyResult::PartialFailure,
+        ApplyResult::Failure,
+        ApplyResult::RolledBack,
+    ];
+
+    for result in results {
+        let json = serde_json::to_string(&result).unwrap();
+        let loaded: ApplyResult = serde_json::from_str(&json).unwrap();
+        assert_eq!(loaded, result);
+    }
+}
+
+#[test]
+fn test_op_result_captures_errors() {
+    // Failed operations should capture error messages
+    let failed_result = OpResult {
+        op_index: 0,
+        success: false,
+        error: Some("Provider not found: provider:missing".into()),
+        executed_at: Utc::now(),
+    };
+
+    assert!(!failed_result.success);
+    assert!(failed_result.error.is_some());
+    assert!(failed_result.error.as_ref().unwrap().contains("not found"));
+
+    let success_result = OpResult {
+        op_index: 1,
+        success: true,
+        error: None,
+        executed_at: Utc::now(),
+    };
+
+    assert!(success_result.success);
+    assert!(success_result.error.is_none());
+}
+
+#[test]
+fn test_audit_store_round_trip() {
+    let temp_dir = TempDir::new().unwrap();
+    let mut graph = EcosystemGraph::new();
+
+    // Create audit entries
+    let entry1 = AuditEntry {
+        kind: "AuditEntry".into(),
+        id: "audit:plan:test:001".into(),
+        plan_id: "plan:test:001".into(),
+        result: ApplyResult::Success,
+        op_results: vec![
+            OpResult {
+                op_index: 0,
+                success: true,
+                error: None,
+                executed_at: Utc::now(),
+            },
+        ],
+        started_at: Utc::now() - chrono::Duration::seconds(10),
+        finished_at: Utc::now() - chrono::Duration::seconds(5),
+        applied_by: "test".into(),
+        auto_rollback_triggered: false,
+        rollback_plan_id: None,
+        health_check_passed: Some(true),
+        notes: vec![],
+    };
+
+    let entry2 = AuditEntry {
+        kind: "AuditEntry".into(),
+        id: "audit:plan:test:002".into(),
+        plan_id: "plan:test:002".into(),
+        result: ApplyResult::RolledBack,
+        op_results: vec![
+            OpResult {
+                op_index: 0,
+                success: true,
+                error: None,
+                executed_at: Utc::now(),
+            },
+            OpResult {
+                op_index: 1,
+                success: false,
+                error: Some("Version mismatch".into()),
+                executed_at: Utc::now(),
+            },
+        ],
+        started_at: Utc::now() - chrono::Duration::seconds(5),
+        finished_at: Utc::now(),
+        applied_by: "test".into(),
+        auto_rollback_triggered: true,
+        rollback_plan_id: Some("rollback:plan:test:002".into()),
+        health_check_passed: None,
+        notes: vec!["Auto-rollback triggered".into()],
+    };
+
+    graph.audit.entries.push(entry1);
+    graph.audit.entries.push(entry2);
+
+    // Save
+    graph.save(temp_dir.path()).unwrap();
+
+    // Verify audit.json was created
+    assert!(temp_dir.path().join("audit.json").exists());
+
+    // Load
+    let loaded = EcosystemGraph::load(temp_dir.path()).unwrap();
+
+    // Verify entries
+    assert_eq!(loaded.audit.entries.len(), 2);
+
+    let loaded_entry1 = &loaded.audit.entries[0];
+    assert_eq!(loaded_entry1.id, "audit:plan:test:001");
+    assert_eq!(loaded_entry1.result, ApplyResult::Success);
+    assert_eq!(loaded_entry1.op_results.len(), 1);
+
+    let loaded_entry2 = &loaded.audit.entries[1];
+    assert_eq!(loaded_entry2.id, "audit:plan:test:002");
+    assert_eq!(loaded_entry2.result, ApplyResult::RolledBack);
+    assert!(loaded_entry2.auto_rollback_triggered);
+    assert!(loaded_entry2.rollback_plan_id.is_some());
+    assert_eq!(loaded_entry2.op_results.len(), 2);
+    assert!(loaded_entry2.op_results[1].error.is_some());
+}
+
+#[test]
+fn test_empty_audit_store_round_trip() {
+    let temp_dir = TempDir::new().unwrap();
+
+    let graph = EcosystemGraph::new();
+    graph.save(temp_dir.path()).unwrap();
+
+    // Verify audit.json was created
+    assert!(temp_dir.path().join("audit.json").exists());
+
+    let loaded = EcosystemGraph::load(temp_dir.path()).unwrap();
+    assert!(loaded.audit.entries.is_empty());
+}
+
+#[test]
+fn test_audit_entry_timing_integrity() {
+    // started_at should be before finished_at
+    let started = Utc::now() - chrono::Duration::seconds(10);
+    let finished = Utc::now();
+
+    let entry = AuditEntry {
+        kind: "AuditEntry".into(),
+        id: "audit:timing:test".into(),
+        plan_id: "plan:test".into(),
+        result: ApplyResult::Success,
+        op_results: vec![],
+        started_at: started,
+        finished_at: finished,
+        applied_by: "test".into(),
+        auto_rollback_triggered: false,
+        rollback_plan_id: None,
+        health_check_passed: None,
+        notes: vec![],
+    };
+
+    assert!(entry.finished_at > entry.started_at);
+    let duration = entry.finished_at - entry.started_at;
+    assert!(duration.num_seconds() >= 0);
+}
+
+#[test]
+fn test_audit_store_filter_by_plan() {
+    let mut store = AuditStore::default();
+
+    // Add entries for different plans
+    store.entries.push(AuditEntry {
+        kind: "AuditEntry".into(),
+        id: "audit:plan-a:001".into(),
+        plan_id: "plan:scenario-a".into(),
+        result: ApplyResult::Success,
+        op_results: vec![],
+        started_at: Utc::now(),
+        finished_at: Utc::now(),
+        applied_by: "test".into(),
+        auto_rollback_triggered: false,
+        rollback_plan_id: None,
+        health_check_passed: None,
+        notes: vec![],
+    });
+    store.entries.push(AuditEntry {
+        kind: "AuditEntry".into(),
+        id: "audit:plan-a:002".into(),
+        plan_id: "plan:scenario-a".into(),
+        result: ApplyResult::PartialFailure,
+        op_results: vec![],
+        started_at: Utc::now(),
+        finished_at: Utc::now(),
+        applied_by: "test".into(),
+        auto_rollback_triggered: false,
+        rollback_plan_id: None,
+        health_check_passed: None,
+        notes: vec![],
+    });
+    store.entries.push(AuditEntry {
+        kind: "AuditEntry".into(),
+        id: "audit:plan-b:001".into(),
+        plan_id: "plan:scenario-b".into(),
+        result: ApplyResult::Success,
+        op_results: vec![],
+        started_at: Utc::now(),
+        finished_at: Utc::now(),
+        applied_by: "test".into(),
+        auto_rollback_triggered: false,
+        rollback_plan_id: None,
+        health_check_passed: None,
+        notes: vec![],
+    });
+
+    // Filter by plan ID
+    let plan_a_entries: Vec<_> = store.entries.iter()
+        .filter(|e| e.plan_id.contains("scenario-a"))
+        .collect();
+    assert_eq!(plan_a_entries.len(), 2);
+
+    let plan_b_entries: Vec<_> = store.entries.iter()
+        .filter(|e| e.plan_id.contains("scenario-b"))
+        .collect();
+    assert_eq!(plan_b_entries.len(), 1);
+}
+
+#[test]
+fn test_auto_rollback_state_consistency() {
+    // When auto_rollback_triggered is true, RolledBack result should be used
+    // unless rollback itself failed
+    let entry = AuditEntry {
+        kind: "AuditEntry".into(),
+        id: "audit:rollback:test".into(),
+        plan_id: "plan:test".into(),
+        result: ApplyResult::RolledBack,
+        op_results: vec![
+            OpResult {
+                op_index: 0,
+                success: true,
+                error: None,
+                executed_at: Utc::now(),
+            },
+            OpResult {
+                op_index: 1,
+                success: false,
+                error: Some("Provider version mismatch".into()),
+                executed_at: Utc::now(),
+            },
+        ],
+        started_at: Utc::now(),
+        finished_at: Utc::now(),
+        applied_by: "test".into(),
+        auto_rollback_triggered: true,
+        rollback_plan_id: Some("rollback:plan:test".into()),
+        health_check_passed: None, // Health check not run after rollback
+        notes: vec!["Auto-rollback triggered after operation 2 failed".into()],
+    };
+
+    assert!(entry.auto_rollback_triggered);
+    assert!(entry.rollback_plan_id.is_some());
+    assert_eq!(entry.result, ApplyResult::RolledBack);
+    // Health check should be None when rolled back
+    assert!(entry.health_check_passed.is_none());
 }

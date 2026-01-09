@@ -3,6 +3,7 @@
 //
 //! Command implementations
 
+pub mod apply;
 pub mod aspect;
 pub mod completions;
 pub mod config;

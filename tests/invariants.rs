@@ -10,8 +10,9 @@
 use chrono::Utc;
 use reposystem::graph::EcosystemGraph;
 use reposystem::types::{
-    AnnotationSource, AspectAnnotation, Channel, Edge, EdgeMeta, Evidence,
-    Forge, Group, ImportMeta, Polarity, RelationType, Repo, Visibility,
+    AnnotationSource, AspectAnnotation, BindingMode, Channel, Edge, EdgeMeta, Evidence,
+    Forge, Group, ImportMeta, Polarity, Provider, ProviderType, RelationType, Repo,
+    Slot, SlotBinding, Visibility,
 };
 use std::collections::HashSet;
 use tempfile::TempDir;
@@ -570,4 +571,453 @@ fn test_group_members_can_be_validated() {
             member_id
         );
     }
+}
+
+// =============================================================================
+// f2: Slot/Provider Invariant Tests
+// =============================================================================
+
+fn make_slot(category: &str, name: &str) -> Slot {
+    Slot {
+        kind: "Slot".into(),
+        id: Slot::generate_id(category, name),
+        name: name.into(),
+        category: category.into(),
+        description: format!("Test {} slot", name),
+        interface_version: Some("v1".into()),
+        required_capabilities: vec!["basic".into()],
+    }
+}
+
+fn make_provider(slot_id: &str, name: &str, provider_type: ProviderType) -> Provider {
+    Provider {
+        kind: "Provider".into(),
+        id: Provider::generate_id(slot_id, name),
+        name: name.into(),
+        slot_id: slot_id.into(),
+        provider_type,
+        repo_id: None,
+        external_uri: None,
+        interface_version: Some("v1".into()),
+        capabilities: vec!["basic".into()],
+        priority: 0,
+        is_fallback: false,
+    }
+}
+
+fn make_binding(consumer_id: &str, slot_id: &str, provider_id: &str) -> SlotBinding {
+    SlotBinding {
+        kind: "SlotBinding".into(),
+        id: SlotBinding::generate_id(consumer_id, slot_id),
+        consumer_id: consumer_id.into(),
+        slot_id: slot_id.into(),
+        provider_id: provider_id.into(),
+        mode: BindingMode::Manual,
+        created_at: Utc::now(),
+        created_by: "test".into(),
+    }
+}
+
+#[test]
+fn test_slot_id_determinism() {
+    let id1 = Slot::generate_id("container", "runtime");
+    let id2 = Slot::generate_id("container", "runtime");
+    let id3 = Slot::generate_id("container", "runtime");
+
+    assert_eq!(id1, id2);
+    assert_eq!(id2, id3);
+    assert_eq!(id1, "slot:container.runtime");
+}
+
+#[test]
+fn test_slot_id_uniqueness() {
+    let id1 = Slot::generate_id("container", "runtime");
+    let id2 = Slot::generate_id("container", "builder");
+    let id3 = Slot::generate_id("router", "runtime");
+
+    let ids: HashSet<_> = [id1, id2, id3].into_iter().collect();
+    assert_eq!(ids.len(), 3, "All slot IDs should be unique");
+}
+
+#[test]
+fn test_provider_id_determinism() {
+    let id1 = Provider::generate_id("slot:container.runtime", "podman");
+    let id2 = Provider::generate_id("slot:container.runtime", "podman");
+
+    assert_eq!(id1, id2);
+    assert!(id1.starts_with("provider:"));
+}
+
+#[test]
+fn test_provider_id_uniqueness() {
+    let id1 = Provider::generate_id("slot:container.runtime", "podman");
+    let id2 = Provider::generate_id("slot:container.runtime", "docker");
+    let id3 = Provider::generate_id("slot:router.core", "podman");
+
+    let ids: HashSet<_> = [id1, id2, id3].into_iter().collect();
+    assert_eq!(ids.len(), 3, "All provider IDs should be unique");
+}
+
+#[test]
+fn test_binding_id_determinism() {
+    let id1 = SlotBinding::generate_id("repo:gh:test/app", "slot:container.runtime");
+    let id2 = SlotBinding::generate_id("repo:gh:test/app", "slot:container.runtime");
+
+    assert_eq!(id1, id2);
+    assert!(id1.starts_with("binding:"));
+}
+
+#[test]
+fn test_slot_store_providers_for_slot() {
+    let mut graph = EcosystemGraph::new();
+
+    let slot = make_slot("container", "runtime");
+    graph.slots.slots.push(slot.clone());
+
+    let provider1 = make_provider(&slot.id, "podman", ProviderType::Local);
+    let provider2 = make_provider(&slot.id, "docker", ProviderType::Local);
+    let other_slot = make_slot("router", "core");
+    let provider3 = make_provider(&other_slot.id, "cadre", ProviderType::Ecosystem);
+
+    graph.slots.slots.push(other_slot);
+    graph.slots.providers.push(provider1);
+    graph.slots.providers.push(provider2);
+    graph.slots.providers.push(provider3);
+
+    let providers = graph.slots.providers_for_slot(&slot.id);
+    assert_eq!(providers.len(), 2);
+    assert!(providers.iter().any(|p| p.name == "podman"));
+    assert!(providers.iter().any(|p| p.name == "docker"));
+}
+
+#[test]
+fn test_slot_store_compatibility_check() {
+    let mut graph = EcosystemGraph::new();
+
+    let slot = Slot {
+        kind: "Slot".into(),
+        id: "slot:container.runtime".into(),
+        name: "runtime".into(),
+        category: "container".into(),
+        description: "Container runtime".into(),
+        interface_version: Some("v1".into()),
+        required_capabilities: vec!["run".into(), "build".into()],
+    };
+    graph.slots.slots.push(slot);
+
+    // Compatible provider
+    let provider1 = Provider {
+        kind: "Provider".into(),
+        id: "provider:container.runtime:podman".into(),
+        name: "podman".into(),
+        slot_id: "slot:container.runtime".into(),
+        provider_type: ProviderType::Local,
+        repo_id: None,
+        external_uri: None,
+        interface_version: Some("v1".into()),
+        capabilities: vec!["run".into(), "build".into(), "push".into()],
+        priority: 10,
+        is_fallback: false,
+    };
+    graph.slots.providers.push(provider1);
+
+    // Incompatible provider (missing capability)
+    let provider2 = Provider {
+        kind: "Provider".into(),
+        id: "provider:container.runtime:minimal".into(),
+        name: "minimal".into(),
+        slot_id: "slot:container.runtime".into(),
+        provider_type: ProviderType::Stub,
+        repo_id: None,
+        external_uri: None,
+        interface_version: Some("v1".into()),
+        capabilities: vec!["run".into()], // Missing "build"
+        priority: 0,
+        is_fallback: true,
+    };
+    graph.slots.providers.push(provider2);
+
+    // Check compatible provider
+    let compat1 = graph.slots.check_compatibility(
+        "slot:container.runtime",
+        "provider:container.runtime:podman"
+    );
+    assert!(compat1.compatible, "podman should be compatible");
+    assert!(compat1.version_match);
+    assert!(compat1.capabilities_missing.is_empty());
+
+    // Check incompatible provider
+    let compat2 = graph.slots.check_compatibility(
+        "slot:container.runtime",
+        "provider:container.runtime:minimal"
+    );
+    assert!(!compat2.compatible, "minimal should be incompatible");
+    assert!(compat2.capabilities_missing.contains(&"build".into()));
+}
+
+#[test]
+fn test_slot_store_bindings() {
+    let mut graph = EcosystemGraph::new();
+
+    let repo = make_repo("app", Forge::GitHub, "test");
+    graph.add_repo(repo.clone());
+
+    let slot = make_slot("container", "runtime");
+    graph.slots.slots.push(slot.clone());
+
+    let provider = make_provider(&slot.id, "podman", ProviderType::Local);
+    graph.slots.providers.push(provider.clone());
+
+    let binding = make_binding(&repo.id, &slot.id, &provider.id);
+    graph.slots.bindings.push(binding.clone());
+
+    // Test get_binding
+    let retrieved = graph.slots.get_binding(&repo.id, &slot.id);
+    assert!(retrieved.is_some());
+    assert_eq!(retrieved.unwrap().provider_id, provider.id);
+
+    // Test bindings_for_consumer
+    let consumer_bindings = graph.slots.bindings_for_consumer(&repo.id);
+    assert_eq!(consumer_bindings.len(), 1);
+
+    // Test bindings_for_provider
+    let provider_bindings = graph.slots.bindings_for_provider(&provider.id);
+    assert_eq!(provider_bindings.len(), 1);
+}
+
+#[test]
+fn test_slots_round_trip() {
+    let temp_dir = TempDir::new().unwrap();
+    let mut graph = EcosystemGraph::new();
+
+    // Add repos
+    let repo_a = make_repo("app", Forge::GitHub, "test");
+    let repo_b = make_repo("runtime-impl", Forge::GitHub, "test");
+    graph.add_repo(repo_a.clone());
+    graph.add_repo(repo_b.clone());
+
+    // Add slot
+    let slot = Slot {
+        kind: "Slot".into(),
+        id: "slot:container.runtime".into(),
+        name: "runtime".into(),
+        category: "container".into(),
+        description: "Container runtime slot".into(),
+        interface_version: Some("v1".into()),
+        required_capabilities: vec!["run".into(), "build".into()],
+    };
+    graph.slots.slots.push(slot.clone());
+
+    // Add providers
+    let provider1 = Provider {
+        kind: "Provider".into(),
+        id: "provider:container.runtime:podman".into(),
+        name: "podman".into(),
+        slot_id: slot.id.clone(),
+        provider_type: ProviderType::Local,
+        repo_id: Some(repo_b.id.clone()),
+        external_uri: None,
+        interface_version: Some("v1".into()),
+        capabilities: vec!["run".into(), "build".into()],
+        priority: 10,
+        is_fallback: false,
+    };
+    let provider2 = Provider {
+        kind: "Provider".into(),
+        id: "provider:container.runtime:cerro-torre".into(),
+        name: "cerro-torre".into(),
+        slot_id: slot.id.clone(),
+        provider_type: ProviderType::Ecosystem,
+        repo_id: None,
+        external_uri: Some("https://cerro-torre.example.com".into()),
+        interface_version: Some("v1".into()),
+        capabilities: vec!["run".into(), "build".into()],
+        priority: 5,
+        is_fallback: true,
+    };
+    graph.slots.providers.push(provider1.clone());
+    graph.slots.providers.push(provider2);
+
+    // Add binding
+    let binding = SlotBinding {
+        kind: "SlotBinding".into(),
+        id: SlotBinding::generate_id(&repo_a.id, &slot.id),
+        consumer_id: repo_a.id.clone(),
+        slot_id: slot.id.clone(),
+        provider_id: provider1.id.clone(),
+        mode: BindingMode::Manual,
+        created_at: Utc::now(),
+        created_by: "test".into(),
+    };
+    graph.slots.bindings.push(binding);
+
+    // Save
+    graph.save(temp_dir.path()).unwrap();
+
+    // Verify slots.json was created
+    assert!(temp_dir.path().join("slots.json").exists());
+
+    // Load
+    let loaded = EcosystemGraph::load(temp_dir.path()).unwrap();
+
+    // Verify slots
+    assert_eq!(loaded.slots.slots.len(), 1);
+    let loaded_slot = &loaded.slots.slots[0];
+    assert_eq!(loaded_slot.id, slot.id);
+    assert_eq!(loaded_slot.name, "runtime");
+    assert_eq!(loaded_slot.required_capabilities.len(), 2);
+
+    // Verify providers
+    assert_eq!(loaded.slots.providers.len(), 2);
+    let loaded_provider = loaded.slots.providers.iter()
+        .find(|p| p.name == "podman")
+        .expect("podman provider should exist");
+    assert_eq!(loaded_provider.repo_id, Some(repo_b.id.clone()));
+    assert_eq!(loaded_provider.priority, 10);
+
+    // Verify bindings
+    assert_eq!(loaded.slots.bindings.len(), 1);
+    let loaded_binding = &loaded.slots.bindings[0];
+    assert_eq!(loaded_binding.consumer_id, repo_a.id);
+    assert_eq!(loaded_binding.provider_id, provider1.id);
+    assert_eq!(loaded_binding.mode, BindingMode::Manual);
+}
+
+#[test]
+fn test_provider_substitution_preserves_repo_identity() {
+    // Invariant from ROADMAP i2: Changing a provider changes edges, not repo identity
+    let mut graph = EcosystemGraph::new();
+
+    let consumer = make_repo("app", Forge::GitHub, "test");
+    let provider_repo1 = make_repo("podman-impl", Forge::GitHub, "test");
+    let provider_repo2 = make_repo("docker-impl", Forge::GitHub, "test");
+    graph.add_repo(consumer.clone());
+    graph.add_repo(provider_repo1.clone());
+    graph.add_repo(provider_repo2.clone());
+
+    let slot = make_slot("container", "runtime");
+    graph.slots.slots.push(slot.clone());
+
+    let provider1 = Provider {
+        kind: "Provider".into(),
+        id: Provider::generate_id(&slot.id, "podman"),
+        name: "podman".into(),
+        slot_id: slot.id.clone(),
+        provider_type: ProviderType::Local,
+        repo_id: Some(provider_repo1.id.clone()),
+        external_uri: None,
+        interface_version: Some("v1".into()),
+        capabilities: vec!["basic".into()],
+        priority: 10,
+        is_fallback: false,
+    };
+    let provider2 = Provider {
+        kind: "Provider".into(),
+        id: Provider::generate_id(&slot.id, "docker"),
+        name: "docker".into(),
+        slot_id: slot.id.clone(),
+        provider_type: ProviderType::Local,
+        repo_id: Some(provider_repo2.id.clone()),
+        external_uri: None,
+        interface_version: Some("v1".into()),
+        capabilities: vec!["basic".into()],
+        priority: 5,
+        is_fallback: false,
+    };
+    graph.slots.providers.push(provider1.clone());
+    graph.slots.providers.push(provider2.clone());
+
+    // Create initial binding
+    let binding1 = make_binding(&consumer.id, &slot.id, &provider1.id);
+    let binding_id = binding1.id.clone();
+    graph.slots.bindings.push(binding1);
+
+    // Verify consumer repo identity before switch
+    let consumer_before = graph.get_repo(&consumer.id).unwrap();
+    let consumer_id_before = consumer_before.id.clone();
+
+    // Switch provider by updating binding
+    graph.slots.bindings.retain(|b| b.id != binding_id);
+    let binding2 = make_binding(&consumer.id, &slot.id, &provider2.id);
+    graph.slots.bindings.push(binding2);
+
+    // Verify consumer repo identity unchanged after switch
+    let consumer_after = graph.get_repo(&consumer.id).unwrap();
+    assert_eq!(consumer_after.id, consumer_id_before, "Consumer repo ID should not change when switching providers");
+
+    // Verify binding changed
+    let current_binding = graph.slots.get_binding(&consumer.id, &slot.id).unwrap();
+    assert_eq!(current_binding.provider_id, provider2.id);
+}
+
+#[test]
+fn test_empty_slot_store_round_trip() {
+    let temp_dir = TempDir::new().unwrap();
+
+    let graph = EcosystemGraph::new();
+    graph.save(temp_dir.path()).unwrap();
+
+    let loaded = EcosystemGraph::load(temp_dir.path()).unwrap();
+
+    assert!(loaded.slots.slots.is_empty());
+    assert!(loaded.slots.providers.is_empty());
+    assert!(loaded.slots.bindings.is_empty());
+}
+
+#[test]
+fn test_dot_export_includes_slots_overlay() {
+    let mut graph = EcosystemGraph::new();
+
+    // Add repos
+    let consumer = make_repo("webapp", Forge::GitHub, "test");
+    let impl_repo = make_repo("auth-impl", Forge::GitHub, "test");
+    graph.add_repo(consumer.clone());
+    graph.add_repo(impl_repo.clone());
+
+    // Add slot
+    let slot = make_slot("auth", "provider");
+    graph.slots.slots.push(slot.clone());
+
+    // Add provider linked to impl_repo
+    let provider = Provider {
+        kind: "Provider".into(),
+        id: Provider::generate_id(&slot.id, "keycloak"),
+        name: "keycloak".into(),
+        slot_id: slot.id.clone(),
+        provider_type: ProviderType::Local,
+        repo_id: Some(impl_repo.id.clone()),
+        external_uri: None,
+        interface_version: Some("v1".into()),
+        capabilities: vec!["oauth".into(), "oidc".into()],
+        priority: 10,
+        is_fallback: false,
+    };
+    graph.slots.providers.push(provider.clone());
+
+    // Add binding
+    let binding = make_binding(&consumer.id, &slot.id, &provider.id);
+    graph.slots.bindings.push(binding);
+
+    // Export to DOT
+    let dot = graph.to_dot();
+
+    // Verify slots are represented as diamonds
+    assert!(dot.contains("shape=diamond"), "Slots should be diamond-shaped");
+    assert!(dot.contains(&slot.id), "Slot ID should appear in DOT");
+    assert!(dot.contains("lightyellow"), "Slots should have lightyellow fill");
+
+    // Verify providers are represented as hexagons
+    assert!(dot.contains("shape=hexagon"), "Providers should be hexagon-shaped");
+    assert!(dot.contains(&provider.id), "Provider ID should appear in DOT");
+    assert!(dot.contains("lightblue"), "Non-fallback providers should have lightblue fill");
+
+    // Verify provider-to-slot relationship
+    assert!(dot.contains("satisfies"), "Provider should show 'satisfies' relationship to slot");
+
+    // Verify provider-to-repo implementation link
+    assert!(dot.contains("impl"), "Provider should show 'impl' link to repo");
+
+    // Verify bindings
+    assert!(dot.contains("darkgreen"), "Bindings should be dark green");
+    assert!(dot.contains("uses (manual)"), "Binding should show mode");
 }

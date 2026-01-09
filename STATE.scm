@@ -13,7 +13,7 @@
      (version . "0.1.0")
      (schema-version . "1.0")
      (created . "2025-12-31")
-     (updated . "2026-01-09-b")
+     (updated . "2026-01-09-c")
      (project . "reposystem")
      (repo . "github.com/hyperpolymath/reposystem"))
 
@@ -47,24 +47,32 @@
       ((name . "cli")
        (status . "complete")
        (completion . 100)
-       (notes . "All f1 commands working: scan, export, edge, group, aspect, scenario, weak-links, view"))
+       (notes . "All f1+f2 commands working: scan, export, edge, group, aspect, scenario, weak-links, view, slot, provider, binding"))
       ((name . "dot-export")
        (status . "complete")
-       (completion . 100))
+       (completion . 100)
+       (notes . "Includes slots/providers overlay"))
+      ((name . "slots-registry")
+       (status . "complete")
+       (completion . 100)
+       (notes . "Slot, Provider, Binding types with compatibility checking"))
       ((name . "tui-view")
        (status . "complete")
        (completion . 100)
        (notes . "Ratatui TUI with 4 tabs, navigation, detail view")))
      (working-features
       ("Scan 400+ repositories from local clones"
-       "DOT and JSON export"
+       "DOT and JSON export with slots/providers overlay"
        "Edge add/remove/list"
        "Group create/add/remove/delete/list/show"
        "Aspect tag/remove/list/show/filter"
        "Scenario create/delete/list/show/compare"
        "Weak links detection (risk annotations, SPOFs, missing evidence)"
        "Interactive TUI view with tabs and detail panels"
-       "35 tests passing (9 unit + 4 integration + 22 invariant)"
+       "Slot create/delete/list/show"
+       "Provider create/delete/list/show with compatibility checking"
+       "Binding bind/unbind/list/show"
+       "47 tests passing (9 unit + 4 integration + 34 invariant)"
        "Re-import fidelity verified")))
 
     (route-to-mvp
@@ -105,7 +113,28 @@
          (status . "complete"))))
       ((id . "f2")
        (name . "Slots/Providers Registry")
-       (status . "pending"))
+       (status . "complete")
+       (items
+        ((task . "Slot type definitions")
+         (status . "complete"))
+        ((task . "Provider type definitions")
+         (status . "complete"))
+        ((task . "SlotBinding type definitions")
+         (status . "complete"))
+        ((task . "SlotStore registry with persistence")
+         (status . "complete"))
+        ((task . "Compatibility checking (version + capabilities)")
+         (status . "complete"))
+        ((task . "Slot CLI commands (create/delete/list/show)")
+         (status . "complete"))
+        ((task . "Provider CLI commands (create/delete/list/show)")
+         (status . "complete"))
+        ((task . "Binding CLI commands (bind/unbind/list/show)")
+         (status . "complete"))
+        ((task . "Graph overlay in DOT export")
+         (status . "complete"))
+        ((task . "Invariant tests for f2")
+         (status . "complete"))))
       ((id . "f3")
        (name . "Plan Generation + Dry-Run")
        (status . "pending"))
@@ -131,16 +160,16 @@
 
     (critical-next-actions
      (immediate
-      ((action . "Start f2 slots/providers registry design")
+      ((action . "Start f3 Plan Generation + Dry-Run design")
        (owner . "dev")
        (blocked-by . ())))
      (this-week
       ((action . "Push to GitLab and Bitbucket mirrors")
        (owner . "dev"))
-      ((action . "Begin f2 implementation")
+      ((action . "Begin f3 implementation")
        (owner . "dev")))
      (this-month
-      ((action . "Complete f2 slots/providers registry")
+      ((action . "Complete f3 Plan Generation + Dry-Run")
        (owner . "dev"))
       ((action . "Hello Yard milestone")
        (owner . "dev"))))
@@ -157,7 +186,14 @@
         "Graph determinism: repo/edge ID generation, idempotent operations"
         "Tag provenance: valid source metadata, aspect validation, weight bounds"
         "Export fidelity: JSON/DOT round-trip, empty graph handling, scenarios"
-        "All 35 tests passing (9 unit + 4 integration + 22 invariant)"))))
+        "Completed f2 slots/providers registry milestone"
+        "Slot, Provider, SlotBinding types with deterministic IDs"
+        "SlotStore with JSON persistence (slots.json)"
+        "Compatibility checking (version + capabilities)"
+        "Slot/Provider/Binding CLI commands"
+        "DOT export with slots/providers overlay (diamonds, hexagons, bindings)"
+        "Added 12 new f2 invariant tests"
+        "All 47 tests passing (9 unit + 4 integration + 34 invariant)")))
      ((date . "2026-01-08")
       (accomplishments
        ("Implemented full scanner with gix and walkdir"

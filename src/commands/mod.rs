@@ -11,5 +11,6 @@ pub mod export;
 pub mod group;
 pub mod scan;
 pub mod scenario;
+pub mod slot;
 pub mod view;
 pub mod weak_links;

@@ -170,6 +170,90 @@ enum Commands {
         base: Option<String>,
     },
 
+    /// Manage slots (swappable capabilities)
+    Slot {
+        /// Action: create, delete, list, show
+        action: String,
+
+        /// Slot name
+        name: Option<String>,
+
+        /// Slot category (e.g., container, router, auth)
+        #[arg(long)]
+        category: Option<String>,
+
+        /// Interface version
+        #[arg(long)]
+        version: Option<String>,
+
+        /// Description
+        #[arg(long)]
+        description: Option<String>,
+
+        /// Required capabilities (comma-separated)
+        #[arg(long)]
+        capabilities: Option<String>,
+    },
+
+    /// Manage providers (slot implementations)
+    Provider {
+        /// Action: create, delete, list, show
+        action: String,
+
+        /// Provider name
+        name: Option<String>,
+
+        /// Slot ID this provider satisfies
+        #[arg(long)]
+        slot: Option<String>,
+
+        /// Provider type: local, ecosystem, external, stub
+        #[arg(long, rename_all = "lowercase")]
+        provider_type: Option<String>,
+
+        /// Repository that implements this provider
+        #[arg(long)]
+        repo: Option<String>,
+
+        /// External URI (for ecosystem/external providers)
+        #[arg(long)]
+        uri: Option<String>,
+
+        /// Interface version
+        #[arg(long)]
+        version: Option<String>,
+
+        /// Capabilities (comma-separated)
+        #[arg(long)]
+        capabilities: Option<String>,
+
+        /// Priority for auto-selection (higher = preferred)
+        #[arg(long)]
+        priority: Option<i32>,
+
+        /// Mark as fallback provider
+        #[arg(long)]
+        fallback: bool,
+    },
+
+    /// Manage slot bindings (consumer -> provider)
+    Binding {
+        /// Action: bind, unbind, list, show
+        action: String,
+
+        /// Consumer repository
+        #[arg(long)]
+        consumer: Option<String>,
+
+        /// Slot ID
+        #[arg(long)]
+        slot: Option<String>,
+
+        /// Provider ID or name
+        #[arg(long)]
+        provider: Option<String>,
+    },
+
     /// Identify weak links in ecosystem
     WeakLinks {
         /// Aspect to analyze
@@ -241,6 +325,36 @@ fn main() -> Result<()> {
         }
         Commands::Scenario { action, name, base } => {
             commands::scenario::run(&action, name, base)
+        }
+        Commands::Slot { action, name, category, version, description, capabilities } => {
+            let args = commands::slot::SlotArgs {
+                category,
+                version,
+                description,
+                capabilities,
+            };
+            commands::slot::run_slot(&action, name, args)
+        }
+        Commands::Provider { action, name, slot, provider_type, repo, uri, version, capabilities, priority, fallback } => {
+            let args = commands::slot::ProviderArgs {
+                slot,
+                provider_type,
+                repo,
+                uri,
+                version,
+                capabilities,
+                priority,
+                fallback,
+            };
+            commands::slot::run_provider(&action, name, args)
+        }
+        Commands::Binding { action, consumer, slot, provider } => {
+            let args = commands::slot::BindingArgs {
+                consumer,
+                slot,
+                provider,
+            };
+            commands::slot::run_binding(&action, args)
         }
         Commands::WeakLinks { aspect, severity } => {
             commands::weak_links::run(aspect, severity)

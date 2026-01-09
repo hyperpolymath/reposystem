@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 //! Graph data structures and algorithms for the ecosystem graph
 
-use crate::types::{AspectStore, Edge, GraphStore, Group, Repo};
+use crate::types::{AspectStore, Edge, GraphStore, Group, Repo, SlotStore};
 use anyhow::{Context, Result};
 use petgraph::graph::{DiGraph, NodeIndex};
 use std::collections::HashMap;
@@ -19,6 +19,8 @@ pub struct EcosystemGraph {
     pub store: GraphStore,
     /// Aspect definitions and annotations
     pub aspects: AspectStore,
+    /// Slot/provider registry
+    pub slots: SlotStore,
 }
 
 impl Default for EcosystemGraph {
@@ -36,13 +38,15 @@ impl EcosystemGraph {
             node_indices: HashMap::new(),
             store: GraphStore::default(),
             aspects: AspectStore::default(),
+            slots: SlotStore::default(),
         }
     }
 
-    /// Load graph from a directory containing graph.json and aspects.json
+    /// Load graph from a directory containing graph.json, aspects.json, and slots.json
     pub fn load(dir: &Path) -> Result<Self> {
         let graph_path = dir.join("graph.json");
         let aspects_path = dir.join("aspects.json");
+        let slots_path = dir.join("slots.json");
 
         let store: GraphStore = if graph_path.exists() {
             let content = fs::read_to_string(&graph_path)
@@ -62,11 +66,21 @@ impl EcosystemGraph {
             AspectStore::default()
         };
 
+        let slots: SlotStore = if slots_path.exists() {
+            let content = fs::read_to_string(&slots_path)
+                .with_context(|| format!("Failed to read {}", slots_path.display()))?;
+            serde_json::from_str(&content)
+                .with_context(|| format!("Failed to parse {}", slots_path.display()))?
+        } else {
+            SlotStore::default()
+        };
+
         let mut ecosystem = Self {
             graph: DiGraph::new(),
             node_indices: HashMap::new(),
             store,
             aspects,
+            slots,
         };
 
         // Build petgraph from store
@@ -82,6 +96,7 @@ impl EcosystemGraph {
 
         let graph_path = dir.join("graph.json");
         let aspects_path = dir.join("aspects.json");
+        let slots_path = dir.join("slots.json");
 
         let graph_json = serde_json::to_string_pretty(&self.store)
             .context("Failed to serialize graph")?;
@@ -92,6 +107,11 @@ impl EcosystemGraph {
             .context("Failed to serialize aspects")?;
         fs::write(&aspects_path, aspects_json)
             .with_context(|| format!("Failed to write {}", aspects_path.display()))?;
+
+        let slots_json = serde_json::to_string_pretty(&self.slots)
+            .context("Failed to serialize slots")?;
+        fs::write(&slots_path, slots_json)
+            .with_context(|| format!("Failed to write {}", slots_path.display()))?;
 
         Ok(())
     }
@@ -275,6 +295,66 @@ impl EcosystemGraph {
                 dot.push_str(&format!("    \"{}\";\n", member));
             }
             dot.push_str("  }\n");
+        }
+
+        // Add slots as diamond nodes
+        if !self.slots.slots.is_empty() {
+            dot.push_str("\n  // Slots (diamond nodes)\n");
+            for slot in &self.slots.slots {
+                let label = format!("{}\\n[{}]", slot.name, slot.category);
+                dot.push_str(&format!(
+                    "  \"{}\" [label=\"{}\", shape=diamond, style=filled, fillcolor=lightyellow];\n",
+                    slot.id, label
+                ));
+            }
+        }
+
+        // Add providers as hexagon nodes
+        if !self.slots.providers.is_empty() {
+            dot.push_str("\n  // Providers (hexagon nodes)\n");
+            for provider in &self.slots.providers {
+                let type_str = match provider.provider_type {
+                    crate::types::ProviderType::Local => "local",
+                    crate::types::ProviderType::Ecosystem => "eco",
+                    crate::types::ProviderType::External => "ext",
+                    crate::types::ProviderType::Stub => "stub",
+                };
+                let label = format!("{}\\n({})", provider.name, type_str);
+                let fillcolor = if provider.is_fallback { "lightgray" } else { "lightblue" };
+                dot.push_str(&format!(
+                    "  \"{}\" [label=\"{}\", shape=hexagon, style=filled, fillcolor={}];\n",
+                    provider.id, label, fillcolor
+                ));
+                // Edge from provider to slot it satisfies
+                dot.push_str(&format!(
+                    "  \"{}\" -> \"{}\" [style=dotted, arrowhead=none, label=\"satisfies\"];\n",
+                    provider.id, provider.slot_id
+                ));
+                // Edge from provider to repo if local
+                if let Some(ref repo_id) = provider.repo_id {
+                    dot.push_str(&format!(
+                        "  \"{}\" -> \"{}\" [style=dashed, label=\"impl\"];\n",
+                        provider.id, repo_id
+                    ));
+                }
+            }
+        }
+
+        // Add bindings as edges from consumers to providers
+        if !self.slots.bindings.is_empty() {
+            dot.push_str("\n  // Slot bindings (consumer -> provider)\n");
+            for binding in &self.slots.bindings {
+                let mode_str = match binding.mode {
+                    crate::types::BindingMode::Manual => "manual",
+                    crate::types::BindingMode::Auto => "auto",
+                    crate::types::BindingMode::Scenario => "scenario",
+                    crate::types::BindingMode::Default => "default",
+                };
+                dot.push_str(&format!(
+                    "  \"{}\" -> \"{}\" [style=bold, color=darkgreen, label=\"uses ({})\"];\n",
+                    binding.consumer_id, binding.provider_id, mode_str
+                ));
+            }
         }
 
         dot.push_str("}\n");

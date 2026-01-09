@@ -487,6 +487,270 @@ pub mod types {
     }
 
     // =========================================================================
+    // Slots and Providers (f2)
+    // =========================================================================
+
+    /// A slot represents a swappable capability in the ecosystem.
+    /// Examples: container.runtime, router.core, auth.provider
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct Slot {
+        /// Always "Slot"
+        pub kind: String,
+        /// Unique identifier: slot:<category>.<name>
+        pub id: String,
+        /// Human-readable name
+        pub name: String,
+        /// Slot category (e.g., "container", "router", "auth")
+        pub category: String,
+        /// Description of what this slot provides
+        pub description: String,
+        /// Interface version pattern (e.g., "v1", ">=1.0")
+        #[serde(default)]
+        pub interface_version: Option<String>,
+        /// Required capabilities
+        #[serde(default)]
+        pub required_capabilities: Vec<String>,
+    }
+
+    impl Slot {
+        /// Generate a deterministic slot ID
+        #[must_use]
+        pub fn generate_id(category: &str, name: &str) -> String {
+            format!("slot:{}.{}", category.to_lowercase(), name.to_lowercase())
+        }
+    }
+
+    /// A provider implements a slot's capability.
+    /// Can be local (repo-based) or external (ecosystem service)
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct Provider {
+        /// Always "Provider"
+        pub kind: String,
+        /// Unique identifier: provider:<slot_id>:<name>
+        pub id: String,
+        /// Human-readable name
+        pub name: String,
+        /// Which slot this provider satisfies
+        pub slot_id: String,
+        /// Provider type
+        pub provider_type: ProviderType,
+        /// Repository that implements this provider (if local)
+        pub repo_id: Option<String>,
+        /// External URI (if ecosystem/external)
+        pub external_uri: Option<String>,
+        /// Interface version this provider implements
+        #[serde(default)]
+        pub interface_version: Option<String>,
+        /// Capabilities this provider offers
+        #[serde(default)]
+        pub capabilities: Vec<String>,
+        /// Priority for auto-selection (higher = preferred)
+        #[serde(default)]
+        pub priority: i32,
+        /// Whether this is a fallback provider
+        #[serde(default)]
+        pub is_fallback: bool,
+    }
+
+    impl Provider {
+        /// Generate a deterministic provider ID
+        #[must_use]
+        pub fn generate_id(slot_id: &str, name: &str) -> String {
+            let slot_short = slot_id.replace("slot:", "");
+            format!("provider:{}:{}", slot_short, name.to_lowercase())
+        }
+    }
+
+    /// Provider type classification
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+    #[serde(rename_all = "lowercase")]
+    pub enum ProviderType {
+        /// Provided by a local repository
+        Local,
+        /// Provided by an ecosystem service
+        Ecosystem,
+        /// External service (not in ecosystem)
+        External,
+        /// Stub/mock for testing
+        Stub,
+    }
+
+    /// A binding connects a consumer (repo) to a slot via a specific provider.
+    /// This represents "repo X uses provider Y for slot Z"
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct SlotBinding {
+        /// Always "SlotBinding"
+        pub kind: String,
+        /// Unique identifier: binding:<consumer_id>:<slot_id>
+        pub id: String,
+        /// Consumer repository ID
+        pub consumer_id: String,
+        /// Slot being consumed
+        pub slot_id: String,
+        /// Currently bound provider
+        pub provider_id: String,
+        /// Binding mode
+        pub mode: BindingMode,
+        /// When this binding was created
+        pub created_at: DateTime<Utc>,
+        /// Who created this binding
+        pub created_by: String,
+    }
+
+    impl SlotBinding {
+        /// Generate a deterministic binding ID
+        #[must_use]
+        pub fn generate_id(consumer_id: &str, slot_id: &str) -> String {
+            let consumer_short = consumer_id.replace("repo:", "").replace('/', "-").replace(':', "-");
+            let slot_short = slot_id.replace("slot:", "");
+            format!("binding:{}:{}", consumer_short, slot_short)
+        }
+    }
+
+    /// How a slot binding was established
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+    #[serde(rename_all = "lowercase")]
+    pub enum BindingMode {
+        /// Explicitly set by user
+        Manual,
+        /// Auto-selected based on priority/compatibility
+        Auto,
+        /// Inherited from scenario
+        Scenario,
+        /// Default/fallback binding
+        Default,
+    }
+
+    /// Compatibility check result
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct CompatibilityResult {
+        /// Whether compatible
+        pub compatible: bool,
+        /// Version match status
+        pub version_match: bool,
+        /// Capabilities satisfied
+        pub capabilities_satisfied: Vec<String>,
+        /// Capabilities missing
+        pub capabilities_missing: Vec<String>,
+        /// Human-readable reason
+        pub reason: String,
+    }
+
+    /// Slot registry store
+    #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+    pub struct SlotStore {
+        /// All slot definitions
+        #[serde(default)]
+        pub slots: Vec<Slot>,
+        /// All provider definitions
+        #[serde(default)]
+        pub providers: Vec<Provider>,
+        /// All slot bindings
+        #[serde(default)]
+        pub bindings: Vec<SlotBinding>,
+    }
+
+    impl SlotStore {
+        /// Get providers for a slot
+        #[must_use]
+        pub fn providers_for_slot(&self, slot_id: &str) -> Vec<&Provider> {
+            self.providers.iter().filter(|p| p.slot_id == slot_id).collect()
+        }
+
+        /// Get binding for a consumer and slot
+        #[must_use]
+        pub fn get_binding(&self, consumer_id: &str, slot_id: &str) -> Option<&SlotBinding> {
+            self.bindings
+                .iter()
+                .find(|b| b.consumer_id == consumer_id && b.slot_id == slot_id)
+        }
+
+        /// Get all bindings for a consumer
+        #[must_use]
+        pub fn bindings_for_consumer(&self, consumer_id: &str) -> Vec<&SlotBinding> {
+            self.bindings.iter().filter(|b| b.consumer_id == consumer_id).collect()
+        }
+
+        /// Get all bindings using a specific provider
+        #[must_use]
+        pub fn bindings_for_provider(&self, provider_id: &str) -> Vec<&SlotBinding> {
+            self.bindings.iter().filter(|b| b.provider_id == provider_id).collect()
+        }
+
+        /// Check if a provider is compatible with a slot
+        #[must_use]
+        pub fn check_compatibility(&self, slot_id: &str, provider_id: &str) -> CompatibilityResult {
+            let slot = self.slots.iter().find(|s| s.id == slot_id);
+            let provider = self.providers.iter().find(|p| p.id == provider_id);
+
+            match (slot, provider) {
+                (Some(slot), Some(provider)) => {
+                    // Check if provider is for this slot
+                    if provider.slot_id != slot_id {
+                        return CompatibilityResult {
+                            compatible: false,
+                            version_match: false,
+                            capabilities_satisfied: vec![],
+                            capabilities_missing: slot.required_capabilities.clone(),
+                            reason: format!("Provider {} is for slot {}, not {}", provider_id, provider.slot_id, slot_id),
+                        };
+                    }
+
+                    // Check version compatibility
+                    let version_match = match (&slot.interface_version, &provider.interface_version) {
+                        (Some(sv), Some(pv)) => sv == pv, // Simple equality for now
+                        (None, _) | (_, None) => true,    // No version requirement
+                    };
+
+                    // Check capabilities
+                    let caps_satisfied: Vec<_> = slot.required_capabilities
+                        .iter()
+                        .filter(|c| provider.capabilities.contains(c))
+                        .cloned()
+                        .collect();
+                    let caps_missing: Vec<_> = slot.required_capabilities
+                        .iter()
+                        .filter(|c| !provider.capabilities.contains(c))
+                        .cloned()
+                        .collect();
+
+                    let compatible = version_match && caps_missing.is_empty();
+                    let reason = if compatible {
+                        "Compatible".into()
+                    } else if !version_match {
+                        format!("Version mismatch: slot requires {:?}, provider offers {:?}",
+                                slot.interface_version, provider.interface_version)
+                    } else {
+                        format!("Missing capabilities: {:?}", caps_missing)
+                    };
+
+                    CompatibilityResult {
+                        compatible,
+                        version_match,
+                        capabilities_satisfied: caps_satisfied,
+                        capabilities_missing: caps_missing,
+                        reason,
+                    }
+                }
+                (None, _) => CompatibilityResult {
+                    compatible: false,
+                    version_match: false,
+                    capabilities_satisfied: vec![],
+                    capabilities_missing: vec![],
+                    reason: format!("Slot not found: {}", slot_id),
+                },
+                (_, None) => CompatibilityResult {
+                    compatible: false,
+                    version_match: false,
+                    capabilities_satisfied: vec![],
+                    capabilities_missing: vec![],
+                    reason: format!("Provider not found: {}", provider_id),
+                },
+            }
+        }
+    }
+
+    // =========================================================================
     // Graph Store
     // =========================================================================
 

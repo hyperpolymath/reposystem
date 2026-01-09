@@ -13,7 +13,7 @@
      (version . "0.1.0")
      (schema-version . "1.0")
      (created . "2025-12-31")
-     (updated . "2026-01-09-e")
+     (updated . "2026-01-09-f")
      (project . "reposystem")
      (repo . "github.com/hyperpolymath/reposystem"))
 
@@ -88,7 +88,7 @@
        "Auto-rollback on failure"
        "Health checks post-apply"
        "Audit log with full execution history"
-       "63 tests passing (9 unit + 4 integration + 50 invariant)"
+       "66 tests passing (9 unit + 4 integration + 3 hello-yard + 50 invariant)"
        "Re-import fidelity verified")))
 
     (route-to-mvp
@@ -193,8 +193,21 @@
          (status . "complete"))))
       ((id . "hello-yard")
        (name . "Hello Yard milestone")
-       (status . "pending")
-       (description . "One slot (container.runtime) end-to-end"))))
+       (status . "complete")
+       (description . "One slot (container.runtime) end-to-end")
+       (items
+        ((task . "Create hello-yard integration test")
+         (status . "complete"))
+        ((task . "container.runtime slot with podman, cerro-torre, docker providers")
+         (status . "complete"))
+        ((task . "Consumer repo bindings (webapp, api-service, worker)")
+         (status . "complete"))
+        ((task . "Plan → Apply → Rollback workflow validation")
+         (status . "complete"))
+        ((task . "Fix --iface-version argument naming to avoid clap conflict")
+         (status . "complete"))
+        ((task . "Flexible slot lookup in provider/binding commands")
+         (status . "complete"))))))
 
     (blockers-and-issues
      (critical . ())
@@ -213,16 +226,16 @@
 
     (critical-next-actions
      (immediate
-      ((action . "Push f4 changes to GitHub")
+      ((action . "Push hello-yard changes to GitHub")
        (owner . "dev")
        (blocked-by . ())))
      (this-week
       ((action . "Push to GitLab and Bitbucket mirrors")
        (owner . "dev"))
-      ((action . "Begin Hello Yard milestone")
+      ((action . "Begin f5 milestone (Remote Operations)")
        (owner . "dev")))
      (this-month
-      ((action . "Hello Yard milestone - one slot end-to-end")
+      ((action . "f5 Remote Operations milestone")
        (owner . "dev"))
       ((action . "Documentation improvements")
        (owner . "dev"))))
@@ -262,7 +275,13 @@
         "Apply CLI commands (apply/undo/status)"
         "AuditStore with JSON persistence (audit.json)"
         "Added 8 new f4 invariant tests"
-        "All 63 tests passing (9 unit + 4 integration + 50 invariant)")))
+        "Completed hello-yard milestone - one slot end-to-end"
+        "Created hello_yard.rs integration test (3 tests)"
+        "container.runtime slot with podman, cerro-torre, docker providers"
+        "Consumer repo bindings for webapp, api-service, worker"
+        "Fixed --iface-version argument to avoid clap --version conflict"
+        "Flexible slot lookup in provider/binding commands (name, suffix, exact)"
+        "All 66 tests passing (9 unit + 4 integration + 3 hello-yard + 50 invariant)")))
      ((date . "2026-01-08")
       (accomplishments
        ("Implemented full scanner with gix and walkdir"

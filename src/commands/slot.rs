@@ -214,19 +214,25 @@ pub fn run_provider(action: &str, name: Option<String>, args: ProviderArgs) -> R
     match action {
         "create" | "new" => {
             let name = name.ok_or_else(|| anyhow::anyhow!("Provider name is required"))?;
-            let slot_id = args.slot.ok_or_else(|| anyhow::anyhow!("Slot ID is required (--slot)"))?;
+            let slot_ref = args.slot.ok_or_else(|| anyhow::anyhow!("Slot ID is required (--slot)"))?;
 
-            // Normalize slot ID
-            let slot_id = if slot_id.starts_with("slot:") {
-                slot_id
+            // Normalize slot ID - try exact match, then name match, then suffix match
+            let slot_id = if slot_ref.starts_with("slot:") {
+                // Exact ID provided
+                if graph.slots.slots.iter().any(|s| s.id == slot_ref) {
+                    slot_ref
+                } else {
+                    anyhow::bail!("Slot not found: {}", slot_ref);
+                }
             } else {
-                format!("slot:{}", slot_id)
+                // Try to find by name or suffix
+                let found = graph.slots.slots.iter()
+                    .find(|s| s.name == slot_ref || s.id.ends_with(&format!(".{}", slot_ref)) || s.id == format!("slot:{}", slot_ref));
+                match found {
+                    Some(slot) => slot.id.clone(),
+                    None => anyhow::bail!("Slot not found: {}", slot_ref),
+                }
             };
-
-            // Verify slot exists
-            if !graph.slots.slots.iter().any(|s| s.id == slot_id) {
-                anyhow::bail!("Slot not found: {}", slot_id);
-            }
 
             let provider_id = Provider::generate_id(&slot_id, &name);
 
@@ -395,7 +401,7 @@ pub fn run_binding(action: &str, args: BindingArgs) -> Result<()> {
     match action {
         "bind" | "create" => {
             let consumer = args.consumer.ok_or_else(|| anyhow::anyhow!("Consumer repo is required (--consumer)"))?;
-            let slot_id = args.slot.ok_or_else(|| anyhow::anyhow!("Slot ID is required (--slot)"))?;
+            let slot_ref = args.slot.ok_or_else(|| anyhow::anyhow!("Slot ID is required (--slot)"))?;
             let provider_id = args.provider.ok_or_else(|| anyhow::anyhow!("Provider ID is required (--provider)"))?;
 
             // Resolve consumer
@@ -404,17 +410,21 @@ pub fn run_binding(action: &str, args: BindingArgs) -> Result<()> {
                 .map(|r| r.id.clone())
                 .ok_or_else(|| anyhow::anyhow!("Consumer repo not found: {}", consumer))?;
 
-            // Normalize slot ID
-            let slot_id = if slot_id.starts_with("slot:") {
-                slot_id
+            // Resolve slot ID - try exact match, then name match, then suffix match
+            let slot_id = if slot_ref.starts_with("slot:") {
+                if graph.slots.slots.iter().any(|s| s.id == slot_ref) {
+                    slot_ref
+                } else {
+                    anyhow::bail!("Slot not found: {}", slot_ref);
+                }
             } else {
-                format!("slot:{}", slot_id)
+                let found = graph.slots.slots.iter()
+                    .find(|s| s.name == slot_ref || s.id.ends_with(&format!(".{}", slot_ref)) || s.id == format!("slot:{}", slot_ref));
+                match found {
+                    Some(slot) => slot.id.clone(),
+                    None => anyhow::bail!("Slot not found: {}", slot_ref),
+                }
             };
-
-            // Verify slot exists
-            if !graph.slots.slots.iter().any(|s| s.id == slot_id) {
-                anyhow::bail!("Slot not found: {}", slot_id);
-            }
 
             // Resolve provider
             let provider_id = if provider_id.starts_with("provider:") {
@@ -473,7 +483,7 @@ pub fn run_binding(action: &str, args: BindingArgs) -> Result<()> {
 
         "unbind" | "delete" | "rm" => {
             let consumer = args.consumer.ok_or_else(|| anyhow::anyhow!("Consumer repo is required (--consumer)"))?;
-            let slot_id = args.slot.ok_or_else(|| anyhow::anyhow!("Slot ID is required (--slot)"))?;
+            let slot_ref = args.slot.ok_or_else(|| anyhow::anyhow!("Slot ID is required (--slot)"))?;
 
             // Resolve consumer
             let consumer_id = graph.store.repos.iter()
@@ -481,11 +491,16 @@ pub fn run_binding(action: &str, args: BindingArgs) -> Result<()> {
                 .map(|r| r.id.clone())
                 .ok_or_else(|| anyhow::anyhow!("Consumer repo not found: {}", consumer))?;
 
-            // Normalize slot ID
-            let slot_id = if slot_id.starts_with("slot:") {
-                slot_id
+            // Resolve slot ID - try exact match, then name match, then suffix match
+            let slot_id = if slot_ref.starts_with("slot:") {
+                slot_ref
             } else {
-                format!("slot:{}", slot_id)
+                let found = graph.slots.slots.iter()
+                    .find(|s| s.name == slot_ref || s.id.ends_with(&format!(".{}", slot_ref)) || s.id == format!("slot:{}", slot_ref));
+                match found {
+                    Some(slot) => slot.id.clone(),
+                    None => slot_ref, // Fall back to direct lookup
+                }
             };
 
             let binding_id = SlotBinding::generate_id(&consumer_id, &slot_id);

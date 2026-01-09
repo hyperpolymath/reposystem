@@ -183,8 +183,8 @@ enum Commands {
         category: Option<String>,
 
         /// Interface version
-        #[arg(long)]
-        version: Option<String>,
+        #[arg(long = "iface-version")]
+        iface_version: Option<String>,
 
         /// Description
         #[arg(long)]
@@ -220,8 +220,8 @@ enum Commands {
         uri: Option<String>,
 
         /// Interface version
-        #[arg(long)]
-        version: Option<String>,
+        #[arg(long = "iface-version")]
+        iface_version: Option<String>,
 
         /// Capabilities (comma-separated)
         #[arg(long)]
@@ -364,22 +364,22 @@ fn main() -> Result<()> {
         Commands::Scenario { action, name, base } => {
             commands::scenario::run(&action, name, base)
         }
-        Commands::Slot { action, name, category, version, description, capabilities } => {
+        Commands::Slot { action, name, category, iface_version, description, capabilities } => {
             let args = commands::slot::SlotArgs {
                 category,
-                version,
+                version: iface_version,
                 description,
                 capabilities,
             };
             commands::slot::run_slot(&action, name, args)
         }
-        Commands::Provider { action, name, slot, provider_type, repo, uri, version, capabilities, priority, fallback } => {
+        Commands::Provider { action, name, slot, provider_type, repo, uri, iface_version, capabilities, priority, fallback } => {
             let args = commands::slot::ProviderArgs {
                 slot,
                 provider_type,
                 repo,
                 uri,
-                version,
+                version: iface_version,
                 capabilities,
                 priority,
                 fallback,

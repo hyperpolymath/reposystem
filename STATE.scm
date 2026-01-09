@@ -13,7 +13,7 @@
      (version . "0.1.0")
      (schema-version . "1.0")
      (created . "2025-12-31")
-     (updated . "2026-01-09-c")
+     (updated . "2026-01-09-d")
      (project . "reposystem")
      (repo . "github.com/hyperpolymath/reposystem"))
 
@@ -47,7 +47,7 @@
       ((name . "cli")
        (status . "complete")
        (completion . 100)
-       (notes . "All f1+f2 commands working: scan, export, edge, group, aspect, scenario, weak-links, view, slot, provider, binding"))
+       (notes . "All f1+f2+f3 commands working: scan, export, edge, group, aspect, scenario, weak-links, view, slot, provider, binding, plan"))
       ((name . "dot-export")
        (status . "complete")
        (completion . 100)
@@ -56,6 +56,10 @@
        (status . "complete")
        (completion . 100)
        (notes . "Slot, Provider, Binding types with compatibility checking"))
+      ((name . "plan-store")
+       (status . "complete")
+       (completion . 100)
+       (notes . "Plan, PlanOp, PlanDiff types with rollback generation and risk assessment"))
       ((name . "tui-view")
        (status . "complete")
        (completion . 100)
@@ -72,7 +76,10 @@
        "Slot create/delete/list/show"
        "Provider create/delete/list/show with compatibility checking"
        "Binding bind/unbind/list/show"
-       "47 tests passing (9 unit + 4 integration + 34 invariant)"
+       "Plan create/list/show/diff/rollback/delete"
+       "Risk assessment per plan operation"
+       "Rollback plan generation"
+       "55 tests passing (9 unit + 4 integration + 42 invariant)"
        "Re-import fidelity verified")))
 
     (route-to-mvp
@@ -137,7 +144,24 @@
          (status . "complete"))))
       ((id . "f3")
        (name . "Plan Generation + Dry-Run")
-       (status . "pending"))
+       (status . "complete")
+       (items
+        ((task . "Plan, PlanOp, PlanDiff types")
+         (status . "complete"))
+        ((task . "Plan generation from scenario")
+         (status . "complete"))
+        ((task . "Risk assessment per operation")
+         (status . "complete"))
+        ((task . "Dry-run diff generation")
+         (status . "complete"))
+        ((task . "Rollback plan generation")
+         (status . "complete"))
+        ((task . "Plan CLI commands (create/list/show/diff/rollback/delete)")
+         (status . "complete"))
+        ((task . "PlanStore persistence (plans.json)")
+         (status . "complete"))
+        ((task . "Invariant tests for f3")
+         (status . "complete"))))
       ((id . "hello-yard")
        (name . "Hello Yard milestone")
        (status . "pending")
@@ -160,16 +184,16 @@
 
     (critical-next-actions
      (immediate
-      ((action . "Start f3 Plan Generation + Dry-Run design")
+      ((action . "Start f4 Apply + Rollback Execution design")
        (owner . "dev")
        (blocked-by . ())))
      (this-week
       ((action . "Push to GitLab and Bitbucket mirrors")
        (owner . "dev"))
-      ((action . "Begin f3 implementation")
+      ((action . "Begin f4 implementation")
        (owner . "dev")))
      (this-month
-      ((action . "Complete f3 Plan Generation + Dry-Run")
+      ((action . "Complete f4 Apply + Rollback Execution")
        (owner . "dev"))
       ((action . "Hello Yard milestone")
        (owner . "dev"))))
@@ -192,8 +216,15 @@
         "Compatibility checking (version + capabilities)"
         "Slot/Provider/Binding CLI commands"
         "DOT export with slots/providers overlay (diamonds, hexagons, bindings)"
-        "Added 12 new f2 invariant tests"
-        "All 47 tests passing (9 unit + 4 integration + 34 invariant)")))
+        "Completed f3 Plan Generation + Dry-Run milestone"
+        "Plan, PlanOp, PlanDiff, PlanStore types"
+        "Plan generation from scenarios"
+        "Risk assessment per operation (Low/Medium/High/Critical)"
+        "Rollback plan generation"
+        "Plan CLI commands (create/list/show/diff/rollback/delete)"
+        "PlanStore with JSON persistence (plans.json)"
+        "Added 8 new f3 invariant tests"
+        "All 55 tests passing (9 unit + 4 integration + 42 invariant)")))
      ((date . "2026-01-08")
       (accomplishments
        ("Implemented full scanner with gix and walkdir"

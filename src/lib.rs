@@ -751,6 +751,358 @@ pub mod types {
     }
 
     // =========================================================================
+    // Plans (f3)
+    // =========================================================================
+
+    /// Risk level for plan operations
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+    #[serde(rename_all = "lowercase")]
+    pub enum RiskLevel {
+        /// Low risk - safe to apply
+        Low,
+        /// Medium risk - review recommended
+        Medium,
+        /// High risk - careful review required
+        High,
+        /// Critical risk - may cause breakage
+        Critical,
+    }
+
+    impl Default for RiskLevel {
+        fn default() -> Self {
+            RiskLevel::Low
+        }
+    }
+
+    /// Individual operation in a plan
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    #[serde(tag = "op", rename_all = "snake_case")]
+    pub enum PlanOp {
+        /// Switch a binding from one provider to another
+        SwitchBinding {
+            /// Binding ID being modified
+            binding_id: String,
+            /// Consumer repo ID
+            consumer_id: String,
+            /// Slot being rebound
+            slot_id: String,
+            /// Current provider (for rollback)
+            from_provider_id: String,
+            /// New provider
+            to_provider_id: String,
+            /// Risk level for this operation
+            risk: RiskLevel,
+            /// Reason for this switch
+            reason: String,
+        },
+        /// Create a new binding
+        CreateBinding {
+            /// Consumer repo ID
+            consumer_id: String,
+            /// Slot to bind
+            slot_id: String,
+            /// Provider to bind to
+            provider_id: String,
+            /// Risk level
+            risk: RiskLevel,
+            /// Reason
+            reason: String,
+        },
+        /// Remove a binding
+        RemoveBinding {
+            /// Binding ID to remove
+            binding_id: String,
+            /// Consumer repo ID (for reference)
+            consumer_id: String,
+            /// Slot ID (for reference)
+            slot_id: String,
+            /// Provider ID (for rollback)
+            provider_id: String,
+            /// Risk level
+            risk: RiskLevel,
+            /// Reason
+            reason: String,
+        },
+        /// Describes intended file changes
+        FileChange {
+            /// Repository ID
+            repo_id: String,
+            /// File path within repo
+            file_path: String,
+            /// Type of change
+            change_type: FileChangeType,
+            /// Content changes (for preview)
+            diff: Option<String>,
+            /// Risk level
+            risk: RiskLevel,
+        },
+    }
+
+    impl PlanOp {
+        /// Get the risk level for this operation
+        #[must_use]
+        pub fn risk(&self) -> RiskLevel {
+            match self {
+                PlanOp::SwitchBinding { risk, .. } => *risk,
+                PlanOp::CreateBinding { risk, .. } => *risk,
+                PlanOp::RemoveBinding { risk, .. } => *risk,
+                PlanOp::FileChange { risk, .. } => *risk,
+            }
+        }
+
+        /// Get a human-readable description of this operation
+        #[must_use]
+        pub fn description(&self) -> String {
+            match self {
+                PlanOp::SwitchBinding { consumer_id, slot_id, from_provider_id, to_provider_id, .. } => {
+                    format!("Switch {}'s {} binding: {} → {}", consumer_id, slot_id, from_provider_id, to_provider_id)
+                }
+                PlanOp::CreateBinding { consumer_id, slot_id, provider_id, .. } => {
+                    format!("Create binding: {} uses {} via {}", consumer_id, slot_id, provider_id)
+                }
+                PlanOp::RemoveBinding { consumer_id, slot_id, .. } => {
+                    format!("Remove binding: {} no longer uses {}", consumer_id, slot_id)
+                }
+                PlanOp::FileChange { repo_id, file_path, change_type, .. } => {
+                    format!("{:?} {} in {}", change_type, file_path, repo_id)
+                }
+            }
+        }
+    }
+
+    /// Type of file change
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+    #[serde(rename_all = "lowercase")]
+    pub enum FileChangeType {
+        /// Create a new file
+        Create,
+        /// Modify existing file
+        Modify,
+        /// Delete a file
+        Delete,
+    }
+
+    /// Plan status
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+    #[serde(rename_all = "lowercase")]
+    pub enum PlanStatus {
+        /// Plan is being drafted
+        Draft,
+        /// Plan is ready for review
+        Ready,
+        /// Plan has been applied
+        Applied,
+        /// Plan was rolled back
+        RolledBack,
+        /// Plan was cancelled
+        Cancelled,
+    }
+
+    impl Default for PlanStatus {
+        fn default() -> Self {
+            PlanStatus::Draft
+        }
+    }
+
+    /// A plan for making changes to the ecosystem
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct Plan {
+        /// Always "Plan"
+        pub kind: String,
+        /// Unique identifier: plan:<scenario>:<timestamp>
+        pub id: String,
+        /// Display name
+        pub name: String,
+        /// Scenario this plan is based on
+        pub scenario_id: String,
+        /// Description of what this plan does
+        pub description: Option<String>,
+        /// Operations in this plan (in order)
+        pub operations: Vec<PlanOp>,
+        /// Overall risk assessment
+        pub overall_risk: RiskLevel,
+        /// Status of this plan
+        pub status: PlanStatus,
+        /// When this plan was created
+        pub created_at: DateTime<Utc>,
+        /// Who created this plan
+        pub created_by: String,
+        /// When this plan was applied (if applied)
+        pub applied_at: Option<DateTime<Utc>>,
+        /// Rollback plan ID (if this plan was applied)
+        pub rollback_plan_id: Option<String>,
+    }
+
+    impl Plan {
+        /// Generate a deterministic plan ID
+        #[must_use]
+        pub fn generate_id(scenario_id: &str) -> String {
+            let scenario_short = scenario_id.replace("scenario:", "");
+            let timestamp = Utc::now().format("%Y%m%d%H%M%S");
+            format!("plan:{}:{}", scenario_short, timestamp)
+        }
+
+        /// Calculate overall risk from operations
+        #[must_use]
+        pub fn calculate_overall_risk(operations: &[PlanOp]) -> RiskLevel {
+            operations
+                .iter()
+                .map(PlanOp::risk)
+                .max_by_key(|r| match r {
+                    RiskLevel::Low => 0,
+                    RiskLevel::Medium => 1,
+                    RiskLevel::High => 2,
+                    RiskLevel::Critical => 3,
+                })
+                .unwrap_or(RiskLevel::Low)
+        }
+
+        /// Get count of operations by risk level
+        #[must_use]
+        pub fn risk_summary(&self) -> HashMap<String, usize> {
+            let mut summary = HashMap::new();
+            for op in &self.operations {
+                let key = format!("{:?}", op.risk()).to_lowercase();
+                *summary.entry(key).or_insert(0) += 1;
+            }
+            summary
+        }
+    }
+
+    /// Summary of a diff for dry-run preview
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct PlanDiff {
+        /// Plan this diff is for
+        pub plan_id: String,
+        /// Number of bindings changed
+        pub bindings_changed: usize,
+        /// Number of bindings created
+        pub bindings_created: usize,
+        /// Number of bindings removed
+        pub bindings_removed: usize,
+        /// Number of files affected
+        pub files_affected: usize,
+        /// Individual file diffs (unified format)
+        pub file_diffs: Vec<FileDiff>,
+    }
+
+    /// Diff for a single file
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct FileDiff {
+        /// Repository ID
+        pub repo_id: String,
+        /// File path
+        pub file_path: String,
+        /// Change type
+        pub change_type: FileChangeType,
+        /// Unified diff content
+        pub diff: String,
+        /// Number of lines added
+        pub lines_added: usize,
+        /// Number of lines removed
+        pub lines_removed: usize,
+    }
+
+    /// Plan store - persists plans to plans.json
+    #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+    pub struct PlanStore {
+        /// All plans
+        #[serde(default)]
+        pub plans: Vec<Plan>,
+        /// All diffs (cached)
+        #[serde(default)]
+        pub diffs: Vec<PlanDiff>,
+    }
+
+    impl PlanStore {
+        /// Get a plan by ID
+        #[must_use]
+        pub fn get_plan(&self, plan_id: &str) -> Option<&Plan> {
+            self.plans.iter().find(|p| p.id == plan_id)
+        }
+
+        /// Get plans for a scenario
+        #[must_use]
+        pub fn plans_for_scenario(&self, scenario_id: &str) -> Vec<&Plan> {
+            self.plans.iter().filter(|p| p.scenario_id == scenario_id).collect()
+        }
+
+        /// Get the most recent plan for a scenario
+        #[must_use]
+        pub fn latest_plan_for_scenario(&self, scenario_id: &str) -> Option<&Plan> {
+            self.plans
+                .iter()
+                .filter(|p| p.scenario_id == scenario_id)
+                .max_by_key(|p| p.created_at)
+        }
+
+        /// Get diff for a plan
+        #[must_use]
+        pub fn get_diff(&self, plan_id: &str) -> Option<&PlanDiff> {
+            self.diffs.iter().find(|d| d.plan_id == plan_id)
+        }
+
+        /// Generate a rollback plan from an existing plan
+        #[must_use]
+        pub fn generate_rollback(plan: &Plan) -> Plan {
+            let rollback_ops: Vec<PlanOp> = plan.operations.iter().rev().filter_map(|op| {
+                match op {
+                    PlanOp::SwitchBinding { binding_id, consumer_id, slot_id, from_provider_id, to_provider_id, risk, .. } => {
+                        Some(PlanOp::SwitchBinding {
+                            binding_id: binding_id.clone(),
+                            consumer_id: consumer_id.clone(),
+                            slot_id: slot_id.clone(),
+                            from_provider_id: to_provider_id.clone(),
+                            to_provider_id: from_provider_id.clone(),
+                            risk: *risk,
+                            reason: format!("Rollback of plan {}", plan.id),
+                        })
+                    }
+                    PlanOp::CreateBinding { consumer_id, slot_id, provider_id, risk, .. } => {
+                        Some(PlanOp::RemoveBinding {
+                            binding_id: SlotBinding::generate_id(consumer_id, slot_id),
+                            consumer_id: consumer_id.clone(),
+                            slot_id: slot_id.clone(),
+                            provider_id: provider_id.clone(),
+                            risk: *risk,
+                            reason: format!("Rollback of plan {}", plan.id),
+                        })
+                    }
+                    PlanOp::RemoveBinding { consumer_id, slot_id, provider_id, risk, .. } => {
+                        Some(PlanOp::CreateBinding {
+                            consumer_id: consumer_id.clone(),
+                            slot_id: slot_id.clone(),
+                            provider_id: provider_id.clone(),
+                            risk: *risk,
+                            reason: format!("Rollback of plan {}", plan.id),
+                        })
+                    }
+                    PlanOp::FileChange { .. } => {
+                        // File changes need more complex rollback logic
+                        // For now, we skip them - f4 will handle this
+                        None
+                    }
+                }
+            }).collect();
+
+            Plan {
+                kind: "Plan".into(),
+                id: format!("plan:rollback:{}", plan.id.replace("plan:", "")),
+                name: format!("Rollback: {}", plan.name),
+                scenario_id: plan.scenario_id.clone(),
+                description: Some(format!("Rollback plan for {}", plan.id)),
+                operations: rollback_ops,
+                overall_risk: plan.overall_risk,
+                status: PlanStatus::Draft,
+                created_at: Utc::now(),
+                created_by: "system".into(),
+                applied_at: None,
+                rollback_plan_id: None,
+            }
+        }
+    }
+
+    // =========================================================================
     // Graph Store
     // =========================================================================
 

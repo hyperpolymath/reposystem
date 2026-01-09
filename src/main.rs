@@ -254,6 +254,23 @@ enum Commands {
         provider: Option<String>,
     },
 
+    /// Generate and manage plans
+    Plan {
+        /// Action: create, list, show, diff, rollback, delete
+        action: String,
+
+        /// Plan name or ID
+        name: Option<String>,
+
+        /// Scenario to create plan from
+        #[arg(long)]
+        scenario: Option<String>,
+
+        /// Plan description
+        #[arg(long)]
+        description: Option<String>,
+    },
+
     /// Identify weak links in ecosystem
     WeakLinks {
         /// Aspect to analyze
@@ -355,6 +372,14 @@ fn main() -> Result<()> {
                 provider,
             };
             commands::slot::run_binding(&action, args)
+        }
+        Commands::Plan { action, name, scenario, description } => {
+            let args = commands::plan::PlanArgs {
+                scenario,
+                name: name.clone(),
+                description,
+            };
+            commands::plan::run(&action, name, args)
         }
         Commands::WeakLinks { aspect, severity } => {
             commands::weak_links::run(aspect, severity)

@@ -9,6 +9,7 @@ pub mod config;
 pub mod edge;
 pub mod export;
 pub mod group;
+pub mod plan;
 pub mod scan;
 pub mod scenario;
 pub mod slot;

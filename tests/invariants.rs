@@ -1021,3 +1021,392 @@ fn test_dot_export_includes_slots_overlay() {
     assert!(dot.contains("darkgreen"), "Bindings should be dark green");
     assert!(dot.contains("uses (manual)"), "Binding should show mode");
 }
+
+// =========================================================================
+// f3 Tests: Plan Generation + Dry-Run
+// =========================================================================
+
+use reposystem::types::{
+    Plan, PlanOp, PlanStatus, PlanStore, PlanDiff, RiskLevel, FileChangeType,
+};
+
+fn make_plan(scenario_id: &str, operations: Vec<PlanOp>) -> Plan {
+    Plan {
+        kind: "Plan".into(),
+        id: Plan::generate_id(scenario_id),
+        name: format!("Test plan for {}", scenario_id),
+        scenario_id: scenario_id.into(),
+        description: Some("Test plan".into()),
+        operations,
+        overall_risk: Plan::calculate_overall_risk(&[]),
+        status: PlanStatus::Draft,
+        created_at: Utc::now(),
+        created_by: "test".into(),
+        applied_at: None,
+        rollback_plan_id: None,
+    }
+}
+
+#[test]
+fn test_plan_id_determinism() {
+    // Plan IDs should follow a pattern based on scenario
+    let scenario_id = "scenario:test";
+    let plan_id = Plan::generate_id(scenario_id);
+
+    assert!(plan_id.starts_with("plan:test:"), "Plan ID should start with scenario name");
+    assert!(plan_id.len() > 15, "Plan ID should include timestamp");
+}
+
+#[test]
+fn test_plan_risk_calculation() {
+    // Empty operations should have Low risk
+    let empty_risk = Plan::calculate_overall_risk(&[]);
+    assert_eq!(empty_risk, RiskLevel::Low);
+
+    // Single low risk operation
+    let low_ops = vec![
+        PlanOp::CreateBinding {
+            consumer_id: "repo:test".into(),
+            slot_id: "slot:test".into(),
+            provider_id: "provider:test".into(),
+            risk: RiskLevel::Low,
+            reason: "test".into(),
+        },
+    ];
+    assert_eq!(Plan::calculate_overall_risk(&low_ops), RiskLevel::Low);
+
+    // Mixed risks should return highest
+    let mixed_ops = vec![
+        PlanOp::CreateBinding {
+            consumer_id: "repo:test1".into(),
+            slot_id: "slot:test".into(),
+            provider_id: "provider:test".into(),
+            risk: RiskLevel::Low,
+            reason: "test".into(),
+        },
+        PlanOp::SwitchBinding {
+            binding_id: "binding:test".into(),
+            consumer_id: "repo:test2".into(),
+            slot_id: "slot:test".into(),
+            from_provider_id: "provider:old".into(),
+            to_provider_id: "provider:new".into(),
+            risk: RiskLevel::High,
+            reason: "test".into(),
+        },
+    ];
+    assert_eq!(Plan::calculate_overall_risk(&mixed_ops), RiskLevel::High);
+
+    // Critical risk should propagate
+    let critical_ops = vec![
+        PlanOp::RemoveBinding {
+            binding_id: "binding:test".into(),
+            consumer_id: "repo:test".into(),
+            slot_id: "slot:test".into(),
+            provider_id: "provider:test".into(),
+            risk: RiskLevel::Critical,
+            reason: "test".into(),
+        },
+    ];
+    assert_eq!(Plan::calculate_overall_risk(&critical_ops), RiskLevel::Critical);
+}
+
+#[test]
+fn test_rollback_plan_reverses_operations() {
+    // Create a plan with various operations
+    let operations = vec![
+        PlanOp::SwitchBinding {
+            binding_id: "binding:consumer:slot".into(),
+            consumer_id: "repo:consumer".into(),
+            slot_id: "slot:test".into(),
+            from_provider_id: "provider:old".into(),
+            to_provider_id: "provider:new".into(),
+            risk: RiskLevel::Medium,
+            reason: "Upgrade".into(),
+        },
+        PlanOp::CreateBinding {
+            consumer_id: "repo:new-consumer".into(),
+            slot_id: "slot:test".into(),
+            provider_id: "provider:new".into(),
+            risk: RiskLevel::Low,
+            reason: "New binding".into(),
+        },
+    ];
+
+    let plan = Plan {
+        kind: "Plan".into(),
+        id: "plan:test:original".into(),
+        name: "Original Plan".into(),
+        scenario_id: "scenario:test".into(),
+        description: None,
+        operations,
+        overall_risk: RiskLevel::Medium,
+        status: PlanStatus::Ready,
+        created_at: Utc::now(),
+        created_by: "test".into(),
+        applied_at: None,
+        rollback_plan_id: None,
+    };
+
+    // Generate rollback
+    let rollback = PlanStore::generate_rollback(&plan);
+
+    // Verify rollback properties
+    assert!(rollback.id.contains("rollback"), "Rollback ID should contain 'rollback'");
+    assert!(rollback.name.contains("Rollback"), "Rollback name should contain 'Rollback'");
+    assert_eq!(rollback.scenario_id, plan.scenario_id);
+
+    // Operations should be reversed in order
+    assert_eq!(rollback.operations.len(), 2);
+
+    // First rollback op should reverse the CreateBinding (last original op)
+    match &rollback.operations[0] {
+        PlanOp::RemoveBinding { consumer_id, slot_id, provider_id, .. } => {
+            assert_eq!(consumer_id, "repo:new-consumer");
+            assert_eq!(slot_id, "slot:test");
+            assert_eq!(provider_id, "provider:new");
+        }
+        _ => panic!("First rollback op should be RemoveBinding"),
+    }
+
+    // Second rollback op should reverse the SwitchBinding (first original op)
+    match &rollback.operations[1] {
+        PlanOp::SwitchBinding { from_provider_id, to_provider_id, .. } => {
+            assert_eq!(from_provider_id, "provider:new", "From should be the new provider");
+            assert_eq!(to_provider_id, "provider:old", "To should be the original provider");
+        }
+        _ => panic!("Second rollback op should be SwitchBinding"),
+    }
+}
+
+#[test]
+fn test_plan_op_descriptions() {
+    let switch_op = PlanOp::SwitchBinding {
+        binding_id: "binding:test".into(),
+        consumer_id: "repo:app".into(),
+        slot_id: "slot:db".into(),
+        from_provider_id: "provider:mysql".into(),
+        to_provider_id: "provider:postgres".into(),
+        risk: RiskLevel::Medium,
+        reason: "Migration".into(),
+    };
+    let desc = switch_op.description();
+    assert!(desc.contains("Switch"), "Description should mention switch");
+    assert!(desc.contains("repo:app"), "Description should mention consumer");
+
+    let create_op = PlanOp::CreateBinding {
+        consumer_id: "repo:new".into(),
+        slot_id: "slot:cache".into(),
+        provider_id: "provider:redis".into(),
+        risk: RiskLevel::Low,
+        reason: "New cache".into(),
+    };
+    let desc = create_op.description();
+    assert!(desc.contains("Create"), "Description should mention create");
+
+    let file_op = PlanOp::FileChange {
+        repo_id: "repo:test".into(),
+        file_path: "config.toml".into(),
+        change_type: FileChangeType::Modify,
+        diff: Some("+new line".into()),
+        risk: RiskLevel::Low,
+    };
+    let desc = file_op.description();
+    assert!(desc.contains("Modify"), "Description should mention file change type");
+    assert!(desc.contains("config.toml"), "Description should mention file path");
+}
+
+#[test]
+fn test_plan_store_queries() {
+    let mut store = PlanStore::default();
+
+    // Add plans for different scenarios
+    let plan1 = Plan {
+        kind: "Plan".into(),
+        id: "plan:scenario-a:001".into(),
+        name: "Plan A1".into(),
+        scenario_id: "scenario:scenario-a".into(),
+        description: None,
+        operations: vec![],
+        overall_risk: RiskLevel::Low,
+        status: PlanStatus::Ready,
+        created_at: Utc::now() - chrono::Duration::hours(2),
+        created_by: "test".into(),
+        applied_at: None,
+        rollback_plan_id: None,
+    };
+    let plan2 = Plan {
+        kind: "Plan".into(),
+        id: "plan:scenario-a:002".into(),
+        name: "Plan A2".into(),
+        scenario_id: "scenario:scenario-a".into(),
+        description: None,
+        operations: vec![],
+        overall_risk: RiskLevel::Medium,
+        status: PlanStatus::Ready,
+        created_at: Utc::now(),
+        created_by: "test".into(),
+        applied_at: None,
+        rollback_plan_id: None,
+    };
+    let plan3 = Plan {
+        kind: "Plan".into(),
+        id: "plan:scenario-b:001".into(),
+        name: "Plan B1".into(),
+        scenario_id: "scenario:scenario-b".into(),
+        description: None,
+        operations: vec![],
+        overall_risk: RiskLevel::High,
+        status: PlanStatus::Draft,
+        created_at: Utc::now(),
+        created_by: "test".into(),
+        applied_at: None,
+        rollback_plan_id: None,
+    };
+
+    store.plans.push(plan1);
+    store.plans.push(plan2);
+    store.plans.push(plan3);
+
+    // Test get_plan
+    assert!(store.get_plan("plan:scenario-a:001").is_some());
+    assert!(store.get_plan("nonexistent").is_none());
+
+    // Test plans_for_scenario
+    let scenario_a_plans = store.plans_for_scenario("scenario:scenario-a");
+    assert_eq!(scenario_a_plans.len(), 2);
+
+    let scenario_b_plans = store.plans_for_scenario("scenario:scenario-b");
+    assert_eq!(scenario_b_plans.len(), 1);
+
+    // Test latest_plan_for_scenario (should return plan2 as it's newer)
+    let latest = store.latest_plan_for_scenario("scenario:scenario-a");
+    assert!(latest.is_some());
+    assert_eq!(latest.unwrap().id, "plan:scenario-a:002");
+}
+
+#[test]
+fn test_plan_diff_summary() {
+    let plan = Plan {
+        kind: "Plan".into(),
+        id: "plan:test".into(),
+        name: "Test".into(),
+        scenario_id: "scenario:test".into(),
+        description: None,
+        operations: vec![
+            PlanOp::SwitchBinding {
+                binding_id: "b1".into(),
+                consumer_id: "c1".into(),
+                slot_id: "s1".into(),
+                from_provider_id: "p1".into(),
+                to_provider_id: "p2".into(),
+                risk: RiskLevel::Low,
+                reason: "test".into(),
+            },
+            PlanOp::SwitchBinding {
+                binding_id: "b2".into(),
+                consumer_id: "c2".into(),
+                slot_id: "s2".into(),
+                from_provider_id: "p3".into(),
+                to_provider_id: "p4".into(),
+                risk: RiskLevel::Medium,
+                reason: "test".into(),
+            },
+            PlanOp::CreateBinding {
+                consumer_id: "c3".into(),
+                slot_id: "s3".into(),
+                provider_id: "p5".into(),
+                risk: RiskLevel::High,
+                reason: "test".into(),
+            },
+        ],
+        overall_risk: RiskLevel::High,
+        status: PlanStatus::Ready,
+        created_at: Utc::now(),
+        created_by: "test".into(),
+        applied_at: None,
+        rollback_plan_id: None,
+    };
+
+    let summary = plan.risk_summary();
+    assert_eq!(summary.get("low"), Some(&1));
+    assert_eq!(summary.get("medium"), Some(&1));
+    assert_eq!(summary.get("high"), Some(&1));
+}
+
+#[test]
+fn test_plans_round_trip() {
+    let temp_dir = TempDir::new().unwrap();
+    let mut graph = EcosystemGraph::new();
+
+    // Add a plan
+    let plan = Plan {
+        kind: "Plan".into(),
+        id: "plan:round-trip-test".into(),
+        name: "Round Trip Test".into(),
+        scenario_id: "scenario:test".into(),
+        description: Some("Testing persistence".into()),
+        operations: vec![
+            PlanOp::CreateBinding {
+                consumer_id: "repo:test".into(),
+                slot_id: "slot:test".into(),
+                provider_id: "provider:test".into(),
+                risk: RiskLevel::Low,
+                reason: "Test binding".into(),
+            },
+        ],
+        overall_risk: RiskLevel::Low,
+        status: PlanStatus::Ready,
+        created_at: Utc::now(),
+        created_by: "test".into(),
+        applied_at: None,
+        rollback_plan_id: None,
+    };
+
+    let diff = PlanDiff {
+        plan_id: plan.id.clone(),
+        bindings_changed: 0,
+        bindings_created: 1,
+        bindings_removed: 0,
+        files_affected: 0,
+        file_diffs: vec![],
+    };
+
+    graph.plans.plans.push(plan.clone());
+    graph.plans.diffs.push(diff);
+
+    // Save
+    graph.save(temp_dir.path()).unwrap();
+
+    // Verify plans.json was created
+    assert!(temp_dir.path().join("plans.json").exists());
+
+    // Load
+    let loaded = EcosystemGraph::load(temp_dir.path()).unwrap();
+
+    // Verify plans
+    assert_eq!(loaded.plans.plans.len(), 1);
+    let loaded_plan = &loaded.plans.plans[0];
+    assert_eq!(loaded_plan.id, "plan:round-trip-test");
+    assert_eq!(loaded_plan.name, "Round Trip Test");
+    assert_eq!(loaded_plan.operations.len(), 1);
+
+    // Verify diff
+    assert_eq!(loaded.plans.diffs.len(), 1);
+    assert_eq!(loaded.plans.diffs[0].bindings_created, 1);
+}
+
+#[test]
+fn test_empty_plan_store_round_trip() {
+    let temp_dir = TempDir::new().unwrap();
+
+    let graph = EcosystemGraph::new();
+    graph.save(temp_dir.path()).unwrap();
+
+    // Verify plans.json was created
+    assert!(temp_dir.path().join("plans.json").exists());
+
+    let loaded = EcosystemGraph::load(temp_dir.path()).unwrap();
+
+    assert!(loaded.plans.plans.is_empty());
+    assert!(loaded.plans.diffs.is_empty());
+}

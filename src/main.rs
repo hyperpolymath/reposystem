@@ -159,11 +159,11 @@ enum Commands {
 
     /// Manage scenarios
     Scenario {
-        /// Action: create, delete, switch, compare
+        /// Action: create, delete, list, show, compare
         action: String,
 
-        /// Scenario name
-        name: String,
+        /// Scenario name (required for create/delete/show/compare)
+        name: Option<String>,
 
         /// Base scenario for comparison
         #[arg(long)]
@@ -240,7 +240,7 @@ fn main() -> Result<()> {
             commands::aspect::run(&action, target, aspect, args)
         }
         Commands::Scenario { action, name, base } => {
-            commands::scenario::run(&action, &name, base)
+            commands::scenario::run(&action, name, base)
         }
         Commands::WeakLinks { aspect, severity } => {
             commands::weak_links::run(aspect, severity)

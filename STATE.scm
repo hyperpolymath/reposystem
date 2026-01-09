@@ -13,7 +13,7 @@
      (version . "0.1.0")
      (schema-version . "1.0")
      (created . "2025-12-31")
-     (updated . "2026-01-08")
+     (updated . "2026-01-09")
      (project . "reposystem")
      (repo . "github.com/hyperpolymath/reposystem"))
 
@@ -25,7 +25,7 @@
 
     (current-position
      (phase . "implementation")
-     (overall-completion . 70)
+     (overall-completion . 100)
      (components
       ((name . "spec/DATA-MODEL.adoc")
        (status . "complete")
@@ -45,26 +45,33 @@
        (completion . 100)
        (notes . "JSON persistence with petgraph backing"))
       ((name . "cli")
-       (status . "in-progress")
-       (completion . 80)
-       (notes . "scan, export, edge, group, aspect commands working"))
+       (status . "complete")
+       (completion . 100)
+       (notes . "All f1 commands working: scan, export, edge, group, aspect, scenario, weak-links, view"))
       ((name . "dot-export")
        (status . "complete")
-       (completion . 100)))
+       (completion . 100))
+      ((name . "tui-view")
+       (status . "complete")
+       (completion . 100)
+       (notes . "Ratatui TUI with 4 tabs, navigation, detail view")))
      (working-features
       ("Scan 400+ repositories from local clones"
        "DOT and JSON export"
        "Edge add/remove/list"
        "Group create/add/remove/delete/list/show"
        "Aspect tag/remove/list/show/filter"
-       "9 unit tests passing"
+       "Scenario create/delete/list/show/compare"
+       "Weak links detection (risk annotations, SPOFs, missing evidence)"
+       "Interactive TUI view with tabs and detail panels"
+       "13 tests passing (9 unit + 4 integration)"
        "Re-import fidelity verified")))
 
     (route-to-mvp
      (milestones
       ((id . "f1")
        (name . "MVC Graph + Tagging + Export")
-       (status . "in-progress")
+       (status . "complete")
        (items
         ((task . "Repo importer from local clones")
          (status . "complete"))
@@ -78,10 +85,14 @@
          (status . "complete"))
         ((task . "Re-import fidelity test")
          (status . "complete"))
-        ((task . "Documentation warnings")
-         (status . "pending"))
+        ((task . "Scenario management")
+         (status . "complete"))
+        ((task . "Weak links detection")
+         (status . "complete"))
+        ((task . "TUI view")
+         (status . "complete"))
         ((task . "Integration tests")
-         (status . "pending"))))
+         (status . "complete"))))
       ((id . "i1")
        (name . "Seam Review: Graph invariants")
        (status . "pending")
@@ -120,16 +131,13 @@
 
     (critical-next-actions
      (immediate
-      ((action . "Fix 25 doc warnings")
-       (owner . "dev")
-       (blocked-by . ()))
-      ((action . "Add integration tests for CLI commands")
+      ((action . "Start i1 seam review: graph invariants")
        (owner . "dev")
        (blocked-by . ())))
      (this-week
       ((action . "Push to GitLab and Bitbucket mirrors")
        (owner . "dev"))
-      ((action . "Complete f1 freeze criteria")
+      ((action . "Begin f2 slots/providers registry design")
        (owner . "dev")))
      (this-month
       ((action . "Start f2 slots/providers registry")
@@ -138,6 +146,14 @@
        (owner . "dev"))))
 
     (session-history
+     ((date . "2026-01-09")
+      (accomplishments
+       ("Implemented scenario create/delete/list/show/compare commands"
+        "Implemented weak links detection (risk annotations, SPOFs, missing evidence)"
+        "Implemented TUI view with ratatui (4 tabs, navigation, detail panels)"
+        "Added 4 integration tests for CLI commands"
+        "All 13 tests passing (9 unit + 4 integration)"
+        "Completed f1 milestone to 100%")))
      ((date . "2026-01-08")
       (accomplishments
        ("Implemented full scanner with gix and walkdir"

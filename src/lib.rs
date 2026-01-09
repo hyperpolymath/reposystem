@@ -505,6 +505,12 @@ pub mod types {
         /// All edges
         #[serde(default)]
         pub edges: Vec<Edge>,
+        /// All scenarios
+        #[serde(default)]
+        pub scenarios: Vec<Scenario>,
+        /// All change sets (one per scenario)
+        #[serde(default)]
+        pub changesets: Vec<ChangeSet>,
     }
 
     /// Aspect store

@@ -155,3 +155,5 @@
     (why-manual-first
      "LLM-assisted detection is powerful but opaque. By requiring manual confirmation
       of all edges, we ensure the graph remains a governance tool, not a guess.")))
+
+(define opsm-link "OPSM link: graph/context source for OPSM ecosystem views.")

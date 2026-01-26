@@ -425,3 +425,14 @@ PMPL-1.0-or-later. See link:LICENSE.txt[LICENSE.txt].
 == Contributing
 
 See link:CONTRIBUTING.adoc[CONTRIBUTING.adoc].
+
+== OPSM Link
+
+[source]
+----
+OPSM Core
+  |
+  v
+reposystem (graph/context source for OPSM ecosystem views)
+
+----

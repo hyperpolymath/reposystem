@@ -285,3 +285,14 @@ What doesn't exist yet (the value proposition):
 === f6 Complete When
 
 * Non-technical users can explore and annotate the ecosystem safely.
+
+== OPSM Integration
+
+[source]
+----
+OPSM Core
+  |
+  v
+reposystem (graph/context source for OPSM ecosystem views)
+
+----

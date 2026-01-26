@@ -113,4 +113,9 @@
 
   ((name . "rust-toolchain")
    (purpose . "CLI compilation")
-   (optional . #f))))
+   (optional . #f)))
+  (opsm-integration
+    (relationship "core")
+    (description "graph/context source for OPSM ecosystem views.")
+    (direction "opsm -> reposystem"))
+)

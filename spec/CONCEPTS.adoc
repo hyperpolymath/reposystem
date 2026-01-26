@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-License-Identifier: MPL-2.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 = Reposystem Concepts
 :toc: preamble
@@ -217,14 +217,14 @@ Prefer:
 
 This avoids "I'm losing context when I change view" and fits the goal of reasoning, not just reacting.
 
-== Integration with git-visor and git-seo
+== Integration with git-hud and git-seo
 
 .Clean Boundaries
 [cols="1,3"]
 |===
 |Tool |Responsibility
 
-|**git-visor**
+|**git-hud**
 |HUD for interacting with forges: issues, PRs, repo metadata, actions
 
 |**reposystem** (git-dispatcher)

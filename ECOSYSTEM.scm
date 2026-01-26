@@ -1,4 +1,4 @@
-;; SPDX-License-Identifier: AGPL-3.0-or-later
+;; SPDX-License-Identifier: PMPL-1.0-or-later
 ;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 ;;
 ;; Reposystem Ecosystem Position
@@ -14,20 +14,25 @@
  (position-in-ecosystem
   (layer . "orchestration")
   (role . "source-of-truth dependency graph")
-  (consumers . ("git-visor" "git-seo"))
+ (consumers . ("git-hud" "git-seo" "git-dispatcher"))
   (providers . ()))
 
  (related-projects
-  ;; Core trinity - tightly coupled
-  ((name . "git-visor")
+  ;; Core constellation - tightly coupled
+  ((name . "git-hud")
    (relationship . "sibling-standard")
    (integration . "consumes reposystem graph for forge HUD")
-   (direction . "reposystem → git-visor"))
+   (direction . "reposystem → git-hud"))
 
   ((name . "git-seo")
    (relationship . "sibling-standard")
    (integration . "consumes graph for discoverability artifacts")
    (direction . "reposystem → git-seo"))
+
+  ((name . "git-dispatcher")
+   (relationship . "sibling-standard")
+   (integration . "dispatches repo actions driven by graph scenarios")
+   (direction . "reposystem → git-dispatcher"))
 
   ;; Standards this enforces
   ((name . "rhodium-standard-repositories")
@@ -36,10 +41,20 @@
    (direction . "RSR → reposystem"))
 
   ;; Existing related work
-  ((name . "gitvisor")
-   (relationship . "predecessor")
-   (integration . "patterns and learnings to incorporate")
-   (direction . "gitvisor → reposystem"))
+  ((name . "gitbot-fleet")
+   (relationship . "sibling-tools")
+   (integration . "automation fleet that can consume dispatch plans")
+   (direction . "reposystem → gitbot-fleet"))
+
+  ((name . "scaffoldia")
+   (relationship . "sibling-tools")
+   (integration . "scaffold generator informed by graph metadata")
+   (direction . "reposystem → scaffoldia"))
+
+  ((name . "stateful-artefacts-for-gitforges")
+   (relationship . "sibling-tools")
+   (integration . "metadata artifacts that can be wired into graph outputs")
+   (direction . "reposystem ↔ stateful-artefacts-for-gitforges"))
 
   ;; Potential consumers
   ((name . "robot-repo-cleaner")
@@ -74,14 +89,14 @@
  (what-this-is-not
   ("Not a CI/CD system (that's what slots wire to)"
    "Not a package manager (uses existing package info)"
-   "Not a forge replacement (git-visor handles that)"
+   "Not a forge replacement (git-hud handles that)"
    "Not an auto-magical rewriter (manual-first doctrine)"
    "Not enterprise architecture bloatware"))
 
  (integration-points
-  ((point . "graph-export")
-   (format . "JSON + DOT")
-   (consumers . ("git-visor" "git-seo" "external-tools")))
+ ((point . "graph-export")
+  (format . "JSON + DOT")
+  (consumers . ("git-hud" "git-seo" "external-tools")))
 
   ((point . "slot-registry")
    (format . "Nickel schema")
@@ -95,10 +110,6 @@
   ((name . "graphviz")
    (purpose . "DOT rendering")
    (optional . #t))
-
-  ((name . "deno")
-   (purpose . "Runtime for ReScript output")
-   (optional . #f))
 
   ((name . "rust-toolchain")
    (purpose . "CLI compilation")

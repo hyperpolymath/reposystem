@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 #
 # Reposystem Justfile
@@ -129,6 +129,16 @@ docs-serve:
     @echo "Serving documentation at http://localhost:8000"
     python3 -m http.server 8000 --directory docs/html/
 
+# Serve the web UI locally
+web-serve:
+    @echo "Serving web UI at http://localhost:801"
+    python3 -m http.server 801 --directory web/
+
+# Serve the web UI locally on a custom port
+web-serve-port port:
+    @echo "Serving web UI at http://localhost:{{port}}"
+    python3 -m http.server {{port}} --directory web/
+
 # ============================================================================
 # RELEASE RECIPES
 # ============================================================================
@@ -194,6 +204,11 @@ export-dot output="ecosystem.dot":
 
 # Export graph to JSON
 export-json output="ecosystem.json":
+    @echo "Exporting to {{output}}..."
+    cargo run -- export --format json > {{output}}
+
+# Export graph JSON into web UI folder
+web-export output="web/export.json":
     @echo "Exporting to {{output}}..."
     cargo run -- export --format json > {{output}}
 

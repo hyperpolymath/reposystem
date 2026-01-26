@@ -1,5 +1,5 @@
-image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[MPL-2.0,link="https://opensource.org/licenses/MPL-2.0"]
-image:https://img.shields.io/badge/Philosophy-Palimpsest-purple.svg[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-licence"]
+image:https://img.shields.io/badge/License-PMPL--1.0-indigo.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+image:https://img.shields.io/badge/Philosophy-Palimpsest-indigo.svg[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-license"]
 
 
 // SPDX-License-Identifier: PMPL-1.0-or-later
@@ -8,9 +8,36 @@ image:https://img.shields.io/badge/Philosophy-Palimpsest-purple.svg[Palimpsest,l
 :toc: preamble
 :toclevels: 3
 
-image:https://img.shields.io/badge/status-specification-yellow.svg[Specification Phase]
+image:https://img.shields.io/badge/status-implementation-green.svg[Implementation Phase]
 
 **Railway yard for your repository ecosystem** — visual wiring layer for multi-repo component management with aspect tagging and scenario comparison.
+
+== Quick Start
+
+[source,bash]
+----
+# Scan local clones
+cargo run -- scan /mnt/eclipse/repos
+
+# Export JSON for the web UI
+cargo run -- export --format json > web/export.json
+
+# Serve the UI
+just web-serve
+----
+
+Open `http://localhost:801` in a browser, then load `./export.json`.
+
+== Web UI (Prototype)
+
+The `web/` folder contains a no-build static UI for the graph:
+
+* interactive layouts (force/grid/radial/group)
+* annotations (text/box/arrow) + export
+* ER mode with crow’s-foot notation
+* accessibility upgrades (keyboard, screen reader, high contrast)
+
+Run `just web-serve` or `just web-serve-port 1803` to preview.
 
 == The Problem
 
@@ -63,7 +90,7 @@ Reposystem treats your repository ecosystem as a *railway yard*:
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │    ┌─────────────┐                                                          │
-│    │  git-visor  │◄───────────────┐                                         │
+│    │  git-hud  │◄───────────────┐                                         │
 │    │    (HUD)    │                │                                         │
 │    └─────────────┘                │                                         │
 │          │                        │                                         │
@@ -387,7 +414,7 @@ reposystem/
 
 == Related Projects
 
-* link:https://github.com/hyperpolymath/git-visor[git-visor] — HUD for forge interaction
+* link:https://github.com/hyperpolymath/git-hud[git-hud] — HUD for forge interaction
 * link:https://github.com/hyperpolymath/git-seo[git-seo] — Repository discoverability
 * link:https://github.com/hyperpolymath/rhodium-standard-repositories[RSR] — Standards this enforces
 

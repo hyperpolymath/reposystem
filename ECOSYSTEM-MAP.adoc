@@ -1,0 +1,50 @@
+image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+image:https://img.shields.io/badge/Philosophy-Palimpsest-indigo.svg[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-license"]
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+= Reposystem Ecosystem Map
+:toc: preamble
+:toclevels: 2
+
+[.lead]
+Working map of the reposystem-centered ecosystem. This separates confirmed relationships from user-asserted links pending evidence.
+
+== Core Set (initial)
+
+* reposystem (source-of-truth dependency graph)
+* git-hud (formerly gitvisor) — forge HUD
+* git-seo — discovery artifacts
+* git-dispatcher — automation/dispatch core
+* gitbot-fleet — bot fleet coordinator
+* scaffoldia — scaffolding/templating
+* .git-private-farm — private repo management
+* stateful-artefacts-for-gitforges — forge artefact hydration
+
+== Confirmed Relationships (from metadata)
+
+* reposystem → git-hud (consumes graph for forge HUD)
+* reposystem → git-seo (consumes graph for discoverability artifacts)
+
+== User-Asserted Links (pending evidence)
+
+* git-dispatcher ↔ reposystem (ecosystem orchestration)
+* git-dispatcher → gitbot-fleet (parent orchestration)
+* reposystem ↔ scaffoldia (ecosystem tooling)
+* reposystem ↔ .git-private-farm (private forge management)
+* reposystem ↔ stateful-artefacts-for-gitforges (forge artefact pipeline)
+
+== Naming
+
+* gitvisor has been renamed to git-hud everywhere.
+
+== Licensing Policy (canonical)
+
+* Default: PMPL-1.0-or-later (Palimpsest-MPL).
+* Fallback: MPL-2.0-or-later only when platform/tooling refuses PMPL.
+* Philosophy badge should be indigo for consistency.
+
+
+== Evidence
+
+See also: ECOSYSTEM-EVIDENCE.adoc

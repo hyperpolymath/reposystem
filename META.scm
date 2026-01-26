@@ -1,4 +1,4 @@
-;; SPDX-License-Identifier: AGPL-3.0-or-later
+;; SPDX-License-Identifier: PMPL-1.0-or-later
 ;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 ;;
 ;; Reposystem Meta-Level Information
@@ -75,20 +75,20 @@
        ("More initial setup effort"
         "May miss some connections"))))
 
-    ;; ADR-005: ReScript + Deno, Rust CLI
+    ;; ADR-005: Rust Core + Rust CLI
     ((id . "adr-005")
-     (title . "ReScript Core with Rust CLI")
+     (title . "Rust Core with Rust CLI")
      (status . "accepted")
      (date . "2025-12-31")
      (context . "Need type-safe core logic with fast cross-platform CLI")
-     (decision . "ReScript for core data model/logic, Rust for CLI, Deno as runtime")
+     (decision . "Rust for core data model/logic and CLI, keep web UI static")
      (consequences
       (positive
-       ("Type safety from ReScript"
+       ("Type safety from Rust"
         "Fast CLI from Rust"
         "No Node.js/npm dependencies"))
       (negative
-       ("Two-language boundary to manage"))))
+       ("Single-language core limits shared browser logic"))))
 
     ;; ADR-006: DOT + JSON as Primary Export Formats
     ((id . "adr-006")
@@ -107,9 +107,9 @@
 
 (define development-practices
   '((code-style
-     (languages . (rescript rust guile-scheme nickel))
-     (formatter . "deno fmt for JS, rustfmt for Rust")
-     (linter . "deno lint, clippy"))
+     (languages . (rust guile-scheme javascript css html))
+     (formatter . "rustfmt for Rust, prettier for web")
+     (linter . "clippy for Rust, eslint for web"))
 
     (security
      (supply-chain . "pin all dependencies")

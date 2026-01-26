@@ -1,4 +1,4 @@
-;; SPDX-License-Identifier: AGPL-3.0-or-later
+;; SPDX-License-Identifier: PMPL-1.0-or-later
 ;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 ;;
 ;; Reposystem Project State
@@ -13,7 +13,7 @@
      (version . "0.1.0")
      (schema-version . "1.0")
      (created . "2025-12-31")
-     (updated . "2026-01-09-f")
+     (updated . "2026-01-26")
      (project . "reposystem")
      (repo . "github.com/hyperpolymath/reposystem"))
 
@@ -67,7 +67,11 @@
       ((name . "tui-view")
        (status . "complete")
        (completion . 100)
-       (notes . "Ratatui TUI with 4 tabs, navigation, detail view")))
+       (notes . "Ratatui TUI with 4 tabs, navigation, detail view"))
+      ((name . "web-ui")
+       (status . "complete")
+       (completion . 100)
+       (notes . "Static HTML/CSS/JS graph explorer with annotations and ER mode")))
      (working-features
       ("Scan 400+ repositories from local clones"
        "DOT and JSON export with slots/providers overlay"
@@ -88,6 +92,7 @@
        "Auto-rollback on failure"
        "Health checks post-apply"
        "Audit log with full execution history"
+       "Web UI prototype (layouts, annotations, ER mode, export)"
        "66 tests passing (9 unit + 4 integration + 3 hello-yard + 50 invariant)"
        "Re-import fidelity verified")))
 

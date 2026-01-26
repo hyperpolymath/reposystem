@@ -1,4 +1,4 @@
-;; SPDX-License-Identifier: AGPL-3.0-or-later
+;; SPDX-License-Identifier: PMPL-1.0-or-later
 ;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 ;;
 ;; Reposystem Playbook
@@ -48,6 +48,28 @@
      (validation
       ("Groups contain expected members"
        "Repos can be in multiple groups")))
+
+    ;; PLAY-002b: Explore Web UI
+    ((id . "play-002b")
+     (name . "Explore Web UI")
+     (purpose . "Preview and annotate the graph in the browser")
+     (steps
+      (("step" . 1)
+       ("action" . "Export JSON for web UI")
+       ("command" . "reposystem export --format json > web/export.json"))
+      (("step" . 2)
+       ("action" . "Serve the UI locally")
+       ("command" . "just web-serve-port 1803"))
+      (("step" . 3)
+       ("action" . "Open browser")
+       ("command" . "http://localhost:1803"))
+      (("step" . 4)
+       ("action" . "Load export.json")
+       ("command" . "Use file picker in UI to load ./export.json")))
+     (validation
+      ("Nodes and edges render"
+       "Layouts and zoom work"
+       "Annotations export to JSON")))
 
     ;; PLAY-003: Tag for Security Review
     ((id . "play-003")

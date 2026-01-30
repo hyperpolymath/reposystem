@@ -86,12 +86,17 @@
    "Railway yard mental model for repo management"
    "Source-of-truth for dependency graphs"))
 
- (what-this-is-not
+(what-this-is-not
   ("Not a CI/CD system (that's what slots wire to)"
    "Not a package manager (uses existing package info)"
    "Not a forge replacement (git-hud handles that)"
    "Not an auto-magical rewriter (manual-first doctrine)"
    "Not enterprise architecture bloatware"))
+
+(opsm-integration
+  (relationship . "core")
+  (description . "Graph/context for OPSM ecosystem status, opsm-ui, and git-dispatcher linkages.")
+  (direction . "opsm -> reposystem"))
 
  (integration-points
  ((point . "graph-export")

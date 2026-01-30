@@ -26,7 +26,14 @@
     (current-position
      (phase . "implementation")
      (overall-completion . 100)
-     (components
+     (blockers
+      ("Need final OPSM/docs narrative across README/ROADMAP/6scm"
+       "Resolve web UI branding/contrast issues before public preview"))
+     (next-actions
+      ("Publish developer/platform/user/layperson wiki pages"
+       "Document opsm-ui linkage to git-dispatcher/git-hud/gitbot-fleet"
+       "Call out accessibility/branding requirements (2.3 AA, indigo, snap grid"))
+      (components
       ((name . "spec/DATA-MODEL.adoc")
        (status . "complete")
        (completion . 100))

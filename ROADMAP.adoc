@@ -198,6 +198,13 @@ You can import 50+ repos, group them, tag them, export the graph, re-open it lat
 * [ ] Drag-and-drop canvas
 * [ ] Point-switches with visual feedback
 * [ ] Animated routing preview
+
+== Docs & OPSM Next Steps
+
+1. **Refresh documentation across the stack** — Update README, ROADMAP, and the six machine-readable SCM files (`STATE.scm`, `ECOSYSTEM.scm`, `META.scm`, `PLAYBOOK.scm`, `AGENTIC.scm`, `NEUROSYM.scm`) so the current status, blockers, and next actions are explicit for both humans and agents.
+2. **Populate GitHub wiki** — Publish developer, platform maintainer, scientist, and layperson sections for Reposystem + Git Dispatcher so contributors can quickly understand the architecture, the OPSM relationship, and the documentation expectations (ASCII diagrams, licensing notes, accessibility goals).
+3. **Align with OPSM / opsm-ui** — Ensure `opsm.toml`, `Mustfile`, and integration-notes cross-reference the OPSM strategy and share the same indigo + high-contrast branding; add explicit references to `opsm-ui`, `git-hud`, `git-dispatcher`, and the `odds-and-sods` package manager in doc artifacts.
+4. **Accessibility + branding** — Document the requirements (2.3 AA contrast, keyboard + screen-reader support, crow's-foot ER mode, zoom/snap controls) inside the roadmap and README so downstream UIs know what to maintain.
 * [ ] Contingency paths visualisation
 * [ ] Multi-user collaboration
 

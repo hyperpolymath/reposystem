@@ -39,6 +39,43 @@ The `web/` folder contains a no-build static UI for the graph:
 
 Run `just web-serve` or `just web-serve-port 1803` to preview.
 
+== Where We Are Now
+
+* Graph + plan fidelity is in place: scan → slot/provider registry → scenario diff → plan + apply with rollback.
+* TUI, CLI, DOT/JSON exporters and the web prototype are stable; the UI now highlights aspect tags, ER mode switching, and accessibility (keyboard, zoom, contrast, screen-reader hints).
+* OPSM is the production umbrella for everything in this stack: Reposystem feeds git-dispatcher/githud/data connectors, which in turn let gitbot-fleet and the rest of the ecosystem deliver everything-everywhere workflows.
+* Documentation is being refreshed: the README/ROADMAP/6scm files (STATE/ECOSYSTEM/META/PLAYBOOK/AGENTIC/NEUROSYM) now capture status, blockers, and next actions for both agents and humans, and the new GitHub wiki pages summarize the developer/platform/layperson story.
+
+[NOTE]
+====
+Machine-readable context lives in the six `.scm` files (`STATE.scm`, `ECOSYSTEM.scm`, `META.scm`, `PLAYBOOK.scm`, `AGENTIC.scm`, `NEUROSYM.scm`). Agents should read them before mutating the graph so they know the current completion, blockers, and the OPSM/doc narrative.
+====
+
+== Next Up for Documentation + OPSM
+
+1. **Docs & community story** – finish the GitHub wiki (developer, platform, user, layperson pages), update `README.adoc`, `ROADMAP.adoc`, and the six `*.scm` files with the new opsm/doc/branding narrative, and add ASCII diagrams/pictograms so anyone jumping into this repo understands how it links to git-dispatcher, git-hud, gitbot-fleet, and the other packages (odds-and-sods package manager, git-hud, etc.).
+2. **Opsm awareness** – make sure `opsm.toml`, `Mustfile`, and workflow definitions refer to opsm (cc `odd-s and sods package manager` alias) and treat `opsm-ui` as the central view; add cross-references to the palimpsest-license and consent-aware-HTTP work so marketplace submissions know the fallback paths.
+3. **Accessibility polish** – lock in indigo branding, revert stray color changes, keep the high-contrast variants (light + dark) consistent, and audit the CSS/graph view so the snap-to-grid overlay, crow's-foot notation, annotations, and zoom controls behave reliably across desktop/mobile contexts.
+
+====
+OPSM stack overview
+
+```text
+               +-------------+
+               | Reposystem  |  (graph, scenarios, EOAs)
+               +------+------+            +-----------------------+
+                      |                   | Git Dispatcher / OPSM |
+                      | exports           +-----------+-----------+
+                      v                               |
+               +--------------+                 +------v------+           +--------------+
+               | git-hud UI   |<---- telemetry --| gitbot-fleet|<-- orchestrates --+ odds-and-sods |
+               +--------------+                 +-------------+           +--------------+
+                       ^                                           ^
+                       | Opsm/contextualization                     | Dry-run + manifest + package sources
+                       +-------------------------------------------+
+```
+====
+
 == The Problem
 
 You have 50+ repositories. Some depend on each other. Some could use your own implementations instead of external ones. You want to:

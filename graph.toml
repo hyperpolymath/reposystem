@@ -4,8 +4,8 @@
 [meta]
 version = "1.0"
 created_at = "2026-02-07T11:00:00Z"
-updated_at = "2026-02-07T11:00:00Z"
-total_repos = 3  # Bootstrap with core repos
+updated_at = "2026-02-07T14:00:00Z"
+total_repos = 4  # Bootstrap with core repos
 
 [settings]
 default_aspects = ["quality", "security", "seo"]
@@ -101,3 +101,33 @@ health_score = 90
 depends_on = []
 provides_to = ["git-dispatcher", "git-hud"]
 related = ["gitvisor"]
+
+# RSR policy enforcement
+[[repositories]]
+id = "techstack-filterlist"
+name = "techstack-filterlist"
+path = "/var/mnt/eclipse/repos/techstack-filterlist"
+forge = "github"
+owner = "hyperpolymath"
+url = "https://github.com/hyperpolymath/techstack-filterlist"
+
+description = "Declarative tech stack policy enforcement for RSR compliance"
+tech_stack = ["Ada", "TOML"]
+created_at = "2026-01-03T00:00:00Z"
+
+group = "rsr-enforcement"
+aspects = ["policy", "quality", "security"]
+tags = ["rsr", "ada", "policy-enforcement", "language-whitelist"]
+
+active = true
+archived = false
+completion_percentage = 40
+phase = "active-implementation"
+
+registered_in_reposystem = true
+seo_score = 0
+health_score = 0
+
+depends_on = []
+provides_to = ["rsr-template-repo", "reposystem", "gitbot-fleet", "scaffoldia"]
+related = []

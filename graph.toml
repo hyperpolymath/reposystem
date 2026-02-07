@@ -1,0 +1,103 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# graph.toml - Hyperpolymath repository ecosystem graph
+
+[meta]
+version = "1.0"
+created_at = "2026-02-07T11:00:00Z"
+updated_at = "2026-02-07T11:00:00Z"
+total_repos = 3  # Bootstrap with core repos
+
+[settings]
+default_aspects = ["quality", "security", "seo"]
+auto_discover = false  # Manual registration for now
+scan_interval_days = 7
+
+# Core reposystem tool
+[[repositories]]
+id = "reposystem"
+name = "reposystem"
+path = "/var/mnt/eclipse/repos/reposystem"
+forge = "github"
+owner = "hyperpolymath"
+url = "https://github.com/hyperpolymath/reposystem"
+
+description = "Repository ecosystem management framework"
+tech_stack = ["Documentation"]
+created_at = "2024-01-01T00:00:00Z"
+
+group = "reposystem-core"
+aspects = ["documentation", "planning"]
+tags = ["reposystem", "ecosystem", "management"]
+
+active = true
+archived = false
+completion_percentage = 40
+phase = "design"
+
+registered_in_reposystem = true
+seo_score = 70
+health_score = 80
+
+depends_on = []
+provides_to = ["git-dispatcher", "git-hud", "scaffoldia"]
+related = []
+
+# Execution engine for reposystem plans
+[[repositories]]
+id = "git-dispatcher"
+name = "git-dispatcher"
+path = "/var/mnt/eclipse/repos/git-dispatcher"
+forge = "github"
+owner = "hyperpolymath"
+url = "https://github.com/hyperpolymath/git-dispatcher"
+
+description = "Execution engine for reposystem plans"
+tech_stack = ["ReScript", "Deno"]
+created_at = "2024-06-01T00:00:00Z"
+
+group = "reposystem-core"
+aspects = ["execution", "automation"]
+tags = ["deno", "rescript", "dispatcher", "gitbot-fleet"]
+
+active = true
+archived = false
+completion_percentage = 35
+phase = "active-implementation"
+
+registered_in_reposystem = true
+seo_score = 0
+health_score = 0
+
+depends_on = ["reposystem"]
+provides_to = ["gitbot-fleet"]
+related = ["git-hud"]
+
+# Repository discoverability analysis
+[[repositories]]
+id = "git-seo"
+name = "git-seo"
+path = "/var/mnt/eclipse/repos/git-seo"
+forge = "github"
+owner = "hyperpolymath"
+url = "https://github.com/hyperpolymath/git-seo"
+
+description = "Repository discoverability analysis and optimization"
+tech_stack = ["Julia"]
+created_at = "2025-01-15T00:00:00Z"
+
+group = "analysis-tools"
+aspects = ["analysis", "seo"]
+tags = ["julia", "seo", "discoverability", "analysis"]
+
+active = true
+archived = false
+completion_percentage = 100
+phase = "production"
+
+registered_in_reposystem = true
+seo_score = 85
+health_score = 90
+
+depends_on = []
+provides_to = ["git-dispatcher", "git-hud"]
+related = ["gitvisor"]

@@ -12,14 +12,17 @@ Working map of the reposystem-centered ecosystem. This separates confirmed relat
 
 == Core Set (initial)
 
-* reposystem (source-of-truth dependency graph)
-* git-hud (formerly gitvisor) — forge HUD
-* git-seo — discovery artifacts
-* git-dispatcher — automation/dispatch core
-* gitbot-fleet — bot fleet coordinator
-* scaffoldia — scaffolding/templating
-* .git-private-farm — private repo management
-* stateful-artefacts-for-gitforges — forge artefact hydration
+* reposystem (source-of-truth dependency graph) — 100% complete
+* git-hud (formerly gitvisor) — forge HUD — 40% complete
+* git-seo — discovery artifacts — 100% complete (v0.4.0)
+* git-dispatcher — automation/dispatch core — 20% complete
+* git-batcher — bulk repository operations (replaces git-dropper) — planned
+* gitbot-fleet — bot fleet coordinator — 35% complete
+* scaffoldia — scaffolding/templating — status unknown
+* .git-private-farm — private repo management — status unknown
+* stateful-artefacts-for-gitforges — forge artefact hydration — status unknown
+
+**For detailed status, completion percentages, and integration points, see link:ECOSYSTEM-STATUS.adoc[Ecosystem Status].**
 
 == Confirmed Relationships (from metadata)
 

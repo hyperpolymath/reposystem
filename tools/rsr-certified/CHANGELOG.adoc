@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= Changelog
+
+All notable changes to RSR-Certified will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+== [Unreleased]
+
+=== Added
+- Initial RSR compliance engine with Bronze/Silver/Gold/Rhodium tiers
+- Universal platform adapters (GitHub, GitLab, Bitbucket, Gitea/Forgejo)
+- Multi-database architecture (DragonflyDB, SurrealDB, ArangoDB)
+- LSP server for IDE integration
+- VS Code extension scaffold
+- CLI tool with `check`, `serve`, `init`, `badge` commands
+- Containerized deployment (Podman/Docker)
+- Kubernetes manifests
+- RSR framework alignment documentation
+- Self-compliance infrastructure (.well-known/, GOVERNANCE.md, etc.)
+- Nix flake for reproducible builds
+- Justfile for task automation
+
+=== Security
+- Webhook signature verification for all platforms
+- Secret detection in Bronze tier checks
+- SLSA compliance checks in Rhodium tier
+
+== [0.1.0] - 2024-XX-XX
+
+Initial release.
+
+=== Added
+- Core compliance checking engine
+- Platform webhooks and API
+- Badge generation
+- Documentation
+
+---
+
+[Unreleased]: https://github.com/Hyperpolymath/git-rsr-certified/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Hyperpolymath/git-rsr-certified/releases/tag/v0.1.0

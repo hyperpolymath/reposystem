@@ -1,0 +1,227 @@
+# RSR-Certified Docker/Podman Compose Configuration
+#
+# Multi-database architecture for production compliance tracking:
+# - DragonflyDB: Cache/queue (Redis-compatible, 25x faster)
+# - SurrealDB: Document/graph store for compliance data
+# - ArangoDB: Dependency graphs and relationship tracking
+#
+# Usage:
+#   docker compose up -d
+#   podman-compose up -d
+
+name: rsr-certified
+
+services:
+  # ============================================================
+  # RSR ENGINE - Core compliance checking service
+  # ============================================================
+  rsr-engine:
+    build:
+      context: ..
+      dockerfile: container/Containerfile
+    image: ghcr.io/hyperpolymath/rsr-certified:latest
+    container_name: rsr-engine
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - RSR_LOG_LEVEL=${RSR_LOG_LEVEL:-info}
+      - RSR_PLATFORMS=${RSR_PLATFORMS:-github,gitlab,bitbucket,gitea}
+      # Database connections
+      - RSR_DRAGONFLY_URL=redis://dragonfly:6379
+      - RSR_SURREALDB_URL=ws://surrealdb:8000
+      - RSR_SURREALDB_NS=rsr
+      - RSR_SURREALDB_DB=compliance
+      - RSR_ARANGODB_URL=https://arangodb:8529
+      - RSR_ARANGODB_DB=rsr_graphs
+      # Platform credentials (set via .env file)
+      - GITHUB_APP_ID=${GITHUB_APP_ID:-}
+      - GITHUB_PRIVATE_KEY=${GITHUB_PRIVATE_KEY:-}
+      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET:-}
+      - GITLAB_TOKEN=${GITLAB_TOKEN:-}
+      - GITLAB_WEBHOOK_SECRET=${GITLAB_WEBHOOK_SECRET:-}
+      - BITBUCKET_TOKEN=${BITBUCKET_TOKEN:-}
+      - GITEA_TOKEN=${GITEA_TOKEN:-}
+      - GITEA_URL=${GITEA_URL:-}
+    volumes:
+      - rsr-config:/etc/rsr:ro
+      - rsr-cache:/var/cache/rsr
+    depends_on:
+      dragonfly:
+        condition: service_healthy
+      surrealdb:
+        condition: service_healthy
+      arangodb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - rsr-network
+
+  # ============================================================
+  # RSR WORKER - Background job processor
+  # ============================================================
+  rsr-worker:
+    build:
+      context: ..
+      dockerfile: container/Containerfile
+    image: ghcr.io/hyperpolymath/rsr-certified:latest
+    container_name: rsr-worker
+    restart: unless-stopped
+    command: ["rsr", "serve", "--worker-only"]
+    environment:
+      - RSR_LOG_LEVEL=${RSR_LOG_LEVEL:-info}
+      - RSR_DRAGONFLY_URL=redis://dragonfly:6379
+      - RSR_SURREALDB_URL=ws://surrealdb:8000
+      - RSR_SURREALDB_NS=rsr
+      - RSR_SURREALDB_DB=compliance
+      - RSR_ARANGODB_URL=https://arangodb:8529
+      - RSR_ARANGODB_DB=rsr_graphs
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - GITLAB_TOKEN=${GITLAB_TOKEN:-}
+      - BITBUCKET_TOKEN=${BITBUCKET_TOKEN:-}
+    volumes:
+      - rsr-config:/etc/rsr:ro
+      - rsr-cache:/var/cache/rsr
+    depends_on:
+      - dragonfly
+      - surrealdb
+    networks:
+      - rsr-network
+
+  # ============================================================
+  # DRAGONFLY - Redis-compatible cache and job queue
+  # 25x faster than Redis, drop-in replacement
+  # ============================================================
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    container_name: rsr-dragonfly
+    restart: unless-stopped
+    command: >
+      --logtostderr
+      --cache_mode=true
+      --maxmemory=512mb
+      --hz=100
+    ports:
+      - "6379:6379"
+    volumes:
+      - dragonfly-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ulimits:
+      memlock: -1
+    networks:
+      - rsr-network
+
+  # ============================================================
+  # SURREALDB - Multi-model database for compliance data
+  # Documents, graphs, and relations in one database
+  # ============================================================
+  surrealdb:
+    image: surrealdb/surrealdb:latest
+    container_name: rsr-surrealdb
+    restart: unless-stopped
+    command: >
+      start
+      --log trace
+      --user root
+      --pass ${SURREALDB_ROOT_PASSWORD:-changeme}
+      file:/data/srdb.db
+    ports:
+      - "8000:8000"
+    volumes:
+      - surrealdb-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - rsr-network
+
+  # ============================================================
+  # ARANGODB - Graph database for dependency tracking
+  # Native graph queries, excellent for dependency trees
+  # ============================================================
+  arangodb:
+    image: arangodb:3.11
+    container_name: rsr-arangodb
+    restart: unless-stopped
+    environment:
+      - ARANGO_ROOT_PASSWORD=${ARANGODB_ROOT_PASSWORD:-changeme}
+      - ARANGODB_OVERRIDE_DETECTED_TOTAL_MEMORY=1073741824
+    ports:
+      - "8529:8529"
+    volumes:
+      - arangodb-data:/var/lib/arangodb3
+      - arangodb-apps:/var/lib/arangodb3-apps
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8529/_api/version"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - rsr-network
+
+  # ============================================================
+  # INIT CONTAINER - Database schema initialization
+  # ============================================================
+  rsr-init:
+    build:
+      context: ..
+      dockerfile: container/Containerfile
+    image: ghcr.io/hyperpolymath/rsr-certified:latest
+    container_name: rsr-init
+    command: ["rsr", "db", "migrate"]
+    environment:
+      - RSR_SURREALDB_URL=ws://surrealdb:8000
+      - RSR_SURREALDB_NS=rsr
+      - RSR_SURREALDB_DB=compliance
+      - RSR_SURREALDB_USER=root
+      - RSR_SURREALDB_PASS=${SURREALDB_ROOT_PASSWORD:-changeme}
+      - RSR_ARANGODB_URL=https://arangodb:8529
+      - RSR_ARANGODB_DB=rsr_graphs
+      - RSR_ARANGODB_USER=root
+      - RSR_ARANGODB_PASS=${ARANGODB_ROOT_PASSWORD:-changeme}
+    depends_on:
+      surrealdb:
+        condition: service_healthy
+      arangodb:
+        condition: service_healthy
+    networks:
+      - rsr-network
+    restart: "no"
+
+# ============================================================
+# VOLUMES
+# ============================================================
+volumes:
+  rsr-config:
+    name: rsr-config
+  rsr-cache:
+    name: rsr-cache
+  dragonfly-data:
+    name: rsr-dragonfly-data
+  surrealdb-data:
+    name: rsr-surrealdb-data
+  arangodb-data:
+    name: rsr-arangodb-data
+  arangodb-apps:
+    name: rsr-arangodb-apps
+
+# ============================================================
+# NETWORKS
+# ============================================================
+networks:
+  rsr-network:
+    name: rsr-network
+    driver: bridge

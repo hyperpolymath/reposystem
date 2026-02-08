@@ -1,0 +1,205 @@
+= CADRE Router
+:toc: macro
+:icons: font
+
+[.lead]
+**C**onfigurable **A**daptive **D**istributed **R**outing **E**ngine - A flexible request routing framework for Elixir applications.
+
+image::https://img.shields.io/badge/RSR-Gold-gold[RSR Gold]
+
+toc::[]
+
+== Overview
+
+CADRE Router provides intelligent request routing with:
+
+* **Adaptive routing** - Learn from traffic patterns
+* **Distributed consensus** - Multi-node coordination
+* **Plugin architecture** - Extensible middleware
+* **Static site support** - Serum/Zola integration
+* **Edge-ready** - Cloudflare Workers compatible
+
+== Architecture
+
+[source,text]
+----
+                    ┌─────────────────────────────────┐
+                    │         CADRE Router            │
+                    ├─────────────────────────────────┤
+Incoming  ──────────►│  ┌─────────┐  ┌─────────────┐ │
+Requests            │  │ Matchers │──│ Middleware  │ │
+                    │  └────┬────┘  └──────┬──────┘ │
+                    │       │              │        │
+                    │  ┌────▼──────────────▼────┐   │
+                    │  │     Route Table        │   │
+                    │  │  (ETS + Distributed)   │   │
+                    │  └───────────┬────────────┘   │
+                    │              │                │
+                    │  ┌───────────▼────────────┐   │
+                    │  │      Backends          │   │
+                    │  │ Phoenix│Static│Proxy   │   │
+                    │  └────────────────────────┘   │
+                    └─────────────────────────────────┘
+----
+
+== Installation
+
+[source,elixir]
+----
+# mix.exs
+def deps do
+  [
+    {:cadre_router, github: "hyperpolymath/cadre-router"}
+  ]
+end
+----
+
+== Quick Start
+
+[source,elixir]
+----
+# config/config.exs
+config :cadre_router,
+  routes: [
+    # Static site (Serum/Zola)
+    %{match: "/blog/*", backend: :static, path: "site/"},
+
+    # API routes
+    %{match: "/api/*", backend: :phoenix, plug: MyApp.Router},
+
+    # Proxy to external
+    %{match: "/legacy/*", backend: :proxy, target: "https://old.example.com"}
+  ]
+----
+
+[source,elixir]
+----
+# lib/my_app/application.ex
+def start(_type, _args) do
+  children = [
+    {Cadre.Router, name: MyApp.Router}
+  ]
+  # ...
+end
+----
+
+== Route Configuration
+
+=== Matchers
+
+[source,elixir]
+----
+# Exact match
+%{match: "/about", ...}
+
+# Wildcard
+%{match: "/docs/*", ...}
+
+# Regex
+%{match: ~r/^\/user\/\d+$/, ...}
+
+# Host-based
+%{match: %{host: "api.example.com", path: "/*"}, ...}
+----
+
+=== Backends
+
+[cols="1,2,2"]
+|===
+| Backend | Description | Options
+
+| `:phoenix` | Forward to Phoenix router | `plug`, `assigns`
+| `:static` | Serve static files | `path`, `index`
+| `:proxy` | Reverse proxy | `target`, `headers`
+| `:redirect` | HTTP redirect | `to`, `status`
+| `:lambda` | Custom function | `fun`
+|===
+
+=== Middleware
+
+[source,elixir]
+----
+config :cadre_router,
+  middleware: [
+    Cadre.Middleware.Logger,
+    Cadre.Middleware.RateLimit,
+    Cadre.Middleware.CORS,
+    Cadre.Middleware.SecurityHeaders,
+    {Cadre.Middleware.Auth, provider: :guardian}
+  ]
+----
+
+== Static Site Integration
+
+CADRE Router integrates with Elixir static site generators:
+
+=== Serum
+
+[source,elixir]
+----
+%{
+  match: "/blog/*",
+  backend: :static,
+  generator: :serum,
+  source: "blog/",
+  build_on_start: true
+}
+----
+
+=== Zola
+
+[source,elixir]
+----
+%{
+  match: "/docs/*",
+  backend: :static,
+  generator: :zola,
+  source: "docs/",
+  build_on_start: true
+}
+----
+
+== Distributed Mode
+
+For multi-node deployments:
+
+[source,elixir]
+----
+config :cadre_router,
+  distributed: true,
+  consensus: :raft,  # or :crdt
+  nodes: [:"node1@host", :"node2@host"]
+----
+
+== Edge Deployment
+
+CADRE Router can compile to Cloudflare Workers:
+
+[source,bash]
+----
+mix cadre.build.edge --target cloudflare
+----
+
+== Security Headers
+
+Built-in security header middleware:
+
+[source,elixir]
+----
+config :cadre_router, :security_headers,
+  content_security_policy: "default-src 'self'",
+  strict_transport_security: "max-age=31536000; includeSubDomains",
+  x_content_type_options: "nosniff",
+  x_frame_options: "DENY",
+  referrer_policy: "strict-origin-when-cross-origin"
+----
+
+== License
+
+MIT OR AGPL-3.0-or-later WITH Palimpsest-0.8
+
+== Related Projects
+
+* link:https://github.com/hyperpolymath/git-hud[Gitvisor] - Uses CADRE for dashboard routing
+* link:https://github.com/Dalgona/Serum[Serum] - Elixir static site generator
+* link:https://www.getzola.org/[Zola] - Fast static site generator

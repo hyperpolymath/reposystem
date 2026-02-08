@@ -1,0 +1,57 @@
+{
+  "version": "5",
+  "specifiers": {
+    "npm:rescript@*": "12.0.2"
+  },
+  "npm": {
+    "@rescript/darwin-arm64@12.0.2": {
+      "integrity": "sha512-GcfiPE0L2N7smWXMBEW4pvlcqblSbKh2tisZTuOaLPr9+WmaXnBLap6OUT+XoEWzTY0RA4QURfpNJLAgqZPrzw==",
+      "os": ["darwin"],
+      "cpu": ["arm64"]
+    },
+    "@rescript/darwin-x64@12.0.2": {
+      "integrity": "sha512-di4eucoDdLsLqz86h7Cwywsmt+xFup7rpVlkx8L7i22RTqyTw+CD6aGjFj1Ddj2sVUd5SSFiE9Hj86QggzUgbg==",
+      "os": ["darwin"],
+      "cpu": ["x64"]
+    },
+    "@rescript/linux-arm64@12.0.2": {
+      "integrity": "sha512-x6WOyimX0kw9DGADQ02R2rmvKu8SQOrskfYrKREfc2CgDT+FOKAH+qxvpUiljKhrvthoHkVBJOXtlKk854OdjQ==",
+      "os": ["linux"],
+      "cpu": ["arm64"]
+    },
+    "@rescript/linux-x64@12.0.2": {
+      "integrity": "sha512-5QHE+Ca1h3qXxDkw343923WTEdEyBeXphrv+8SZLhLOFNabQ5t6m4rWf52RluDqQpa67j6GB8kVAZpqc2rA2Qw==",
+      "os": ["linux"],
+      "cpu": ["x64"]
+    },
+    "@rescript/runtime@12.0.2": {
+      "integrity": "sha512-Jma1QEgns/WlWeVap/Mv6dVbFEKmftPOrmwQbzLQnnrQ9z6PJjorHIvDMQUigQKnvM/4RhRJ3LiG+CsNtgS9ww=="
+    },
+    "@rescript/win32-x64@12.0.2": {
+      "integrity": "sha512-QcNQiok3H2Xd+cReB1kpH4hlPXnT7DA6ETsJfZugTUOKOdAYLTJ+Imynv+ojuafkUrwa2v0tZAiqHaQsDjf9IQ==",
+      "os": ["win32"],
+      "cpu": ["x64"]
+    },
+    "rescript@12.0.2": {
+      "integrity": "sha512-H1K9ovIxg2BVwJcXN1cZv0Q1pJEyFgNcUDKHSkmKmv5eBZMpXBASTZ2+grDt0zFFNoeFA1B9abAjSf+oTTi7hg==",
+      "dependencies": [
+        "@rescript/runtime"
+      ],
+      "optionalDependencies": [
+        "@rescript/darwin-arm64",
+        "@rescript/darwin-x64",
+        "@rescript/linux-arm64",
+        "@rescript/linux-x64",
+        "@rescript/win32-x64"
+      ],
+      "bin": true
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:@tauri-apps/api@2",
+      "npm:d3@7",
+      "npm:vite@5"
+    ]
+  }
+}

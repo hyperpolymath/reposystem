@@ -1,0 +1,109 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# justfile - Task runner for git-dispatcher
+
+# List available commands
+default:
+    @just --list
+
+# Setup development environment
+setup:
+    @echo "Setting up git-dispatcher development environment..."
+    @echo "Checking ReScript..."
+    @which rescript || echo "⚠ ReScript not found. Install: npm install -g rescript"
+    @echo "Checking Deno..."
+    @which deno || echo "⚠ Deno not found. Install from: https://deno.land"
+    @echo "Setup complete!"
+
+# Compile ReScript code
+build:
+    @echo "Compiling ReScript code..."
+    rescript build
+
+# Watch and rebuild on changes
+watch:
+    @echo "Watching for changes..."
+    rescript build -w
+
+# Clean compiled files
+clean:
+    @echo "Cleaning compiled files..."
+    rescript clean
+    rm -rf lib/
+
+# Run CLI (after compilation)
+run *ARGS:
+    deno run --allow-read --allow-write --allow-env --allow-run src/main.mjs {{ARGS}}
+
+# Run CLI in development (stub mode)
+dev *ARGS:
+    deno run --allow-read --allow-write --allow-env --allow-run src/main.mjs {{ARGS}}
+
+# Run tests
+test:
+    @echo "Running tests..."
+    deno test --allow-read --allow-write --allow-env tests/
+
+# Format code
+fmt:
+    @echo "Formatting code..."
+    deno fmt src/ tests/
+
+# Lint code
+lint:
+    @echo "Linting code..."
+    deno lint src/ tests/
+
+# Type check ReScript
+check:
+    @echo "Type checking ReScript..."
+    rescript build -with-deps
+
+# Full validation (lint + format check + type check)
+validate: lint check
+    @echo "✓ All validations passed"
+
+# Show project status
+status:
+    @echo "Git Dispatcher Status:"
+    @echo "======================"
+    @git branch --show-current | xargs -I {} echo "Branch: {}"
+    @git status --short
+    @echo ""
+    @echo "Dependencies:"
+    @which rescript && rescript -version || echo "  ReScript: not found"
+    @which deno && deno --version || echo "  Deno: not found"
+
+# Create a sample plan file
+sample-plan:
+    @echo "Creating sample plan file..."
+    @mkdir -p tests/fixtures
+    @cat > tests/fixtures/sample-plan.json << 'EOF'
+{
+  "id": "plan-001",
+  "name": "Sample Plan",
+  "description": "Example plan for testing",
+  "operations": [
+    {
+      "id": "op-001",
+      "type": "UpdateMetadata",
+      "risk": "Low",
+      "description": "Update repository description",
+      "requires": [],
+      "reversible": true
+    }
+  ],
+  "rollbackPlan": []
+}
+EOF
+    @echo "✓ Created tests/fixtures/sample-plan.json"
+
+# Install git hook for pre-commit validation
+install-hooks:
+    @echo "Installing git hooks..."
+    @mkdir -p .git/hooks
+    @cat > .git/hooks/pre-commit << 'EOF'
+#!/bin/bash
+just validate
+EOF
+    @chmod +x .git/hooks/pre-commit
+    @echo "✓ Pre-commit hook installed"

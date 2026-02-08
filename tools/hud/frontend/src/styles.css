@@ -1,0 +1,514 @@
+/* SPDX-License-Identifier: MIT OR AGPL-3.0-or-later WITH Palimpsest-0.8 */
+
+/* Gitvisor Dashboard Styles */
+
+:root {
+  /* Color palette - customizable via CSS variables */
+  --color-bg: #0d1117;
+  --color-bg-secondary: #161b22;
+  --color-border: #30363d;
+  --color-text: #c9d1d9;
+  --color-text-muted: #8b949e;
+  --color-link: #58a6ff;
+  --color-accent: #238636;
+  --color-danger: #da3633;
+  --color-warning: #d29922;
+
+  /* Platform colors */
+  --github-color: #238636;
+  --gitlab-color: #fc6d26;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+/* Light theme override */
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-bg: #ffffff;
+    --color-bg-secondary: #f6f8fa;
+    --color-border: #d0d7de;
+    --color-text: #24292f;
+    --color-text-muted: #57606a;
+  }
+}
+
+/* Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+}
+
+/* Main layout */
+.gitvisor {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.gitvisor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-xl);
+  background-color: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.gitvisor-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.gitvisor-tabs {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.gitvisor-tabs button {
+  padding: var(--space-sm) var(--space-md);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.gitvisor-tabs button:hover {
+  background-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.gitvisor-tabs button.active {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+.gitvisor-main {
+  flex: 1;
+  padding: var(--space-xl);
+}
+
+/* Dashboard */
+.dashboard h2,
+.repositories h2,
+.issues h2,
+.pull-requests h2,
+.settings h2 {
+  margin-bottom: var(--space-lg);
+  font-size: 1.25rem;
+}
+
+.widgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-lg);
+}
+
+.widget {
+  padding: var(--space-lg);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+/* Lists */
+ul {
+  list-style: none;
+}
+
+li {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+li:last-child {
+  border-bottom: none;
+}
+
+/* Status indicators */
+.issue-number,
+.pr-number {
+  display: inline-block;
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-border);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  margin-right: var(--space-sm);
+}
+
+/* Error and loading states */
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md);
+  margin-bottom: var(--space-lg);
+  background-color: var(--color-danger);
+  border-radius: 6px;
+  color: white;
+}
+
+.error-banner button {
+  padding: var(--space-xs) var(--space-sm);
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 3px;
+  color: white;
+  cursor: pointer;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+  color: var(--color-text-muted);
+}
+
+/* Buttons */
+button {
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--color-accent);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: opacity 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Settings */
+.settings section {
+  margin-bottom: var(--space-xl);
+}
+
+.settings h3 {
+  margin-bottom: var(--space-md);
+  font-size: 1rem;
+  color: var(--color-text-muted);
+}
+
+.settings li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* SEO Widget */
+.seo-widget {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.seo-widget.empty {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--color-text-muted);
+}
+
+.seo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.seo-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.analyze-btn {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 0.75rem;
+  background-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.seo-score {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border-radius: 6px;
+  border: 2px solid var(--color-border);
+}
+
+.seo-score.status-excellent {
+  border-color: #2ea44f;
+  background-color: rgba(46, 164, 79, 0.1);
+}
+
+.seo-score.status-good {
+  border-color: #238636;
+  background-color: rgba(35, 134, 54, 0.1);
+}
+
+.seo-score.status-needs-improvement {
+  border-color: #d29922;
+  background-color: rgba(210, 153, 34, 0.1);
+}
+
+.seo-score.status-critical {
+  border-color: #da3633;
+  background-color: rgba(218, 54, 51, 0.1);
+}
+
+.score-display {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+}
+
+.score-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.score-max {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+}
+
+.score-grade {
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.score-grade.grade-a {
+  background-color: #2ea44f;
+  color: white;
+}
+
+.score-grade.grade-b {
+  background-color: #d29922;
+  color: white;
+}
+
+.score-grade.grade-f {
+  background-color: #da3633;
+  color: white;
+}
+
+.score-status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.score-status.status-excellent {
+  color: #2ea44f;
+}
+
+.score-status.status-good {
+  color: #238636;
+}
+
+.score-status.status-needs-improvement {
+  color: #d29922;
+}
+
+.score-status.status-critical {
+  color: #da3633;
+}
+
+.trend-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.trend-indicator.trend-up {
+  background-color: rgba(46, 164, 79, 0.1);
+  color: #2ea44f;
+}
+
+.trend-indicator.trend-down {
+  background-color: rgba(218, 54, 51, 0.1);
+  color: #da3633;
+}
+
+.trend-indicator.trend-neutral {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-muted);
+}
+
+.trend-icon {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.trend-change {
+  font-weight: 600;
+}
+
+.trend-previous {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.score-categories {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.score-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.score-bar-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.score-bar-label .grade {
+  padding: 2px var(--space-xs);
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.score-bar-track {
+  height: 24px;
+  background-color: var(--color-border);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.score-bar-fill {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: var(--space-sm);
+  transition: width 0.3s ease;
+}
+
+.score-bar-fill.grade-a {
+  background-color: #2ea44f;
+}
+
+.score-bar-fill.grade-b {
+  background-color: #238636;
+}
+
+.score-bar-fill.grade-f {
+  background-color: #da3633;
+}
+
+.score-bar-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+
+.recommendations {
+  padding: var(--space-md);
+  background-color: rgba(88, 166, 255, 0.1);
+  border: 1px solid var(--color-link);
+  border-radius: 6px;
+}
+
+.recommendations h4 {
+  margin-bottom: var(--space-sm);
+  font-size: 0.875rem;
+  color: var(--color-link);
+}
+
+.recommendations ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.recommendations li {
+  display: flex;
+  gap: var(--space-xs);
+  padding: 0;
+  border: none;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.recommendations li span:first-child {
+  color: var(--color-link);
+  font-weight: 700;
+}
+
+.seo-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.analyzed-at {
+  font-style: italic;
+}
+
+.more-recommendations {
+  color: var(--color-link);
+}

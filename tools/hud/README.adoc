@@ -1,0 +1,226 @@
+= Gitvisor
+
+image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 hyperpolymath
+
+:toc: macro
+:toc-title: Contents
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+:experimental:
+
+[.lead]
+A hyper-customizable dashboard for unified Git platform management. Starting with GitHub and GitLab integration, expanding to become the definitive interface for developers who demand control.
+
+image::docs/assets/banner.svg[Gitvisor Banner, align="center"]
+
+toc::[]
+
+== Vision
+
+Gitvisor addresses the fragmentation of Git platform interfaces by providing:
+
+* **Central Dashboard**: A unified view integrating all Git operations across platforms
+* **Radical Customization**: Build your own controls, indicators, and workflows
+* **Feature Portability**: Recreate features from one platform on another
+* **Interface Pluralism**: Use common, custom, or entirely personalized interfaces
+* **Idea Capture**: Document great UX patterns and make them portable
+
+== Architecture Overview
+
+[source,text]
+----
+┌─────────────────────────────────────────────────────────────────────┐
+│                        GITVISOR DASHBOARD                           │
+├─────────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌────────────┐ │
+│  │  ReScript   │  │  Ada/SPARK  │  │   Julia     │  │   Elixir   │ │
+│  │  Frontend   │  │    TUI      │  │  Analytics  │  │  Backend   │ │
+│  │  (TEA)      │  │             │  │             │  │  (GraphQL) │ │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └──────┬─────┘ │
+│         │                │                │                │       │
+│         └────────────────┴────────────────┴────────────────┘       │
+│                                │                                    │
+│  ┌─────────────────────────────┴─────────────────────────────────┐ │
+│  │                    UNIFIED API LAYER                          │ │
+│  │              (GraphQL + REST fallback)                        │ │
+│  └─────────────────────────────┬─────────────────────────────────┘ │
+│                                │                                    │
+│  ┌─────────────────────────────┴─────────────────────────────────┐ │
+│  │                  DATABASE ABSTRACTION                         │ │
+│  │  ArangoDB │ Virtuoso │ CubDB │ SurrealDB │ XTDB │ LMDB │ ... │ │
+│  └───────────────────────────────────────────────────────────────┘ │
+│                                │                                    │
+│  ┌─────────────────────────────┴─────────────────────────────────┐ │
+│  │                  CRYPTOGRAPHIC LAYER                          │ │
+│  │  BLAKE3 │ SHAKE3-512 │ Kyber-1024 │ Ed448 │ Dilithium        │ │
+│  └───────────────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────────────┤
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐  │
+│  │   GitHub     │  │   GitLab     │  │   Future Platforms       │  │
+│  │   Adapter    │  │   Adapter    │  │   (Gitea, Codeberg...)   │  │
+│  └──────────────┘  └──────────────┘  └──────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────┘
+----
+
+== Tech Stack
+
+=== Core Languages & Frameworks
+
+[cols="1,2,3"]
+|===
+| Layer | Technology | Purpose
+
+| Backend
+| Elixir + Phoenix + Absinthe
+| GraphQL API, real-time subscriptions, distributed processing
+
+| Frontend (Web)
+| ReScript-TEA + Deno
+| Type-safe UI with The Elm Architecture
+
+| Frontend (TUI)
+| Ada/SPARK
+| Formally verified terminal interface
+
+| Analytics
+| Julia
+| High-performance data analysis and visualization
+
+| Low-level
+| Erlang
+| OTP primitives, NIFs when needed
+|===
+
+=== Database Layer
+
+[cols="1,3"]
+|===
+| Database | Use Case
+
+| ArangoDB | Primary graph database for relationships
+| Virtuoso | RDF/SPARQL for semantic queries
+| CubDB | Embedded Elixir key-value store
+| SurrealDB | Multi-model for flexible schemas
+| XTDB | Temporal queries and audit trails
+| LMDB | High-performance local cache
+| Dragonfly | Redis-compatible in-memory store
+| iTOP | CMDB integration
+|===
+
+=== Cryptographic Protection
+
+* **Hashing**: BLAKE3, SHAKE3-512
+* **Post-Quantum Signatures**: Dilithium, Ed448
+* **Key Encapsulation**: Kyber-1024
+* **Key Generation**: Proven strong primes from flat distribution
+
+=== Infrastructure
+
+* **Runtime**: Deno (primary), Bun (temporary support)
+* **Containers**: nerdctl + Wolfi-based images
+* **Static Sites**: Serum (Elixir), Zola (Rust) supported
+* **Routing**: CADRE router integration
+* **CDN/Edge**: Cloudflare integration
+* **Decentralized**: IPFS support
+
+=== Server Standards
+
+* Full DNS resource record support
+* DNSSEC and ZONEMD
+* `.well-known` directory compliance
+* Security headers (CSP, HSTS, etc.)
+
+== Related Projects
+
+This project integrates with and builds upon:
+
+[cols="1,2,1"]
+|===
+| Project | Purpose | Status
+
+| link:https://github.com/hyperpolymath/Rhodium-Standard-Repositories[RSR]
+| Repository compliance framework
+| Active
+
+| link:https://github.com/hyperpolymath/Rescript-TEA[ReScript-TEA]
+| Frontend architecture
+| Active
+
+| link:https://github.com/hyperpolymath/palimpsest-license[Palimpsest License]
+| Ethical licensing framework
+| Active
+
+| link:https://github.com/hyperpolymath/robot-vacuum-cleaner[Robot Vacuum Cleaner]
+| Repository cleanup tooling
+| Integration planned
+
+| link:https://github.com/hyperpolymath/Academic-Workflow-Suite[Academic Workflow Suite]
+| Research integration
+| Integration planned
+
+| link:https://github.com/hyperpolymath/fogbinder[Fogbinder]
+| Zotero plugin (ReScript)
+| Pattern reference
+
+| link:https://github.com/hyperpolymath/SupraNorma[SupraNorma]
+| ReScript patterns
+| Pattern reference
+
+| Rhodibot
+| RSR enforcement bot
+| Stub (to be created)
+
+| CADRE Router
+| Routing framework
+| Stub (to be created)
+
+| Valence-Shell
+| Shell framework
+| GitLab (to link)
+|===
+
+== Quick Start
+
+[source,bash]
+----
+# Clone repository
+git clone https://github.com/hyperpolymath/git-hud.git
+cd git-hud
+
+# Enter development environment
+nix develop
+
+# Or using just
+just setup
+just dev
+----
+
+== Business Model
+
+Gitvisor operates on a hybrid model:
+
+* **IaaS**: Self-hosted infrastructure components
+* **SaaS**: Managed dashboard service
+* **PaaS**: Platform for custom integrations
+
+== License
+
+This project uses dual licensing with philosophical overlay:
+
+* **Palimpsest-MPL-1.0 License** OR **PMPL-1.0** (user choice for code)
+* **Palimpsest License v0.8** (philosophical manifesto layer)
+
+See link:LICENSE.txt[LICENSE.txt] for full terms.
+
+== RSR Compliance
+
+This repository targets **Gold** compliance with the Rhodium Standard Repositories specification.
+
+image::https://img.shields.io/badge/RSR-Gold-gold[RSR Gold]
+
+== Contributing
+
+See link:CONTRIBUTING.adoc[CONTRIBUTING.adoc] for guidelines.

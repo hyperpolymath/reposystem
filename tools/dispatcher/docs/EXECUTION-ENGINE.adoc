@@ -1,0 +1,756 @@
+image:https://img.shields.io/badge/License-PMPL--1.0-indigo.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+= Git-Dispatcher Execution Engine Architecture
+:toc: left
+:toclevels: 3
+:icons: font
+
+[.lead]
+Detailed technical design for the git-dispatcher execution engine that orchestrates multi-repo operations with safety guarantees.
+
+== Overview
+
+The execution engine is the core of git-dispatcher. It:
+
+* Consumes plans from reposystem
+* Validates operation safety
+* Dispatches work to gitbot-fleet
+* Provides rollback capabilities
+* Maintains audit trails
+
+== Architecture Layers
+
+=== Layer 1: Plan Loading & Validation
+
+**Purpose:** Load and validate plans from reposystem before execution.
+
+**Components:**
+
+* `PlanLoader` - Reads JSON from file/stdin
+* `PlanValidator` - Checks plan structure and constraints
+* `PlanStore` - In-memory cache of loaded plans
+
+**Validation Rules:**
+
+[source,rescript]
+----
+type validationRule =
+  | NoCycles // Operation dependencies must be acyclic
+  | RequiredFieldsPresent // All required fields populated
+  | RiskLevelValid // Risk level is Low/Medium/High/Critical
+  | OperationTypesSupported // All operation types implemented
+  | RepoIdsValid // Repository IDs are well-formed
+  | DependenciesResolvable // All 'requires' reference valid ops
+----
+
+**Error Handling:**
+
+* Invalid JSON → Syntax error with line number
+* Missing required field → Field name + expected type
+* Cyclic dependencies → Show cycle path
+* Unknown operation type → List supported types
+
+=== Layer 2: Dependency Resolution
+
+**Purpose:** Determine execution order respecting operation dependencies.
+
+**Algorithm:** Topological sort with Kahn's algorithm
+
+[source,text]
+----
+1. Build dependency graph from 'requires' fields
+2. Find operations with zero in-degree (no dependencies)
+3. Add to execution queue
+4. Remove processed operations and their edges
+5. Repeat until all operations queued or cycle detected
+----
+
+**Parallel Execution Groups:**
+
+Operations with no interdependencies can execute in parallel:
+
+[source,rescript]
+----
+type executionGroup = {
+  id: string,
+  operations: array<Plan.planOp>,
+  parallelizable: bool,
+  riskLevel: Plan.riskLevel, // Highest risk in group
+}
+----
+
+**Example:**
+
+[source,text]
+----
+Plan:
+  op-1 (requires: [])
+  op-2 (requires: [])
+  op-3 (requires: [op-1])
+  op-4 (requires: [op-1, op-2])
+
+Execution groups:
+  Group 1 (parallel): [op-1, op-2]
+  Group 2: [op-3]
+  Group 3: [op-4]
+----
+
+=== Layer 3: Safety Checks
+
+**Purpose:** Prevent dangerous operations before execution.
+
+**Safety Mechanisms:**
+
+==== Risk-Based Approval
+
+[source,rescript]
+----
+type approvalRequirement =
+  | None // Execute immediately
+  | Interactive // Prompt user (Y/n)
+  | ExplicitFlag // Require --approve-high flag
+  | MultiSig // Require multiple approvals (future)
+
+let approvalForRisk = (risk: Plan.riskLevel): approvalRequirement =>
+  switch risk {
+  | Low => None
+  | Medium => Interactive
+  | High => ExplicitFlag
+  | Critical => ExplicitFlag
+  }
+----
+
+==== Rate Limiting
+
+Prevent overwhelming forge APIs or bot fleet:
+
+[source,rescript]
+----
+type rateLimiter = {
+  maxOpsPerSecond: int,
+  maxConcurrent: int,
+  backoffStrategy: backoffStrategy,
+}
+
+type backoffStrategy =
+  | Linear({increment: int}) // Add N ms per retry
+  | Exponential({base: int}) // Multiply by N each retry
+  | Fibonacci // Follow Fibonacci sequence
+----
+
+==== Dry-Run Mode
+
+Execute plan logic without side effects:
+
+[source,rescript]
+----
+type dryRunResult = {
+  opId: string,
+  action: string, // Human-readable description
+  wouldExecute: bool,
+  estimatedDuration: option<int>, // milliseconds
+  risks: array<string>,
+  dependencies: array<string>,
+}
+----
+
+Output format:
+
+[source,text]
+----
+Dry-run execution for plan: plan-abc123
+========================================
+
+Group 1 (parallel):
+  [op-1] Update metadata: my-repo → description
+    Risk: Low
+    Duration: ~100ms
+    Would execute: git-dispatcher → rhodibot
+
+  [op-2] Update metadata: other-repo → topics
+    Risk: Low
+    Duration: ~100ms
+    Would execute: git-dispatcher → rhodibot
+
+Group 2:
+  [op-3] Create LICENSE file: my-repo
+    Risk: Medium
+    Duration: ~500ms
+    Depends on: op-1
+    Would execute: git-dispatcher → rhodibot → write LICENSE
+
+Total operations: 3
+Estimated duration: 0.7s
+Approval required: No (highest risk: Medium)
+----
+
+=== Layer 4: Bot Dispatch
+
+**Purpose:** Coordinate gitbot-fleet bots for actual execution.
+
+**Dispatch Protocol:**
+
+[source,rescript]
+----
+// 1. Select appropriate bot for operation
+let bot = BotDispatch.selectBotForOperation(operation.opType)
+
+// 2. Create dispatch message
+let message: BotDispatch.dispatchMessage = {
+  id: generateId(),
+  botType: bot,
+  operation: operation.opType,
+  repoId: operation.repoId,
+  priority: calculatePriority(operation.risk),
+  timeout: context.timeout,
+  retries: context.maxRetries,
+  metadata: operation.metadata,
+}
+
+// 3. Send to bot via message queue (future: NATS/RabbitMQ)
+let result = await dispatchToBot(message)
+
+// 4. Wait for response or timeout
+let response = await waitForResponse(message.id, timeout)
+
+// 5. Handle result
+switch response.status {
+| Completed => recordSuccess(operation)
+| Failed({error}) => handleFailure(operation, error)
+| _ => retry(operation)
+}
+----
+
+**Bot Selection Matrix:**
+
+[cols="2,2,3"]
+|===
+| Operation Type | Bot | Rationale
+
+| BindSlot/UnbindSlot
+| rhodibot
+| Repository standards enforcement
+
+| UpdateMetadata
+| rhodibot
+| Forge metadata updates
+
+| CreateFile/ModifyFile
+| rhodibot
+| File system operations
+
+| RunCommand(git-seo)
+| glambot
+| Quality analysis (has GitSeoAnalyzer)
+
+| RunCommand(security-scan)
+| echidnabot
+| Security scanning
+
+| RunCommand(dependency-check)
+| sustainabot
+| Dependency health
+
+| GitOperation
+| rhodibot
+| Git command execution
+|===
+
+**Communication Channels:**
+
+Phase 1 (MVP):
+* File-based message passing (`/tmp/git-dispatcher/messages/`)
+* Bot polls directory for new messages
+* Responses written to `/tmp/git-dispatcher/responses/`
+
+Phase 2 (Production):
+* Message queue (NATS recommended)
+* Pub/sub for async dispatch
+* Request/reply for sync operations
+
+=== Layer 5: Execution Monitoring
+
+**Purpose:** Track progress and collect results.
+
+**Execution State Machine:**
+
+[source,text]
+----
+         ┌──────────┐
+         │ Pending  │
+         └────┬─────┘
+              │ start
+         ┌────▼─────────┐
+         │ InProgress   │
+         └──┬───────┬───┘
+            │       │ fail
+     success│       │
+         ┌──▼───┐ ┌▼──────┐
+         │Completed│ Failed │
+         └─────────┴────────┘
+----
+
+**Progress Tracking:**
+
+[source,rescript]
+----
+type executionProgress = {
+  totalOps: int,
+  completedOps: int,
+  failedOps: int,
+  inProgressOps: int,
+  pendingOps: int,
+  estimatedTimeRemaining: option<int>, // seconds
+}
+
+let calculateProgress = (results: array<Plan.opResult>): executionProgress => {
+  let total = Array.length(results)
+  let completed = results->Array.keep(r => Plan.isSuccessful(r.status))->Array.length
+  let failed = results->Array.keep(r =>
+    switch r.status {
+    | Failed(_) => true
+    | _ => false
+    }
+  )->Array.length
+  let inProgress = results->Array.keep(r =>
+    switch r.status {
+    | InProgress => true
+    | _ => false
+    }
+  )->Array.length
+
+  {
+    totalOps: total,
+    completedOps: completed,
+    failedOps: failed,
+    inProgressOps: inProgress,
+    pendingOps: total - completed - failed - inProgress,
+    estimatedTimeRemaining: None, // Calculate from average op duration
+  }
+}
+----
+
+**Real-Time Updates:**
+
+For interactive execution, stream progress to terminal:
+
+[source,text]
+----
+Executing plan: plan-abc123
+============================
+
+[✓] op-1: Update metadata (my-repo) - 120ms
+[✓] op-2: Update metadata (other-repo) - 105ms
+[→] op-3: Create LICENSE file (my-repo)...
+[ ] op-4: Waiting for op-3...
+
+Progress: 2/4 completed (50%)
+Estimated time remaining: 8s
+----
+
+=== Layer 6: Rollback & Recovery
+
+**Purpose:** Undo operations when execution fails.
+
+**Rollback Strategies:**
+
+==== Automatic Rollback
+
+Triggered on first operation failure:
+
+[source,rescript]
+----
+let executeWithAutoRollback = async (
+  plan: Plan.plan,
+  context: Plan.executionContext,
+): Plan.executionResult => {
+  let results = []
+  let shouldRollback = ref(false)
+
+  for operation in plan.operations {
+    if shouldRollback.contents {
+      break
+    }
+
+    let result = await executeOperation(operation, context)
+    results->Array.push(result)
+
+    switch result.status {
+    | Failed({error}) => {
+        Js.log(`Operation ${operation.id} failed: ${error}`)
+        Js.log("Triggering automatic rollback...")
+        shouldRollback := true
+      }
+    | _ => ()
+    }
+  }
+
+  if shouldRollback.contents {
+    await executeRollback(plan.rollbackPlan, results)
+  }
+
+  // Return execution result
+}
+----
+
+==== Manual Rollback
+
+User-triggered rollback of completed plan:
+
+[source,bash]
+----
+# Execute plan
+git-dispatcher execute plan-abc123
+
+# Later, rollback
+git-dispatcher rollback plan-abc123
+----
+
+**Rollback Limitations:**
+
+Not all operations are reversible:
+
+[cols="2,1,3"]
+|===
+| Operation | Reversible? | Notes
+
+| UpdateMetadata
+| ✓ Yes
+| Store previous value, restore on rollback
+
+| CreateFile
+| ✓ Yes
+| Delete file on rollback
+
+| ModifyFile
+| ✓ Partial
+| If previous content stored
+
+| DeleteFile
+| ✗ No
+| Cannot restore without backup
+
+| GitOperation(push --force)
+| ✗ No
+| Destructive, requires manual recovery
+
+| RunCommand(arbitrary)
+| ? Depends
+| Command-specific
+|===
+
+**Rollback Plan Generation:**
+
+Reposystem generates rollback plans, but dispatcher can enhance:
+
+[source,rescript]
+----
+let enhanceRollbackPlan = (
+  originalPlan: Plan.plan,
+  executionResults: array<Plan.opResult>,
+): array<Plan.rollbackOp> => {
+  // Keep original rollback ops
+  let rollbackOps = originalPlan.rollbackPlan
+
+  // Add runtime-discovered rollback ops
+  executionResults->Array.forEach(result => {
+    switch result.metadata->Js.Dict.get("createdFile") {
+    | Some(path) => {
+        // Add rollback to delete created file
+        let rollbackOp: Plan.rollbackOp = {
+          originalOpId: result.opId,
+          opType: DeleteFile({
+            repoId: extractRepoId(result),
+            path: path,
+          }),
+          description: `Delete file created by ${result.opId}`,
+        }
+        rollbackOps->Array.push(rollbackOp)
+      }
+    | None => ()
+    }
+  })
+
+  rollbackOps
+}
+----
+
+=== Layer 7: Audit Trail
+
+**Purpose:** Record all execution events for debugging and compliance.
+
+**Audit Events:**
+
+Every significant event generates an audit entry:
+
+[source,rescript]
+----
+// Plan loaded
+Audit.createEntry(
+  ~eventType=PlanLoaded,
+  ~planId=plan.id,
+  ~actor="user",
+  ~details=Js.Dict.fromArray([("planName", plan.name)]),
+  ()
+)
+
+// Operation started
+Audit.createEntry(
+  ~eventType=OperationStarted,
+  ~planId=plan.id,
+  ~operationId=Some(op.id),
+  ~actor="system",
+  ~details=Js.Dict.fromArray([
+    ("opType", operationTypeToString(op.opType)),
+    ("risk", Plan.riskLevelToString(op.risk)),
+  ]),
+  ()
+)
+
+// Bot dispatched
+Audit.createEntry(
+  ~eventType=BotDispatched,
+  ~planId=plan.id,
+  ~operationId=Some(op.id),
+  ~botDispatchId=Some(dispatchId),
+  ~actor="dispatcher",
+  ~details=Js.Dict.fromArray([
+    ("botType", BotDispatch.botTypeToString(bot)),
+  ]),
+  ()
+)
+----
+
+**Audit Storage:**
+
+Phase 1: JSON files
+* One file per execution: `audit-{planId}-{timestamp}.json`
+* Location: `~/.git-dispatcher/audit/`
+
+Phase 2: Structured database
+* SQLite for local development
+* PostgreSQL for production
+* Queryable by plan, date, event type
+
+**Audit Queries:**
+
+[source,bash]
+----
+# Show all events for a plan
+git-dispatcher audit --plan plan-abc123
+
+# Show failures only
+git-dispatcher audit --event-type OperationFailed
+
+# Show events in date range
+git-dispatcher audit --start 2026-02-01 --end 2026-02-07
+
+# Export to JSON
+git-dispatcher audit --plan plan-abc123 --format json > audit.json
+----
+
+== Error Handling Strategy
+
+=== Error Categories
+
+[cols="2,3,2"]
+|===
+| Category | Examples | Recovery
+
+| **Validation Errors**
+| Invalid JSON, missing fields, cyclic dependencies
+| Fail fast before execution
+
+| **Bot Unavailable**
+| Bot offline, message queue down
+| Retry with backoff, fail after max attempts
+
+| **Operation Timeout**
+| Slow forge API, bot not responding
+| Retry once, then fail
+
+| **Operation Failed**
+| File already exists, API rate limit, permission denied
+| Log error, trigger rollback
+
+| **System Errors**
+| Out of memory, disk full, signal interrupt
+| Emergency rollback, log to syslog
+|===
+
+=== Error Messages
+
+Provide actionable error messages:
+
+❌ **Bad:**
+[source]
+----
+Error: Operation failed
+----
+
+✓ **Good:**
+[source]
+----
+Error: Failed to create LICENSE file in repo 'my-repo'
+  Reason: File already exists at /path/to/LICENSE
+  Suggestion: Use ModifyFile operation or delete existing file first
+  Operation ID: op-003
+  Plan ID: plan-abc123
+  Audit trace: trace-xyz789
+----
+
+== Performance Considerations
+
+=== Throughput
+
+**Target:** 100 operations/minute on single machine
+
+**Bottlenecks:**
+
+* Forge API rate limits (vary by provider)
+* Bot availability (limited by gitbot-fleet capacity)
+* File I/O for audit logging
+
+**Optimizations:**
+
+* Parallel execution where dependencies allow
+* Connection pooling for forge APIs
+* Batch audit writes (flush every 10 events)
+* In-memory operation queue
+
+=== Latency
+
+**Target:** <5s for dry-run, <30s per operation for execution
+
+**Measurement:**
+
+[source,rescript]
+----
+type timingMetrics = {
+  planLoadTime: int, // ms
+  validationTime: int,
+  dependencyResolutionTime: int,
+  botDispatchTime: int, // per operation
+  operationExecutionTime: int, // per operation
+  auditWriteTime: int,
+  totalTime: int,
+}
+----
+
+== Security Model
+
+=== Principle of Least Privilege
+
+* Dispatcher runs with minimal permissions
+* Bots run with scoped credentials
+* Each operation validates permissions before execution
+
+=== Credential Management
+
+[source,bash]
+----
+# Credentials stored in secure locations
+~/.git-dispatcher/credentials/
+  github-token (mode 0600)
+  gitlab-token (mode 0600)
+  gitbot-fleet-api-key (mode 0600)
+
+# Or use system keyring
+git-dispatcher config set credential-store system-keyring
+----
+
+=== Operation Signing
+
+Future: Sign operations for non-repudiation
+
+[source,rescript]
+----
+type signedOperation = {
+  operation: Plan.planOp,
+  signature: string, // ECDSA signature
+  publicKey: string,
+  timestamp: string,
+}
+----
+
+== Testing Strategy
+
+=== Unit Tests
+
+* Type definitions
+* Validation rules
+* Dependency resolution
+* Dry-run logic
+* Audit entry creation
+
+=== Integration Tests
+
+* Plan loading from file
+* Bot dispatch (mock bots)
+* Execution state transitions
+* Rollback mechanics
+* Audit trail completeness
+
+=== End-to-End Tests
+
+* Full execution of sample plans
+* Reposystem → dispatcher → gitbot-fleet integration
+* Failure scenarios
+* Performance benchmarks
+
+== Implementation Roadmap
+
+=== Phase 1: Foundation (v0.1.0)
+
+* [x] Type definitions (Plan, BotDispatch, Audit)
+* [x] CLI scaffold
+* [ ] Plan loader & validator
+* [ ] Dependency resolution
+* [ ] Dry-run executor
+* [ ] Audit logging (file-based)
+* [ ] Unit tests
+
+**Duration:** 2-3 weeks
+
+=== Phase 2: Execution (v0.2.0)
+
+* [ ] Bot dispatch protocol (file-based)
+* [ ] Operation executor
+* [ ] Progress tracking
+* [ ] Interactive approval
+* [ ] Rate limiting
+* [ ] Integration tests
+
+**Duration:** 3-4 weeks
+
+=== Phase 3: Safety & Recovery (v0.3.0)
+
+* [ ] Automatic rollback
+* [ ] Manual rollback command
+* [ ] Enhanced error messages
+* [ ] Retry logic with backoff
+* [ ] End-to-end tests
+
+**Duration:** 2-3 weeks
+
+=== Phase 4: Production Ready (v1.0.0)
+
+* [ ] Message queue integration (NATS)
+* [ ] Structured audit database
+* [ ] Performance optimizations
+* [ ] Security hardening
+* [ ] Documentation complete
+* [ ] Load testing
+
+**Duration:** 4-6 weeks
+
+**Total estimated time: 12-16 weeks to v1.0.0**
+
+== References
+
+* link:../README.adoc[Git-Dispatcher README]
+* link:../ROADMAP.adoc[Roadmap]
+* link:https://github.com/hyperpolymath/reposystem[Reposystem Documentation]
+* link:https://github.com/hyperpolymath/gitbot-fleet[Gitbot-Fleet Documentation]

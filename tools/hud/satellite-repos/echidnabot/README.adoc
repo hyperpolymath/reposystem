@@ -1,0 +1,138 @@
+= Echidnabot
+:toc: macro
+:icons: font
+
+[.lead]
+Automated formal validation and property-based testing bot for RSR-compliant repositories.
+
+image::https://img.shields.io/badge/RSR-Gold-gold[RSR Gold]
+
+toc::[]
+
+== Overview
+
+Echidnabot provides continuous formal validation across polyglot codebases:
+
+* **Property-based testing** - QuickCheck-style invariant checking
+* **Static analysis** - Language-specific linters and type checkers
+* **Formal proofs** - SPARK/GNATprove integration for Ada components
+* **Attestation generation** - Produces verifiable validation reports
+
+== Supported Languages
+
+[cols="1,2,2"]
+|===
+| Language | Tools | Properties
+
+| Elixir | Dialyzer, Credo, StreamData | Types, style, invariants
+| ReScript | Compiler strict mode | Exhaustiveness, types
+| Ada/SPARK | GNAT, GNATprove | Memory safety, contracts
+| Julia | Test suite, JET.jl | Types, performance
+| Rust | Clippy, Miri | Safety, UB detection
+|===
+
+== Installation
+
+[source,bash]
+----
+# As a Mix dependency
+{:echidnabot, github: "hyperpolymath/echidnabot"}
+
+# Standalone CLI
+nix profile install github:hyperpolymath/echidnabot
+----
+
+== Usage
+
+[source,bash]
+----
+# Run all validations
+echidnabot verify
+
+# Specific language
+echidnabot verify --lang elixir
+
+# Generate attestation
+echidnabot attest --output attestation.json
+
+# CI mode (exit code reflects pass/fail)
+echidnabot ci
+----
+
+== Configuration
+
+Create `.echidnabot.toml` in your repo root:
+
+[source,toml]
+----
+[general]
+fail_fast = false
+parallel = true
+
+[elixir]
+dialyzer = true
+credo_strict = true
+property_tests = true
+
+[ada]
+gnatprove_level = 2
+warnings_as_errors = true
+
+[attestation]
+sign = true
+timestamp = "opentimestamps"
+----
+
+== Attestation Output
+
+Echidnabot generates machine-verifiable attestations:
+
+[source,json]
+----
+{
+  "type": "echidnabot_verification",
+  "version": "1.0",
+  "timestamp": "2024-12-08T12:00:00Z",
+  "subject": {
+    "repo": "hyperpolymath/git-hud",
+    "commit": "abc123..."
+  },
+  "results": {
+    "total_checks": 42,
+    "passed": 42,
+    "failed": 0,
+    "components": ["elixir", "rescript", "ada"]
+  },
+  "signature": "..."
+}
+----
+
+== Integration with Gitvisor
+
+Echidnabot is a core component of the Gitvisor attestation framework:
+
+[source,text]
+----
+Gitvisor Dashboard
+       │
+       ▼
+┌──────────────┐
+│  Echidnabot  │ ──► Verification Results
+└──────────────┘
+       │
+       ▼
+┌──────────────┐
+│ Attestation  │ ──► SLSA Provenance
+│   Module     │ ──► OpenTimestamps
+└──────────────┘
+----
+
+== License
+
+MIT OR AGPL-3.0-or-later WITH Palimpsest-0.8
+
+== Related Projects
+
+* link:https://github.com/hyperpolymath/git-hud[Gitvisor] - Dashboard integration
+* link:https://github.com/hyperpolymath/Rhodium-Standard-Repositories[RSR] - Compliance framework
+* link:https://github.com/hyperpolymath/rhodibot[Rhodibot] - RSR enforcement

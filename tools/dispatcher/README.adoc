@@ -1,0 +1,58 @@
+image:https://img.shields.io/badge/License-PMPL--1.0-indigo.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+image:https://img.shields.io/badge/Philosophy-Palimpsest-indigo.svg[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-license"]
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= Git Dispatcher
+:toc: preamble
+:toclevels: 2
+:icons: font
+
+Git workflow dispatcher for automated repository operations.
+
+== Overview
+
+Git Dispatcher turns repo-graph decisions into actionable workflows. It consumes
+Reposystem scenarios and coordinates automation across your ecosystem.
+
+== Relationship to the Ecosystem
+
+* **Reposystem** provides the source-of-truth graph and scenarios.
+* **Git HUD** visualizes forge status and surfaces dispatch outcomes.
+* **Gitbot Fleet** executes the operations in parallel where safe.
+
+== Intended Capabilities
+
+* Dispatch repo tasks based on scenario plans
+* Batch operations across related repos
+* Safety rails: dry-run, rollback hints, audit traces
+
+== Status
+
+Initial integration phase. This repo is aligning with Reposystem outputs.
+
+== Where We Are Now
+
+* Git Dispatcher consumes Reposystem graphs + scenarios and translates them into actions for gitbot-fleet/opsm pipelines.
+* The current CLI supports dry-run, audit logging, and plan ingestion for initial batches; the documentation now surfaces the opsm context and how the repo fits within the `opsm-ui`/Git HUD visibility story.
+* Licensing is PMPL-1.0-or-later with MPL-2.0 fallback guidance (see the palimpsest-license repo) so we stay consistent with opsm and the wider ecosystem.
+
+== Next Steps
+
+1. **Opsm storyline** – explicitly reference `opsm-ui`, `git-hud`, and `gitbot-fleet` so consumers understand the everything-everywhere narrative; ensure `justfile`/`opsm.toml` mention the `opsm` command group and the `opsm` alias for the odds-and-sods package manager.
+2. **Documentation refresh** – update `ROADMAP.adoc`, `STATE.scm`, `ECOSYSTEM.scm`, `META.scm`, `PLAYBOOK.scm`, `AGENTIC.scm`, and `NEUROSYM.scm` to document the current blockers, the 2.3 AA accessibility goals, and the planned wiki sections (developer, platform maintainer, general user views).
+3. **Wiki + knowledge base** – publish the multi-perspective knowledge on the GitHub wiki so future collaborators/agents can onboard quickly; preserve ASCII diagrams + licensing references in each repo.
+
+== License
+
+PMPL-1.0-or-later. See link:LICENSE[LICENSE].
+
+== OPSM Link
+
+[source]
+----
+OPSM Core
+  |
+  v
+git-dispatcher (multi-repo dispatch for OPSM rollouts)
+
+----

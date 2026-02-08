@@ -1,0 +1,6 @@
+homepage: "https://github.com/hyperpolymath/git-rsr-certified"
+language: rust
+main_repo: "https://github.com/hyperpolymath/git-rsr-certified"
+sanitizers:
+  - address
+  - undefined

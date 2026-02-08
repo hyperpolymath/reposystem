@@ -1,0 +1,45 @@
+# GitHub App Manifest for RSR-Certified
+# Use this with GitHub's manifest flow: https://docs.github.com/en/apps/creating-github-apps
+
+name: RSR-Certified
+description: Rhodium Standard Repository compliance checking for your repositories
+url: https://rsr-certified.dev
+hook_attributes:
+  url: https://YOUR_DOMAIN/webhook/github
+  active: true
+
+# Redirect URL after installation
+redirect_url: https://YOUR_DOMAIN/setup/github/callback
+callback_urls:
+  - https://YOUR_DOMAIN/auth/github/callback
+
+# Enable webhook events
+default_events:
+  - push
+  - pull_request
+  - create
+  - release
+  - repository
+  - check_run
+  - check_suite
+
+# Required permissions
+default_permissions:
+  # Repository permissions
+  contents: read           # Read repo files for compliance checking
+  metadata: read           # Basic repo info
+  pull_requests: write     # Post PR comments with compliance reports
+  checks: write            # Create check runs for compliance status
+  statuses: write          # Post commit statuses
+  issues: write            # Create/update compliance issues (optional)
+
+  # Organization permissions (for org-wide installation)
+  members: read            # Check org membership
+  organization_administration: read  # Org settings
+
+# App settings
+public: true               # Allow anyone to install
+setup_on_update: true      # Run setup after updates
+
+# Single file installation
+single_file_name: .rsr.toml

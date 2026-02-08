@@ -1,0 +1,18 @@
+{
+  "name": "@hyperpolymath/reposystem-gui",
+  "version": "0.1.0",
+  "tasks": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "dev:frontend": "rescript build -w & deno run --allow-read --allow-net npm:vite",
+    "build:frontend": "rescript build && deno run --allow-read --allow-write --allow-env npm:vite build",
+    "rescript": "rescript build",
+    "rescript:watch": "rescript build -w",
+    "rescript:clean": "rescript clean"
+  },
+  "imports": {
+    "@tauri-apps/api": "npm:@tauri-apps/api@^2",
+    "d3": "npm:d3@^7",
+    "vite": "npm:vite@^5"
+  }
+}

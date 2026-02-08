@@ -1,0 +1,60 @@
+[workspace]
+resolver = "2"
+members = [
+    "engine",
+    "lsp",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["RSR-Certified Contributors"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Hyperpolymath/git-rsr-certified"
+homepage = "https://github.com/Hyperpolymath/git-rsr-certified"
+readme = "README.md"
+keywords = ["compliance", "git", "repository", "certification", "security"]
+categories = ["development-tools", "command-line-utilities"]
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+
+# Web framework
+axum = "0.8"
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.9"
+
+# HTTP client
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+
+# Crypto
+hmac = "0.12"
+sha2 = "0.10"
+hex = "0.4"
+
+# Git operations
+gix = { version = "0.76", default-features = false }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Error handling
+thiserror = "2.0"
+anyhow = "1.0"
+
+# CLI
+clap = { version = "4.4", features = ["derive", "env"] }
+
+# Testing
+mockall = "0.14"
+wiremock = "0.6"
+
+# LSP
+tower-lsp = "0.20"

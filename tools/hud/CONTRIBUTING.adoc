@@ -1,0 +1,103 @@
+= Contributing to Gitvisor
+:toc:
+
+== Welcome
+
+Thank you for considering contributing to Gitvisor! This document provides
+guidelines for contributing to the project.
+
+== Development Setup
+
+=== Prerequisites
+
+* Nix (recommended) or manual setup
+* Deno 1.40+
+* Elixir 1.16+ / Erlang/OTP 26+
+* GNAT (Ada compiler) for TUI development
+* Julia 1.10+ for analytics
+
+=== Quick Start
+
+[source,bash]
+----
+# Using Nix (recommended)
+nix develop
+
+# Manual setup
+just setup
+----
+
+== Code Standards
+
+=== Language Requirements
+
+[IMPORTANT]
+====
+* **ReScript first** - All frontend code must be ReScript
+* **No raw JavaScript** - JS is not permitted in the codebase
+* **Deno runtime** - Use Deno, not Node.js
+====
+
+=== Style Guides
+
+* **Elixir**: Follow the official Elixir style guide
+* **ReScript**: Use the rescript-tea patterns
+* **Ada/SPARK**: GNAT style with SPARK annotations
+* **Julia**: Follow JuliaFormatter conventions
+
+=== Commit Messages
+
+Use conventional commits:
+
+[source]
+----
+type(scope): description
+
+[optional body]
+
+[optional footer]
+----
+
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+
+== Pull Request Process
+
+1. Fork the repository
+2. Create a feature branch from `main`
+3. Make your changes
+4. Ensure all tests pass
+5. Update documentation as needed
+6. Submit a PR with clear description
+
+== Testing
+
+[source,bash]
+----
+# Run all tests
+just test
+
+# Run specific test suites
+just test-elixir
+just test-rescript
+just test-ada
+just test-julia
+----
+
+== Documentation
+
+* Use AsciiDoc (`.adoc`) for major documentation
+* Markdown acceptable for smaller docs
+* Keep README.adoc current with changes
+
+== RSR Compliance
+
+All contributions must maintain RSR (Rhodium Standard Repository) compliance:
+
+* No secrets in commits
+* SPDX headers on source files
+* Attribution metadata preserved
+* Accessibility considered
+
+== Questions?
+
+Open a discussion or issue for questions about contributing.

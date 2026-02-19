@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: PLMP-1.0-or-later
 # Mustfile - declarative state contract (template)
 # See: https://github.com/hyperpolymath/mustfile
+# DEPRECATED: Legacy mixed-format file retained for compatibility only.
+# Canonical source of truth: contractiles/must/Mustfile.a2ml.
 
 version: 1
 

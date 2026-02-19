@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: PLMP-1.0-or-later
+# Contractiles Justfile
+# Usage: just <command>
+
+set shell := ["bash", "-uc"]
+set dotenv-load := true
+set positional-arguments := true
+
+project := "contractiles"
+version := "1.0.0"
+
+# Tunables (keep in sync with contractiles/must/Mustfile.a2ml)
+gateway_port := "8080"
+schema_version := "v1.0.0"
+
+# Show all available recipes
+_default:
+    @just --list --unsorted
+
+default: _default
+
+# Initialize repo scaffolding for policy, schema, and logs
+setup:
+    @echo "Setting up {{project}} {{version}}..."
+    @mkdir -p config policy schema logs drivers migrations
+    @test -f policy/policy.ncl || echo "// TODO: write policy" > policy/policy.ncl
+    @test -f config/policy.yaml || echo "# TODO: write policy config" > config/policy.yaml
+    @echo "Created config/, policy/, schema/, logs/, drivers/, migrations/"
+
+# Start the gateway (placeholder)
+run-gateway:
+    @echo "Starting gateway on port {{gateway_port}}..."
+    @echo "Hook this to your runtime (systemd, docker-compose, etc.)"
+
+# Validate policy config and policy source
+validate-policy:
+    @echo "Validating config/policy.yaml and policy/policy.ncl..."
+    @test -f config/policy.yaml || (echo "Missing config/policy.yaml" && exit 1)
+    @test -f policy/policy.ncl || (echo "Missing policy/policy.ncl" && exit 1)
+    @yq -e '.' config/policy.yaml >/dev/null
+    @nickel check policy/policy.ncl
+    @echo "Validation complete"
+
+# Compile Nickel policies to JSON
+compile-nickel:
+    @echo "Compiling policy/policy.ncl -> policy/policy.json..."
+    @test -f policy/policy.ncl || (echo "Missing policy/policy.ncl" && exit 1)
+    @nickel export policy/policy.ncl -f json -o policy/policy.json
+    @echo "Nickel export complete"
+
+# Generate or refresh the Mustfile contract
+# (Currently a stub; keep Mustfile.a2ml hand-edited and versioned.)
+gen-mustfile:
+    @echo "Canonical contract lives at contractiles/must/Mustfile.a2ml"
+    @echo "Legacy contractiles/must/Mustfile is deprecated compatibility only"
+
+# Sync .machine_readable metadata into 6scm mirrors
+sync-6scm:
+    @mkdir -p .machine_readable/6scm
+    @for f in AGENTIC.scm ECOSYSTEM.scm META.scm NEUROSYM.scm PLAYBOOK.scm STATE.scm; do \
+      if [ -f ".machine_readable/$$f" ]; then cp -f ".machine_readable/$$f" ".machine_readable/6scm/$$f"; fi; \
+    done
+
+# Check .machine_readable 6scm mirrors are in sync
+check-6scm:
+    @scripts/check-6scm.sh

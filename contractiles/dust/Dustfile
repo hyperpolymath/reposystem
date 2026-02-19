@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: PLMP-1.0-or-later
 # Dustfile template - recovery and rollback semantics
+# DEPRECATED: Legacy mixed-format file retained for compatibility only.
+# Canonical source of truth: contractiles/dust/Dustfile.a2ml.
 
 version: 1
 

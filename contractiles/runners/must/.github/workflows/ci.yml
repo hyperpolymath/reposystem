@@ -1,0 +1,54 @@
+name: must-ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install GNAT and gprbuild
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnat gprbuild podman
+      - name: Build must (release)
+        run: gprbuild -P must.gpr -XMODE=release
+      - name: Quality checks
+        run: just quality
+      - name: Smoke test
+        run: |
+          ./bin/must --version
+          ./bin/must --help
+          ./bin/must --list || true
+      - name: Sample mustfile check
+        run: |
+          cd fixtures/sample-project
+          ../../bin/must check --strict
+      - name: Failing mustfile check (expected to fail)
+        run: |
+          cd fixtures/failing-project
+          if ../../bin/must check --strict; then
+            echo "Expected must check to fail, but it succeeded" >&2
+            exit 1
+          fi
+      - name: Fix remediation check
+        run: |
+          cd fixtures/fix-project
+          if ../../bin/must check --strict; then
+            echo "Expected initial must check to fail" >&2
+            exit 1
+          fi
+          ../../bin/must fix
+          ../../bin/must check --strict
+      - name: Content requirement check (expected to fail)
+        run: |
+          cd fixtures/content-project
+          if ../../bin/must check --strict; then
+            echo "Expected content check to fail" >&2
+            exit 1
+          fi
+      - name: Container build smoke test
+        run: |
+          podman build -t must:ci -f Containerfile .

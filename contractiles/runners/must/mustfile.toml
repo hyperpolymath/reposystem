@@ -1,0 +1,135 @@
+# mustfile.toml
+# Configuration for Must - task runner + template engine + enforcer
+# https://github.com/hyperpolymath/must
+# Spec lives in the mustfile repo: https://github.com/hyperpolymath/mustfile
+
+schema = "0.1"
+
+[project]
+name = "must"
+version = "0.1.0"
+license = "MPL-2.0-or-later"
+author = "Jonathan D.A. Jewell"
+
+[variables]
+copyright = "Copyright (C) 2025 Jonathan D.A. Jewell"
+license = "MPL-2.0-or-later"
+
+# Task definitions
+[tasks]
+
+[tasks.build]
+description = "Build the project (debug mode)"
+commands = ["gprbuild -P must.gpr -XMODE=debug"]
+
+[tasks.build-release]
+description = "Build the project (release mode)"
+commands = ["gprbuild -P must.gpr -XMODE=release"]
+
+[tasks.test]
+description = "Run tests"
+dependencies = ["build"]
+commands = ["echo 'Running tests...'", "bin/must --version", "bin/must --help"]
+
+[tasks.clean]
+description = "Clean build artifacts"
+commands = ["gnatclean -P must.gpr", "rm -rf obj/ bin/"]
+
+[tasks.install]
+description = "Install to /usr/local/bin"
+dependencies = ["build-release"]
+commands = ["sudo cp bin/must /usr/local/bin/"]
+
+[tasks.docs]
+description = "Generate documentation"
+commands = ["echo 'Documentation generated'"]
+
+[tasks.fmt]
+description = "Format Ada code using gnatpp"
+commands = ["just fmt"]
+
+[tasks.lint]
+description = "Lint Ada code (compile with strict warnings)"
+commands = ["just lint"]
+
+[tasks.all]
+description = "Build, test, and check"
+dependencies = ["build", "test", "check"]
+commands = ["echo 'All checks passed'"]
+
+[tasks.check]
+description = "Check requirements"
+commands = ["bin/must check"]
+
+[tasks.deploy]
+description = "Build and deploy container"
+dependencies = ["build-release"]
+commands = ["bin/must deploy"]
+
+[tasks.deploy-push]
+description = "Build, deploy, and push container"
+dependencies = ["build-release"]
+commands = ["bin/must deploy --push"]
+
+# Requirements enforcement - defines Physical State contract
+[requirements]
+must_have = [
+    "LICENSE.txt",
+    "README.adoc",
+    "INSTALL.adoc",
+    "Containerfile",
+    "justfile",
+    "mustfile.toml",
+    "must.gpr",
+    "src/must.adb",
+    "src/deploy/deployer.ads",
+    "src/deploy/deployer.adb",
+]
+
+must_not_have = [
+    "Makefile",
+    "Dockerfile",
+    ".env",
+]
+
+# Content requirements - strings that must appear in files
+[requirements.content]
+"LICENSE.txt" = ["MPL", "Version 2.0"]
+"src/must.adb" = ["SPDX-License-Identifier: MPL-2.0-or-later"]
+
+# Templates
+[templates]
+
+[templates.ada_package]
+source = "templates/ada/package.ads.mustache"
+destination = "src/{{module_name}}.ads"
+description = "Generate Ada package specification"
+
+[templates.ada_body]
+source = "templates/ada/package.adb.mustache"
+destination = "src/{{module_name}}.adb"
+description = "Generate Ada package body"
+
+[templates.elixir_module]
+source = "templates/elixir/module.ex.mustache"
+destination = "lib/{{app_name}}/{{module_name}}.ex"
+description = "Generate Elixir module"
+
+# Enforcement rules
+[enforcement]
+license = "MPL-2.0-or-later"
+copyright_holder = "Jonathan D.A. Jewell"
+podman_not_docker = true
+gitlab_not_github = false
+
+[enforcement.checks]
+no_trailing_whitespace = true
+no_tabs = false
+unix_line_endings = true
+max_line_length = 120
+
+# Deployment configuration
+[deploy]
+containerfile = "Containerfile"
+registry = "ghcr.io/hyperpolymath"
+default_tag = "latest"

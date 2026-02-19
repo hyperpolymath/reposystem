@@ -1,0 +1,104 @@
+= Shell Entrypoints
+:toc:
+
+This directory contains entrypoint scripts for 17 different shell environments.
+
+== Supported Shells
+
+[cols="1,2,1"]
+|===
+| Shell | Script | Platform
+
+| Bash
+| `entrypoint.bash`
+| Linux, macOS, Windows (WSL/Git Bash)
+
+| Zsh
+| `entrypoint.zsh`
+| Linux, macOS
+
+| Fish
+| `entrypoint.fish`
+| Linux, macOS
+
+| Dash
+| `entrypoint.dash`
+| Debian/Ubuntu (default /bin/sh)
+
+| Ash
+| `entrypoint.ash`
+| Alpine Linux, BusyBox
+
+| Korn Shell
+| `entrypoint.ksh`
+| Unix, Linux
+
+| Nushell
+| `entrypoint.nu`
+| Cross-platform
+
+| Elvish
+| `entrypoint.elvish`
+| Cross-platform
+
+| Ion
+| `entrypoint.ion`
+| Linux (Redox OS origin)
+
+| Oil/Osh
+| `entrypoint.oil`
+| Cross-platform
+
+| Tcsh
+| `entrypoint.tcsh`
+| BSD, macOS
+
+| C Shell
+| `entrypoint.csh`
+| BSD, Unix
+
+| Murex
+| `entrypoint.murex`
+| Cross-platform
+
+| PowerShell Core
+| `entrypoint.ps1`
+| Cross-platform
+
+| Windows CMD
+| `entrypoint.cmd`
+| Windows
+
+| NGS
+| `entrypoint.ngs`
+| Linux
+
+| Tcl Shell
+| `entrypoint.tsh`
+| Cross-platform
+
+| MINIX Shell
+| `entrypoint.minix`
+| MINIX 3
+|===
+
+== Usage
+
+Each script attempts to locate the `must` binary in the following order:
+
+1. System PATH (`must`)
+2. Local build (`./bin/must`)
+
+If neither is found, it exits with an error.
+
+== Making Scripts Executable
+
+[source,bash]
+----
+chmod +x scripts/shells/*
+----
+
+== Customization
+
+These scripts are minimal by design. For project-specific customization,
+copy the appropriate script and modify as needed.

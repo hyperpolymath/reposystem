@@ -1,0 +1,15 @@
+#!/usr/bin/env murex
+# entrypoint.murex - Murex shell entrypoint for Must
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2025 Jonathan D.A. Jewell
+
+if { which must } then {
+    exec must @ARGS
+} else {
+    if { g ./bin/must } then {
+        exec ./bin/must @ARGS
+    } else {
+        err "Error: 'must' not found. Build with 'just build' or install."
+        exit 1
+    }
+}

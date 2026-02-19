@@ -1,0 +1,59 @@
+-- must.gpr
+-- GNAT project file for Must - task runner + template engine + enforcer
+-- Copyright (C) 2025 Jonathan D.A. Jewell
+-- SPDX-License-Identifier: MPL-2.0-or-later
+
+project Must is
+
+   for Source_Dirs use ("src", "src/**");
+   for Object_Dir use "obj";
+   for Exec_Dir use "bin";
+   for Main use ("must.adb");
+
+   type Build_Mode is ("debug", "release");
+   Mode : Build_Mode := external ("MODE", "debug");
+
+   package Compiler is
+      case Mode is
+         when "debug" =>
+            for Switches ("Ada") use
+              ("-g",              -- Debug info
+               "-gnata",          -- Enable assertions
+               "-gnatwa",         -- All warnings
+               "-gnatwj",         -- Warnings for obsolescent features
+               "-gnatwe",         -- Warnings as errors
+               "-gnat2022",       -- Ada 2022 mode
+               "-fstack-check");  -- Stack overflow checking
+         when "release" =>
+            for Switches ("Ada") use
+              ("-O3",             -- Maximum optimization
+               "-gnatp",          -- Suppress all checks (for speed)
+               "-gnatn",          -- Enable inlining
+               "-gnat2022");      -- Ada 2022 mode
+      end case;
+   end Compiler;
+
+   package Binder is
+      for Switches ("Ada") use ("-E");  -- Store traceback in exceptions
+   end Binder;
+
+   package Linker is
+      for Switches ("Ada") use ("-g");
+   end Linker;
+
+   package Builder is
+      for Executable ("must.adb") use "must";
+      for Switches ("Ada") use ("-j0");  -- Use all available CPUs
+   end Builder;
+
+   package Prove is
+      for Proof_Switches ("Ada") use
+        ("--level=4",           -- Maximum proof level
+         "--timeout=60",        -- 60 second timeout per proof
+         "--steps=10000",       -- Maximum proof steps
+         "--counterexamples=on", -- Show counterexamples
+         "--warnings=error",    -- Treat warnings as errors
+         "--pedantic");         -- Pedantic checking
+   end Prove;
+
+end Must;

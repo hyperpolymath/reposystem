@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: PLMP-1.0-or-later
+# Intentfile (A2ML Canonical)
+
+@abstract:
+Declared future intent for the system.
+This is the canonical Intent contract format.
+@end
+
+@requires:
+- section: Trust-Engine
+- section: Control-Plane
+- section: Pipeline
+- section: Introspection
+@end
+
+## Trust-Engine
+
+- integrate hardware-backed key management
+- support node attestation for deployments
+
+## Control-Plane
+
+- move to GitOps-backed configuration promotion
+- add canary and staged rollout support
+
+## Pipeline
+
+- adopt Nickel (or your DSL) as the primary policy language
+- automate policy promotion from dev to prod with signed artifacts
+
+## Introspection
+
+- expose decision latency and policy evaluation metrics
+- add tracing for end-to-end request decisions

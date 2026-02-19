@@ -1,0 +1,3 @@
+= Content Fixture
+
+This fixture should fail content checks until the required line is present.

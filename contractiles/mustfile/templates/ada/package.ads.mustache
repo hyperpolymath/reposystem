@@ -1,0 +1,34 @@
+-- {{module_name}}.ads
+-- {{description}}
+-- {{copyright}}
+-- SPDX-License-Identifier: {{license}}
+
+pragma Ada_2022;
+
+package {{module_name}} is
+
+   --  Public type declarations
+{{#has_type}}
+   type {{type_name}} is private;
+{{/has_type}}
+
+   --  Public subprogram declarations
+{{#procedures}}
+   procedure {{name}};
+   --  {{description}}
+{{/procedures}}
+
+{{#functions}}
+   function {{name}} return {{return_type}};
+   --  {{description}}
+{{/functions}}
+
+{{#has_type}}
+private
+
+   type {{type_name}} is record
+      Placeholder : Boolean := False;
+   end record;
+{{/has_type}}
+
+end {{module_name}};

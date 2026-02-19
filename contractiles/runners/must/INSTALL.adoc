@@ -1,0 +1,269 @@
+= Must Installation Guide
+:author: Jonathan D.A. Jewell
+:revnumber: 0.1.0-Alpha
+:toc: macro
+:toclevels: 2
+
+toc::[]
+
+== Quick Start (Container)
+
+The fastest way to try Must is via container:
+
+[source,bash]
+----
+# Build the container image
+podman build -t must:latest -f Containerfile .
+
+# Run must --help
+podman run --rm must:latest --help
+
+# Run must on a project (mount current directory)
+podman run --rm -v "$(pwd):/project:Z" -w /project must:latest check
+----
+
+== Native Installation
+
+=== Prerequisites
+
+Must requires the GNAT Ada 2022 compiler:
+
+==== Debian/Ubuntu
+
+[source,bash]
+----
+sudo apt-get update
+sudo apt-get install -y gnat gprbuild
+----
+
+==== Fedora
+
+[source,bash]
+----
+sudo dnf install -y gcc-gnat gprbuild
+----
+
+==== Arch Linux
+
+[source,bash]
+----
+sudo pacman -S gcc-ada gprbuild
+----
+
+==== macOS (Homebrew)
+
+[source,bash]
+----
+brew install gnat gprbuild
+----
+
+==== Guix (Recommended)
+
+[source,bash]
+----
+guix install gnat gprbuild
+----
+
+==== Nix
+
+[source,bash]
+----
+nix-shell -p gnat gprbuild
+----
+
+=== Build from Source
+
+Clone the repository and build:
+
+[source,bash]
+----
+git clone https://github.com/hyperpolymath/must.git
+cd must
+
+# Build debug version
+gprbuild -P must.gpr -XMODE=debug
+
+# Or build release version (optimized)
+gprbuild -P must.gpr -XMODE=release
+
+# Verify it works
+./bin/must --version
+./bin/must --help
+----
+
+=== Install System-Wide
+
+[source,bash]
+----
+# Build release and install
+gprbuild -P must.gpr -XMODE=release
+sudo cp bin/must /usr/local/bin/
+
+# Verify installation
+must --version
+----
+
+== Usage Examples
+
+=== Initialize a New Project
+
+[source,bash]
+----
+mkdir my-project && cd my-project
+must init
+----
+
+This creates a default `mustfile.toml` configuration.
+
+=== List Available Tasks
+
+[source,bash]
+----
+must list
+----
+
+=== Run a Task
+
+[source,bash]
+----
+must build           # Run the 'build' task
+must test            # Run the 'test' task
+must build --dry-run # Preview without executing
+----
+
+=== Check Requirements
+
+[source,bash]
+----
+must check           # Check project requirements
+must check --strict  # Fail on warnings
+must check --verbose # Show detailed output
+----
+
+=== Enforce Requirements (Check + Fix + Verify)
+
+[source,bash]
+----
+must enforce         # Full enforcement cycle
+must enforce --dry-run # Preview what would be fixed
+----
+
+=== Deploy (Container-based)
+
+Must uses Podman for deployment:
+
+[source,bash]
+----
+# Build the must binary in a container
+podman build -t must:latest -f Containerfile .
+
+# Run must in a container against your project
+podman run --rm -v "$(pwd):/project:Z" -w /project must:latest enforce
+----
+
+== CI/CD Integration
+
+=== GitLab CI
+
+[source,yaml]
+----
+stages:
+  - build
+  - check
+
+build:
+  stage: build
+  image: registry.gitlab.com/hyperpolymath/must:latest
+  script:
+    - must --version
+
+check:
+  stage: check
+  image: registry.gitlab.com/hyperpolymath/must:latest
+  script:
+    - must check --strict
+----
+
+=== GitHub Actions
+
+[source,yaml]
+----
+jobs:
+  must-check:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/hyperpolymath/must:latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - run: must check --strict
+----
+
+== Troubleshooting
+
+=== GNAT Not Found
+
+[source,bash]
+----
+# Check if GNAT is installed
+gnat --version
+gprbuild --version
+
+# If not found, install via your package manager (see Prerequisites)
+----
+
+=== Build Fails with Missing Dependencies
+
+Ensure you have the complete GNAT toolchain:
+
+[source,bash]
+----
+# Debian/Ubuntu
+sudo apt-get install -y gnat gprbuild
+
+# The project has no external Ada library dependencies
+----
+
+=== Permission Denied on Install
+
+[source,bash]
+----
+# Use sudo for system-wide installation
+sudo cp bin/must /usr/local/bin/
+
+# Or install to user directory
+mkdir -p ~/.local/bin
+cp bin/must ~/.local/bin/
+export PATH="$HOME/.local/bin:$PATH"
+----
+
+== Verify Installation
+
+After installation, verify must works:
+
+[source,bash]
+----
+# Show version
+must --version
+# Expected: must 0.1.0-alpha
+
+# Show help
+must --help
+
+# Initialize and check a test project
+cd /tmp
+mkdir must-test && cd must-test
+must init
+must list
+must check
+----
+
+== Uninstall
+
+[source,bash]
+----
+# Remove system-wide installation
+sudo rm /usr/local/bin/must
+
+# Or remove user installation
+rm ~/.local/bin/must
+----

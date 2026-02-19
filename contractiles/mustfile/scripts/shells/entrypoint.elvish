@@ -1,0 +1,18 @@
+#!/usr/bin/env elvish
+# entrypoint.elvish - Elvish shell entrypoint for Must
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (C) 2025 Jonathan D.A. Jewell
+
+fn main {|@args|
+  if (not (has-external must)) {
+    if (path:is-regular ./bin/must) {
+      exec ./bin/must $@args
+    } else {
+      echo "Error: 'must' not found. Build with 'just build' or install." >&2
+      exit 1
+    }
+  }
+  exec must $@args
+}
+
+main $@args

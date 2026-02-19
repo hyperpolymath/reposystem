@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: PLMP-1.0-or-later
 # Intentfile template - declared future intent
+# DEPRECATED: Legacy mixed-format file retained for compatibility only.
+# Canonical source of truth: contractiles/lust/Intentfile.a2ml.
 
 version: 1
 

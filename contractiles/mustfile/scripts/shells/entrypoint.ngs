@@ -1,0 +1,18 @@
+#!/usr/bin/env ngs
+# entrypoint.ngs - Next Generation Shell entrypoint for Must
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2025 Jonathan D.A. Jewell
+
+F main(argv:Arr) {
+    must_exists = try $(which must) catch(e:ProcessFail) false
+    if must_exists {
+        $(must $*argv)
+    } else {
+        if Path('./bin/must').exists() {
+            $('./bin/must' $*argv)
+        } else {
+            echo("Error: 'must' not found. Build with 'just build' or install.") > 2
+            exit(1)
+        }
+    }
+}

@@ -1,5 +1,7 @@
 -- SPDX-License-Identifier: PLMP-1.0-or-later
 -- Trustfile template - cryptographic and provenance verification
+-- DEPRECATED: Legacy mixed-format file retained for compatibility only.
+-- Canonical source of truth: contractiles/trust/Trustfile.a2ml.
 
 module Trustfile where
 

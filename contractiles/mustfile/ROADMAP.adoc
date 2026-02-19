@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Mustfile Format Specification Roadmap
+
+[NOTE]
+====
+This roadmap tracks the **specification** development.
+
+For the **implementation** roadmap (the `must` binary), see https://github.com/hyperpolymath/must/ROADMAP.adoc[must/ROADMAP.adoc].
+====
+
+== Current Status
+
+Specification v0.1.0-alpha published. Working toward v1.0.0 frozen spec.
+
+== Milestones
+
+=== v0.1.0-alpha - Foundation (Current)
+* [x] Initial must-spec format definition
+* [x] Golden examples and test cases
+* [x] Basic documentation
+* [x] Physical state contract definition
+
+=== v0.2.0 - Specification Enhancement
+* [ ] Comprehensive golden test suite
+* [ ] Edge case documentation
+* [ ] Platform-specific considerations
+* [ ] Reference implementation alignment
+
+=== v1.0.0 - Frozen Specification
+* [ ] Complete specification freeze
+* [ ] Full golden test coverage
+* [ ] Implementation conformance test suite
+* [ ] Production-ready documentation
+* [ ] Alignment with must v1.0.0
+
+== Future Directions
+
+_To be determined based on community feedback._

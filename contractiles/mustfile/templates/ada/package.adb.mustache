@@ -1,0 +1,26 @@
+-- {{module_name}}.adb
+-- {{description}}
+-- {{copyright}}
+-- SPDX-License-Identifier: {{license}}
+
+pragma Ada_2022;
+
+package body {{module_name}} is
+
+{{#procedures}}
+   procedure {{name}} is
+   begin
+      --  Implementation goes here
+      raise Program_Error with "{{name}} not yet implemented";
+   end {{name}};
+
+{{/procedures}}
+{{#functions}}
+   function {{name}} return {{return_type}} is
+   begin
+      --  Implementation goes here
+      return {{default_value}};
+   end {{name}};
+
+{{/functions}}
+end {{module_name}};

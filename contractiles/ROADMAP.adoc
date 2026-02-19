@@ -1,0 +1,44 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= Contractiles Roadmap
+:toc:
+:sectnums:
+
+== Current Status
+
+v1.0.0 is the baseline release focused on a coherent file contract and a minimal operational surface.
+
+== Milestones
+
+=== v1.0.0 - Contract Baseline
+
+* [x] Define the five-file contract (Justfile, Mustfile, Trustfile, Dustfile, Intentfile).
+* [x] Provide a concrete Mustfile with required invariants.
+* [x] Provide a Trustfile.hs skeleton with cryptographic verification steps.
+* [x] Provide a Dustfile for rollback and log recovery guidance.
+* [x] Provide an Intentfile with future-facing architectural intent.
+* [x] Align documentation and repo layout around the contract set.
+
+=== v0.1.0 - Execution Wiring
+
+* [ ] Implement real validators for config/policy.yaml.
+* [ ] Implement Nickel compilation and policy hashing.
+* [ ] Hook Trustfile.hs into CI/CD or a signed release pipeline.
+* [ ] Implement Dustfile handlers for log replay and deployment rollback.
+
+=== v0.2.0 - Interop
+
+* [ ] Provide templates for multiple gateway runtimes.
+* [ ] Offer schema version negotiation helpers.
+* [ ] Add an example policy pipeline and sample artifacts.
+
+=== v1.1.0 - A2ML Canonicalization
+
+* [x] Promote A2ML contract files as canonical (`Mustfile.a2ml`, `Trustfile.a2ml`, `Dustfile.a2ml`, `Intentfile.a2ml`).
+* [x] Mark legacy mixed-format contract files as deprecated compatibility shims.
+* [x] Update documentation to remove ambiguity about source-of-truth format.
+
+== Future Directions
+
+* Hardware-backed key management.
+* Deterministic change provenance and traceability.
+* Agent introspection and decision explainability.

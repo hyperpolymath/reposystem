@@ -1,0 +1,461 @@
+= Must Justfile Cookbook
+:toc: left
+:toclevels: 3
+:icons: font
+
+This cookbook documents all available `just` recipes for the Must project.
+
+== Quick Reference
+
+[source,bash]
+----
+just              # Show all recipes
+just help <name>  # Show help for specific recipe
+just info         # Show project info
+----
+
+== Build & Compile
+
+=== build
+
+Build the project in debug mode with full checks.
+
+[source,bash]
+----
+just build
+----
+
+Compiles with: `-g -gnata -gnatwa -gnatwe -gnaty -gnatyM120 -gnat2022 -fstack-check`
+
+=== build-release
+
+Build optimized release binary.
+
+[source,bash]
+----
+just build-release
+----
+
+Compiles with: `-O3 -gnatp -gnatn -gnat2022`
+
+=== build-watch
+
+Watch for changes and rebuild automatically (requires `entr`).
+
+[source,bash]
+----
+just build-watch
+----
+
+=== clean
+
+Remove build artifacts.
+
+[source,bash]
+----
+just clean
+----
+
+=== clean-all
+
+Deep clean including caches.
+
+[source,bash]
+----
+just clean-all
+----
+
+== Test & Quality
+
+=== test
+
+Run all tests.
+
+[source,bash]
+----
+just test
+----
+
+=== test-verbose
+
+Run tests with verbose output.
+
+[source,bash]
+----
+just test-verbose
+----
+
+=== test-smoke
+
+Quick smoke test of core functionality.
+
+[source,bash]
+----
+just test-smoke
+----
+
+=== quality
+
+Run all quality checks (format, lint, test).
+
+[source,bash]
+----
+just quality
+----
+
+== Format & Lint
+
+=== fmt
+
+Format Ada source files using gnatpp.
+
+[source,bash]
+----
+just fmt
+----
+
+=== fmt-check
+
+Check formatting without making changes.
+
+[source,bash]
+----
+just fmt-check
+----
+
+=== lint
+
+Run linter checks.
+
+[source,bash]
+----
+just lint
+----
+
+=== fix
+
+Auto-fix all fixable issues.
+
+[source,bash]
+----
+just fix
+----
+
+== Run & Execute
+
+=== run
+
+Run the application with optional arguments.
+
+[source,bash]
+----
+just run
+just run --help
+just run check --verbose
+----
+
+=== run-verbose
+
+Run with verbose output enabled.
+
+[source,bash]
+----
+just run-verbose check
+----
+
+=== install
+
+Install to `/usr/local/bin`.
+
+[source,bash]
+----
+just install
+----
+
+== Dependencies
+
+=== deps
+
+Install all dependencies.
+
+[source,bash]
+----
+just deps
+----
+
+=== deps-audit
+
+Audit dependencies for vulnerabilities.
+
+[source,bash]
+----
+just deps-audit
+----
+
+== Documentation
+
+=== docs
+
+Generate all documentation.
+
+[source,bash]
+----
+just docs
+----
+
+=== cookbook
+
+Regenerate this cookbook from justfile.
+
+[source,bash]
+----
+just cookbook
+----
+
+=== man
+
+Generate man pages.
+
+[source,bash]
+----
+just man
+----
+
+== Containers
+
+=== container-build
+
+Build container image.
+
+[source,bash]
+----
+just container-build
+just container-build v1.0  # with tag
+----
+
+=== container-run
+
+Run container.
+
+[source,bash]
+----
+just container-run
+just container-run latest --help
+----
+
+=== container-push
+
+Push container to registry.
+
+[source,bash]
+----
+just container-push ghcr.io/hyperpolymath latest
+----
+
+== CI & Automation
+
+=== ci
+
+Run full CI pipeline locally.
+
+[source,bash]
+----
+just ci
+----
+
+=== install-hooks
+
+Install git pre-commit hooks.
+
+[source,bash]
+----
+just install-hooks
+----
+
+== Security
+
+=== security
+
+Run security audit.
+
+[source,bash]
+----
+just security
+----
+
+=== sbom
+
+Generate Software Bill of Materials.
+
+[source,bash]
+----
+just sbom
+----
+
+== Validation
+
+=== validate
+
+Run full validation suite.
+
+[source,bash]
+----
+just validate
+----
+
+=== validate-rsr
+
+Validate RSR compliance.
+
+[source,bash]
+----
+just validate-rsr
+----
+
+=== validate-state
+
+Validate STATE.scm syntax.
+
+[source,bash]
+----
+just validate-state
+----
+
+== State Management
+
+=== state-touch
+
+Update STATE.scm timestamp.
+
+[source,bash]
+----
+just state-touch
+----
+
+=== state-phase
+
+Show current phase from STATE.scm.
+
+[source,bash]
+----
+just state-phase
+----
+
+== Guix & Nix
+
+=== guix-shell
+
+Enter Guix development shell.
+
+[source,bash]
+----
+just guix-shell
+----
+
+=== guix-build
+
+Build with Guix.
+
+[source,bash]
+----
+just guix-build
+----
+
+=== nix-shell
+
+Enter Nix development shell (fallback).
+
+[source,bash]
+----
+just nix-shell
+----
+
+== Utilities
+
+=== status
+
+Show git status.
+
+[source,bash]
+----
+just status
+----
+
+=== log
+
+Show recent commits.
+
+[source,bash]
+----
+just log
+just log 10  # last 10 commits
+----
+
+=== loc
+
+Count lines of code.
+
+[source,bash]
+----
+just loc
+----
+
+=== todos
+
+Show TODO comments in code.
+
+[source,bash]
+----
+just todos
+----
+
+=== edit
+
+Open project in editor.
+
+[source,bash]
+----
+just edit
+----
+
+== Matrix Recipes
+
+These recipes support combinatoric options:
+
+=== build-matrix
+
+[source,bash]
+----
+just build-matrix debug    # mode
+just build-matrix release x86_64  # mode + target
+----
+
+=== test-matrix
+
+[source,bash]
+----
+just test-matrix unit normal true  # suite, verbosity, parallel
+----
+
+=== container-matrix
+
+[source,bash]
+----
+just container-matrix build ghcr.io/hyperpolymath latest
+----
+
+=== ci-matrix
+
+[source,bash]
+----
+just ci-matrix all full
+----
+
+=== combinations
+
+Show all matrix combinations.
+
+[source,bash]
+----
+just combinations
+----

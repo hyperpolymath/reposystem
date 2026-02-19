@@ -1,0 +1,27 @@
+= Contractiles Contract Set
+:toc:
+:sectnums:
+
+This directory is the portable contract set. Copy the entire `contractiles/` directory into a project to establish a consistent operational, validation, trust, recovery, and intent framework.
+
+== Canonical Format
+
+* A2ML is the canonical format for all contract files in this directory.
+* Legacy non-A2ML files are deprecated and retained only for compatibility.
+* New projects should edit only the `.a2ml` files.
+
+== Contents
+
+* `must/Mustfile.a2ml` - required invariants and validations (canonical).
+* `trust/Trustfile.a2ml` - cryptographic verification steps (canonical).
+* `dust/Dustfile.a2ml` - rollback and recovery semantics (canonical).
+* `lust/Intentfile.a2ml` - future intent and roadmap direction (canonical).
+* Legacy files (`Mustfile`, `Trustfile.hs`, `Dustfile`, `Intentfile`) are deprecated compatibility shims.
+
+== Usage
+
+1. Copy this directory into your project root.
+2. Wire the Justfile commands to your real tooling.
+3. Keep the `.a2ml` files as the contract of record.
+4. Generate/validate any legacy files from A2ML if you still need compatibility.
+5. Update `Intentfile.a2ml` during roadmap reviews.

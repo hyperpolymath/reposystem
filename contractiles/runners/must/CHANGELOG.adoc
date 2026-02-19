@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+== [Unreleased]
+
+=== Added
+- `must deploy` command for container-based deployment
+- Containerfile for self-contained build environment
+- INSTALL.adoc with comprehensive installation guide
+- docs/must-spec.adoc with formal specification and golden examples
+- Physical State contract definition
+- `[requirements.content]` for file content verification
+- `[deploy]` configuration section
+
+=== Changed
+- Updated README with Quick Start and Physical State documentation
+- Enhanced CLI help with deploy options
+
+== [0.1.0] - 2025-12-27
+
+=== Added
+- Initial release of Must - task runner + template engine + enforcer
+- Core commands: init, list, check, fix, enforce, apply, templates
+- TOML-based configuration (mustfile.toml)
+- Mustache template engine for code generation
+- Requirements enforcement (must_have, must_not_have)
+- Task dependency resolution with topological sort
+- Circular dependency detection
+- Ada 2022 implementation with GNAT project file
+- Templates for Ada packages and Elixir modules
+- justfile with 40+ recipes
+- GitHub Actions workflows (CodeQL, Scorecard, quality checks)
+- GitLab CI/CD pipeline
+
+=== Security
+- SHA-pinned all GitHub Actions for supply chain security
+- No MD5/SHA1 for security purposes
+- HTTPS-only enforcement
+- Secret scanning with TruffleHog
+
+[Unreleased]: https://github.com/hyperpolymath/mustfile/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/hyperpolymath/mustfile/releases/tag/v0.1.0

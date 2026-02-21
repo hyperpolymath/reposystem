@@ -473,3 +473,8 @@ OPSM Core
 reposystem (graph/context source for OPSM ecosystem views)
 
 ----
+
+
+== Architecture
+
+See link:TOPOLOGY.md[TOPOLOGY.md] for a visual architecture map and completion dashboard.

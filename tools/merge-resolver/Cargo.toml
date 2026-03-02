@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+
+[package]
+name = "merge-resolver"
+version = "0.1.0"
+edition = "2021"
+license = "PMPL-1.0-or-later"
+description = "Safe, reversible AI-assisted merge conflict resolution with full rollback"
+authors = ["Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"]
+repository = "https://github.com/hyperpolymath/reposystem"
+keywords = ["git", "merge", "conflict-resolution", "reversible", "migration"]
+
+[[bin]]
+name = "merge-resolver"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = { version = "1", features = ["v4", "serde"] }

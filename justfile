@@ -344,3 +344,8 @@ help:
     @echo "  just ci             Run all CI checks"
     @echo "  just pre-commit     Pre-commit hooks"
     @echo "  just pre-push       Pre-push hooks"
+
+# [AUTO-GENERATED] Multi-arch / RISC-V target
+build-riscv:
+	@echo "Building for RISC-V..."
+	cross build --target riscv64gc-unknown-linux-gnu

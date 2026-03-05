@@ -6,7 +6,7 @@
     "build": "tauri build",
     "dev:frontend": "rescript build -w & deno run --allow-read --allow-net npm:vite",
     "build:frontend": "rescript build && deno run --allow-read --allow-write --allow-env npm:vite build",
-    "rescript": "rescript build",
+    "rescript": "^12.0.0",
     "rescript:watch": "rescript build -w",
     "rescript:clean": "rescript clean"
   },

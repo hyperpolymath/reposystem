@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gnosis Living Dashboard</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <header>
+    <h1>🔮 Gnosis Living Dashboard</h1>
+    <p>Real-time project state from Git forges</p>
+  </header>
+
+  <main>
+    <section class="config-panel">
+      <h2>Configuration</h2>
+      <form id="config-form">
+        <div class="form-group">
+          <label for="forge">Git Forge</label>
+          <select id="forge" name="forge">
+            <option value="github">GitHub</option>
+            <option value="gitlab">GitLab</option>
+            <option value="bitbucket">Bitbucket</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="owner">Owner/Org</label>
+          <input type="text" id="owner" name="owner" placeholder="hyperpolymath" required>
+        </div>
+
+        <div class="form-group">
+          <label for="repo">Repository</label>
+          <input type="text" id="repo" name="repo" placeholder="stateful-artefacts-for-gitforges" required>
+        </div>
+
+        <div class="form-group">
+          <label for="token">API Token (optional)</label>
+          <input type="password" id="token" name="token" placeholder="ghp_... (for private repos)">
+          <small>Not stored - used only for API requests</small>
+        </div>
+
+        <button type="submit" class="btn-primary">🔍 Fetch Data</button>
+      </form>
+    </section>
+
+    <section class="metrics-panel" id="metrics-panel" style="display: none;">
+      <h2>Live Metrics</h2>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Repository</div>
+          <div class="metric-value" id="metric-name">-</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Stars</div>
+          <div class="metric-value" id="metric-stars">-</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Forks</div>
+          <div class="metric-value" id="metric-forks">-</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Open Issues</div>
+          <div class="metric-value" id="metric-issues">-</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Open PRs</div>
+          <div class="metric-value" id="metric-prs">-</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Last Updated</div>
+          <div class="metric-value" id="metric-updated">-</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Language</div>
+          <div class="metric-value" id="metric-language">-</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">License</div>
+          <div class="metric-value" id="metric-license">-</div>
+        </div>
+      </div>
+
+      <div class="health-indicator">
+        <h3>Project Health</h3>
+        <div class="health-score" id="health-score">
+          <div class="score-circle">
+            <span id="score-value">-</span>
+          </div>
+          <div class="score-details" id="score-details">
+            Calculating...
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scm-output" id="scm-output" style="display: none;">
+      <h2>Generated STATE.scm</h2>
+      <div class="scm-actions">
+        <button id="copy-scm" class="btn-secondary">📋 Copy to Clipboard</button>
+        <button id="download-scm" class="btn-secondary">💾 Download STATE.scm</button>
+      </div>
+      <pre id="scm-content"></pre>
+    </section>
+
+    <section class="error-panel" id="error-panel" style="display: none;">
+      <h3>⚠️ Error</h3>
+      <p id="error-message"></p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Part of the <strong>Gnosis</strong> stateful artefacts ecosystem</p>
+    <p><a href="https://github.com/hyperpolymath/stateful-artefacts-for-gitforges">View on GitHub</a></p>
+  </footer>
+
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+# SPDX-License-Identifier: MPL-2.0-or-later
+name: Generate SBOM
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sbom:
+    name: Generate Software Bill of Materials
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+
+      - name: Setup Haskell
+        uses: haskell-actions/setup@33c6834e5a4ec21f93e28ca2d2c03d1c3414cc8c # v2
+        with:
+          ghc-version: '9.6.6'
+          enable-stack: true
+
+      - name: Generate Haskell dependency tree
+        working-directory: gnosis
+        run: |
+          stack build --dry-run
+          stack ls dependencies --separator=, > ../haskell-deps.csv
+
+      - name: Generate SBOM with CycloneDX
+        run: |
+          # Install cyclonedx-cli
+          wget https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.25.1/cyclonedx-linux-x64
+          chmod +x cyclonedx-linux-x64
+
+          # Create basic SBOM structure
+          cat > sbom-base.json << 'EOF'
+          {
+            "bomFormat": "CycloneDX",
+            "specVersion": "1.5",
+            "version": 1,
+            "metadata": {
+              "component": {
+                "type": "application",
+                "name": "stateful-artefacts-for-gitforges",
+                "version": "1.0.0",
+                "description": "Gnosis: Stateful artefacts rendering engine with 6scm metadata support"
+              }
+            },
+            "components": []
+          }
+          EOF
+
+          # Parse Haskell dependencies and add to SBOM
+          echo "Haskell dependencies:" && cat haskell-deps.csv
+
+          # Save SBOM
+          cp sbom-base.json cyclonedx-sbom.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@ea165de6abb5050e17c80995d4e2caaec6d72898 # v4
+        with:
+          name: sbom-cyclonedx
+          path: cyclonedx-sbom.json
+          retention-days: 90
+
+      - name: Attach SBOM to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2
+        with:
+          files: |
+            cyclonedx-sbom.json
+            haskell-deps.csv

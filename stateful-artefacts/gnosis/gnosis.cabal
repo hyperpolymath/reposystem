@@ -1,0 +1,38 @@
+cabal-version:       2.4
+name:                gnosis
+version:             1.1.0.0
+synopsis:            Stateful Artefacts Engine - Haskell renderer for dynamic documentation
+description:         Gnosis reads Guile Scheme metadata files and renders
+                     template documents with dynamic placeholders into
+                     static, accessible output for Git forges.
+-- PMPL-1.0-or-later preferred; MPL-2.0 required by Cabal SPDX validation
+license:             MPL-2.0
+license-file:        LICENSE
+author:              Jonathan D.A. Jewell
+maintainer:          jonathan.jewell@open.ac.uk
+copyright:           2025-2026 Jonathan D.A. Jewell
+category:            Development
+build-type:          Simple
+extra-source-files:  README.md
+
+executable gnosis
+  main-is:             Main.hs
+  other-modules:       SExp
+                     , Render
+                     , Types
+                     , Paxos
+                     , SixSCM
+                     , SixSCMEnhanced
+                     , DAX
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+  ghc-options:         -Wall -Wcompat -Widentities -Wincomplete-record-updates
+                       -Wincomplete-uni-patterns -Wmissing-export-lists
+                       -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:       base >= 4.14 && < 5
+                     , containers >= 0.6
+                     , text >= 1.2
+                     , time >= 1.9
+                     , directory >= 1.3
+                     , filepath >= 1.4
+                     , split >= 0.2

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Gnosis Format Toggle</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 16px;
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+    }
+    h1 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 12px 0;
+      color: #1a1a1a;
+    }
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .option:hover {
+      border-color: #0066cc;
+      background: #f5f9ff;
+    }
+    .option.active {
+      border-color: #0066cc;
+      background: #e6f2ff;
+    }
+    .option input[type="radio"] {
+      margin: 0;
+    }
+    .option-label {
+      flex: 1;
+    }
+    .option-title {
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+    .option-desc {
+      font-size: 12px;
+      color: #666;
+      margin-top: 2px;
+    }
+    .status {
+      margin-top: 12px;
+      padding: 8px 12px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #666;
+    }
+    .info {
+      margin-top: 12px;
+      padding: 12px;
+      background: #fff9e6;
+      border: 1px solid #ffe066;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>Gnosis Format Preference</h1>
+
+  <div class="option" data-mode="visual">
+    <input type="radio" name="format" id="visual" value="visual">
+    <label class="option-label" for="visual">
+      <div class="option-title">🎨 Visual Mode</div>
+      <div class="option-desc">Show badges and emoji (default)</div>
+    </label>
+  </div>
+
+  <div class="option" data-mode="accessible">
+    <input type="radio" name="format" id="accessible" value="accessible">
+    <label class="option-label" for="accessible">
+      <div class="option-title">📖 Accessible Mode</div>
+      <div class="option-desc">Plain text for screen readers</div>
+    </label>
+  </div>
+
+  <div class="status">
+    <span id="status-text">Loading preference...</span>
+  </div>
+
+  <div class="info">
+    This extension detects Gnosis-rendered content and applies your preferred format. Refresh the page after changing.
+  </div>
+
+  <script src="scripts/popup.js"></script>
+</body>
+</html>

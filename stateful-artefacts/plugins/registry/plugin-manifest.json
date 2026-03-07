@@ -1,0 +1,46 @@
+{
+  "version": "1.0.0",
+  "plugins": [
+    {
+      "id": "emojify-filter",
+      "name": "Emojify Filter",
+      "type": "filter",
+      "version": "1.0.0",
+      "module": "Plugins.Filters.Emojify",
+      "function": "emojify",
+      "description": "Adds emoji prefixes to phase and status values",
+      "author": "Gnosis Team",
+      "license": "PMPL-1.0-or-later",
+      "tags": ["filter", "emoji", "formatting"],
+      "enabled": true
+    },
+    {
+      "id": "core-ai-agent",
+      "name": "Core AI Agent",
+      "type": "ai-agent",
+      "version": "1.0.0",
+      "module": "Plugins.AI.CoreAgent",
+      "function": "analyzeRepo",
+      "description": "Analyzes repository health and suggests STATE.scm updates",
+      "author": "Gnosis Team",
+      "license": "PMPL-1.0-or-later",
+      "tags": ["ai", "analysis", "suggestions"],
+      "enabled": true,
+      "configuration": {
+        "auto-apply": false,
+        "suggestion-threshold": 70
+      }
+    }
+  ],
+  "categories": {
+    "filters": ["emojify-filter"],
+    "ai-agents": ["core-ai-agent"],
+    "data-sources": [],
+    "renderers": []
+  },
+  "metadata": {
+    "registry-version": "1.0.0",
+    "last-updated": "2026-01-24T00:00:00Z",
+    "total-plugins": 2
+  }
+}

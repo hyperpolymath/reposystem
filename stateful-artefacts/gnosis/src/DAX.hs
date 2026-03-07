@@ -17,6 +17,7 @@ module DAX
     , applyFilter
     , thousandsSeparator
     , relativeTime
+    , readInt
     ) where
 
 import qualified Data.Map.Strict as Map
@@ -36,8 +37,14 @@ evalCondition ctx condition =
 -- | Parse condition string into (key, operator, value)
 parseCondition :: String -> Maybe (String, String, String)
 parseCondition s
+    -- Two-character operators first (before single-char > and <)
+    | ">=" `isInfixOf` s = splitOn ">=" s >>= \(k, v) -> Just (trim k, ">=", trim v)
+    | "<=" `isInfixOf` s = splitOn "<=" s >>= \(k, v) -> Just (trim k, "<=", trim v)
     | "==" `isInfixOf` s = splitOn "==" s >>= \(k, v) -> Just (trim k, "==", trim v)
     | "!=" `isInfixOf` s = splitOn "!=" s >>= \(k, v) -> Just (trim k, "!=", trim v)
+    -- Single-character operators last
+    | ">" `isInfixOf` s  = splitOn ">" s  >>= \(k, v) -> Just (trim k, ">",  trim v)
+    | "<" `isInfixOf` s  = splitOn "<" s  >>= \(k, v) -> Just (trim k, "<",  trim v)
     | otherwise = Nothing
   where
     splitOn :: String -> String -> Maybe (String, String)
@@ -59,7 +66,36 @@ parseCondition s
 compareValues :: String -> String -> String -> Bool
 compareValues "==" a b = a == b
 compareValues "!=" a b = a /= b
+compareValues ">=" a b = numericCompare (>=) a b
+compareValues "<=" a b = numericCompare (<=) a b
+compareValues ">"  a b = numericCompare (>)  a b
+compareValues "<"  a b = numericCompare (<)  a b
 compareValues _ _ _ = False
+
+-- | Numeric comparison: parse both sides as integers, fall back to False
+numericCompare :: (Int -> Int -> Bool) -> String -> String -> Bool
+numericCompare op a b =
+    case (readInt a, readInt b) of
+        (Just na, Just nb) -> op na nb
+        _ -> False
+
+-- | Parse a string as an integer, returning Nothing on failure
+readInt :: String -> Maybe Int
+readInt [] = Nothing
+readInt ('-':rest) = case readNat rest of
+    Just n  -> Just (negate n)
+    Nothing -> Nothing
+readInt s = readNat s
+
+-- | Parse a string as a natural number
+readNat :: String -> Maybe Int
+readNat [] = Nothing
+readNat s
+    | all isDigit s = Just (foldl (\acc c -> acc * 10 + digitToInt c) 0 s)
+    | otherwise = Nothing
+  where
+    isDigit c = c >= '0' && c <= '9'
+    digitToInt c = fromEnum c - fromEnum '0'
 
 -- | Process {{#if}} conditionals in template
 processConditionals :: Context -> String -> String
@@ -76,7 +112,8 @@ processTemplate ctx template =
         withLoops = processLoops ctx withConditionals
     in withLoops
 
--- | Process {{#if condition}} ... {{/if}} blocks
+-- | Process {{#if condition}} ... {{#else}} ... {{/if}} blocks
+-- Supports optional {{#else}} clause.
 processIfBlocks :: Context -> String -> String
 processIfBlocks ctx template = go template
   where
@@ -84,11 +121,30 @@ processIfBlocks ctx template = go template
     go str
         | "{{#if " `isPrefixOf` str =
             let (condition, rest1) = extractUntil "}}" (drop 6 str)
-                (trueBlock, rest2) = extractUntil "{{/if}}" rest1
+                (ifBody, rest2) = extractUntil "{{/if}}" rest1
                 shouldShow = evalCondition ctx condition
-                result = if shouldShow then trueBlock else ""
-            in result ++ go rest2  -- extractUntil already dropped "{{/if}}"
-        | otherwise = take 1 str ++ go (drop 1 str)
+                -- Split ifBody on {{#else}} if present
+                (trueBlock, falseBlock) = splitElse ifBody
+                result = if shouldShow then trueBlock else falseBlock
+            in processIfBlocks ctx result ++ go rest2  -- recurse into chosen block for nested conditionals
+        | otherwise = safeHead str ++ go (safeTail str)
+
+-- | Split a block on {{#else}}, returning (trueBlock, falseBlock).
+-- Respects nested {{#if}} blocks so inner {{#else}} is not consumed.
+splitElse :: String -> (String, String)
+splitElse = go 0 ""
+  where
+    go :: Int -> String -> String -> (String, String)
+    go _ acc [] = (reverse acc, "")
+    go depth acc s
+        | depth == 0 && "{{#else}}" `isPrefixOf` s =
+            (reverse acc, drop 9 s)
+        | "{{#if " `isPrefixOf` s =
+            go (depth + 1) (safeHeadChar s : acc) (safeTail s)
+        | "{{/if}}" `isPrefixOf` s =
+            go (depth - 1) (safeHeadChar s : acc) (safeTail s)
+        | otherwise =
+            go depth (safeHeadChar s : acc) (safeTail s)
 
 -- | Process {{#for item in list}} ... {{/for}} blocks
 -- Supports: {{#for tag in tags}} ... {{/for}}
@@ -103,7 +159,7 @@ processForBlocks ctx template = go template
                 (loopBody, rest2) = extractUntil "{{/for}}" rest1
                 result = processLoop ctx loopSpec loopBody
             in result ++ go rest2  -- extractUntil already dropped "{{/for}}"
-        | otherwise = take 1 str ++ go (drop 1 str)
+        | otherwise = safeHead str ++ go (safeTail str)
 
 -- | Process a single loop: extract variable name and list key, then iterate
 processLoop :: Context -> String -> String -> String
@@ -157,7 +213,7 @@ replacePlaceholder varName value = go
                 filters = parseFilters (trim filterPart)
                 filteredValue = applyFilters filters value
             in filteredValue ++ go closingRest
-        | otherwise = take 1 str ++ go (drop 1 str)
+        | otherwise = safeHead str ++ go (safeTail str)
 
     -- Parse "| filter1 | filter2" into ["filter1", "filter2"]
     parseFilters "" = []
@@ -184,7 +240,22 @@ extractUntil delimiter str = go "" str
     go acc [] = (reverse acc, "")
     go acc s
         | delimiter `isPrefixOf` s = (reverse acc, drop (length delimiter) s)
-        | otherwise = go (head s : acc) (tail s)
+        | otherwise = go (safeHeadChar s : acc) (safeTail s)
+
+-- | Safe head: return first character as string, or empty
+safeHead :: String -> String
+safeHead [] = ""
+safeHead (x:_) = [x]
+
+-- | Safe head: return first character, or null char (should not be reached)
+safeHeadChar :: String -> Char
+safeHeadChar [] = '\0'
+safeHeadChar (x:_) = x
+
+-- | Safe tail: return rest of string, or empty
+safeTail :: String -> String
+safeTail [] = ""
+safeTail (_:xs) = xs
 
 -- Helper functions
 trim :: String -> String

@@ -85,7 +85,7 @@ main = do
 
     case optCommand opts of
         ShowVersion ->
-            putStrLn "Gnosis v1.1.0 - Stateful Artefacts Engine (6scm + DAX + Paxos-Lite)"
+            putStrLn "Gnosis v1.2.0 - Stateful Artefacts Engine (6scm + DAX + Paxos-Lite)"
 
         ShowHelp -> do
             putStrLn "Gnosis - The Stateful Artefacts Rendering Engine"
@@ -104,7 +104,8 @@ main = do
             putStrLn "Template syntax:"
             putStrLn "  (:key)                 Simple placeholder"
             putStrLn "  (:key | uppercase)     Placeholder with filter"
-            putStrLn "  {{#if key == val}}     Conditional block"
+            putStrLn "  {{#if key == val}}     Conditional (==, !=, >, <, >=, <=)"
+            putStrLn "  {{#else}}              Else branch in conditional"
             putStrLn "  {{#for x in list}}     Loop block"
 
         DumpContext -> do
@@ -123,7 +124,7 @@ main = do
                 ) (Map.toAscList ctx)
 
         RenderTemplate templatePath outputPath -> do
-            putStrLn "Gnosis: Stateful Artefacts Engine v1.1.0"
+            putStrLn "Gnosis: Stateful Artefacts Engine v1.2.0"
             putStrLn $ "  Template: " ++ templatePath
             putStrLn $ "  Output:   " ++ outputPath
             putStrLn $ "  Mode:     " ++ show (optRenderMode opts)

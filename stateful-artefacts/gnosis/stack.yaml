@@ -1,0 +1,4 @@
+# Stack configuration for gnosis
+resolver: nightly-2024-12-30
+packages:
+  - .

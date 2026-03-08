@@ -1,0 +1,71 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell (hyperpolymath)
+#
+# justfile — Stateful Artefacts for Git Forges
+# Run with: just <recipe>
+
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+# Default recipe: show help
+default:
+    @just --list
+
+# Build the Gnosis rendering engine
+build:
+    cd gnosis && stack build
+
+# Run Gnosis tests
+test:
+    cd gnosis && stack test
+
+# Install Gnosis binary locally
+install:
+    cd gnosis && stack install
+
+# Render a template file (usage: just render <template> <output>)
+render template output:
+    gnosis "{{template}}" "{{output}}"
+
+# Run hypatia security scan
+scan:
+    @echo "Running hypatia neurosymbolic scan..."
+    @if command -v hypatia-v2 &>/dev/null; then \
+        hypatia-v2 . --severity=critical --severity=high; \
+    else \
+        echo "hypatia-v2 not found — run via CI workflow instead"; \
+    fi
+
+# Validate 6scm metadata files
+validate-scm:
+    @echo "Validating .machine_readable/ files..."
+    @for f in .machine_readable/*.scm; do \
+        echo "  Checking $$f..."; \
+        if ! head -1 "$$f" | grep -q "SPDX-License-Identifier"; then \
+            echo "    WARNING: Missing SPDX header"; \
+        fi; \
+    done
+    @echo "Done."
+
+# Check license compliance
+license-check:
+    @echo "Checking for banned AGPL-3.0 headers..."
+    @if grep -rl "AGPL-3.0" --include='*.hs' --include='*.scm' .; then \
+        echo "FAIL: Found AGPL-3.0 headers (should be PMPL-1.0-or-later)"; \
+        exit 1; \
+    else \
+        echo "PASS: No AGPL-3.0 headers found"; \
+    fi
+
+# Clean build artifacts
+clean:
+    cd gnosis && stack clean
+    @echo "Cleaned."
+
+# Show project status from STATE.scm
+status:
+    @echo "=== Stateful Artefacts Status ==="
+    @if command -v guile &>/dev/null; then \
+        guile -c '(load ".machine_readable/STATE.scm") (display state)'; \
+    else \
+        cat .machine_readable/STATE.scm; \
+    fi

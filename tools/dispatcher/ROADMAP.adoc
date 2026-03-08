@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= Git Dispatcher Roadmap
+:toc: preamble
+:toclevels: 2
+
+== Current Status (2026-01-26)
+
+Integration phase: align data contracts with Reposystem and define dispatch workflows.
+
+== Milestones
+
+=== v0.1.x — Foundation
+
+* [ ] Define input format (reposystem plan + graph export)
+* [ ] Create minimal dispatcher CLI
+* [ ] Dry-run execution mode
+* [ ] Audit log format
+* [ ] Basic documentation
+
+=== v0.2.x — Orchestration
+
+* [ ] Batch execution across repo groups
+* [ ] Retry/rollback hooks
+* [ ] Safety policies (rate limits, approvals)
+* [ ] Integrations with gitbot-fleet
+
+=== v1.0.0 — Stable Release
+
+* [ ] Full feature set
+* [ ] Comprehensive tests
+* [ ] Production-ready workflows
+
+== Docs + OPSM Work
+
+1. **Opsm narrative** – weave `opsm-ui`, `git-hud`, and `gitbot-fleet` into the workflow story so contributors understand the everything-everywhere package management meaning.
+2. **Documentation parity** – keep the six `.scm` files in sync with README/ROADMAP status, summarizing blockers (accessibility, licensing) and next actions for agents/workflows.
+3. **Wiki presence** – publish developer/platform/user/layperson sections on the GitHub wiki and include ASCII diagrams + branding guidance for the OPSM UI.
+
+== Future Directions
+
+* UI surface via Git HUD
+* Pluggable execution backends
+* Multi-forge automation
+
+== OPSM Integration
+
+[source]
+----
+OPSM Core
+  |
+  v
+git-dispatcher (multi-repo dispatch for OPSM rollouts)
+
+----

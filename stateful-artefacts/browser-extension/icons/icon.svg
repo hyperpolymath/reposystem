@@ -1,0 +1,15 @@
+<!-- SPDX-License-Identifier: PMPL-1.0-or-later -->
+<!-- Gnosis - Stateful Artefacts Viewer icon -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="#0066cc" />
+  <!-- Inner ring for depth -->
+  <circle cx="64" cy="64" r="52" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.3" />
+  <!-- Stylized "G" letterform -->
+  <path d="M 82 48 A 28 28 0 1 0 82 80 L 82 64 L 68 64"
+        fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Three horizontal data lines (metadata representation) -->
+  <line x1="44" y1="92" x2="56" y2="92" stroke="#00cc66" stroke-width="4" stroke-linecap="round" />
+  <line x1="60" y1="92" x2="72" y2="92" stroke="#00cc66" stroke-width="4" stroke-linecap="round" />
+  <line x1="76" y1="92" x2="84" y2="92" stroke="#00cc66" stroke-width="4" stroke-linecap="round" />
+</svg>

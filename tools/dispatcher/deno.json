@@ -1,0 +1,41 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-read --allow-write --allow-env --allow-run src/main.mjs",
+    "test": "deno test --allow-read --allow-write --allow-env tests/",
+    "fmt": "deno fmt src/ tests/",
+    "lint": "deno lint src/ tests/",
+    "compile": "rescript build",
+    "watch": "rescript build -w",
+    "clean": "rescript clean"
+  },
+  "fmt": {
+    "files": {
+      "include": ["src/", "tests/"],
+      "exclude": ["lib/", "node_modules/"]
+    },
+    "options": {
+      "lineWidth": 100,
+      "indentWidth": 2,
+      "useTabs": false
+    }
+  },
+  "lint": {
+    "files": {
+      "include": ["src/", "tests/"],
+      "exclude": ["lib/", "node_modules/"]
+    }
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window"]
+  },
+  "imports": {
+    "@std/assert": "jsr:@std/assert@^1.0.0",
+    "@std/path": "jsr:@std/path@^1.0.0",
+    "@std/fs": "jsr:@std/fs@^1.0.0",
+    "@std/json": "jsr:@std/json@^1.0.0",
+    "@rescript/runtime/lib/es6/Belt_Array.js": "./vendor/rescript/Belt_Array.js",
+    "@rescript/runtime/lib/es6/Belt_Option.js": "./vendor/rescript/Belt_Option.js",
+    "@rescript/runtime/lib/es6/Stdlib_Bool.js": "./vendor/rescript/Stdlib_Bool.js"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "git-hud-frontend",
+  "version": "0.1.0",
+  "sources": [
+    {
+      "dir": "src",
+      "subdirs": true
+    }
+  ],
+  "package-specs": [
+    {
+      "module": "es6",
+      "in-source": true
+    }
+  ],
+  "suffix": ".res.js",
+  "bs-dependencies": [
+    "@rescript/core",
+    "@rescript/react",
+    "rescript-tea",
+    "cadre-tea-router"
+  ],
+  "bsc-flags": [
+    "-open RescriptCore"
+  ],
+  "warnings": {
+    "error": "+101"
+  },
+  "jsx": {
+    "version": 4,
+    "mode": "automatic"
+  }
+}

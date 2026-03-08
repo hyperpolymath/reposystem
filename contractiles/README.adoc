@@ -1,0 +1,95 @@
+= Contractiles
+:toc:
+:sectnums:
+
+Contractiles is a file-first contract system for operating, verifying, recovering, and evolving gateways. It centers on five artifacts you can copy into any repo to make runtime behavior and change control explicit and testable.
+
+Version: v1.0.0
+
+== Format Policy (A2ML Canonical)
+
+* Canonical contract format is now A2ML:
+** `contractiles/must/Mustfile.a2ml`
+** `contractiles/trust/Trustfile.a2ml`
+** `contractiles/dust/Dustfile.a2ml`
+** `contractiles/lust/Intentfile.a2ml`
+* Legacy mixed-format files (`Mustfile`, `Trustfile.hs`, `Dustfile`, `Intentfile`) are deprecated and retained only as compatibility shims.
+* New repositories should copy and edit the `.a2ml` files as the source of truth.
+
+== What It Does
+
+* Defines a minimal operational surface (`Justfile`).
+* Makes invariants explicit (`Mustfile.a2ml`).
+* Verifies integrity and provenance (`Trustfile.a2ml`).
+* Encodes recovery and rollback (`Dustfile.a2ml`).
+* Records future intent (`Intentfile.a2ml`).
+
+== Why It Exists
+
+Operational failures usually come from missing or implicit contracts. Contractiles makes those contracts explicit, portable, and reviewable.
+
+== Where It Is Going
+
+* Wire real validators and signatures into the trust spine.
+* Provide language/runtime templates for gateways.
+* Offer profile presets for common environments.
+
+== Quick Start
+
+[source,bash]
+----
+just setup
+just run-gateway
+just validate-policy
+just compile-nickel
+just gen-mustfile
+----
+
+== Required Tools
+
+* `just`
+* `rg` (ripgrep)
+* `jq`
+* `yq`
+* `nickel`
+* `openssl`
+* `kyber-verify` (or set `KYBER_VERIFY_CMD`)
+
+== The Five Files
+
+* *Justfile* (repo root) - operational commands for day-to-day actions.
+* *Mustfile.a2ml* (contractiles/must/Mustfile.a2ml) - canonical state contract.
+* *Trustfile.a2ml* (contractiles/trust/Trustfile.a2ml) - canonical integrity/provenance contract.
+* *Dustfile.a2ml* (contractiles/dust/Dustfile.a2ml) - canonical rollback/recovery contract.
+* *Intentfile.a2ml* (contractiles/lust/Intentfile.a2ml) - canonical intent/roadmap contract.
+* Legacy mirrors remain present but are deprecated.
+
+== Layout
+
+[source]
+----
+contractiles/
+├── Justfile
+├── Mustfile
+├── README.adoc
+├── ROADMAP.adoc
+├── contractiles/
+│   ├── must/Mustfile.a2ml
+│   ├── trust/Trustfile.a2ml
+│   ├── dust/Dustfile.a2ml
+│   └── lust/Intentfile.a2ml
+└── docs/
+    └── CITATIONS.adoc
+----
+
+== Usage Model
+
+1. Keep the Justfile commands as the operational surface.
+2. Treat `*.a2ml` files as the authoritative contracts.
+3. Use legacy non-A2ML files only for temporary compatibility.
+4. Run trust verification in CI/CD from the A2ML contract definitions.
+5. Track future shape in `Intentfile.a2ml` and keep it current.
+
+== Status
+
+This repository is in an A2ML-canonical transition phase: `.a2ml` contract files are authoritative, and legacy mixed-format files remain only for compatibility while downstream tooling migrates.

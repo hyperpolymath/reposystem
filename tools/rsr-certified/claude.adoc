@@ -1,0 +1,624 @@
+= RSR-Certified: Universal Rhodium Standard Repository Compliance
+:author: Claude AI Assistant
+:version: 0.1.0
+:toc: left
+:toclevels: 4
+:sectnums:
+:icons: font
+
+== Project Vision
+
+RSR-Certified is a **universal repository compliance engine** that brings the Rhodium Standard Repository (RSR) certification framework to every git platform, IDE, and development environment worldwide.
+
+=== Core Philosophy
+
+[quote]
+____
+One engine. Every platform. Universal excellence.
+____
+
+Rather than building separate apps for GitHub, GitLab, Bitbucket, Gitea, and others, we build:
+
+1. **A single compliance engine** - containerized, portable, platform-agnostic
+2. **Thin platform adapters** - lightweight shims that translate platform-specific webhooks/APIs
+3. **Universal certification** - the same standards, everywhere
+
+== Architecture Overview
+
+[source,ascii]
+----
+┌─────────────────────────────────────────────────────────────────────┐
+│                     RSR-CERTIFIED ECOSYSTEM                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌───────────┐  │
+│  │   GitHub    │  │   GitLab    │  │  Bitbucket  │  │   Gitea   │  │
+│  │   Adapter   │  │   Adapter   │  │   Adapter   │  │  Adapter  │  │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └─────┬─────┘  │
+│         │                │                │               │         │
+│         └────────────────┴────────────────┴───────────────┘         │
+│                              │                                       │
+│                    ┌─────────▼─────────┐                            │
+│                    │  Universal Event  │                            │
+│                    │    Translator     │                            │
+│                    └─────────┬─────────┘                            │
+│                              │                                       │
+│                    ┌─────────▼─────────┐                            │
+│                    │   RSR Compliance  │◄─────┐                     │
+│                    │      Engine       │      │                     │
+│                    └─────────┬─────────┘      │                     │
+│                              │                │                     │
+│         ┌────────────────────┼────────────────┤                     │
+│         │                    │                │                     │
+│  ┌──────▼──────┐  ┌──────────▼──────┐  ┌─────▼─────┐               │
+│  │   Badge     │  │  Certification  │  │   IDE     │               │
+│  │  Generator  │  │    Reporter     │  │  Plugins  │               │
+│  └─────────────┘  └─────────────────┘  └───────────┘               │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+----
+
+== RSR Certification Tiers
+
+The Rhodium Standard Repository certification uses a tiered system reflecting increasing levels of excellence:
+
+=== Tier Definitions
+
+[cols="1,2,3,2"]
+|===
+|Tier |Symbol |Requirements |Badge Color
+
+|**Rhodium**
+|◆ RSR-Rh
+|Full compliance + exemplary practices + community contribution
+|#E8E4E1 (Rhodium silver-white)
+
+|**Gold**
+|★ RSR-Au
+|Full compliance + advanced security + comprehensive documentation
+|#FFD700 (Gold)
+
+|**Silver**
+|☆ RSR-Ag
+|Core compliance + good practices + basic documentation
+|#C0C0C0 (Silver)
+
+|**Bronze**
+|● RSR-Cu
+|Minimum viable compliance + essential structure
+|#CD7F32 (Bronze)
+|===
+
+=== Detailed Certification Criteria
+
+==== Bronze (RSR-Cu) - Foundation
+[%hardbreaks]
+Minimum requirements for any compliant repository:
+
+* [ ] **LICENSE** - Valid open-source or proprietary license file
+* [ ] **README** - Basic project description and purpose
+* [ ] **.gitignore** - Appropriate ignore patterns for project type
+* [ ] **No secrets** - No hardcoded credentials, API keys, or sensitive data
+* [ ] **Valid structure** - Recognizable project organization
+
+==== Silver (RSR-Ag) - Established
+[%hardbreaks]
+Building on Bronze, adds:
+
+* [ ] **CONTRIBUTING.md** - Clear contribution guidelines
+* [ ] **CODE_OF_CONDUCT.md** - Community standards
+* [ ] **CHANGELOG.md** or equivalent - Version history tracking
+* [ ] **Issue templates** - Structured bug/feature reporting
+* [ ] **CI/CD configuration** - Automated testing/building
+* [ ] **Dependency management** - Lock files, version pinning
+* [ ] **Security policy** - SECURITY.md with disclosure process
+
+==== Gold (RSR-Au) - Excellence
+[%hardbreaks]
+Building on Silver, adds:
+
+* [ ] **Comprehensive documentation** - API docs, architecture docs
+* [ ] **Test coverage** - Minimum 70% code coverage with reports
+* [ ] **Dependency scanning** - Automated vulnerability checks
+* [ ] **Signed commits** - GPG/SSH commit signing enabled
+* [ ] **Branch protection** - Required reviews, status checks
+* [ ] **Release automation** - Semantic versioning, release notes
+* [ ] **Accessibility** - Documentation accessibility compliance
+* [ ] **Multi-language support** - i18n readiness where applicable
+
+==== Rhodium (RSR-Rh) - Exemplary
+[%hardbreaks]
+Building on Gold, adds:
+
+* [ ] **Reproducible builds** - Deterministic build outputs
+* [ ] **SBOM** - Software Bill of Materials
+* [ ] **Supply chain security** - SLSA Level 2+ compliance
+* [ ] **Threat model** - Documented security analysis
+* [ ] **Performance benchmarks** - Automated regression detection
+* [ ] **Community health** - Active maintenance, responsive issues
+* [ ] **Upstream contribution** - Contributing back to dependencies
+* [ ] **Sustainability** - Long-term maintenance plan documented
+
+== Universal Platform Adapter Design
+
+=== Event Abstraction Layer
+
+All git platforms emit different webhook payloads. We normalize them:
+
+[source,rust]
+----
+/// Universal repository event - platform agnostic
+pub enum RepoEvent {
+    Push(PushEvent),
+    PullRequest(PullRequestEvent),
+    Issue(IssueEvent),
+    Release(ReleaseEvent),
+    SecurityAlert(SecurityAlertEvent),
+    WorkflowRun(WorkflowEvent),
+    Comment(CommentEvent),
+}
+
+/// Platform adapter trait - implement for each git host
+pub trait PlatformAdapter {
+    /// Parse platform-specific webhook into universal event
+    fn parse_webhook(&self, payload: &[u8], headers: &Headers) -> Result<RepoEvent>;
+
+    /// Post compliance status back to platform
+    fn post_status(&self, repo: &RepoRef, status: &ComplianceStatus) -> Result<()>;
+
+    /// Fetch repository contents for analysis
+    fn fetch_contents(&self, repo: &RepoRef, path: &str) -> Result<Vec<u8>>;
+
+    /// Get repository metadata
+    fn get_metadata(&self, repo: &RepoRef) -> Result<RepoMetadata>;
+}
+----
+
+=== Supported Platforms
+
+[cols="1,1,2,1"]
+|===
+|Platform |Adapter Status |Webhook Types |API Version
+
+|GitHub
+|🟢 Primary
+|push, pull_request, issues, release, security_advisory
+|REST v3 + GraphQL v4
+
+|GitLab
+|🟡 Planned
+|push, merge_request, issue, release, vulnerability
+|REST v4
+
+|Bitbucket
+|🟡 Planned
+|repo:push, pullrequest:*, issue:*
+|REST 2.0
+
+|Gitea
+|🟡 Planned
+|push, pull_request, issues, release
+|REST v1
+
+|Forgejo
+|🟡 Planned
+|(same as Gitea)
+|REST v1
+
+|Azure DevOps
+|🔴 Future
+|git.push, git.pullrequest.*
+|REST 6.0+
+
+|AWS CodeCommit
+|🔴 Future
+|SNS notifications
+|AWS SDK
+
+|===
+
+== Containerized Deployment
+
+=== Why Podman/Docker?
+
+[source,ascii]
+----
+┌─────────────────────────────────────────────────────┐
+│              DEPLOYMENT FLEXIBILITY                  │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│   Self-Hosted          Cloud Platforms              │
+│   ┌─────────┐         ┌─────────────────┐          │
+│   │ Podman  │         │  Kubernetes     │          │
+│   │ Docker  │         │  Docker Swarm   │          │
+│   │ LXC     │         │  AWS ECS/Fargate│          │
+│   └─────────┘         │  GCP Cloud Run  │          │
+│                       │  Azure Container│          │
+│                       └─────────────────┘          │
+│                                                     │
+│   Edge/Desktop         Serverless                  │
+│   ┌─────────┐         ┌─────────────────┐          │
+│   │ Podman  │         │  AWS Lambda     │          │
+│   │ Desktop │         │  CloudFlare     │          │
+│   │         │         │  Workers        │          │
+│   └─────────┘         └─────────────────┘          │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+----
+
+=== Container Architecture
+
+[source,dockerfile]
+----
+# Multi-stage build for minimal runtime image
+FROM rust:1.75-alpine AS builder
+# ... build compliance engine
+
+FROM alpine:3.19 AS runtime
+# Minimal runtime with just the compliance engine
+COPY --from=builder /app/rsr-engine /usr/local/bin/
+EXPOSE 8080
+ENTRYPOINT ["rsr-engine"]
+----
+
+=== Compose Configuration
+
+[source,yaml]
+----
+# podman-compose.yml / docker-compose.yml
+version: "3.8"
+services:
+  rsr-engine:
+    image: ghcr.io/hyperpolymath/rsr-certified:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - RSR_PLATFORMS=github,gitlab,bitbucket
+      - RSR_LOG_LEVEL=info
+    volumes:
+      - ./config:/etc/rsr:ro
+      - rsr-cache:/var/cache/rsr
+
+  rsr-worker:
+    image: ghcr.io/hyperpolymath/rsr-certified:latest
+    command: ["worker"]
+    environment:
+      - RSR_QUEUE_URL=redis://redis:6379
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+
+volumes:
+  rsr-cache:
+  redis-data:
+----
+
+== IDE Extension Strategy
+
+=== Universal Extension Core
+
+Rather than writing separate extensions for each IDE, we build:
+
+1. **Language Server Protocol (LSP) Server** - Universal IDE integration
+2. **Thin IDE shims** - Platform-specific wrappers
+
+[source,ascii]
+----
+┌──────────────────────────────────────────────────────────┐
+│                  IDE INTEGRATION LAYER                    │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────────────┐│
+│  │ VSCode  │ │ Neovim  │ │ Emacs   │ │ JetBrains IDEs  ││
+│  │Extension│ │ Plugin  │ │ Package │ │    Plugin       ││
+│  └────┬────┘ └────┬────┘ └────┬────┘ └────────┬────────┘│
+│       │           │           │               │          │
+│       └───────────┴───────────┴───────────────┘          │
+│                        │                                  │
+│              ┌─────────▼─────────┐                       │
+│              │   RSR LSP Server  │                       │
+│              │  (runs locally or │                       │
+│              │   in container)   │                       │
+│              └─────────┬─────────┘                       │
+│                        │                                  │
+│              ┌─────────▼─────────┐                       │
+│              │  Compliance Engine│                       │
+│              └───────────────────┘                       │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+----
+
+=== Supported IDEs/Editors
+
+[cols="1,1,2"]
+|===
+|Editor/IDE |Integration Type |Status
+
+|VS Code
+|Native Extension + LSP
+|🟢 Primary
+
+|Neovim
+|LSP Client
+|🟢 Planned
+
+|Emacs
+|LSP (lsp-mode/eglot)
+|🟢 Planned
+
+|JetBrains (IntelliJ, PyCharm, etc.)
+|Plugin + LSP
+|🟡 Planned
+
+|Sublime Text
+|LSP Client
+|🟡 Planned
+
+|Notepad++
+|Plugin (limited)
+|🟡 Planned
+
+|Vim
+|LSP (via coc.nvim/vim-lsp)
+|🟢 Planned
+
+|Helix
+|Native LSP
+|🟢 Planned
+
+|Zed
+|Native LSP
+|🟢 Planned
+
+|===
+
+== Project Structure
+
+[source]
+----
+git-rsr-certified/
+├── claude.adoc                 # This file - project documentation
+├── README.md                   # Quick start guide
+├── LICENSE                     # Apache 2.0 + MIT dual license
+├── CONTRIBUTING.md             # Contribution guidelines
+├── SECURITY.md                 # Security policy
+│
+├── engine/                     # Core compliance engine (Rust)
+│   ├── Cargo.toml
+│   ├── src/
+│   │   ├── lib.rs             # Library root
+│   │   ├── main.rs            # CLI/Server entry point
+│   │   ├── compliance/        # Compliance checking logic
+│   │   │   ├── mod.rs
+│   │   │   ├── bronze.rs
+│   │   │   ├── silver.rs
+│   │   │   ├── gold.rs
+│   │   │   └── rhodium.rs
+│   │   ├── adapters/          # Platform adapters
+│   │   │   ├── mod.rs
+│   │   │   ├── github.rs
+│   │   │   ├── gitlab.rs
+│   │   │   ├── bitbucket.rs
+│   │   │   └── gitea.rs
+│   │   ├── events/            # Event abstraction
+│   │   │   ├── mod.rs
+│   │   │   └── types.rs
+│   │   └── server/            # HTTP server for webhooks
+│   │       ├── mod.rs
+│   │       └── routes.rs
+│   └── tests/
+│
+├── lsp/                        # Language Server Protocol implementation
+│   ├── Cargo.toml
+│   └── src/
+│       └── main.rs
+│
+├── extensions/                 # IDE extensions
+│   ├── vscode/                # VS Code extension
+│   │   ├── package.json
+│   │   └── src/
+│   ├── neovim/                # Neovim plugin
+│   └── jetbrains/             # JetBrains plugin
+│
+├── container/                  # Container build files
+│   ├── Containerfile          # Podman/Docker build
+│   ├── compose.yml            # Compose orchestration
+│   └── k8s/                   # Kubernetes manifests
+│
+├── badges/                     # Badge assets
+│   ├── rhodium.svg
+│   ├── gold.svg
+│   ├── silver.svg
+│   └── bronze.svg
+│
+├── schemas/                    # JSON schemas for config
+│   └── rsr-config.schema.json
+│
+└── .github/                    # GitHub-specific (meta: self-compliance)
+    ├── workflows/
+    │   ├── ci.yml
+    │   └── release.yml
+    └── ISSUE_TEMPLATE/
+----
+
+== Configuration
+
+=== Repository Configuration
+
+Repositories can customize compliance via `.rsr.toml`:
+
+[source,toml]
+----
+# .rsr.toml - RSR compliance configuration
+[compliance]
+target_tier = "gold"           # Tier we're aiming for
+strict_mode = false            # Fail CI on non-compliance?
+
+[checks]
+# Override specific checks
+license.required = true
+license.allowed = ["MIT", "Apache-2.0", "GPL-3.0"]
+
+readme.min_length = 100        # Minimum README length
+readme.required_sections = ["Installation", "Usage"]
+
+[ignore]
+# Paths to ignore in compliance scanning
+paths = [
+    "vendor/",
+    "third_party/",
+    ".git/",
+]
+
+[badges]
+# Badge configuration
+style = "flat-square"          # flat, flat-square, for-the-badge
+include_score = true           # Show compliance percentage
+----
+
+== API Design
+
+=== REST API Endpoints
+
+[source]
+----
+POST /webhook/{platform}       # Receive platform webhooks
+GET  /api/v1/repo/{owner}/{repo}/status    # Get compliance status
+GET  /api/v1/repo/{owner}/{repo}/badge     # Get badge SVG
+GET  /api/v1/repo/{owner}/{repo}/report    # Get detailed report
+POST /api/v1/analyze           # Analyze repository on-demand
+
+# Health & metrics
+GET  /health                   # Health check
+GET  /metrics                  # Prometheus metrics
+----
+
+=== LSP Methods
+
+[source]
+----
+# Standard LSP
+initialize
+shutdown
+textDocument/didOpen
+textDocument/didSave
+
+# Custom RSR methods
+rsr/getCompliance              # Get current compliance status
+rsr/runCheck                   # Run specific compliance check
+rsr/getTier                    # Get current certification tier
+rsr/suggestFixes               # Get fix suggestions
+----
+
+== Security Considerations
+
+=== Webhook Verification
+
+Each platform adapter MUST verify webhook authenticity:
+
+[source,rust]
+----
+impl PlatformAdapter for GitHubAdapter {
+    fn verify_webhook(&self, payload: &[u8], signature: &str) -> Result<bool> {
+        // GitHub uses HMAC-SHA256
+        let expected = hmac_sha256(self.webhook_secret, payload);
+        constant_time_eq(signature, &format!("sha256={}", hex::encode(expected)))
+    }
+}
+----
+
+=== Secret Detection
+
+The engine includes comprehensive secret detection:
+
+- API keys (AWS, GCP, Azure, etc.)
+- Private keys (RSA, EC, Ed25519)
+- Database connection strings
+- OAuth tokens
+- JWT secrets
+- Generic high-entropy strings
+
+=== Supply Chain
+
+This project itself aims for Rhodium compliance:
+
+- SLSA Level 3 builds
+- Signed releases
+- Reproducible builds
+- SBOM generation
+- Dependency review automation
+
+== Development Guidelines
+
+=== For Claude AI Assistants
+
+When working on this codebase:
+
+1. **Always run tests** before committing
+2. **Follow Rust idioms** - use clippy, rustfmt
+3. **Document public APIs** - every public item needs docs
+4. **Consider all platforms** - changes should be platform-agnostic
+5. **Security first** - never skip webhook verification, input validation
+
+=== Commit Convention
+
+[source]
+----
+type(scope): subject
+
+Types: feat, fix, docs, style, refactor, test, chore
+Scopes: engine, lsp, vscode, github, gitlab, bitbucket, ci
+
+Examples:
+feat(engine): add Gitea platform adapter
+fix(github): correct webhook signature verification
+docs(lsp): document custom RSR methods
+----
+
+== Roadmap
+
+=== Phase 1: Foundation (Current)
+- [x] Project structure
+- [x] claude.adoc documentation
+- [ ] Core compliance engine skeleton
+- [ ] Bronze tier checks implementation
+- [ ] GitHub adapter (primary platform)
+
+=== Phase 2: Core Features
+- [ ] Silver/Gold tier checks
+- [ ] GitLab adapter
+- [ ] Bitbucket adapter
+- [ ] Badge generation
+- [ ] Basic web UI
+
+=== Phase 3: IDE Integration
+- [ ] LSP server implementation
+- [ ] VS Code extension
+- [ ] Neovim plugin
+
+=== Phase 4: Advanced
+- [ ] Rhodium tier checks
+- [ ] SLSA integration
+- [ ] SBOM generation
+- [ ] Performance benchmarking
+- [ ] Cloud deployment templates
+
+=== Phase 5: Ecosystem
+- [ ] GitHub Marketplace app
+- [ ] GitLab integration
+- [ ] Public badge service
+- [ ] Community tier definitions
+
+== License
+
+This project is dual-licensed under Apache 2.0 and MIT licenses.
+You may choose either license for your use.
+
+---
+
+[.text-center]
+**RSR-Certified** - Raising the bar for repository excellence, everywhere.

@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: PLMP-1.0-or-later
+# Mustfile (A2ML Canonical)
+
+@abstract:
+Declarative state contract describing what must be true.
+This is the canonical Must contract format.
+@end
+
+@requires:
+- section: Parameters
+- section: Checks
+@end
+
+## Parameters
+
+- gateway_port: 8080
+- schema_version: v1.0.0
+
+## Checks
+
+### policy-config-valid
+- description: config/policy.yaml must be valid
+- run: just validate-policy
+
+### policy-nickel-compiles
+- description: policy/policy.ncl must compile
+- run: just compile-nickel
+
+### gateway-exposes-port
+- description: gateway must expose the configured port
+- run: ss -lnt | rg ":8080"
+
+### logs-are-json
+- description: logs must be JSON
+- run: rg --files -g "*.json" logs | xargs -r jq -e .
+
+### schema-version-matches
+- description: schema must match v1.0.0
+- run: rg -n "v1.0.0" schema

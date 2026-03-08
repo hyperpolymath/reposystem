@@ -1,0 +1,185 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+
+# Gitvisor CI/CD Pipeline
+
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+variables:
+  MIX_ENV: test
+  ELIXIR_VERSION: "1.17"
+  ERLANG_VERSION: "27"
+
+# =============================================================================
+# Linting
+# =============================================================================
+
+lint:elixir:
+  stage: lint
+  image: elixir:${ELIXIR_VERSION}
+  script:
+    - cd backend
+    - mix local.hex --force
+    - mix local.rebar --force
+    - mix deps.get
+    - mix format --check-formatted
+    - mix credo --strict
+  rules:
+    - changes:
+        - backend/**/*
+
+lint:rescript:
+  stage: lint
+  image: denoland/deno:latest
+  script:
+    - cd frontend
+    - deno lint
+    - deno fmt --check
+  rules:
+    - changes:
+        - frontend/**/*
+
+lint:ada:
+  stage: lint
+  image: gcc:latest
+  before_script:
+    - apt-get update && apt-get install -y gnat gprbuild
+  script:
+    - cd tui
+    - gprbuild -P git-hud_tui.gpr -p -gnatwe  # Warnings as errors
+  rules:
+    - changes:
+        - tui/**/*
+
+# =============================================================================
+# Testing
+# =============================================================================
+
+test:elixir:
+  stage: test
+  image: elixir:${ELIXIR_VERSION}
+  script:
+    - cd backend
+    - mix local.hex --force
+    - mix local.rebar --force
+    - mix deps.get
+    - mix test --cover
+  coverage: '/(\d+\.\d+)% coverage/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: backend/cover/cobertura.xml
+  rules:
+    - changes:
+        - backend/**/*
+
+test:rescript:
+  stage: test
+  image: denoland/deno:latest
+  script:
+    - cd frontend
+    - deno task test
+  rules:
+    - changes:
+        - frontend/**/*
+
+test:julia:
+  stage: test
+  image: julia:1.10
+  script:
+    - cd analytics
+    - julia --project=. -e 'using Pkg; Pkg.instantiate(); Pkg.test()'
+  rules:
+    - changes:
+        - analytics/**/*
+
+# =============================================================================
+# Build
+# =============================================================================
+
+build:backend:
+  stage: build
+  image: elixir:${ELIXIR_VERSION}
+  variables:
+    MIX_ENV: prod
+  script:
+    - cd backend
+    - mix local.hex --force
+    - mix local.rebar --force
+    - mix deps.get --only prod
+    - mix compile
+    - mix release
+  artifacts:
+    paths:
+      - backend/_build/prod/rel/git-hud
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+build:frontend:
+  stage: build
+  image: denoland/deno:latest
+  script:
+    - cd frontend
+    - npm install
+    - npx rescript build
+    - deno task build
+  artifacts:
+    paths:
+      - frontend/dist
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+build:container:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t git-hud:$CI_COMMIT_SHA -f Containerfile .
+    - docker tag git-hud:$CI_COMMIT_SHA git-hud:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# =============================================================================
+# RSR Compliance Check
+# =============================================================================
+
+rsr:compliance:
+  stage: lint
+  image: alpine:latest
+  script:
+    - |
+      echo "Checking RSR compliance..."
+      SCORE=0
+      TOTAL=10
+
+      test -f README.adoc && echo "✓ README.adoc" && SCORE=$((SCORE+1)) || echo "✗ README.adoc"
+      test -f LICENSE.txt && echo "✓ LICENSE.txt" && SCORE=$((SCORE+1)) || echo "✗ LICENSE.txt"
+      test -f SECURITY.md && echo "✓ SECURITY.md" && SCORE=$((SCORE+1)) || echo "✗ SECURITY.md"
+      test -f CODE_OF_CONDUCT.adoc && echo "✓ CODE_OF_CONDUCT.adoc" && SCORE=$((SCORE+1)) || echo "✗ CODE_OF_CONDUCT.adoc"
+      test -f CONTRIBUTING.adoc && echo "✓ CONTRIBUTING.adoc" && SCORE=$((SCORE+1)) || echo "✗ CONTRIBUTING.adoc"
+      test -f GOVERNANCE.adoc && echo "✓ GOVERNANCE.adoc" && SCORE=$((SCORE+1)) || echo "✗ GOVERNANCE.adoc"
+      test -f flake.nix && echo "✓ flake.nix" && SCORE=$((SCORE+1)) || echo "✗ flake.nix"
+      test -f justfile && echo "✓ justfile" && SCORE=$((SCORE+1)) || echo "✗ justfile"
+      test -d .well-known && echo "✓ .well-known/" && SCORE=$((SCORE+1)) || echo "✗ .well-known/"
+      test -f .github/FUNDING.yml && echo "✓ FUNDING.yml" && SCORE=$((SCORE+1)) || echo "✗ FUNDING.yml"
+
+      PERCENT=$((SCORE * 100 / TOTAL))
+      echo ""
+      echo "RSR Compliance: ${PERCENT}% (${SCORE}/${TOTAL})"
+
+      if [ $PERCENT -ge 75 ]; then
+        echo "Status: COMPLIANT"
+        exit 0
+      else
+        echo "Status: NON-COMPLIANT (requires 75%)"
+        exit 1
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"

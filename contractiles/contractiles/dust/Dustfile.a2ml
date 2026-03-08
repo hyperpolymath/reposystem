@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: PLMP-1.0-or-later
+# Dustfile (A2ML Canonical)
+
+@abstract:
+Recovery and rollback semantics for failures and bad deployments.
+This is the canonical Dust contract format.
+@end
+
+@requires:
+- section: Logs
+- section: Policy
+- section: Gateway
+- section: Dust-Events
+@end
+
+## Logs
+
+### gateway-decision-log
+- path: logs/decisions.json
+- reversible: true
+- handler: dust-replay --reverse logs/decisions.json
+
+## Policy
+
+### policy-rollback
+- path: policy/policy.ncl
+- rollback: git checkout HEAD~1 -- policy/policy.ncl
+- notes: rollback policy to the last known-good revision
+
+## Gateway
+
+### bad-deployment
+- event: deploy.failure
+- undo: gatewayctl rollback --last
+- notes: preserve audit logs while rolling back
+
+## Dust-Events
+
+### decision-log-to-dust
+- source: logs/decisions.json
+- transform: dustify --input logs/decisions.json --output logs/dust-events.json
+- notes: map decision logs into reversible dust events

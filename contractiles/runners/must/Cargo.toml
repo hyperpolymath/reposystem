@@ -1,0 +1,23 @@
+[package]
+name = "must"
+version = "1.0.0"
+edition = "2021"
+authors = ["Jonathan D.A. Jewell <jonathan@hyperpolymath.tech>"]
+license = "AGPL-3.0-or-later"
+description = "Authority-First State Orchestrator with Reversible Contracts"
+repository = "https://github.com/hyperpolymath/must"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sha2 = "0.10"  # For SHA-512/SHAKE256
+ed25519-dalek = "2.0"  # For Ed448-like signatures (post-quantum)
+walkdir = "2.3"  # Filesystem traversal
+thiserror = "1.0"  # Error handling
+clap = { version = "4.0", features = ["derive"] }  # CLI parsing
+nickel-lang = { git = "https://github.com/tweag/nickel", optional = true }  # For Nickel FFI
+tokio = { version = "1.0", features = ["full"] }  # Async for Podman/processes
+
+[features]
+default = []
+nickel = ["nickel-lang"]  # Enable Nickel manifest support

@@ -1,0 +1,330 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2024 RSR-Certified Contributors
+
+= RSR-Certified Roadmap
+:author: RSR-Certified Contributors
+:version: 0.1.0
+:toc: left
+:toclevels: 3
+:icons: font
+
+== Project Status Overview
+
+RSR-Certified is in active development with a functional core engine and substantial infrastructure already in place. This roadmap outlines the current state and future direction.
+
+[cols="1,2,1"]
+|===
+|Component |Status |Completion
+
+|Core Engine
+|Functional with Bronze checks
+|40%
+
+|GitHub Adapter
+|Fully implemented
+|90%
+
+|Other Platform Adapters
+|Scaffolded
+|15%
+
+|LSP Server
+|Functional baseline
+|60%
+
+|VS Code Extension
+|Scaffolded
+|20%
+
+|Container Deployment
+|Ready for testing
+|80%
+
+|Documentation
+|Substantial foundation
+|50%
+|===
+
+== Phase 1: Foundation (Current)
+
+=== Completed
+
+[%interactive]
+* [x] **Project Architecture**
+** Rust workspace with `engine` and `lsp` crates
+** Modular compliance check system
+** Platform adapter abstraction layer
+** Event normalization for cross-platform webhooks
+
+* [x] **Core Compliance Engine**
+** `CertificationTier` enum (None, Bronze, Silver, Gold, Rhodium)
+** `ComplianceEngine` with local and remote checking
+** Score calculation and tier determination
+** Badge SVG generation
+
+* [x] **Bronze Tier Checks**
+** `bronze.license` - LICENSE file detection with type identification
+** `bronze.readme` - README file validation (md, adoc, rst, txt)
+** `bronze.gitignore` - .gitignore presence and content validation
+** `bronze.no_secrets` - Secret pattern detection (AWS, GitHub, OpenAI, private keys)
+
+* [x] **GitHub Adapter (Primary Platform)**
+** Webhook signature verification (HMAC-SHA256)
+** Event parsing: push, pull_request, issues, release, security_advisory, workflow_run, comments
+** Status posting via GitHub API
+** File content fetching
+** Repository metadata retrieval
+
+* [x] **CLI Application**
+** `rsr check <path>` - Local compliance checking
+** `rsr serve` - Webhook server
+** `rsr badge <tier>` - Badge generation
+** `rsr init` - Configuration initialization
+** Multiple output formats (text, JSON, badge)
+
+* [x] **HTTP Server**
+** Axum-based webhook receiver
+** Health and metrics endpoints
+** REST API for compliance status, badges, reports
+
+* [x] **LSP Server**
+** IDE integration via Language Server Protocol
+** Real-time compliance checking on file open/save
+** Diagnostic publishing for failed checks
+** Custom commands: checkCompliance, generateBadge, initConfig
+
+* [x] **Container Deployment**
+** Multi-stage Containerfile (Alpine-based)
+** Compose configuration with Redis worker queue
+** Kubernetes deployment manifests
+
+* [x] **Configuration Schema**
+** JSON Schema for `.rsr.toml`
+** Configurable checks, ignore patterns, badge styles
+
+=== In Progress
+
+[%interactive]
+* [ ] Silver tier checks implementation
+* [ ] Gold tier checks implementation
+* [ ] Comprehensive test coverage
+* [ ] CI pipeline verification
+
+== Phase 2: Core Features
+
+=== Silver Tier Checks
+
+[%interactive]
+* [ ] `silver.contributing` - CONTRIBUTING.md validation
+* [ ] `silver.code_of_conduct` - CODE_OF_CONDUCT.md validation
+* [ ] `silver.security_policy` - SECURITY.md validation
+* [ ] `silver.changelog` - CHANGELOG presence and format
+* [ ] `silver.ci_config` - CI/CD configuration detection (GitHub Actions, GitLab CI, etc.)
+* [ ] `silver.issue_templates` - Issue/PR template validation
+* [ ] `silver.dependency_lock` - Lock file presence (Cargo.lock, package-lock.json, etc.)
+
+=== Gold Tier Checks
+
+[%interactive]
+* [ ] `gold.documentation` - API/Architecture docs presence
+* [ ] `gold.test_coverage` - Minimum coverage thresholds
+* [ ] `gold.dependency_scanning` - Vulnerability check integration
+* [ ] `gold.signed_commits` - GPG/SSH commit signing verification
+* [ ] `gold.branch_protection` - Branch protection rules validation
+* [ ] `gold.release_automation` - Semantic versioning compliance
+* [ ] `gold.accessibility` - Documentation accessibility
+
+=== Additional Platform Adapters
+
+[%interactive]
+* [ ] **GitLab Adapter**
+** Webhook verification
+** Event parsing (push, merge_request, issue, release)
+** Status posting via GitLab API
+** MR decoration
+
+* [ ] **Bitbucket Adapter**
+** Webhook verification
+** Event parsing (repo:push, pullrequest:*, issue:*)
+** Build status integration
+
+* [ ] **Gitea/Forgejo Adapter**
+** Webhook verification
+** Event parsing (push, pull_request, issues, release)
+** Status API integration
+
+=== Badge Service
+
+[%interactive]
+* [ ] Dynamic badge generation with live compliance data
+* [ ] Multiple badge styles (flat, flat-square, for-the-badge, plastic)
+* [ ] Score-inclusive badges
+* [ ] Caching layer for performance
+
+== Phase 3: IDE Integration
+
+=== LSP Enhancements
+
+[%interactive]
+* [ ] Proper file location mapping for diagnostics
+* [ ] Quick-fix code actions for common compliance issues
+* [ ] Hover information for compliance status
+* [ ] Workspace-wide compliance summary
+* [ ] Progress reporting during checks
+
+=== VS Code Extension
+
+[%interactive]
+* [ ] Extension activation and LSP client
+* [ ] Status bar compliance indicator
+* [ ] Command palette integration
+* [ ] Settings UI for configuration
+* [ ] Inline decorations for issues
+* [ ] Tree view for compliance report
+
+=== Other Editor Support
+
+[%interactive]
+* [ ] Neovim plugin documentation
+* [ ] Emacs lsp-mode/eglot configuration
+* [ ] JetBrains plugin (IntelliJ, PyCharm, etc.)
+* [ ] Helix/Zed native LSP support docs
+
+== Phase 4: Advanced Compliance
+
+=== Rhodium Tier Checks
+
+[%interactive]
+* [ ] `rhodium.reproducible_builds` - Nix/Guix build verification
+* [ ] `rhodium.sbom` - SBOM generation and validation (SPDX, CycloneDX)
+* [ ] `rhodium.slsa` - SLSA Level 2+ compliance verification
+* [ ] `rhodium.threat_model` - THREAT_MODEL.md validation
+* [ ] `rhodium.performance_benchmarks` - Benchmark presence and CI integration
+* [ ] `rhodium.community_health` - Maintenance activity metrics
+* [ ] `rhodium.sustainability` - Long-term maintenance plan documentation
+
+=== Database Layer
+
+[%interactive]
+* [ ] **DragonflyDB Integration** (cache, queues, rate limiting)
+* [ ] **SurrealDB Integration** (compliance reports, audit history)
+* [ ] **ArangoDB Integration** (dependency graphs, relationship tracking)
+* [ ] Data retention policies
+* [ ] Historical compliance trending
+
+=== Supply Chain Security
+
+[%interactive]
+* [ ] SPDX license header verification
+* [ ] Dependency provenance tracking
+* [ ] Signed release verification
+* [ ] Attestation generation
+
+== Phase 5: Ecosystem
+
+=== GitHub Marketplace App
+
+[%interactive]
+* [ ] OAuth App registration
+* [ ] App installation flow
+* [ ] Webhook subscription management
+* [ ] Check runs integration
+* [ ] PR comments with compliance reports
+* [ ] Repository settings management
+
+=== Public Badge Service
+
+[%interactive]
+* [ ] `https://rsr-certified.dev/badge/{owner}/{repo}`
+* [ ] CDN distribution
+* [ ] Rate limiting
+* [ ] Analytics
+
+=== Self-Hosted Deployment
+
+[%interactive]
+* [ ] Helm chart for Kubernetes
+* [ ] Terraform modules (AWS, GCP, Azure)
+* [ ] Docker Compose production-ready setup
+* [ ] Guix/Nix package definitions
+
+=== Community Features
+
+[%interactive]
+* [ ] Public compliance leaderboard
+* [ ] Organization dashboards
+* [ ] Custom tier definitions
+* [ ] Check contribution framework
+
+== Technical Debt & Improvements
+
+=== Code Quality
+
+[%interactive]
+* [ ] Increase unit test coverage to >80%
+* [ ] Integration tests for all adapters
+* [ ] End-to-end testing framework
+* [ ] Fuzzing for webhook parsers
+
+=== Performance
+
+[%interactive]
+* [ ] Parallel check execution
+* [ ] Incremental checking (cache previous results)
+* [ ] Memory optimization for large repositories
+* [ ] Connection pooling for API calls
+
+=== Documentation
+
+[%interactive]
+* [ ] API reference documentation
+* [ ] Architecture decision records (ADRs)
+* [ ] Contributor onboarding guide
+* [ ] Deployment tutorials
+
+== Version Milestones
+
+[cols="1,2,3"]
+|===
+|Version |Target |Key Deliverables
+
+|**0.1.0**
+|Current
+|Bronze checks, GitHub adapter, CLI, basic LSP
+
+|**0.2.0**
+|Next
+|Silver checks, badge service, VS Code extension MVP
+
+|**0.3.0**
+|Planned
+|Gold checks, GitLab adapter, improved LSP
+
+|**0.4.0**
+|Planned
+|Rhodium checks, database layer, Bitbucket adapter
+
+|**0.5.0**
+|Planned
+|GitHub Marketplace app, public badge service
+
+|**1.0.0**
+|Stable
+|Full feature set, production-ready, all platforms
+|===
+
+== Contributing to Roadmap
+
+This roadmap is a living document. To propose changes:
+
+1. Open an issue with the `roadmap` label
+2. Describe the feature/change and rationale
+3. Reference any related RSR framework requirements
+4. Discuss in the issue before submitting PRs
+
+See link:CONTRIBUTING.md[CONTRIBUTING.md] for contribution guidelines.
+
+---
+
+[.text-center]
+**RSR-Certified** - Universal repository excellence, one check at a time.

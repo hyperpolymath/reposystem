@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://rsr-certified.dev/schemas/rsr-config.schema.json",
+  "title": "RSR Configuration",
+  "description": "Configuration schema for Rhodium Standard Repository compliance (.rsr.toml)",
+  "type": "object",
+  "properties": {
+    "compliance": {
+      "type": "object",
+      "description": "Core compliance settings",
+      "properties": {
+        "target_tier": {
+          "type": "string",
+          "enum": ["bronze", "silver", "gold", "rhodium"],
+          "default": "silver",
+          "description": "Target certification tier"
+        },
+        "strict_mode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Fail CI if target tier is not met"
+        }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "description": "Individual check configurations",
+      "properties": {
+        "license": {
+          "type": "object",
+          "properties": {
+            "required": {
+              "type": "boolean",
+              "default": true
+            },
+            "allowed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": ["MIT", "Apache-2.0", "GPL-3.0", "BSD-3-Clause"],
+              "description": "List of allowed SPDX license identifiers"
+            }
+          }
+        },
+        "readme": {
+          "type": "object",
+          "properties": {
+            "min_length": {
+              "type": "integer",
+              "default": 100,
+              "description": "Minimum README length in characters"
+            },
+            "required_sections": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of required sections (e.g., Installation, Usage)"
+            }
+          }
+        },
+        "security": {
+          "type": "object",
+          "properties": {
+            "require_policy": {
+              "type": "boolean",
+              "default": true,
+              "description": "Require SECURITY.md file"
+            },
+            "scan_secrets": {
+              "type": "boolean",
+              "default": true,
+              "description": "Scan for hardcoded secrets"
+            }
+          }
+        },
+        "testing": {
+          "type": "object",
+          "properties": {
+            "require_tests": {
+              "type": "boolean",
+              "default": true
+            },
+            "min_coverage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 70,
+              "description": "Minimum test coverage percentage"
+            }
+          }
+        }
+      }
+    },
+    "ignore": {
+      "type": "object",
+      "description": "Paths and patterns to ignore",
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": ["vendor/", "node_modules/", ".git/"],
+          "description": "Paths to exclude from compliance scanning"
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Check IDs to skip (e.g., 'silver.changelog')"
+        }
+      }
+    },
+    "badges": {
+      "type": "object",
+      "description": "Badge generation settings",
+      "properties": {
+        "style": {
+          "type": "string",
+          "enum": ["flat", "flat-square", "for-the-badge", "plastic"],
+          "default": "flat-square"
+        },
+        "include_score": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include compliance percentage in badge"
+        }
+      }
+    },
+    "ci": {
+      "type": "object",
+      "description": "CI/CD integration settings",
+      "properties": {
+        "fail_on": {
+          "type": "string",
+          "enum": ["none", "bronze", "silver", "gold", "rhodium"],
+          "default": "none",
+          "description": "Tier below which CI should fail"
+        },
+        "comment_on_pr": {
+          "type": "boolean",
+          "default": true,
+          "description": "Post compliance report as PR comment"
+        },
+        "create_check_run": {
+          "type": "boolean",
+          "default": true,
+          "description": "Create GitHub check run for compliance"
+        }
+      }
+    }
+  }
+}

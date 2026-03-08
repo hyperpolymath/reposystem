@@ -1,6 +1,5 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # Dependabot configuration for RSR-compliant repositories
-# Covers common ecosystems - remove unused ones for your project
 
 version: 2
 updates:
@@ -14,30 +13,21 @@ updates:
         patterns:
           - "*"
 
-  # Rust/Cargo
+  # Rust/Cargo - root workspace
   - package-ecosystem: "cargo"
     directory: "/"
     schedule:
       interval: "weekly"
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
 
-  # Elixir/Mix
-  - package-ecosystem: "mix"
-    directory: "/"
+  # Rust/Cargo - GUI (Tauri)
+  - package-ecosystem: "cargo"
+    directory: "/gui/src-tauri"
     schedule:
       interval: "weekly"
 
-  # Node.js/npm
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-
-  # Python/pip
-  - package-ecosystem: "pip"
-    directory: "/"
+  # Rust/Cargo - RSR Certified engine
+  - package-ecosystem: "cargo"
+    directory: "/tools/rsr-certified"
     schedule:
       interval: "weekly"
 

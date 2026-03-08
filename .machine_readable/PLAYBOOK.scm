@@ -1,13 +1,2 @@
-;; SPDX-License-Identifier: AGPL-3.0-or-later
-;; PLAYBOOK.scm - Operational runbook for reposystem
-
-(define playbook
-  `((version . "1.0.0")
-    (procedures
-      ((deploy . (("build" . "just build")
-                  ("test" . "just test")
-                  ("release" . "just release")))
-       (rollback . ())
-       (debug . ())))
-    (alerts . ())
-    (contacts . ())))
+;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; Reserved for future use.

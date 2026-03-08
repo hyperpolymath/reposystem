@@ -1,0 +1,102 @@
+# SPDX-License-Identifier: MPL-2.0-or-later
+name: License Compliance
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  check-licenses:
+    name: Check License Compliance
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+
+      - name: Check SPDX headers
+        run: |
+          echo "Checking for SPDX license headers..."
+
+          # Check Haskell files
+          missing_spdx=0
+          for file in $(find gnosis/src -name "*.hs"); do
+            if ! grep -q "SPDX-License-Identifier" "$file"; then
+              echo "❌ Missing SPDX header: $file"
+              missing_spdx=1
+            fi
+          done
+
+          # Check workflow files
+          for file in $(find .github/workflows -name "*.yml"); do
+            if ! grep -q "SPDX-License-Identifier" "$file"; then
+              echo "❌ Missing SPDX header: $file"
+              missing_spdx=1
+            fi
+          done
+
+          if [ $missing_spdx -eq 0 ]; then
+            echo "✅ All files have SPDX headers"
+          else
+            echo "⚠️  Some files missing SPDX headers"
+            exit 1
+          fi
+
+      - name: Verify LICENSE file
+        run: |
+          if [ ! -f LICENSE ]; then
+            echo "❌ LICENSE file not found"
+            exit 1
+          fi
+
+          # Check if it's PMPL-1.0 or compatible
+          if grep -q "Polyglot Meta-Programming License" LICENSE; then
+            echo "✅ LICENSE file present (PMPL-1.0-or-later)"
+          else
+            echo "⚠️  Unexpected license format"
+          fi
+
+      - name: Generate license report
+        run: |
+          echo "# License Compliance Report" > license-report.md
+          echo "" >> license-report.md
+          echo "**Project:** stateful-artefacts-for-gitforges" >> license-report.md
+          echo "**License:** PMPL-1.0-or-later" >> license-report.md
+          echo "**Date:** $(date -u +%Y-%m-%d)" >> license-report.md
+          echo "" >> license-report.md
+          echo "## Source Files" >> license-report.md
+          echo "" >> license-report.md
+
+          # Count files with SPDX headers
+          total_hs=$(find gnosis/src -name "*.hs" | wc -l)
+          with_spdx_hs=$(find gnosis/src -name "*.hs" -exec grep -l "SPDX-License-Identifier" {} \; | wc -l)
+
+          echo "- Haskell files: $with_spdx_hs/$total_hs with SPDX headers" >> license-report.md
+
+          total_workflows=$(find .github/workflows -name "*.yml" | wc -l)
+          with_spdx_workflows=$(find .github/workflows -name "*.yml" -exec grep -l "SPDX-License-Identifier" {} \; | wc -l)
+
+          echo "- Workflow files: $with_spdx_workflows/$total_workflows with SPDX headers" >> license-report.md
+          echo "" >> license-report.md
+          echo "## Compliance Status" >> license-report.md
+          echo "" >> license-report.md
+
+          if [ "$with_spdx_hs" -eq "$total_hs" ] && [ "$with_spdx_workflows" -eq "$total_workflows" ]; then
+            echo "✅ **COMPLIANT** - All files have proper SPDX headers" >> license-report.md
+          else
+            echo "⚠️  **NON-COMPLIANT** - Some files missing SPDX headers" >> license-report.md
+          fi
+
+          cat license-report.md
+
+      - name: Upload license report
+        uses: actions/upload-artifact@ea165de6abb5050e17c80995d4e2caaec6d72898 # v4
+        with:
+          name: license-compliance-report
+          path: license-report.md
+          retention-days: 30

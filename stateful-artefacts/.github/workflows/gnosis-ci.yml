@@ -1,0 +1,97 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+name: Gnosis CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'gnosis/**'
+      - '.github/workflows/gnosis-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'gnosis/**'
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  build:
+    name: Build Gnosis
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        ghc: ['9.4.8', '9.6.6']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+
+      - name: Setup Haskell
+        uses: haskell-actions/setup@33c6834e5a4ec21f93e28ca2d2c03d1c3414cc8c # v2
+        with:
+          ghc-version: ${{ matrix.ghc }}
+          enable-stack: true
+          stack-version: 'latest'
+
+      - name: Cache Stack dependencies
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4
+        with:
+          path: |
+            ~/.stack
+            gnosis/.stack-work
+          key: ${{ runner.os }}-stack-${{ matrix.ghc }}-${{ hashFiles('gnosis/stack.yaml', 'gnosis/gnosis.cabal') }}
+          restore-keys: |
+            ${{ runner.os }}-stack-${{ matrix.ghc }}-
+            ${{ runner.os }}-stack-
+
+      - name: Build gnosis with Stack
+        working-directory: gnosis
+        run: |
+          stack build --test --no-run-tests
+
+      - name: Test rendering
+        working-directory: gnosis
+        run: |
+          # Copy gnosis binary to a known location
+          stack install --local-bin-path ./bin
+
+          # Create test STATE.scm
+          mkdir -p ../.machine_readable
+          cat > ../.machine_readable/STATE.scm << 'EOF'
+          (state
+            (identity
+              (name . "Test Project")
+              (mood . "testing")
+              (version . "0.1.0")
+              (phase . "ci"))
+            (vital-signs
+              (compliance-level . "A")
+              (health-score . "100")))
+          EOF
+
+          # Create test template
+          cat > ../test.template.md << 'EOF'
+          # (:name)
+          Status: (:mood) | Phase: (:phase) | Version: (:version)
+          EOF
+
+          # Render template
+          cd ..
+          gnosis/bin/gnosis test.template.md test.rendered.md
+
+          # Verify output contains expected data
+          grep -q "Test Project" test.rendered.md || (echo "ERROR: name not rendered" && exit 1)
+          grep -q "testing" test.rendered.md || (echo "ERROR: mood not rendered" && exit 1)
+          grep -q "0.1.0" test.rendered.md || (echo "ERROR: version not rendered" && exit 1)
+
+          echo "✅ Rendering test passed"
+
+      - name: Upload gnosis binary
+        if: matrix.os == 'ubuntu-latest' && matrix.ghc == '9.6.6'
+        uses: actions/upload-artifact@ea165de6abb5050e17c80995d4e2caaec6d72898 # v4
+        with:
+          name: gnosis-${{ runner.os }}-${{ matrix.ghc }}
+          path: gnosis/.stack-work/install/**/bin/gnosis
+          retention-days: 30

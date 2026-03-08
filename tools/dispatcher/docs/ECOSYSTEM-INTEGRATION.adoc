@@ -1,0 +1,636 @@
+image:https://img.shields.io/badge/License-PMPL--1.0-indigo.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+= Ecosystem Integration Layer
+:toc: left
+:toclevels: 3
+:icons: font
+
+[.lead]
+Integration design connecting git-dispatcher with scaffoldia, stateful-artefacts-for-gitforges, reposystem, git-hud, git-seo, and gitbot-fleet.
+
+== Overview
+
+The integration layer enables:
+
+* **Scaffoldia** to be invoked as a git-dispatcher operation
+* **Stateful-artefacts (Gnosis)** to auto-update from git-seo and git-hud
+* **Reposystem** to track scaffolded repos automatically
+* **Git-HUD** to display integration status
+* **Cross-tool data flow** via STATE.scm updates
+
+== Architecture Layers
+
+[source,text]
+----
+┌─────────────────────────────────────────────────────────┐
+│                     User / CI/CD                        │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+           ┌───────────▼───────────┐
+           │    reposystem         │  Source of truth
+           │  (Graph + Scenarios)  │  Plans + metadata
+           └───────────┬───────────┘
+                       │
+           ┌───────────▼───────────┐
+           │   git-dispatcher      │  Orchestration
+           │  (Execution Engine)   │  Coordinates all tools
+           └─┬─────────┬─────────┬─┘
+             │         │         │
+    ┌────────▼──┐  ┌──▼────┐  ┌▼────────┐
+    │scaffoldia │  │git-seo│  │git-hud  │
+    │(Generate) │  │(Score)│  │(Display)│
+    └────┬──────┘  └───┬───┘  └──┬──────┘
+         │             │         │
+         └─────────┬───┴─────────┘
+                   │
+          ┌────────▼────────┐
+          │    gnosis       │  Auto-update docs
+          │ (stateful-art.) │  from metadata
+          └─────────────────┘
+----
+
+== New Operation Types for git-dispatcher
+
+=== CreateScaffold Operation
+
+Create a new repository from a scaffoldia template.
+
+[source,rescript]
+----
+type operationType =
+  | ...
+  | CreateScaffold({
+      template: string,        // "rust-library", "elixir-service", etc.
+      destination: string,     // "/path/to/new-repo"
+      repoName: string,        // "my-new-library"
+      metadata: Js.Dict.t<string>,  // {"author": "...", "license": "PMPL-1.0"}
+    })
+----
+
+**Execution flow:**
+
+[source,rescript]
+----
+let executeCreateScaffold = async (
+  template: string,
+  destination: string,
+  repoName: string,
+  metadata: Js.Dict.t<string>,
+): Plan.opResult => {
+  // 1. Call scaffoldia CLI
+  let scaffoldiaCmd = `scaffoldia generate \
+    --template ${template} \
+    --output ${destination} \
+    --name ${repoName}`
+
+  // Add metadata as arguments
+  metadata->Js.Dict.entries->Array.forEach(((key, value)) => {
+    scaffoldiaCmd = scaffoldiaCmd ++ ` --${key} ${value}`
+  })
+
+  // 2. Execute scaffoldia
+  let result = await Deno.Command.output({
+    cmd: "bash",
+    args: ["-c", scaffoldiaCmd],
+  })
+
+  if result.success {
+    // 3. Register in reposystem
+    await registerNewRepo(destination, repoName)
+
+    // 4. Initialize gnosis auto-rendering
+    await initializeGnosis(destination)
+
+    // 5. Return success
+    return {
+      opId: generateId(),
+      status: Completed,
+      output: Some(`Scaffolded ${repoName} at ${destination}`),
+      ...
+    }
+  } else {
+    return {
+      opId: generateId(),
+      status: Failed({error: "Scaffolding failed"}),
+      ...
+    }
+  }
+}
+----
+
+=== UpdateMetadataFromSeo Operation
+
+Update STATE.scm with git-seo analysis results.
+
+[source,rescript]
+----
+type operationType =
+  | ...
+  | UpdateMetadataFromSeo({
+      repoPath: string,
+      runAnalysis: bool,  // If false, read existing report
+    })
+----
+
+**Execution flow:**
+
+[source,rescript]
+----
+let executeUpdateMetadataFromSeo = async (
+  repoPath: string,
+  runAnalysis: bool,
+): Plan.opResult => {
+  // 1. Run or load git-seo analysis
+  let report = if runAnalysis {
+    await runGitSeoAnalysis(repoPath)
+  } else {
+    await loadGitSeoReport(repoPath)
+  }
+
+  // 2. Extract values
+  let score = report.scores.total
+  let recommendations = report.recommendations
+
+  // 3. Update STATE.scm
+  let stateFile = repoPath ++ "/.machine_readable/STATE.scm"
+  await updateSCMValue(stateFile, "seo-score", score->Float.toString)
+  await updateSCMValue(stateFile, "seo-recommendations", recommendations->Array.length->Int.toString)
+
+  // 4. Trigger gnosis re-render
+  await renderGnosisTemplates(repoPath)
+
+  // 5. Return result
+  return {
+    opId: generateId(),
+    status: Completed,
+    output: Some(`Updated SEO score: ${score->Float.toString}/100`),
+    ...
+  }
+}
+----
+
+=== RenderDocumentation Operation
+
+Trigger gnosis to re-render all templates.
+
+[source,rescript]
+----
+type operationType =
+  | ...
+  | RenderDocumentation({
+      repoPath: string,
+      templates: array<string>,  // Specific templates or [] for all
+    })
+----
+
+**Execution flow:**
+
+[source,rescript]
+----
+let executeRenderDocumentation = async (
+  repoPath: string,
+  templates: array<string>,
+): Plan.opResult => {
+  // 1. Find all .template.md files
+  let templateFiles = if Array.length(templates) == 0 {
+    await findAllTemplates(repoPath)
+  } else {
+    templates
+  }
+
+  // 2. Call gnosis for each template
+  let results = await Promise.all(
+    templateFiles->Array.map(async templateFile => {
+      let outputFile = templateFile->String.replace(".template.", ".")
+      let cmd = `gnosis ${templateFile} ${outputFile}`
+      await executeCommand(cmd)
+    })
+  )
+
+  // 3. Check if any failed
+  let failures = results->Array.keep(r => !r.success)
+
+  if Array.length(failures) == 0 {
+    return {
+      opId: generateId(),
+      status: Completed,
+      output: Some(`Rendered ${Array.length(results)} templates`),
+      ...
+    }
+  } else {
+    return {
+      opId: generateId(),
+      status: Failed({error: `${Array.length(failures)} templates failed`}),
+      ...
+    }
+  }
+}
+----
+
+=== RegisterInReposystem Operation
+
+Register a repository in reposystem graph.
+
+[source,rescript]
+----
+type operationType =
+  | ...
+  | RegisterInReposystem({
+      repoPath: string,
+      repoName: string,
+      aspects: array<string>,  // ["security", "reliability", ...]
+      group: option<string>,
+    })
+----
+
+**Execution flow:**
+
+[source,rescript]
+----
+let executeRegisterInReposystem = async (
+  repoPath: string,
+  repoName: string,
+  aspects: array<string>,
+  group: option<string>,
+): Plan.opResult => {
+  // 1. Add repo to reposystem
+  await runCommand(`reposystem scan ${repoPath}`)
+
+  // 2. Tag with aspects
+  await Promise.all(
+    aspects->Array.map(async aspect => {
+      await runCommand(`reposystem aspect tag ${repoName} ${aspect}`)
+    })
+  )
+
+  // 3. Add to group if specified
+  switch group {
+  | Some(groupName) =>
+    await runCommand(`reposystem group add ${groupName} ${repoName}`)
+  | None => ()
+  }
+
+  // 4. Export updated graph
+  await runCommand(`reposystem export --format json > graph.json`)
+
+  return {
+    opId: generateId(),
+    status: Completed,
+    output: Some(`Registered ${repoName} in reposystem`),
+    ...
+  }
+}
+----
+
+== Integration Workflows
+
+=== Workflow 1: New Repository Creation
+
+**Trigger:** User runs `reposystem plan create-repo`
+
+**Steps:**
+
+[source,text]
+----
+1. User: reposystem plan create --template rust-library --name my-lib
+   └─> Creates plan with CreateScaffold operation
+
+2. User: git-dispatcher execute plan-123
+   └─> Loads plan, validates
+
+3. git-dispatcher → scaffoldia:
+   └─> scaffoldia generate --template rust-library --output ~/repos/my-lib
+
+4. scaffoldia creates:
+   ├── Cargo.toml
+   ├── src/lib.rs
+   ├── .machine_readable/STATE.scm
+   ├── README.template.adoc  ← Has (:completion), (:phase) placeholders
+   └── .github/workflows/gnosis-render.yml
+
+5. git-dispatcher → reposystem:
+   └─> reposystem scan ~/repos/my-lib
+   └─> Adds to graph
+
+6. git-dispatcher → gnosis:
+   └─> gnosis README.template.adoc README.adoc
+   └─> Renders with current STATE.scm values
+
+7. Result: New repo with auto-updating docs, tracked in reposystem
+----
+
+=== Workflow 2: SEO Score Auto-Update
+
+**Trigger:** git-seo analysis completes (CI/CD or manual)
+
+**Steps:**
+
+[source,text]
+----
+1. CI runs: git-seo analyze --json > seo-report.json
+
+2. CI triggers: git-dispatcher execute seo-update-plan
+   └─> Plan contains: UpdateMetadataFromSeo operation
+
+3. git-dispatcher → git-seo:
+   └─> Reads seo-report.json
+   └─> Extracts score: 87/100
+
+4. git-dispatcher → STATE.scm:
+   └─> Updates (seo-score . "87")
+   └─> Updates (seo-last-updated . "2026-02-07")
+
+5. git-dispatcher → gnosis:
+   └─> gnosis render-all
+   └─> Re-renders README with new score
+
+6. Result: README now shows "SEO Score: 87/100" automatically
+----
+
+=== Workflow 3: Ecosystem-Wide Updates
+
+**Trigger:** Monthly stats update cron job
+
+**Steps:**
+
+[source,text]
+----
+1. Cron: reposystem scan --all
+   └─> Re-scans all 570+ repos
+   └─> Updates graph with current state
+
+2. Cron: for each repo:
+   a. git-seo analyze --json > $repo/seo-report.json
+   b. git-dispatcher execute update-metadata-$repo
+      └─> Updates STATE.scm with SEO score
+
+3. Cron: git-dispatcher execute render-all-docs
+   └─> Triggers gnosis on all repos with templates
+
+4. Result: All 570+ READMEs updated with current stats
+----
+
+== Data Flow Contracts
+
+=== STATE.scm Schema Extension
+
+Add integration fields to STATE.scm:
+
+[source,scheme]
+----
+(state
+  (metadata
+    (version "0.3.0")
+    (updated "2026-02-07"))
+
+  ;; NEW: Integration section
+  (integration
+    (seo-score . "87")
+    (seo-last-updated . "2026-02-07")
+    (seo-recommendations . "3")
+    (health-score . "92")
+    (reposystem-registered . "true")
+    (reposystem-aspects . "security reliability")
+    (gnosis-enabled . "true")
+    (gnosis-last-render . "2026-02-07T10:30:00Z"))
+
+  ;; Existing sections...
+  (current-position
+    (phase "active-development")
+    (overall-completion 65)))
+----
+
+=== Gnosis Template Placeholders
+
+Standard placeholders for integration:
+
+[source,adoc]
+----
+= (:project-name)
+
+Status: (:phase) | Progress: (:completion)%
+
+== Discoverability
+
+SEO Score: *(:seo-score)/100* (Last updated: (:seo-last-updated))
+
+Recommendations:
+(:seo-recommendations) improvements suggested
+
+== Health
+
+Overall: *(:health-score)/100*
+
+== Ecosystem
+
+Registered in reposystem: (:reposystem-registered)
+Aspects: (:reposystem-aspects)
+
+_Last updated: (:integration.gnosis-last-render)_
+----
+
+== Implementation Plan
+
+=== Phase 1: Core Operations (Week 1-2)
+
+**Goal:** Add new operation types to git-dispatcher
+
+1. **Update git-dispatcher types** (src/types/Plan.res)
+   - Add CreateScaffold variant
+   - Add UpdateMetadataFromSeo variant
+   - Add RenderDocumentation variant
+   - Add RegisterInReposystem variant
+
+2. **Implement executors** (src/engine/Integrations.res - NEW)
+   - executeCreateScaffold
+   - executeUpdateMetadataFromSeo
+   - executeRenderDocumentation
+   - executeRegisterInReposystem
+
+3. **Add tests**
+   - Mock scaffoldia calls
+   - Mock gnosis calls
+   - Mock reposystem calls
+   - Integration test with all tools
+
+=== Phase 2: Scaffoldia Templates (Week 3-4)
+
+**Goal:** Create templates for ecosystem tools
+
+1. **Core templates** (scaffoldia/registry/)
+   - rust-library.ncl
+   - elixir-service.ncl
+   - rescript-app.ncl
+   - julia-package.ncl
+   - haskell-library.ncl
+
+2. **Ecosystem tool templates**
+   - reposystem-tool.ncl (for git-dispatcher-like tools)
+   - gitbot.ncl (for gitbot-fleet bots)
+   - mcp-server.ncl (for MCP servers)
+
+3. **Each template includes:**
+   - STATE.scm with integration fields
+   - README.template.adoc with placeholders
+   - .github/workflows/gnosis-render.yml
+   - .github/workflows/seo-update.yml
+
+=== Phase 3: Gnosis Integration (Week 5-6)
+
+**Goal:** Wire gnosis into automation pipeline
+
+1. **Enhanced 6scm parser** (DONE - SixSCMEnhanced.hs)
+   - Deep tree traversal
+   - Dotted path lookups
+   - Cross-file references
+
+2. **CI/CD workflows**
+   - .github/workflows/gnosis-render.yml
+   - .github/workflows/seo-update.yml
+   - .github/workflows/stats-update.yml
+
+3. **Helper scripts**
+   - update-seo-score.sh
+   - update-health-score.sh
+   - render-all-templates.sh
+
+=== Phase 4: Reposystem Integration (Week 7-8)
+
+**Goal:** Auto-register scaffolded repos
+
+1. **Reposystem API**
+   - Add scan-and-register command
+   - Add bulk-update command
+   - Add export-for-gnosis command
+
+2. **Git-dispatcher integration**
+   - RegisterInReposystem operation
+   - Automatic aspect tagging
+   - Graph export after changes
+
+3. **Testing**
+   - Create 10 test repos with scaffoldia
+   - Verify all appear in reposystem graph
+   - Verify gnosis renders correctly
+
+== Configuration Files
+
+=== .integration.toml
+
+New config file for integration settings:
+
+[source,toml]
+----
+# .integration.toml - Ecosystem integration config
+
+[scaffoldia]
+enabled = true
+templates_path = "~/.scaffoldia/templates"
+default_template = "rust-library"
+
+[gnosis]
+enabled = true
+auto_render = true
+templates_glob = "**/*.template.*"
+output_pattern = "{basename}.{ext}"
+
+[git-seo]
+enabled = true
+auto_update = true
+threshold = 60  # Minimum acceptable score
+schedule = "0 0 * * 0"  # Weekly
+
+[reposystem]
+enabled = true
+auto_register = true
+default_aspects = ["reliability"]
+graph_path = "~/.reposystem/graph.json"
+
+[git-dispatcher]
+enabled = true
+plan_store = "~/.git-dispatcher/plans"
+audit_log = "~/.git-dispatcher/audit"
+----
+
+=== GitHub Actions Workflow
+
+[source,yaml]
+----
+# .github/workflows/ecosystem-integration.yml
+name: Ecosystem Integration
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly
+
+jobs:
+  update-and-render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run git-seo analysis
+        run: |
+          git-seo analyze --json > seo-report.json
+          echo "SEO_SCORE=$(jq '.scores.total' seo-report.json)" >> $GITHUB_ENV
+
+      - name: Update STATE.scm
+        run: |
+          sed -i "s/(seo-score . \"[0-9]*\")/(seo-score . \"$SEO_SCORE\")/" \
+            .machine_readable/STATE.scm
+          sed -i "s/(seo-last-updated . \".*\")/(seo-last-updated . \"$(date -I)\")/" \
+            .machine_readable/STATE.scm
+
+      - name: Render templates with gnosis
+        run: |
+          gnosis README.template.adoc README.adoc
+          gnosis PROFILE.template.md PROFILE.md
+
+      - name: Commit updates
+        run: |
+          git config user.name "Gnosis Bot"
+          git config user.email "bot@hyperpolymath.org"
+          git add .
+          git commit -m "docs: auto-update from SEO analysis (score: $SEO_SCORE)"
+          git push
+----
+
+== Success Metrics
+
+**Phase 1 Complete:**
+- ✓ 4 new operation types in git-dispatcher
+- ✓ All operations have executors
+- ✓ Integration tests passing
+
+**Phase 2 Complete:**
+- ✓ 10+ templates in scaffoldia
+- ✓ All templates include STATE.scm + templates
+- ✓ CI/CD workflows in templates
+
+**Phase 3 Complete:**
+- ✓ Enhanced 6scm parser works
+- ✓ Gnosis renders from all 6 files
+- ✓ CI/CD auto-renders on STATE.scm changes
+
+**Phase 4 Complete:**
+- ✓ Scaffolded repos auto-register in reposystem
+- ✓ Graph exports include integration data
+- ✓ 100+ repos using auto-updating docs
+
+**Final Success:**
+- ✓ Create new repo in <5 minutes with scaffoldia
+- ✓ README auto-updates from git-seo weekly
+- ✓ All tools communicate via STATE.scm
+- ✓ Zero manual documentation maintenance
+
+== References
+
+* link:EXECUTION-ENGINE.adoc[Execution Engine Architecture]
+* link:../README.adoc[Git-Dispatcher README]
+* link:../../scaffoldia/README.adoc[Scaffoldia README]
+* link:../../stateful-artefacts-for-gitforges/README.md[Stateful Artefacts README]
+* link:../../reposystem/README.adoc[Reposystem README]

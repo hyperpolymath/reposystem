@@ -1,0 +1,36 @@
+= git-hud - Citation Guide
+:toc:
+
+== BibTeX
+
+[source,bibtex]
+----
+@software{git-hud_2025,
+  author = {Polymath, Hyper},
+  title = {git-hud},
+  year = {2025},
+  url = {https://github.com/hyperpolymath/git-hud},
+  license = {AGPL-3.0-or-later}
+}
+----
+
+== Harvard Style
+
+Polymath, H. (2025) _git-hud_ [Computer software]. Available at: https://github.com/hyperpolymath/git-hud
+
+== OSCOLA
+
+Hyper Polymath, 'git-hud' (2025) <https://github.com/hyperpolymath/git-hud>
+
+== MLA
+
+Polymath, Hyper. "git-hud." 2025, github.com/hyperpolymath/git-hud.
+
+== APA 7
+
+Polymath, H. (2025). _git-hud_ [Computer software]. GitHub. https://github.com/hyperpolymath/git-hud
+
+== See Also
+
+* link:../CITATION.cff[CITATION.cff]
+* link:../codemeta.json[codemeta.json]

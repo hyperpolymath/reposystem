@@ -1,0 +1,48 @@
+-- SPDX-License-Identifier: MIT OR AGPL-3.0-or-later WITH Palimpsest-0.8
+
+project Gitvisor_TUI is
+
+   for Source_Dirs use ("src/**");
+   for Object_Dir use "obj";
+   for Exec_Dir use "bin";
+   for Main use ("git-hud_tui.adb");
+
+   type Mode_Type is ("debug", "release");
+   Mode : Mode_Type := external ("MODE", "debug");
+
+   package Compiler is
+      case Mode is
+         when "debug" =>
+            for Default_Switches ("Ada") use
+              ("-g",           -- Debug info
+               "-gnatwa",      -- All warnings
+               "-gnatwe",      -- Warnings as errors
+               "-gnata",       -- Enable assertions
+               "-gnatVa",      -- Validity checks
+               "-gnat2022",    -- Ada 2022
+               "-gnaty3aAbCdefhiIklnOprsStux");  -- Style checks
+         when "release" =>
+            for Default_Switches ("Ada") use
+              ("-O2",          -- Optimization
+               "-gnatn",       -- Inlining
+               "-gnatp",       -- Suppress checks
+               "-gnat2022");
+      end case;
+   end Compiler;
+
+   package Builder is
+      for Executable ("git-hud_tui.adb") use "git-hud_tui";
+   end Builder;
+
+   package Binder is
+      for Default_Switches ("Ada") use ("-E");  -- Store traceback
+   end Binder;
+
+   -- SPARK mode for verified components
+   package Prove is
+      for Proof_Switches ("Ada") use
+        ("--level=2",
+         "--timeout=30");
+   end Prove;
+
+end Gitvisor_TUI;

@@ -1,0 +1,241 @@
+= Related Projects
+:toc:
+
+== Overview
+
+Gitvisor integrates with and builds upon a broader ecosystem of projects.
+This document tracks relationships, dependencies, and cross-linking opportunities.
+
+== Core Dependencies
+
+=== Direct Integrations
+
+[cols="1,2,2,1"]
+|===
+| Project | Purpose | Link | Status
+
+| ReScript-TEA
+| Frontend architecture (TEA pattern)
+| https://github.com/hyperpolymath/Rescript-TEA
+| Active, integrated
+
+| RSR (Rhodium Standard Repositories)
+| Repository compliance framework
+| https://github.com/hyperpolymath/Rhodium-Standard-Repositories
+| Active, compliant
+
+| Palimpsest License
+| Ethical licensing philosophy
+| https://github.com/hyperpolymath/palimpsest-license
+| Active, applied
+
+| RSR-template-repo
+| Template for new projects
+| https://github.com/hyperpolymath/RSR-template-repo
+| Reference
+|===
+
+=== Planned Integrations
+
+[cols="1,2,2,1"]
+|===
+| Project | Purpose | Link | Status
+
+| Echidnabot
+| Formal validation and property-based testing
+| https://github.com/hyperpolymath/echidnabot
+| Repo exists (empty) - needs foundation
+
+| Rhodibot
+| RSR enforcement bot
+| https://github.com/hyperpolymath/rhodibot
+| Repo needed - 404
+
+| CADRE Router
+| Request routing framework
+| https://github.com/hyperpolymath/cadre-router
+| Repo needed - 404
+
+| Valence-Shell
+| Shell framework
+| https://gitlab.com/hyperpolymath (to find)
+| Discovery needed
+
+| Serum (External)
+| Elixir static site generator
+| https://github.com/Dalgona/Serum
+| Integration planned
+|===
+
+== Ecosystem Projects
+
+=== Potentially Related (hyperpolymath)
+
+These projects from the same author may benefit from Gitvisor integration:
+
+[cols="1,3,1"]
+|===
+| Project | Relevance | Action
+
+| robot-vacuum-cleaner
+| Repository cleanup tooling - could be integrated as Gitvisor feature
+| Feature candidate
+
+| Academic-Workflow-Suite
+| Research workflow - could use Gitvisor for repo management
+| Client candidate
+
+| fogbinder
+| Zotero plugin (ReScript) - pattern reference for ReScript architecture
+| Pattern reference
+
+| SupraNorma
+| ReScript finance app - pattern reference
+| Pattern reference
+
+| Universal-Project-Manager
+| Project management - overlapping concerns, potential merge
+| Evaluate overlap
+
+| claude-gitlab-bridge
+| GitLab integration - code reuse opportunity
+| Code reuse
+
+| consent-aware-http
+| HTTP consent framework - could inform API design
+| Design reference
+
+| sinople-theme
+| WordPress theme with WCAG compliance - accessibility patterns
+| Accessibility reference
+
+| v3-templater
+| Mozilla extension tooling - extension architecture patterns
+| Extension patterns
+|===
+
+== External Dependencies
+
+=== Static Site Generators
+
+Gitvisor supports documentation generation via:
+
+[cols="1,2,2"]
+|===
+| Generator | Use Case | Notes
+
+| Serum
+| Elixir-native, fits tech stack
+| Primary recommendation
+
+| Zola
+| Fast Rust-based, good for large docs
+| Alternative option
+|===
+
+=== Database Ecosystem
+
+[cols="1,2,2"]
+|===
+| Database | Upstream | Notes
+
+| ArangoDB
+| https://www.arangodb.com/
+| Graph/multi-model
+
+| CubDB
+| https://github.com/lucaong/cubdb
+| Elixir embedded KV
+
+| XTDB
+| https://xtdb.com/
+| Temporal database
+
+| SurrealDB
+| https://surrealdb.com/
+| Multi-model, planned
+
+| Virtuoso
+| https://virtuoso.openlinksw.com/
+| RDF/SPARQL, planned
+
+| Dragonfly
+| https://dragonflydb.io/
+| Redis-compatible
+|===
+
+== Cross-Linking Strategy
+
+=== Completed Links
+
+* [x] README references RSR, ReScript-TEA, Palimpsest
+* [x] LICENSE includes Palimpsest overlay
+* [x] flake.nix follows RSR patterns
+
+=== Pending Links
+
+* [ ] Populate echidnabot repo (exists but empty)
+* [ ] Create cadre-router repo (404)
+* [ ] Create rhodibot repo (404)
+* [ ] Find and link Valence-Shell from GitLab
+* [ ] Evaluate Universal-Project-Manager overlap
+* [ ] Port claude-gitlab-bridge code
+
+== Discovery Notes
+
+=== From GitHub (118 repos)
+
+Repos discovered that may relate to Gitvisor:
+
+* `7-tentacles` - Unknown, investigate
+* `aletheia` - Truth/verification related?
+* `Anamnesis` - Memory/history related - temporal features?
+* `CIcaDA` - CI/CD related?
+* `conflow` - Flow control?
+
+=== From GitLab
+
+Need to explore GitLab profile for additional projects.
+
+== Integration Roadmap
+
+=== Phase 1 (Current)
+
+* ReScript-TEA integration
+* RSR compliance
+* GitHub/GitLab adapters
+
+=== Phase 2
+
+* Rhodibot creation and integration
+* CADRE router framework
+* robot-vacuum-cleaner integration
+
+=== Phase 3
+
+* Academic-Workflow-Suite integration
+* Universal-Project-Manager evaluation
+* Full CCCP integration (if CCCP scope becomes clear)
+
+== Notes for Future Research
+
+=== CCCP (Campaign for Cooler Coding and Programming)
+
+CCCP is a philosophical umbrella for coding standards and practices.
+It represents a broader vision for ethical, well-designed software development.
+
+Gitvisor fits within CCCP as:
+
+1. A tool embodying CCCP principles (customization, user control, ethical licensing)
+2. A practical implementation of RSR compliance
+3. A dashboard for managing CCCP-aligned repositories
+
+Note: CCCP discussions exist in regular Claude conversations, not in code repositories.
+
+=== IndieWeb Integration
+
+The sinople-theme project mentions IndieWeb integration. Consider:
+
+* Webmention support in Gitvisor
+* Micropub endpoint for commits/issues
+* h-card for user profiles

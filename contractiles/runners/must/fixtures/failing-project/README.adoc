@@ -1,0 +1,3 @@
+= Failing Fixture
+
+This fixture should fail must check because MISSING.txt is not present.

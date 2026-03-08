@@ -1,0 +1,36 @@
+= Contractiles - Citation Guide
+:toc:
+
+== BibTeX
+
+[source,bibtex]
+----
+@software{contractiles_2026,
+  author = {Polymath, Hyper},
+  title = {Contractiles},
+  year = {2026},
+  url = {https://github.com/hyperpolymath/contractiles},
+  license = {AGPL-3.0-or-later}
+}
+----
+
+== Harvard Style
+
+Polymath, H. (2026) _Contractiles_ [Computer software]. Available at: https://github.com/hyperpolymath/contractiles
+
+== OSCOLA
+
+Hyper Polymath, 'Contractiles' (2026) <https://github.com/hyperpolymath/contractiles>
+
+== MLA
+
+Polymath, Hyper. "Contractiles." 2026, github.com/hyperpolymath/contractiles.
+
+== APA 7
+
+Polymath, H. (2026). _Contractiles_ [Computer software]. GitHub. https://github.com/hyperpolymath/contractiles
+
+== See Also
+
+* link:../CITATION.cff[CITATION.cff]
+* link:../codemeta.json[codemeta.json]

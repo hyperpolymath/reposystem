@@ -1,0 +1,335 @@
+image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+image:https://img.shields.io/badge/Philosophy-Palimpsest-indigo.svg[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-license"]
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+= Reposystem Ecosystem Evidence
+:toc: preamble
+:toclevels: 2
+
+[.lead]
+Source excerpts for the ecosystem map. Each entry points to current machine-readable metadata.
+
+== reposystem
+Path: `reposystem/.machine_readable/ECOSYSTEM.scm`
+
+[source]
+----
+;; SPDX-License-Identifier: MPL-2.0-or-later
+;; ECOSYSTEM.scm - Ecosystem position for reposystem
+;; Media-Type: application/vnd.ecosystem+scm
+
+(ecosystem
+  (version "1.0")
+  (name "reposystem")
+  (type "")
+  (purpose "")
+
+  (position-in-ecosystem
+    (category "")
+    (subcategory "")
+    (unique-value ()))
+
+  (related-projects ())
+
+  (what-this-is ())
+
+  (what-this-is-not ()))
+----
+
+== git-hud
+Path: `git-hud/.machine_readable/ECOSYSTEM.scm`
+
+[source]
+----
+;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; ECOSYSTEM.scm - Ecosystem position for git-hud
+;; Media-Type: application/vnd.ecosystem+scm
+
+(ecosystem
+  (version "1.0")
+  (name "git-hud")
+  (type "")
+  (purpose "")
+
+  (position-in-ecosystem
+    (category "")
+    (subcategory "")
+    (unique-value ()))
+
+  (related-projects ())
+
+  (what-this-is ())
+
+  (what-this-is-not ()))
+----
+
+== git-seo
+Path: `git-seo/.machine_readable/ECOSYSTEM.scm`
+
+[source]
+----
+;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; ECOSYSTEM.scm - Ecosystem position for git-seo
+;; Media-Type: application/vnd.ecosystem+scm
+
+(ecosystem
+  (version "1.0")
+  (name "git-seo")
+  (type "")
+  (purpose "")
+
+  (position-in-ecosystem
+    (category "")
+    (subcategory "")
+    (unique-value ()))
+
+  (related-projects ())
+
+  (what-this-is ())
+
+  (what-this-is-not ()))
+----
+
+== git-dispatcher
+Path: `git-dispatcher/.machine_readable/ECOSYSTEM.scm`
+
+[source]
+----
+;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; ECOSYSTEM.scm - Ecosystem position for git-dispatcher
+;; Media-Type: application/vnd.ecosystem+scm
+
+(ecosystem
+  (version "1.0")
+  (name "git-dispatcher")
+  (type "")
+  (purpose "")
+
+  (position-in-ecosystem
+    (category "")
+    (subcategory "")
+    (unique-value ()))
+
+  (related-projects ())
+
+  (what-this-is ())
+
+  (what-this-is-not ()))
+----
+
+== gitbot-fleet
+Path: `gitbot-fleet/.machine_readable/6scm/ECOSYSTEM.scm`
+
+[source]
+----
+;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-FileCopyrightText: 2025 hyperpolymath
+;; ECOSYSTEM.scm - Position in the ecosystem
+;; Media-Type: application/vnd.ecosystem+scm
+
+(ecosystem
+  (version "1.0")
+  (name "gitbot-fleet")
+  (type "orchestration")
+  (purpose "Central coordination for repository quality bots")
+
+  (position-in-ecosystem
+    (parent-project "git-dispatcher")
+    (relationship "satellite")
+    (role "bot-fleet-orchestration")
+    (update-protocol
+      (notify-parent #t)
+      (sync-frequency "on-release")))
+
+  (member-bots
+    (rhodibot
+      (repo "hyperpolymath/rhodibot")
+      (purpose "RSR structural compliance")
+      (status "active"))
+    (echidnabot
+      (repo "hyperpolymath/echidnabot")
+      (purpose "Formal verification and fuzzing")
+      (status "active"))
+    (oikos
+      (repo "hyperpolymath/oikos")
+      (purpose "Ecological and economic standards")
+      (status "active"))
+    (glambot
+      (repo "hyperpolymath/glambot")
+      (purpose "Presentation quality")
+      (status "complete"))
+    (seambot
+      (repo "hyperpolymath/seambot")
+      (purpose "Integration testing")
+      (status "active"))
+    (finishing-bot
+      (repo "hyperpolymath/finishing-bot")
+      (purpose "Release readiness")
+      (status "complete")))
+
+  (related-projects
+    (git-dispatcher
+      (relationship "parent")
+      (integration "webhook-routing"))
+    (rhodium-standard-repositories
+      (relationship "standard-source")
+      (integration "compliance-rules"))
+    (cicd-hyper-a
+      (relationship "sibling")
+      (integration "ci-automation")
+      (cli-tool "cicd-fixer")
+      (capabilities
+        ("scan" "Detect CI/CD issues in workflows")
+        ("fix" "Auto-fix pinning, permissions, SPDX headers")
+        ("batch" "Process multiple repos"))))
+
+  (what-this-is
+    ("Central coordination for the bot fleet")
+    ("Documentation of bot purposes and interfaces")
+    ("Shared configuration and context management")
+    ("Fleet-wide orchestration logic"))
+
+  (what-this-is-not
+    ("Not the bot implementations themselves")
+    ("Not a monorepo containing all bot code")
+    ("Not a replacement for git-dispatcher")))
+----
+
+== scaffoldia
+Path: `scaffoldia/.machine_readable/ECOSYSTEM.scm`
+
+[source]
+----
+;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; ECOSYSTEM.scm - Ecosystem position for scaffoldia
+;; Media-Type: application/vnd.ecosystem+scm
+
+(ecosystem
+  (version "1.0")
+  (name "scaffoldia")
+  (type "")
+  (purpose "")
+
+  (position-in-ecosystem
+    (category "")
+    (subcategory "")
+    (unique-value ()))
+
+  (related-projects ())
+
+  (what-this-is ())
+
+  (what-this-is-not ()))
+----
+
+== .git-private-farm
+Path: `.git-private-farm/ECOSYSTEM.scm`
+
+[source]
+----
+;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+;; ECOSYSTEM.scm — rsr-template-repo
+
+(ecosystem
+  (version "1.0.0")
+  (name "rsr-template-repo")
+  (type "project")
+  (purpose "// Badges")
+
+  (position-in-ecosystem
+    "Part of hyperpolymath ecosystem. Follows RSR guidelines.")
+
+  (related-projects
+    (project (name "rhodium-standard-repositories")
+             (url "https://github.com/hyperpolymath/rhodium-standard-repositories")
+             (relationship "standard")))
+
+  (what-this-is "// Badges")
+  (what-this-is-not "- NOT exempt from RSR compliance"))
+----
+
+== stateful-artefacts-for-gitforges
+Path: `stateful-artefacts-for-gitforges/.machine_readable/ECOSYSTEM.scm`
+
+[source]
+----
+;; SPDX-License-Identifier: MPL-2.0-or-later
+;; SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell (hyperpolymath)
+
+;;; ECOSYSTEM.scm — Stateful Artefacts for Git Forges
+;;; Position in ecosystem and relationships to other projects
+
+(define-module (stateful-artefacts ecosystem)
+  #:export (ecosystem))
+
+(define ecosystem
+  '((version . "1.0")
+    (name . "stateful-artefacts-for-gitforges")
+    (type . "infrastructure")
+    (purpose . "Transform static documentation into living, self-aware artefacts
+                that reflect project state in real-time")
+
+    (position-in-ecosystem
+      (org . "hyperpolymath")
+      (constellation . "tools")
+      (role . "documentation-infrastructure")
+      (layer . "meta-tooling"))
+
+    (related-projects
+      ((name . "meta-scm")
+       (relationship . "specification-source")
+       (description . "Provides META.scm format specification"))
+
+      ((name . "state.scm")
+       (relationship . "specification-source")
+       (description . "Provides STATE.scm format specification"))
+
+      ((name . "ecosystem.scm")
+       (relationship . "specification-source")
+       (description . "Provides ECOSYSTEM.scm format specification"))
+
+      ((name . "playbook-scm")
+       (relationship . "specification-source")
+       (description . "Provides PLAYBOOK.scm format specification"))
+
+      ((name . "agentic-scm")
+       (relationship . "specification-source")
+       (description . "Provides AGENTIC.scm format specification"))
+
+      ((name . "neurosym-scm")
+       (relationship . "specification-source")
+       (description . "Provides NEUROSYM.scm format specification"))
+
+      ((name . "robot-repo-bot")
+       (relationship . "potential-consumer")
+       (description . "Could use Gnosis for automated repo documentation"))
+
+      ((name . "git-hud")
+       (relationship . "sibling-standard")
+       (description . "Git repository supervision and health monitoring")))
+
+    (what-this-is
+      ("A Haskell-based rendering engine called Gnosis")
+      ("A template syntax using (:placeholder) tags")
+      ("Guile Scheme metadata files as the source of truth")
+      ("Paxos-lite conflict resolution for concurrent edits")
+      ("Tri-Guard safety system for accessibility")
+      ("Pre-commit hooks for automatic hydration")
+      ("GitHub/GitLab/Codeberg compliant output"))
+
+    (what-this-is-not
+      ("A web server or API")
+      ("A replacement for CI/CD")
+      ("A CMS or wiki system")
+      ("A JavaScript framework")
+      ("A real-time collaboration tool"))
+
+    (integration
+      (git-forges . ("github" "gitlab" "codeberg" "sourcehut"))
+      (ci-cd . "local-only")  ;; Follows "No CI Loop" treaty
+      (package-manager . "guix")
+      (build-tool . "cabal"))))
+----
+

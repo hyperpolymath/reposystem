@@ -1,0 +1,224 @@
+= Rhodibot
+:toc: macro
+:icons: font
+
+[.lead]
+RSR (Rhodium Standard Repository) enforcement bot - Automated compliance checking and enforcement for repositories.
+
+image::https://img.shields.io/badge/RSR-Gold-gold[RSR Gold]
+
+toc::[]
+
+== Overview
+
+Rhodibot ensures repositories maintain compliance with the Rhodium Standard:
+
+* **Compliance scanning** - Check repos against RSR requirements
+* **Automated fixes** - Generate missing files from templates
+* **CI integration** - Block merges for non-compliant PRs
+* **Badge generation** - RSR compliance badges
+* **Reporting** - Detailed compliance reports
+
+== RSR Compliance Levels
+
+[cols="1,1,2"]
+|===
+| Level | Score | Requirements
+
+| **Gold** | 100% | All 11 categories fully compliant
+| **Silver** | 90-99% | Production-ready, minor gaps
+| **Bronze** | 75-89% | Good foundation, work needed
+| **Non-compliant** | <75% | Below minimum standard
+|===
+
+== Installation
+
+=== GitHub App
+
+Install Rhodibot as a GitHub App for automatic PR checks.
+
+=== CLI
+
+[source,bash]
+----
+# Via Nix
+nix profile install github:hyperpolymath/rhodibot
+
+# Via Mix
+mix escript.install github hyperpolymath/rhodibot
+----
+
+== Usage
+
+=== Check Compliance
+
+[source,bash]
+----
+# Check current directory
+rhodibot check
+
+# Check specific path
+rhodibot check /path/to/repo
+
+# JSON output
+rhodibot check --format json > compliance.json
+----
+
+=== Generate Missing Files
+
+[source,bash]
+----
+# Interactive mode
+rhodibot fix
+
+# Auto-generate all missing files
+rhodibot fix --auto
+
+# Specific files only
+rhodibot fix --only README,LICENSE,SECURITY
+----
+
+=== Generate Badge
+
+[source,bash]
+----
+# SVG badge
+rhodibot badge > badge.svg
+
+# Markdown for README
+rhodibot badge --format markdown
+----
+
+== RSR Categories
+
+=== 1. Foundational Infrastructure
+- [ ] `flake.nix` - Nix development environment
+- [ ] `justfile` - Task automation
+- [ ] `.gitlab-ci.yml` or `.github/workflows/` - CI/CD
+- [ ] Container support
+
+=== 2. Documentation Standards
+- [ ] `README.adoc` or `README.md`
+- [ ] `LICENSE.txt`
+- [ ] `CODE_OF_CONDUCT.adoc`
+- [ ] `CONTRIBUTING.adoc`
+
+=== 3. Security Architecture
+- [ ] `SECURITY.md` - Vulnerability disclosure
+- [ ] SPDX headers in source files
+- [ ] Type-safe language or strict typing
+
+=== 4. Architecture Principles
+- [ ] Offline-first design
+- [ ] Reversible operations
+- [ ] CRDT-friendly data structures
+
+=== 5. Web Standards
+- [ ] `.well-known/` directory
+- [ ] DNSSEC support
+- [ ] Security headers
+
+=== 6. Semantic Web & IndieWeb
+- [ ] Schema.org metadata
+- [ ] Webmention support
+
+=== 7. FOSS & Licensing
+- [ ] Clear license declaration
+- [ ] Contributor rights documented
+- [ ] SPDX identifiers
+
+=== 8. Cognitive Ergonomics
+- [ ] Accessibility (WCAG)
+- [ ] Internationalization
+- [ ] Information architecture
+
+=== 9. Lifecycle Management
+- [ ] Semantic versioning
+- [ ] Dependency management
+- [ ] EOL policy
+
+=== 10. Community & Governance
+- [ ] `GOVERNANCE.adoc`
+- [ ] `MAINTAINERS.md`
+- [ ] `FUNDING.yml`
+
+=== 11. Accountability
+- [ ] Audit trails
+- [ ] Provenance tracking
+- [ ] Attestations
+
+== Configuration
+
+Create `.rhodibot.toml` for custom rules:
+
+[source,toml]
+----
+[general]
+strict = true
+fail_on = "bronze"  # Minimum acceptable level
+
+[overrides]
+# Skip specific checks
+skip = ["semantic-web"]
+
+[templates]
+# Custom template paths
+readme = "templates/README.adoc.tmpl"
+----
+
+== CI Integration
+
+=== GitHub Actions
+
+[source,yaml]
+----
+name: RSR Compliance
+on: [push, pull_request]
+
+jobs:
+  compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hyperpolymath/rhodibot-action@v1
+        with:
+          fail-level: bronze
+----
+
+=== GitLab CI
+
+[source,yaml]
+----
+rsr:compliance:
+  stage: lint
+  image: ghcr.io/hyperpolymath/rhodibot:latest
+  script:
+    - rhodibot check --fail-on bronze
+----
+
+== API
+
+Rhodibot can run as a service:
+
+[source,bash]
+----
+rhodibot serve --port 8080
+----
+
+[source,bash]
+----
+# Check a repo
+curl -X POST http://localhost:8080/check \
+  -H "Content-Type: application/json" \
+  -d '{"repo": "hyperpolymath/git-hud"}'
+----
+
+== License
+
+MIT OR AGPL-3.0-or-later WITH Palimpsest-0.8
+
+== Related Projects
+
+* link:https://github.com/hyperpolymath/Rhodium-Standard-Repositories[RSR] - The standard itself
+* link:https://github.com/hyperpolymath/git-hud[Gitvisor] - Dashboard integration
+* link:https://github.com/hyperpolymath/echidnabot[Echidnabot] - Formal validation

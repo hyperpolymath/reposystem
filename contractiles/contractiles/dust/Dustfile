@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: PLMP-1.0-or-later
+# Contractiles Dustfile - recovery and rollback semantics
+# DEPRECATED: Legacy mixed-format file retained for compatibility only.
+# Canonical source of truth: contractiles/dust/Dustfile.a2ml.
+
+version: 1
+
+recovery:
+  logs:
+    - name: gateway-decision-log
+      path: logs/decisions.json
+      reversible: true
+      handler: "dust-replay --reverse logs/decisions.json"
+
+  policy:
+    - name: policy-rollback
+      path: policy/policy.ncl
+      rollback: "git checkout HEAD~1 -- policy/policy.ncl"
+      notes: "Rollback policy to the previous known-good revision."
+
+  gateway:
+    - name: bad-deployment
+      event: "deploy.failure"
+      undo: "gatewayctl rollback --last"
+      notes: "Undo a failed deployment while preserving audit logs."
+
+  dust-events:
+    - name: decision-log-to-dust
+      source: logs/decisions.json
+      transform: "dustify --input logs/decisions.json --output logs/dust-events.json"
+      notes: "Map gateway decision logs into reversible dust events."

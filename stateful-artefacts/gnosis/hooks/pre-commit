@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Gnosis pre-commit hook: auto-hydrate .template.md files
+#
+# Install: cp hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+# Or: ln -sf ../../gnosis/hooks/pre-commit .git/hooks/pre-commit
+#
+# Finds staged .template.md files, renders them via gnosis, and stages the output.
+
+set -euo pipefail
+
+GNOSIS="${GNOSIS_BIN:-gnosis}"
+
+# Check gnosis is available
+if ! command -v "$GNOSIS" &>/dev/null; then
+    echo "gnosis: pre-commit hook skipped (gnosis binary not found)"
+    echo "  Set GNOSIS_BIN or install gnosis to enable auto-hydration"
+    exit 0
+fi
+
+# Find staged template files
+templates=$(git diff --cached --name-only --diff-filter=ACM | grep '\.template\.md$' || true)
+
+if [ -z "$templates" ]; then
+    exit 0
+fi
+
+echo "gnosis: hydrating templates..."
+
+for tpl in $templates; do
+    # Derive output path: foo.template.md -> foo.md
+    output="${tpl%.template.md}.md"
+
+    # Find SCM path relative to template
+    tpl_dir=$(dirname "$tpl")
+    scm_path=""
+    search_dir="$tpl_dir"
+    while [ "$search_dir" != "." ] && [ "$search_dir" != "/" ]; do
+        if [ -d "$search_dir/.machine_readable" ]; then
+            scm_path="$search_dir/.machine_readable"
+            break
+        fi
+        search_dir=$(dirname "$search_dir")
+    done
+
+    if [ -z "$scm_path" ] && [ -d ".machine_readable" ]; then
+        scm_path=".machine_readable"
+    fi
+
+    # Build gnosis args
+    args="--plain"
+    if [ -n "$scm_path" ]; then
+        args="$args --scm-path $scm_path"
+    fi
+
+    if "$GNOSIS" $args "$tpl" "$output" 2>/dev/null; then
+        git add "$output"
+        echo "  $tpl -> $output"
+    else
+        echo "  WARNING: failed to hydrate $tpl (continuing)"
+    fi
+done

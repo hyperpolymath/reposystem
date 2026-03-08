@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reposystem — Railway Yard View</title>
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="color-scheme" content="light" />
+  </head>
+  <body>
+    <!-- SPDX-License-Identifier: PMPL-1.0-or-later -->
+    <!-- SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell -->
+
+    <a class="skip-link" href="#main">Skip to graph</a>
+    <a class="skip-link skip-link--secondary" href="#controls">Skip to controls</a>
+
+    <header class="hero">
+      <div class="hero__brand">
+        <div class="brand-mark">RS</div>
+        <div>
+          <p class="eyebrow">Reposystem</p>
+          <h1>Railway Yard View</h1>
+          <p class="subhead">
+            Visualize your repository ecosystem as a switchable graph. Drop a JSON export
+            to light up the yard.
+          </p>
+        </div>
+      </div>
+      <div class="hero__actions">
+        <label class="file-pill" for="fileInput">
+          Load JSON
+          <input id="fileInput" type="file" accept="application/json,.json,.ncl" />
+        </label>
+        <button id="loadSample" class="ghost">Load Sample</button>
+        <button id="resetView" class="ghost">Reset View</button>
+        <button id="fitView" class="ghost">Fit Graph</button>
+      </div>
+    </header>
+
+    <main id="main" class="layout">
+      <section id="controls" class="panel" aria-label="Graph controls">
+        <div class="panel__header">
+          <h2>Graph Controls</h2>
+        </div>
+        <div class="panel__body">
+          <div class="field">
+            <label for="searchInput">Search</label>
+            <input id="searchInput" type="search" placeholder="repo, group, tag..." />
+          </div>
+          <div class="field">
+            <label for="layoutSelect">Layout</label>
+            <select id="layoutSelect">
+              <option value="force">Force</option>
+              <option value="grid">Grid</option>
+              <option value="radial">Radial</option>
+              <option value="groups">Cluster by Group</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="groupSelect">Group Filter</label>
+            <select id="groupSelect">
+              <option value="all">All</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="aspectSelect">Aspect</label>
+            <select id="aspectSelect">
+              <option value="all">All</option>
+              <option value="security">Security</option>
+              <option value="reliability">Reliability</option>
+              <option value="supply-chain">Supply Chain</option>
+            </select>
+          </div>
+          <div class="field field--toggle">
+            <label for="labelToggle">Edge Labels</label>
+            <input id="labelToggle" type="checkbox" checked />
+          </div>
+          <div class="field field--toggle">
+            <label for="weightToggle">Aspect Weighting</label>
+            <input id="weightToggle" type="checkbox" checked />
+          </div>
+          <div class="field field--toggle">
+            <label for="contrastToggle">High Contrast</label>
+            <input id="contrastToggle" type="checkbox" />
+          </div>
+          <div class="field field--toggle">
+            <label for="darkToggle">Dark Mode</label>
+            <input id="darkToggle" type="checkbox" />
+          </div>
+          <div class="field field--toggle">
+            <label for="freezeToggle">Freeze Layout</label>
+            <input id="freezeToggle" type="checkbox" />
+          </div>
+          <div class="field field--toggle">
+            <label for="snapToggle">Snap to Grid</label>
+            <input id="snapToggle" type="checkbox" />
+          </div>
+          <div class="field field--toggle">
+            <label for="erToggle">ER Mode</label>
+            <input id="erToggle" type="checkbox" />
+          </div>
+          <div class="field">
+            <label>Theme Colors</label>
+            <div class="button-row">
+              <input id="accentColor" type="color" value="#4b4dff" aria-label="Accent color" />
+              <input id="bgColor" type="color" value="#f7f0e8" aria-label="Background color" />
+              <input id="panelColor" type="color" value="#f5f3ef" aria-label="Panel color" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Legend</label>
+            <div class="legend">
+              <span class="legend__swatch repo"></span> Repo
+              <span class="legend__swatch group"></span> Group
+              <span class="legend__swatch component"></span> Component
+            </div>
+            <div class="legend-weight">
+              <span>Low impact</span>
+              <span class="legend-weight__bar"></span>
+              <span>High impact</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <div id="status" class="status" role="status" aria-live="polite">Waiting for JSON export.</div>
+            <div id="ariaStatus" class="sr-only" aria-live="polite"></div>
+          </div>
+          <div class="field">
+            <label>Zoom</label>
+            <div class="button-row">
+              <button id="zoomIn" class="ghost" type="button">Zoom In</button>
+              <button id="zoomOut" class="ghost" type="button">Zoom Out</button>
+              <button id="zoomReset" class="ghost" type="button">Reset Zoom</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Annotations</label>
+            <div class="button-row">
+              <button id="toolSelect" class="ghost" type="button">Select</button>
+              <button id="toolText" class="ghost" type="button">Text</button>
+              <button id="toolBox" class="ghost" type="button">Box</button>
+              <button id="toolArrow" class="ghost" type="button">Arrow</button>
+            </div>
+            <input id="annotationText" type="text" placeholder="Annotation text" />
+            <div class="button-row">
+              <button id="bringFront" class="ghost" type="button">Bring to Front</button>
+              <button id="sendBack" class="ghost" type="button">Send to Back</button>
+              <button id="pinToggle" class="ghost" type="button">Pin/Unpin</button>
+              <button id="deleteItem" class="ghost" type="button">Delete</button>
+            </div>
+            <div class="button-row">
+              <button id="undoBtn" class="ghost" type="button">Undo</button>
+              <button id="redoBtn" class="ghost" type="button">Redo</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Export</label>
+            <div class="button-row">
+              <button id="downloadJson" class="ghost" type="button">Download JSON</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="urlInput">Load from URL/Path</label>
+            <input id="urlInput" type="text" placeholder="./export.json" />
+            <button id="loadUrl" class="ghost">Load Path</button>
+          </div>
+          <div class="note">
+            Nickel files (.ncl) should be exported to JSON before loading in the browser.
+            If you load a local path, run a simple static server so fetch can access it.
+          </div>
+          <div class="field">
+            <label>Node List</label>
+            <div class="button-row">
+              <input id="groupName" type="text" placeholder="New group name" />
+              <button id="createGroup" class="ghost" type="button">Create Group</button>
+            </div>
+            <ul id="nodeList" class="node-list" role="listbox" aria-label="Node list"></ul>
+          </div>
+          <details class="shortcuts">
+            <summary>Keyboard Shortcuts</summary>
+            <ul>
+              <li><kbd>?</kbd> Toggle this help</li>
+              <li><kbd>+</kbd>/<kbd>-</kbd> Zoom in/out</li>
+              <li><kbd>0</kbd> Reset zoom</li>
+              <li><kbd>F</kbd> Fit graph</li>
+              <li><kbd>L</kbd> Toggle edge labels</li>
+              <li><kbd>W</kbd> Toggle aspect weighting</li>
+              <li><kbd>G</kbd> Cycle groups</li>
+              <li><kbd>A</kbd> Cycle aspects</li>
+              <li><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> Move focused node</li>
+              <li><kbd>Shift</kbd> + arrows: faster move</li>
+            </ul>
+          </details>
+        </div>
+      </section>
+
+      <section class="stage">
+        <div class="canvas" id="canvas">
+          <svg id="graph" viewBox="0 0 1200 800" role="img" aria-label="Reposystem graph" aria-describedby="graphHint"></svg>
+          <div class="hint">
+            <p id="graphHint">Drag nodes to reposition. Scroll to zoom. Use the search box to highlight.</p>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel panel--details">
+        <div class="panel__header">
+          <h2>Selection</h2>
+        </div>
+        <div class="panel__body" id="details" role="region" aria-live="polite" aria-label="Selection details">
+          <p class="muted">Select a node or edge to see details.</p>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      <span>PMPL-1.0-or-later · Philosophy: Palimpsest</span>
+      <span>Web UI prototype — no build step</span>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= must Implementation Roadmap
+
+[NOTE]
+====
+This roadmap tracks the **implementation** development (the `must` binary).
+
+For the **specification** roadmap (Mustfile format), see https://github.com/hyperpolymath/mustfile/ROADMAP.adoc[mustfile/ROADMAP.adoc].
+====
+
+== Current Status
+
+Implementation v0.1.0-alpha released (Ada 2022). Targeting v1.0.0 with frozen CLI interface and dual publishing (GitHub Releases + GHCR).
+
+== Milestones
+
+=== v0.1.0 - Foundation
+* [x] Core functionality
+* [x] Basic documentation
+* [x] CI/CD pipeline
+
+=== v0.2.0 - Beta Stabilization
+* [x] Content requirement checks
+* [x] Fixtures for pass/fail/fix/content
+* [ ] Spec + CLI drift audit
+* [ ] Release checklist + version stamping
+
+=== v1.0.0 - Stable Release
+* [ ] Spec + CLI contract frozen
+* [ ] Comprehensive tests + fixtures green
+* [ ] GitHub Releases artifacts + checksums
+* [ ] GHCR publish pipeline
+* [ ] Production-ready docs
+
+== Future Directions
+
+_To be determined based on community feedback._

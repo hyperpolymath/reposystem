@@ -1,0 +1,20 @@
+schema = "0.1"
+
+[project]
+name = "must-failing"
+version = "0.1.0"
+license = "MPL-2.0-or-later"
+author = "Hyperpolymath"
+
+[requirements]
+must_have = [
+    "README.adoc",
+    "MISSING.txt",
+]
+
+must_not_have = [
+    "Makefile",
+]
+
+[requirements.content]
+"README.adoc" = ["Failing Fixture"]

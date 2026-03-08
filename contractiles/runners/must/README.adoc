@@ -1,0 +1,215 @@
+= must - Mustfile Execution Engine
+image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[MPL-2.0-or-later,link="https://opensource.org/licenses/MPL-2.0"]
+
+[NOTE]
+====
+**THIS IS THE IMPLEMENTATION** - the `must` binary that executes Mustfiles.
+
+For the **format specification** (what a Mustfile is), see https://github.com/hyperpolymath/mustfile[hyperpolymath/mustfile].
+
+Think of it like: **must:Mustfile :: just:Justfile**
+====
+
+== License & Philosophy
+
+This project must declare **MPL-2.0-or-later** for platform/tooling compatibility.
+
+Philosophy: **Palimpsest**. The Palimpsest-MPL (PMPL) text is provided in `license/PMPL-1.0.txt`, and the canonical source is the palimpsest-license repository.
+
+
+
+
+:author: Hyperpolymath
+:revnumber: 0.2.0-beta
+:toc: macro
+:toclevels: 3
+:icons: font
+
+toc::[]
+
+---
+
+== Status: v0.1.0-alpha
+
+This is the **Ada 2022 implementation** of the Mustfile execution engine. It enforces the **Contract of Physical State** defined in the https://github.com/hyperpolymath/mustfile[Mustfile specification].
+
+The v1.0.0 release will stabilize the CLI interface and fully implement the must-spec v1.0.
+
+=== Implementation vs Specification
+
+[cols="1,3,3",options="header"]
+|===
+|Component |This Repo (must) |Sister Repo (mustfile)
+
+|**Purpose**
+|Implements the execution engine
+|Defines the Mustfile format
+
+|**Contains**
+|Ada 2022 source code, CLI binary, runtime logic
+|Specification documents, golden examples, test cases
+
+|**Relation**
+|HOW to execute a Mustfile
+|WHAT a Mustfile is
+
+|**Analogy**
+|`just` command
+|Justfile format
+|===
+
+For the **Mustfile format specification**, see https://github.com/hyperpolymath/mustfile[hyperpolymath/mustfile].
+
+IMPORTANT: This project strictly forbids the use of `Makefiles`. All local tasks are orchestrated via `just`, and all deployment transitions are managed via `must`.
+
+=== What is Physical State?
+
+**Physical State** is the complete set of observable facts:
+
+* **Files Present**: Which files must exist (`must_have`)
+* **Files Absent**: Which files must NOT exist (`must_not_have`)
+* **Content**: Required strings in specific files (`requirements.content`)
+* **Artifacts**: Compiled binaries, container images
+
+Every `must` operation enforces this contract.
+
+== Design Philosophy
+The deployment architecture is environment-agnostic and prioritises **Just Route** logic. Every operation is treated as a state transition where resources are consumed to produce outputs, ensuring no orphaned state or unvalidated side effects.
+
+* **Podman First**: Containerisation is the primary deployment vector.
+* **Universal Shell Support**: 17 shell variants (bash, oil, nushell, etc.) are supported via referenced scripts.
+* **Configuration**: Handled via `nickel` for validated, type-safe manifests.
+
+== Quick Start
+
+See link:INSTALL.adoc[INSTALL.adoc] for detailed installation instructions.
+
+=== Container (Fastest Way)
+
+[source,bash]
+----
+# Build and run must in a container
+podman build -t must:latest -f Containerfile .
+podman run --rm must:latest --help
+----
+
+=== Native Build
+
+[source,bash]
+----
+# Install GNAT (Debian/Ubuntu)
+sudo apt-get install -y gnat gprbuild
+
+# Build and install
+gprbuild -P must.gpr -XMODE=release
+sudo cp bin/must /usr/local/bin/
+----
+
+== Prerequisites
+
+To maintain the integrity of the build and deployment pipeline, ensure the following are installed:
+
+1. **gnat**: GNAT Ada 2022 compiler.
+2. **gprbuild**: GNAT project build system.
+3. **just**: Command runner for local development.
+4. **podman**: Primary container engine (for deployment).
+
+[source,bash]
+----
+# Debian/Ubuntu
+sudo apt-get install -y gnat gprbuild
+
+# Or use the Containerfile for a self-contained build environment
+podman build -t must:latest -f Containerfile .
+----
+
+== Usage
+
+=== Local Development
+Local tasks are documented in the `cookbook.adoc`. Use `just` to view available recipes:
+
+[source,bash]
+----
+just --list
+----
+
+=== Deployment
+
+The `must deploy` command builds and deploys via Containerfile:
+
+[source,bash]
+----
+# Build container image
+must deploy
+
+# Build with specific tag
+must deploy --tag v0.1.0
+
+# Build and push to registry
+must deploy --push
+
+# Preview without executing
+must deploy --dry-run --verbose
+----
+
+For local (non-container) builds:
+
+[source,bash]
+----
+# Build locally with release optimizations
+must deploy --target local
+----
+
+== Shell Support
+This project provides native wrappers for a comprehensive list of shells to ensure compatibility across Linux, Minix, macOS, iOS, Android, and PC (ASIC/Edge-specific environments included).
+
+Only the **bash** entry point is shown here. All other 16 shell implementations (cmd, oil, ash, csh, dash, elvish, fish, ion, ksh, murex, ngs, nushell, powershell-core, tcsh, tsh, zsh, and minix shell) are located in the link:scripts/shells/[scripts/shells/] directory.
+
+.scripts/entrypoint.sh (Bash)
+[source,bash]
+----
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Ensure just is present
+if ! command -v just &> /dev/null; then
+    echo "Error: 'just' not found. Please install via https://just.systems"
+    exit 1
+fi
+
+# Route to just recipe
+just "$@"
+----
+
+== Package Management
+Supported package managers and deployment routes are managed through `nicagu` (Nickel-Augmented) manifests:
+
+| OS / Area | Tooling |
+| :--- | :--- |
+| **Fedora/Silverblue** | `rpm-ostree`, `dnf` |
+| **Debian/Ubuntu** | `apt`, `nala` |
+| **macOS** | `brew`, `macports` |
+| **Windows** | `winget`, `scoop` |
+| **Arch** | `pacman` |
+| **Cross-platform** | `asdf`, `cargo`, `pwa` |
+
+== Documentation
+* link:INSTALL.adoc[**Installation Guide**]: Build and install instructions for all platforms.
+* link:cookbook.adoc[**Cookbook**]: Detailed recipes for all `just` commands.
+* link:docs/must-spec.adoc[**must-spec**]: Technical specification for the Mustfile transitions.
+* link:docs/man/[**Man Pages**]: CLI help and man documents for all custom binaries.
+
+== Release & Publishing
+The v1.0.0 release will publish both **GitHub Releases** artifacts and a **GHCR** container image.
+
+Targets:
+
+* GitHub Releases: tarball + checksums
+* GHCR: `ghcr.io/hyperpolymath/must:<tag>`
+
+Example:
+[source,bash]
+----
+# Build and publish GHCR image
+must deploy --tag v1.0.0 --push
+----

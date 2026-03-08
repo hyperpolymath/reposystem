@@ -1,0 +1,503 @@
+image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+image:https://img.shields.io/badge/Philosophy-Palimpsest-indigo.svg[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-license"]
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+= Reposystem Ecosystem Status
+:toc: left
+:toclevels: 3
+:icons: font
+
+[.lead]
+Current status of all tools in the reposystem-centered ecosystem. Updated: 2026-02-07
+
+== Quick Status Overview
+
+[cols="2,1,1,2", options="header"]
+|===
+| Tool | Status | Completion | Phase
+
+| **reposystem**
+| ✅ Complete
+| 100%
+| Implementation (ready for f5)
+
+| **git-seo**
+| ✅ Complete
+| 100%
+| Production (v0.4.0 released)
+
+| **git-dispatcher**
+| 🔄 In Progress
+| 20%
+| Integration
+
+| **git-hud** (formerly gitvisor)
+| 🔄 In Progress
+| 40%^*^
+| Active Development
+
+| **gitbot-fleet**
+| 🔄 In Progress
+| 35%
+| CI/CD Integration
+
+| **git-batcher**
+| 📋 Planned
+| 0%
+| Not Started
+
+| **scaffoldia**
+| ❓ Unknown
+| ?
+| Status Unknown
+
+| **.git-private-farm**
+| ❓ Unknown
+| ?
+| Status Unknown
+
+| **stateful-artefacts-for-gitforges**
+| ❓ Unknown
+| ?
+| Status Unknown
+|===
+
+_^*^ git-hud STATE.scm shows 0% but significant work completed (see below)_
+
+== Core Infrastructure
+
+=== reposystem
+**Repository:** `github.com/hyperpolymath/reposystem`
+
+**Purpose:** Railway yard for repository ecosystem - visual wiring layer for multi-repo component management with aspect tagging and scenario comparison.
+
+**Tech Stack:** Rust
+
+**Status:** ✅ **100% Complete** (Implementation phase)
+
+**Completed Features:**
+
+* ✅ Repo scanner (gix + walkdir) - scans 400+ repos
+* ✅ Graph store (petgraph + JSON persistence)
+* ✅ Manual edges and groups
+* ✅ Aspect tagging system
+* ✅ DOT + JSON export
+* ✅ Scenario management (create/compare)
+* ✅ Weak links detection (SPOFs, risk annotations)
+* ✅ Interactive TUI (ratatui with 4 tabs)
+* ✅ Slots/Providers registry with compatibility checking
+* ✅ Plan generation with risk assessment
+* ✅ Apply + Rollback execution
+* ✅ Audit log with full history
+* ✅ Web UI prototype (graph explorer with annotations)
+* ✅ 66 tests passing (9 unit + 4 integration + 3 hello-yard + 50 invariant)
+
+**CLI Commands (All Implemented):**
+[source,bash]
+----
+# f1 - Graph Management
+reposystem scan          # Import from local clones
+reposystem export        # DOT/JSON export
+reposystem edge          # Add/remove/list edges
+reposystem group         # Create/manage repo groups
+reposystem aspect        # Tag repos by aspect
+reposystem scenario      # Create/compare scenarios
+reposystem weak-links    # Detect SPOFs and risks
+reposystem view          # Interactive TUI
+
+# f2 - Slots/Providers
+reposystem slot          # Define interface slots
+reposystem provider      # Define implementations
+reposystem binding       # Bind consumers to providers
+
+# f3 - Planning
+reposystem plan          # Create/diff/rollback plans
+
+# f4 - Execution
+reposystem apply         # Execute/undo/status
+----
+
+**Next Milestone:** f5 - Remote Operations (git commands, API calls)
+
+**Integration Points:**
+
+* Exports graph for git-hud dashboard
+* Provides repo metadata for git-seo analysis
+* Plans consumed by git-dispatcher for execution
+* Coordinates with gitbot-fleet for automation
+
+**Blockers:**
+
+* Medium: 25 missing documentation warnings (stub modules need doc comments)
+* Need final narrative across README/ROADMAP/6scm
+* Web UI branding/contrast issues (2.3 AA accessibility, indigo theme)
+
+=== git-seo
+**Repository:** `github.com/hyperpolymath/git-seo`
+
+**Purpose:** Make Git repositories discoverable - analyze repository metadata, README quality, and social signals across GitHub, GitLab, Bitbucket.
+
+**Tech Stack:** Julia (CLI), Rust (glambot integration), Elixir (git-hud backend), ReScript (git-hud frontend)
+
+**Status:** ✅ **100% Complete** (v0.4.0 released)
+
+**Completed Features:**
+
+* ✅ Multi-forge support: GitHub, GitLab, Bitbucket
+* ✅ 5-category scoring (Metadata 25, README 30, Social 20, Activity 15, Quality 10)
+* ✅ Three commands: analyze, compare, optimize
+* ✅ Interactive fix application (--apply flag)
+* ✅ API mutations: description updates, topics management
+* ✅ File modifications: LICENSE creation (13 licenses), README badges (6 types), README sections (7 standard)
+* ✅ Risk-based categorization: SAFE/MEDIUM/UNSAFE
+* ✅ Batch analysis command
+* ✅ JSON export for CI/CD integration
+* ✅ GitLab API support (PRIVATE-TOKEN auth, URL-encoded paths)
+* ✅ Full test suite (26/26 tests passing)
+
+**CLI Commands:**
+[source,bash]
+----
+git-seo analyze <url>           # Analyze single repo
+git-seo compare <url1> <url2>   # Compare two repos
+git-seo optimize <url>          # Get recommendations
+git-seo optimize <url> --apply  # Interactive fix wizard
+git-seo batch repos.txt         # Bulk analysis
+----
+
+**Integration Points:**
+
+* **glambot** (Rust): GitSeoAnalyzer shells out to git-seo CLI, parses JSON
+* **git-hud** (Elixir + Julia): Julia analytics module loads reports, GraphQL API exposes data
+* **git-hud** (ReScript): SEO widget displays scores, trends, recommendations
+* **gitbot-fleet**: Could auto-apply safe fixes based on recommendations
+
+**Next Steps:**
+
+* Monitor git-hud SEO widget adoption
+* Plan v0.5.0: Bitbucket API, self-hosted GitLab, README templates, PR creation
+
+=== git-hud (formerly gitvisor)
+**Repository:** `github.com/hyperpolymath/git-hud`
+
+**Purpose:** Unified forge HUD - dashboard for repository health, security, and discoverability.
+
+**Tech Stack:** Elixir (Phoenix backend), ReScript (frontend), Julia (analytics)
+
+**Status:** 🔄 **~40% Complete** (Active Development)
+
+**Note:** STATE.scm shows 0% but significant work completed in recent sessions:
+
+**Completed Features:**
+
+* ✅ GraphQL schema with SEO queries (seoReport, seoTrend)
+* ✅ GraphQL mutation: analyzeRepository
+* ✅ Elixir resolvers: GitvisorWeb.Resolvers.SEO
+* ✅ Julia analytics module:
+  - `load_seo_report()`
+  - `analyze_seo_trends()`
+  - `seo_score_card()`
+* ✅ ReScript SEO widget component:
+  - Visual score cards with grades
+  - Trend indicators with arrows
+  - Category score bars
+  - Recommendations display
+  - CSS styling with status colors
+* ✅ Monitoring infrastructure documented (SEO-MONITORING.md)
+* ✅ Monitoring script: `~/.bin/monitor-seo-usage.sh`
+
+**Integration Points:**
+
+* Consumes reposystem graph for repo relationships
+* Consumes git-seo JSON reports for discoverability metrics
+* Displays SEO scores with color-coded indicators
+* Could consume gitbot-fleet status for automation tracking
+
+**Blockers:**
+
+* STATE.scm needs updating to reflect actual progress
+* Full backend/frontend integration testing
+* Deployment pipeline
+
+== Automation Layer
+
+=== git-dispatcher
+**Repository:** `github.com/hyperpolymath/git-dispatcher`
+
+**Purpose:** Git workflow dispatcher for automated repository operations - orchestrates execution of reposystem plans.
+
+**Tech Stack:** ReScript + Deno
+
+**Status:** 🔄 **20% Complete** (Integration phase)
+
+**Completed Features:**
+
+* ✅ Dispatch architecture defined
+* ✅ Initial alignment with reposystem plans/export format
+
+**Planned Features:**
+
+* Execute reposystem plans (apply operations)
+* Coordinate with gitbot-fleet for bot dispatch
+* Webhook handling for forge events
+* GitHub App integration
+
+**Integration Points:**
+
+* Consumes reposystem plans for execution
+* Dispatches work to gitbot-fleet bots
+* Reports status back to git-hud
+
+**Blockers:**
+
+* Core execution engine needs implementation
+* Webhook infrastructure
+* Bot communication protocol
+
+=== gitbot-fleet
+**Repository:** `github.com/hyperpolymath/gitbot-fleet`
+
+**Purpose:** Bot fleet coordinator for repository quality enforcement - orchestrates specialized bots.
+
+**Tech Stack:** Rust (coordinator), individual bots in various languages
+
+**Status:** 🔄 **35% Complete** (CI/CD Integration phase)
+
+**Bot Status:**
+
+[cols="2,1,2", options="header"]
+|===
+| Bot | Status | Purpose
+
+| **rhodibot**
+| Active
+| Repository standards enforcement
+
+| **echidnabot**
+| Active
+| Security scanning coordination
+
+| **sustainabot**
+| Active
+| Dependency health monitoring
+
+| **glambot**
+| ✅ Complete
+| Code quality analysis (includes GitSeoAnalyzer)
+
+| **seambot**
+| Active
+| Seam analysis and invariant checking
+
+| **finishbot**
+| ✅ Complete
+| Task completion tracking
+|===
+
+**Completed Features:**
+
+* ✅ Bot coordination documentation
+* ✅ RSR 2026 structure
+* ✅ CICD-PATTERNS.scm - error patterns and SHA pins
+* ✅ cicd-fixer CLI tool for scanning and fixing
+* ✅ Batch mode for multiple repos
+* ✅ cicd-hyper-a integration
+
+**Planned Features:**
+
+* Shared context layer across bots
+* Bot communication protocol
+* Fleet-wide configuration
+* Connection to git-dispatcher
+* Webhook handlers
+* GitHub App configuration
+
+**Integration Points:**
+
+* Receives dispatch from git-dispatcher
+* Executes automated fixes based on git-seo recommendations
+* Reports results to git-hud
+* Validates reposystem invariants
+
+**Blockers:**
+
+* Individual bot repos need consolidation planning
+* Fleet orchestration layer needs design
+* Shared types and interfaces
+
+== Planned Tools
+
+=== git-batcher
+**Status:** 📋 **Planned** (Replaces deprecated git-dropper)
+
+**Purpose:** Bulk repository operations - apply changes across multiple repos in the ecosystem.
+
+**Integration Points:**
+
+* Could consume reposystem aspect queries to select target repos
+* Could execute git-dispatcher plans in batch mode
+* Could coordinate with gitbot-fleet for distributed execution
+
+**Notes:**
+
+* git-dropper was deprecated and replaced by git-batcher
+* No implementation exists yet
+* Could be integrated into reposystem or git-dispatcher
+
+=== scaffoldia
+**Repository:** Likely `github.com/hyperpolymath/scaffoldia`
+
+**Purpose:** Scaffolding and templating for new repositories.
+
+**Status:** ❓ **Status Unknown**
+
+**Expected Integration:**
+
+* Generate new repos from templates
+* Ensure RSR compliance from start
+* Integrate with reposystem for ecosystem registration
+
+=== .git-private-farm
+**Repository:** Likely `github.com/hyperpolymath/.git-private-farm`
+
+**Purpose:** Private repository management.
+
+**Status:** ❓ **Status Unknown**
+
+**Expected Integration:**
+
+* Manage private repo mirrors
+* Integrate with reposystem for private repo tracking
+
+=== stateful-artefacts-for-gitforges
+**Repository:** Likely `github.com/hyperpolymath/stateful-artefacts-for-gitforges`
+
+**Purpose:** Forge artifact hydration pipeline.
+
+**Status:** ❓ **Status Unknown**
+
+**Expected Integration:**
+
+* Generate forge-specific artifacts (GitHub releases, GitLab pages, etc.)
+* Could consume reposystem metadata
+
+== Architecture Layers
+
+=== Data Layer
+* **reposystem**: Source of truth for repository graph
+* **git-seo**: Repository discoverability metrics
+* **STATE.scm files**: Per-repo state tracking
+
+=== Analysis Layer
+* **git-seo**: Discoverability analysis
+* **glambot**: Code quality analysis (includes git-seo integration)
+* **seambot**: Seam analysis and invariant checking
+
+=== Orchestration Layer
+* **git-dispatcher**: Workflow orchestration
+* **gitbot-fleet**: Bot coordination
+* **reposystem**: Plan generation and scenario management
+
+=== Presentation Layer
+* **git-hud**: Unified dashboard
+* **reposystem web UI**: Graph visualization
+* **reposystem TUI**: Interactive terminal interface
+
+=== Execution Layer
+* **gitbot-fleet bots**: Automated fixes and enforcement
+* **git-dispatcher**: Plan execution
+* **reposystem apply**: Direct operations
+
+== Integration Flow Examples
+
+=== End-to-End SEO Improvement
+
+[source]
+----
+1. git-seo analyze → generates report (Julia CLI)
+2. glambot → shells out to git-seo, parses JSON (Rust)
+3. git-hud analytics → loads report (Julia module)
+4. git-hud GraphQL → exposes via API (Elixir resolvers)
+5. git-hud frontend → displays in SEO widget (ReScript component)
+6. User reviews recommendations
+7. git-seo optimize --apply → interactive fix wizard (Julia CLI)
+8. OR: gitbot-fleet → auto-applies safe fixes (Rust bots)
+----
+
+=== Ecosystem-Wide Change
+
+[source]
+----
+1. reposystem aspect filter → select repos by aspect tag
+2. reposystem scenario create → define target state
+3. reposystem plan create → generate operation plan with risk assessment
+4. User reviews plan in TUI or web UI
+5. reposystem apply → execute operations (or save for git-dispatcher)
+6. git-dispatcher → orchestrates cross-repo changes
+7. gitbot-fleet → handles per-repo automation
+8. reposystem audit → tracks execution history
+9. git-hud → displays progress and status
+----
+
+=== CI/CD Quality Gate
+
+[source]
+----
+1. GitHub Actions → triggers on push
+2. git-seo analyze --json → generates SEO report
+3. CI checks score threshold (e.g., minimum 60/100)
+4. git-hud → displays historical trends
+5. glambot → runs during PR review
+6. gitbot-fleet → creates fix PRs if needed
+----
+
+== Critical Gaps to Address
+
+=== Immediate
+
+1. **Update git-hud STATE.scm** to reflect actual 40% completion
+2. **Document git-dispatcher execution engine** - core orchestration logic
+3. **Define bot communication protocol** for gitbot-fleet coordination
+4. **Create git-batcher** or integrate batch functionality into existing tools
+
+=== Short-term
+
+1. **Complete reposystem f5 milestone** (remote operations)
+2. **Finish git-dispatcher integration** with reposystem plans
+3. **Consolidate gitbot-fleet bot repos** into coordinated fleet
+4. **Full git-hud backend/frontend integration** testing
+
+=== Long-term
+
+1. **Unified monitoring dashboard** across all tools
+2. **Cross-tool error handling** and rollback coordination
+3. **Ecosystem health metrics** (tool availability, integration status)
+4. **Self-healing automation** (tools monitor and fix each other)
+
+== Maintenance Tracking
+
+=== Regular Updates Needed
+
+* This document (ECOSYSTEM-STATUS.adoc) - update after major milestones
+* ECOSYSTEM-MAP.adoc - update when new relationships confirmed
+* Individual STATE.scm files - update after each work session
+* Integration documentation - update when APIs change
+
+=== Next Review: 2026-02-14
+
+Review and update:
+
+* Tool completion percentages
+* Integration status
+* New blockers or dependencies
+* Architecture changes
+
+== References
+
+* link:ECOSYSTEM-MAP.adoc[Ecosystem Map] - Confirmed relationships
+* link:ECOSYSTEM-EVIDENCE.adoc[Ecosystem Evidence] - Relationship validation
+* link:README.adoc[Reposystem README] - Core documentation
+* link:ROADMAP.adoc[Roadmap] - Future milestones
+* link:spec/CONCEPTS.adoc[Concepts] - Mental models
+* link:spec/DATA-MODEL.adoc[Data Model] - Technical specification

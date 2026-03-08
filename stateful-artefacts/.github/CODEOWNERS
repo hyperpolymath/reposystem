@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell (hyperpolymath)
+#
+# CODEOWNERS - Stateful Artefacts for Git Forges
+#
+# Each line defines ownership for matching file patterns.
+# The last matching pattern takes precedence.
+#
+# Reference: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for all files
+* @hyperpolymath
+
+# Core engine
+/gnosis/ @hyperpolymath
+
+# Machine-readable metadata (critical — changes affect rendered output)
+/.machine_readable/ @hyperpolymath
+
+# Security-sensitive files
+/SECURITY.md @hyperpolymath
+/.github/workflows/ @hyperpolymath
+/.well-known/ @hyperpolymath
+
+# Bot directives
+/.bot_directives/ @hyperpolymath

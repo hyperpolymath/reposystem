@@ -1,0 +1,196 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 Hyperpolymath
+
+= Demand-Driven Development: Best Practice Guide
+:toc:
+:toc-placement: preamble
+:icons: font
+
+A practical guide to building library components when they're needed, not before.
+
+== Philosophy
+
+[quote]
+The biggest risk with speculative design is building the *wrong* abstraction confidently.
+
+Demand-driven development means:
+
+* Build components when a real use case demands them
+* Test against the actual need, not imagined scenarios
+* Refactor when the second/third use case reveals gaps
+
+This is essentially **YAGNI** (You Aren't Gonna Need It) applied to library design.
+
+== Trade-offs
+
+[cols="1,2,2"]
+|===
+| Approach | Pros | Cons
+
+| *Demand-driven*
+| Features get real testing, no dead code, APIs shaped by actual needs
+| May need refactoring when 2nd/3rd use case appears, integration surprises discovered late
+
+| *Speculative*
+| Comprehensive from day one, consistent APIs upfront
+| Lots of unused code, wrong abstractions built confidently, maintenance burden
+|===
+
+== Implementation Workflow
+
+=== 1. Identify the Gap
+
+When a project hits a limitation:
+
+[source,text]
+----
+rescript-tea: Lack of native CSS-Grid/Flexbox layout engine.
+             Forcing manual class manipulation; makes SWOT matrix quadrants brittle.
+             Priority: High
+----
+
+Document the *symptom* (brittle quadrants) and the *underlying gap* (no layout engine).
+
+=== 2. Build General Primitives, Not Specific Solutions
+
+❌ *Wrong*: Build a "SWOT Matrix Component"
+
+✓ *Right*: Build a general CSS Grid/Flexbox engine that happens to solve SWOT layouts
+
+The primitives should be:
+
+* *Low-level enough* to compose (cssLength, flexConfig, gridConfig)
+* *High-level helpers* as thin wrappers (quadrantContainerStyle is just a 2x2 grid)
+* *Named for patterns*, not use cases
+
+=== 3. Add Audit Recipes
+
+Create automated checks that verify the capability exists:
+
+[source,just]
+----
+# Audit for CSS Grid/Flexbox layout engine
+audit-layout:
+    @test -f src/Tea_Layout.res && echo "✓ Tea_Layout.res exists"
+    @grep -q "gridContainerStyle" src/Tea_Layout.res && echo "✓ CSS Grid support"
+    @grep -q "flexContainerStyle" src/Tea_Layout.res && echo "✓ Flexbox support"
+----
+
+The audit checks for *capabilities*, not specific use cases.
+
+=== 4. Ship with an Example
+
+Include one working example demonstrating the primitives:
+
+[source,text]
+----
+examples/03_swot_dashboard/
+├── SwotDashboard.res    # Shows how to use layout + animation
+└── index.html
+----
+
+The example is a *demonstration*, not a core module.
+
+=== 5. Note Gaps on Reuse
+
+When the next project uses the primitives, document what's missing:
+
+[source,text]
+----
+# From git-dispatcher using Tea_Layout for repo grid:
+- Missing: autoFitGrid doesn't support minmax with mixed units
+- Awkward: dashboardContainerStyle assumes header-sidebar-main layout
+- Needed: responsive breakpoint helpers
+----
+
+This feedback loop IS your real test suite.
+
+== Audit Integration
+
+=== Local (Pre-commit)
+
+Superintendents verify code before committing:
+
+[source,bash]
+----
+just audit          # Full capability check
+just super-check    # Environment verification
+----
+
+=== CI (GitHub Actions)
+
+Wire audits into CI to prevent regressions:
+
+[source,yaml]
+----
+- name: Audit Layout Engine
+  run: just audit-layout
+
+- name: Audit Animation Support
+  run: just audit-animation
+----
+
+== Cross-Repo Coordination
+
+When multiple repos need to integrate:
+
+[cols="1,3"]
+|===
+| Repo | Responsibility
+
+| *rescript-tea*
+| The *how* (visual rendering, layout primitives)
+
+| *cadre-tea-router*
+| The *where* (URL state, navigation)
+
+| *rescript-wasm-runtime*
+| The *what* (computational heavy lifting)
+|===
+
+=== Hybrid Architecture Pattern
+
+For complex features spanning UI and compute:
+
+1. *Pure ReScript (client-side)*: Light-weight immediate feedback +
+   _"This looks like a cycle"_
+
+2. *WASM Runtime (source of truth)*: Heavy analysis, authoritative results +
+   _Definitive "Elimination" score_
+
+The UI provides fast feedback; WASM provides correctness.
+
+== Configuration Over Hardcoding
+
+When building primitives, make reasonable defaults configurable:
+
+[source,rescript]
+----
+// Default: 16.67ms (60fps)
+// But allow override for different targets
+let adaptiveFrames = (frameBudgetMs: float, toMsg) => ...
+----
+
+Allow build-time configuration via environment:
+
+[source,just]
+----
+# For resource-constrained targets
+FPS_TARGET=30 just build
+----
+
+== Summary Checklist
+
+* [ ] Gap documented with symptom AND underlying cause
+* [ ] Primitives are general-purpose, named for patterns
+* [ ] High-level helpers are thin wrappers
+* [ ] Audit recipes check capabilities, not use cases
+* [ ] Working example included
+* [ ] Gaps noted when reused in second project
+* [ ] Audits run both locally and in CI
+
+== See Also
+
+* link:https://martinfowler.com/bliki/Yagni.html[YAGNI - Martin Fowler]
+* RSR (Rhodium Standard Repositories) conventions
+* 6SCM checkpoint files for session continuity

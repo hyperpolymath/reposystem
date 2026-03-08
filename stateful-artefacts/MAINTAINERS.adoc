@@ -1,0 +1,49 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell (hyperpolymath)
+
+= Maintainers
+:author: Jonathan D.A. Jewell
+:email: jonathan.jewell@open.ac.uk
+
+== Active Maintainers
+
+[cols="1,2,2,1"]
+|===
+| Name | Email | GitHub | Role
+
+| Jonathan D.A. Jewell
+| jonathan.jewell@open.ac.uk
+| https://github.com/hyperpolymath[@hyperpolymath]
+| Owner / Lead Maintainer
+|===
+
+== Responsibilities
+
+* Code review and merge authority for all PRs
+* Release management and versioning
+* Security vulnerability triage and response
+* Architecture decisions (documented in `.machine_readable/META.scm`)
+
+== Bot Maintainers
+
+The following automated agents have limited write access via gitbot-fleet:
+
+[cols="1,2"]
+|===
+| Bot | Scope
+
+| rhodibot | Git operations, branch management
+| echidnabot | Code quality enforcement
+| sustainabot | Dependency updates
+| glambot | Documentation formatting
+| seambot | Integration testing
+| finishbot | Release preparation
+|===
+
+Bot directives are configured in `.bot_directives/`.
+
+== Contact
+
+For security issues, see link:SECURITY.md[SECURITY.md].
+
+For general inquiries, open a GitHub issue or email the maintainer directly.

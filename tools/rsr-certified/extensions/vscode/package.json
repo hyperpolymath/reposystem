@@ -1,0 +1,123 @@
+{
+  "name": "rsr-certified",
+  "displayName": "RSR-Certified",
+  "description": "Rhodium Standard Repository compliance checking for VS Code",
+  "version": "0.1.0",
+  "publisher": "rsr-certified",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hyperpolymath/git-rsr-certified"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "compliance",
+    "repository",
+    "certification",
+    "security",
+    "best-practices"
+  ],
+  "activationEvents": [
+    "workspaceContains:.git",
+    "workspaceContains:.rsr.toml"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "rsr.checkCompliance",
+        "title": "RSR: Check Compliance",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "rsr.initConfig",
+        "title": "RSR: Initialize Configuration"
+      },
+      {
+        "command": "rsr.showReport",
+        "title": "RSR: Show Compliance Report"
+      },
+      {
+        "command": "rsr.generateBadge",
+        "title": "RSR: Generate Badge"
+      }
+    ],
+    "configuration": {
+      "title": "RSR-Certified",
+      "properties": {
+        "rsr.serverPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the RSR LSP server binary (leave empty to use bundled server)"
+        },
+        "rsr.targetTier": {
+          "type": "string",
+          "enum": ["bronze", "silver", "gold", "rhodium"],
+          "default": "silver",
+          "description": "Target certification tier"
+        },
+        "rsr.checkOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run compliance check on file save"
+        },
+        "rsr.showStatusBarItem": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show compliance status in the status bar"
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "toml",
+        "filenames": [".rsr.toml"]
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": ".rsr.toml",
+        "url": "./schemas/rsr-config.schema.json"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "rsr.checkCompliance",
+          "when": "workspaceFolderCount > 0"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "rsr.checkCompliance",
+          "group": "navigation",
+          "when": "resourceFilename == '.rsr.toml'"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.54.0",
+    "typescript": "^5.3.0"
+  }
+}

@@ -1,0 +1,23 @@
+#!/usr/bin/env tclsh
+# entrypoint.tsh - Tcl shell entrypoint for Must
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (C) 2025 Jonathan D.A. Jewell
+
+if {[catch {exec which must} result]} {
+    if {[file executable "./bin/must"]} {
+        if {[catch {exec ./bin/must {*}$argv} output]} {
+            puts stderr $output
+            exit 1
+        }
+        puts $output
+    } else {
+        puts stderr "Error: 'must' not found. Build with 'just build' or install."
+        exit 1
+    }
+} else {
+    if {[catch {exec must {*}$argv} output]} {
+        puts stderr $output
+        exit 1
+    }
+    puts $output
+}

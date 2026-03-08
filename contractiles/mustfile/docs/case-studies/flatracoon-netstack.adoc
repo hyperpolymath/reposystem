@@ -1,0 +1,454 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+// SPDX-FileCopyrightText: 2025 Hyperpolymath <hyperpolymath@proton.me>
+= Case Study: FlatRacoon Network Stack
+:author: Hyperpolymath
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+
+== Overview
+
+This case study demonstrates how **Mustfile** is used in practice to orchestrate a complex, multi-module infrastructure stack. The link:https://github.com/hyperpolymath/flatracoon-netstack[FlatRacoon Network Stack] is a real-world example of declarative, type-safe deployment orchestration using Must + Just + Nickel.
+
+== Project Summary
+
+**FlatRacoon Network Stack** integrates 8 independent infrastructure modules:
+
+[cols="1,2,1"]
+|===
+| Module | Purpose | Layer
+
+| twingate-helm-deploy | Secure zero-trust access | Access
+| zerotier-k8s-link | Encrypted overlay mesh | Overlay
+| ipfs-overlay | Distributed storage | Storage
+| ipv6-site-enforcer | IPv6-only networking | Network
+| hesiod-dns-map | Service discovery | Naming
+| bgp-backbone-lab | BGP routing simulation | Network
+| flatracoon-os | Microkernel OS prototype | Platform
+| network-dashboard | Phoenix LiveView monitoring | Observability
+|===
+
+Plus 3 MCP (Model Context Protocol) integrations for tooling.
+
+== Why Mustfile?
+
+The FlatRacoon stack needed:
+
+1. **Declarative deployment order** - Modules have dependencies
+2. **Type-safe configuration** - Complex nested settings
+3. **Environment-specific overrides** - Dev/staging/production
+4. **Machine-readable manifests** - For orchestrator consumption
+5. **Separation of concerns** - Just for tasks, Must for state
+
+=== The Separation: Just vs Must
+
+[cols="1,1,1"]
+|===
+| Aspect | Just (Justfile) | Must (Mustfile)
+
+| Purpose | Run tasks | Define state
+| Nature | Imperative | Declarative
+| Focus | "How to do it" | "What must be true"
+| Example | `deploy-access` recipe | Module dependencies
+| Runtime | Immediate execution | State validation
+|===
+
+== The Mustfile
+
+Here's the actual Mustfile from FlatRacoon:
+
+[source,nickel]
+----
+# SPDX-License-Identifier: MPL-2.0-or-later
+# SPDX-FileCopyrightText: 2025 Hyperpolymath <hyperpolymath@proton.me>
+#
+# FlatRacoon Network Stack - Mustfile
+# Type-safe, contract-driven deployment orchestration
+# Like Justfile for Just, Mustfile for Must (powered by Nickel)
+
+let MustSpec = {
+  version = "1.0.0",
+  name = "flatracoon-netstack",
+  description = "Modular, declarative network stack orchestration",
+}
+in
+
+let Environments = {
+  development = {
+    kubernetes_context = "minikube",
+    twingate_network = "dev-network",
+    zerotier_network_id = "dev-zt-network",
+    ipfs_bootstrap = [],
+    ipv6_prefix = "fd00:flatracoon:dev::/48",
+  },
+
+  staging = {
+    kubernetes_context = "staging-cluster",
+    twingate_network = "staging-network",
+    zerotier_network_id = "staging-zt-network",
+    ipfs_bootstrap = ["ipfs-bootstrap-staging.internal"],
+    ipv6_prefix = "fd00:flatracoon:staging::/48",
+  },
+
+  production = {
+    kubernetes_context = "production-cluster",
+    twingate_network = "prod-network",
+    zerotier_network_id = "prod-zt-network",
+    ipfs_bootstrap = [
+      "ipfs-bootstrap-1.flatracoon.net",
+      "ipfs-bootstrap-2.flatracoon.net",
+    ],
+    ipv6_prefix = "2001:db8:flatracoon::/48",
+  },
+}
+in
+
+let Modules = {
+  twingate = {
+    name = "twingate-helm-deploy",
+    layer = "access",
+    path = "modules/twingate-helm-deploy",
+    deploy_command = "just deploy",
+    health_endpoint = "/health",
+    requires = ["kubernetes"],
+  },
+
+  zerotier = {
+    name = "zerotier-k8s-link",
+    layer = "overlay",
+    path = "modules/zerotier-k8s-link",
+    deploy_command = "just deploy",
+    health_endpoint = "/zerotier/health",
+    requires = ["kubernetes"],
+  },
+
+  ipfs = {
+    name = "ipfs-overlay",
+    layer = "storage",
+    path = "modules/ipfs-overlay",
+    deploy_command = "just deploy",
+    health_endpoint = "/ipfs/health",
+    requires = ["kubernetes", "zerotier"],  # Depends on ZeroTier!
+  },
+
+  # ... more modules ...
+}
+in
+
+let DeploymentOrder = [
+  "twingate",
+  "zerotier",
+  "ipfs",
+  "ipv6",
+  "hesiod",
+  "dashboard",
+]
+in
+
+let HealthChecks = {
+  timeout_seconds = 30,
+  retry_count = 3,
+  retry_delay_seconds = 5,
+}
+in
+
+{
+  spec = MustSpec,
+  environments = Environments,
+  modules = Modules,
+  deployment_order = DeploymentOrder,
+  health_checks = HealthChecks,
+}
+----
+
+== Key Patterns
+
+=== 1. Module Definition
+
+Each module declares its properties and dependencies:
+
+[source,nickel]
+----
+ipfs = {
+  name = "ipfs-overlay",
+  layer = "storage",
+  path = "modules/ipfs-overlay",
+  deploy_command = "just deploy",
+  health_endpoint = "/ipfs/health",
+  requires = ["kubernetes", "zerotier"],  # <-- Dependencies
+}
+----
+
+The `requires` field enables the orchestrator to:
+- Validate deployment order
+- Check prerequisites before deployment
+- Handle dependency failures
+
+=== 2. Environment Overrides
+
+Different environments have different configurations:
+
+[source,nickel]
+----
+development = {
+  kubernetes_context = "minikube",
+  ipfs_bootstrap = [],  # No bootstrap in dev
+  ipv6_prefix = "fd00:flatracoon:dev::/48",  # Private prefix
+}
+
+production = {
+  kubernetes_context = "production-cluster",
+  ipfs_bootstrap = [
+    "ipfs-bootstrap-1.flatracoon.net",
+    "ipfs-bootstrap-2.flatracoon.net",
+  ],
+  ipv6_prefix = "2001:db8:flatracoon::/48",  # Real prefix
+}
+----
+
+=== 3. Deployment Order
+
+Explicit ordering ensures correct dependency resolution:
+
+[source,nickel]
+----
+let DeploymentOrder = [
+  "twingate",   # 1. Access first
+  "zerotier",   # 2. Then overlay
+  "ipfs",       # 3. Storage (needs zerotier)
+  "ipv6",       # 4. Network enforcement
+  "hesiod",     # 5. Service discovery
+  "dashboard",  # 6. Monitoring last
+]
+----
+
+=== 4. Health Check Configuration
+
+Centralized health check settings:
+
+[source,nickel]
+----
+let HealthChecks = {
+  timeout_seconds = 30,
+  retry_count = 3,
+  retry_delay_seconds = 5,
+}
+----
+
+== Integration with Just
+
+The Justfile consumes the Mustfile for deployment:
+
+[source,just]
+----
+# Validate all Nickel configurations including Mustfile
+config-validate:
+    @echo "Validating Nickel configurations..."
+    nickel export Mustfile > /dev/null
+    nickel export configs/base.ncl > /dev/null
+    nickel export configs/modules.ncl > /dev/null
+    nickel export configs/environments.ncl > /dev/null
+    @echo "✓ All configurations valid"
+
+# Export Mustfile to JSON
+must-export:
+    nickel export Mustfile
+
+# Show deployment order from Mustfile
+must-order:
+    @nickel export Mustfile | jq -r '.deployment_order[]'
+
+# Show module info from Mustfile
+must-modules:
+    @nickel export Mustfile | jq '.modules'
+
+# Show environment config
+must-env env="development":
+    @nickel export configs/environments.ncl | jq '.environments.{{env}}'
+
+# Deploy entire stack (reads order from Mustfile concept)
+deploy: config-validate
+    @echo "Deploying FlatRacoon Network Stack..."
+    just deploy-access
+    just deploy-overlay
+    just deploy-storage
+    just deploy-network
+    just deploy-naming
+    just deploy-observability
+    @echo "✓ Stack deployed"
+----
+
+== Usage Examples
+
+=== Validate Configuration
+
+[source,bash]
+----
+$ just config-validate
+Validating Nickel configurations...
+✓ All configurations valid
+----
+
+=== View Deployment Order
+
+[source,bash]
+----
+$ just must-order
+twingate
+zerotier
+ipfs
+ipv6
+hesiod
+dashboard
+----
+
+=== Export Full Mustfile
+
+[source,bash]
+----
+$ just must-export | jq '.spec'
+{
+  "version": "1.0.0",
+  "name": "flatracoon-netstack",
+  "description": "Modular, declarative network stack orchestration"
+}
+----
+
+=== Get Module Dependencies
+
+[source,bash]
+----
+$ just must-export | jq '.modules.ipfs.requires'
+[
+  "kubernetes",
+  "zerotier"
+]
+----
+
+=== Environment-Specific Config
+
+[source,bash]
+----
+$ just must-env production
+{
+  "kubernetes_context": "production-cluster",
+  "twingate_network": "prod-network",
+  "zerotier_network_id": "prod-zt-network",
+  "ipfs_bootstrap": [
+    "ipfs-bootstrap-1.flatracoon.net",
+    "ipfs-bootstrap-2.flatracoon.net"
+  ],
+  "ipv6_prefix": "2001:db8:flatracoon::/48"
+}
+----
+
+== File Structure
+
+The FlatRacoon project uses this structure:
+
+[source]
+----
+flatracoon-netstack/
+├── Justfile               # Task runner (imperative)
+├── Mustfile               # State definition (declarative)
+├── configs/
+│   ├── base.ncl           # Type contracts
+│   ├── modules.ncl        # Module registry (imports Mustfile)
+│   └── environments.ncl   # Environment configs
+├── modules/               # Git submodules (11 total)
+│   ├── twingate-helm-deploy/
+│   ├── zerotier-k8s-link/
+│   ├── ipfs-overlay/
+│   ├── ipv6-site-enforcer/
+│   ├── hesiod-dns-map/
+│   ├── bgp-backbone-lab/
+│   ├── flatracoon-os/
+│   ├── network-dashboard/
+│   ├── poly-k8s-mcp/
+│   ├── poly-secret-mcp/
+│   └── poly-observability-mcp/
+├── STATE.scm              # Project state
+├── META.scm               # Architecture decisions
+├── ECOSYSTEM.scm          # Ecosystem relationships
+├── PLAYBOOK.scm           # Operational runbooks
+├── AGENTIC.scm            # AI agent guidance
+└── NEUROSYM.scm           # Neurosymbolic reasoning
+----
+
+== Benefits Observed
+
+=== Type Safety
+
+Nickel catches configuration errors at validation time:
+
+[source,bash]
+----
+$ nickel export Mustfile
+error: missing field `requires` in record
+  ┌─ Mustfile:45:3
+  │
+45 │   zerotier = {
+  │   ^^^^^^^^ this record is missing the `requires` field
+----
+
+=== Documentation as Code
+
+The Mustfile is self-documenting:
+
+[source,nickel]
+----
+let MustSpec = {
+  version = "1.0.0",
+  name = "flatracoon-netstack",
+  description = "Modular, declarative network stack orchestration",
+}
+----
+
+=== Machine-Readable
+
+Orchestrators can consume the Mustfile programmatically:
+
+[source,elixir]
+----
+# In the Elixir orchestrator
+{:ok, mustfile} = File.read!("Mustfile")
+                  |> Nickel.export()
+                  |> Jason.decode!()
+
+deployment_order = mustfile["deployment_order"]
+modules = mustfile["modules"]
+----
+
+=== Separation of Concerns
+
+- **Mustfile**: What state must exist
+- **Justfile**: How to achieve that state
+- **SCM files**: Project context and history
+
+== Lessons Learned
+
+1. **Start with the Mustfile** - Define state before writing tasks
+2. **Use `requires` for dependencies** - Explicit is better than implicit
+3. **Environment configs separate** - Keep prod secrets out of the Mustfile
+4. **Validate early** - Run `nickel export` in CI
+5. **Export to JSON** - For cross-language consumption
+
+== Conclusion
+
+The FlatRacoon Network Stack demonstrates that Mustfile + Just + Nickel provides:
+
+- **Type-safe configuration** for complex infrastructure
+- **Clear separation** between state definition and task execution
+- **Machine-readable manifests** for orchestrator consumption
+- **Environment-aware** deployment configurations
+- **Dependency-aware** deployment ordering
+
+The pattern scales from simple single-module projects to complex multi-module stacks with dozens of interdependent components.
+
+== Links
+
+- link:https://github.com/hyperpolymath/flatracoon-netstack[FlatRacoon Network Stack]
+- link:https://github.com/hyperpolymath/mustfile[Mustfile Project]
+- link:https://nickel-lang.org[Nickel Language]
+- link:https://just.systems[Just Command Runner]

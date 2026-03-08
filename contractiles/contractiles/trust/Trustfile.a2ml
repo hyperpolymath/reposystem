@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: PLMP-1.0-or-later
+# Trustfile (A2ML Canonical)
+
+@abstract:
+Cryptographic and provenance verification steps.
+This is the canonical Trust contract format.
+@end
+
+@requires:
+- section: Inputs
+- section: Verifications
+@end
+
+## Inputs
+
+- policy_path: policy/policy.ncl
+- policy_hash_path: policy/policy.ncl.sha256
+- schema_path: schema/schema.json
+- schema_sig_path: schema/schema.sig
+- schema_pub_path: schema/schema.pub
+- driver_paths: drivers/gateway-driver.bin
+- migrations_path: migrations/provenance.json
+- migrations_sig_path: migrations/provenance.sig
+- migrations_pub_path: migrations/provenance.pub
+
+## Verifications
+
+### policy-hash
+- description: SHA-256 of policy matches policy.ncl.sha256
+- command: sha256sum policy/policy.ncl
+
+### schema-signature
+- description: schema signature verifies against schema.pub
+- command: openssl dgst -sha256 -verify schema/schema.pub -signature schema/schema.sig schema/schema.json
+
+### driver-signatures
+- description: Kyber signatures verify for drivers
+- command: kyber-verify --pub drivers/gateway-driver.bin.pub --sig drivers/gateway-driver.bin.sig --file drivers/gateway-driver.bin
+
+### migration-provenance
+- description: migrations provenance signature verifies
+- command: openssl dgst -sha256 -verify migrations/provenance.pub -signature migrations/provenance.sig migrations/provenance.json

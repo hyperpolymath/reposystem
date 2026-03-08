@@ -1,0 +1,354 @@
+= Gitvisor Architecture
+:toc: macro
+:toc-title: Contents
+:toclevels: 3
+:icons: font
+
+[.lead]
+Comprehensive architecture documentation for Gitvisor, the hyper-customizable
+Git platform dashboard.
+
+toc::[]
+
+== Overview
+
+Gitvisor is a multi-component system designed for maximum customization and
+extensibility. It follows a polyglot architecture where each component uses
+the most appropriate technology for its purpose.
+
+== System Components
+
+=== Backend (Elixir/Phoenix)
+
+**Location**: `backend/`
+
+**Technology Stack**:
+
+* Elixir 1.17+ with OTP 27
+* Phoenix 1.7 (web framework)
+* Absinthe (GraphQL)
+* Various database adapters
+
+**Purpose**: Central API layer providing GraphQL interface for all clients.
+
+**Key Modules**:
+
+[cols="1,2"]
+|===
+| Module | Purpose
+
+| `Gitvisor.Application` | OTP application supervisor
+| `GitvisorWeb.Schema` | GraphQL schema definition
+| `Gitvisor.Platforms.*` | Platform adapters (GitHub, GitLab)
+| `Gitvisor.Repo` | Database abstraction
+| `Gitvisor.Crypto` | Cryptographic operations
+|===
+
+=== Frontend (ReScript-TEA)
+
+**Location**: `frontend/`
+
+**Technology Stack**:
+
+* ReScript with TEA (The Elm Architecture)
+* Deno runtime
+* React (via ReScript bindings)
+
+**Purpose**: Web-based dashboard interface.
+
+**Architecture Pattern**: Model-View-Update (MVU)
+
+[source,text]
+----
+┌─────────────────────────────────────────────────┐
+│                    Model                        │
+│  (Immutable application state)                  │
+└───────────────────────┬─────────────────────────┘
+                        │
+          ┌─────────────┴─────────────┐
+          │                           │
+          ▼                           │
+┌─────────────────┐          ┌────────┴────────┐
+│      View       │          │     Update      │
+│  (Pure render)  │◄─────────│  (State logic)  │
+└────────┬────────┘          └────────▲────────┘
+         │                            │
+         │      Messages (Events)     │
+         └────────────────────────────┘
+----
+
+=== TUI (Ada/SPARK)
+
+**Location**: `tui/`
+
+**Technology Stack**:
+
+* Ada 2022 with SPARK annotations
+* GNAT compiler
+* GPRbuild
+
+**Purpose**: Formally verified terminal interface.
+
+**Why Ada/SPARK?**:
+
+1. Memory safety without garbage collection
+2. Strong type system prevents entire classes of bugs
+3. SPARK proofs provide mathematical guarantees
+4. Excellent for critical infrastructure
+
+=== Analytics (Julia)
+
+**Location**: `analytics/`
+
+**Technology Stack**:
+
+* Julia 1.10+
+* DataFrames.jl, Plots.jl
+
+**Purpose**: High-performance statistical analysis and visualization.
+
+**Capabilities**:
+
+* Commit pattern analysis
+* Issue resolution metrics
+* PR velocity tracking
+* Repository health scoring
+* Team performance analytics
+
+== Database Architecture
+
+Gitvisor supports multiple databases for different use cases:
+
+[cols="1,2,2"]
+|===
+| Database | Use Case | Adapter
+
+| ArangoDB | Graph relationships, complex queries | `Gitvisor.Repo.ArangoDB`
+| CubDB | Embedded storage, development | `Gitvisor.Repo.CubDB`
+| XTDB | Temporal queries, audit trails | `Gitvisor.Repo.XTDB`
+| SurrealDB | Flexible schemas, multi-model | Planned
+| Virtuoso | RDF/SPARQL, semantic queries | Planned
+| LMDB | High-performance cache | Planned
+| Dragonfly | Redis-compatible in-memory | Via Redix
+|===
+
+=== Data Model
+
+[source,text]
+----
+                     ┌──────────────┐
+                     │    User      │
+                     └──────┬───────┘
+                            │
+              ┌─────────────┼─────────────┐
+              │             │             │
+              ▼             ▼             ▼
+       ┌──────────┐  ┌──────────┐  ┌──────────┐
+       │ Platform │  │Dashboard │  │ Settings │
+       │Connection│  │  Config  │  │          │
+       └────┬─────┘  └──────────┘  └──────────┘
+            │
+    ┌───────┴───────┐
+    │               │
+    ▼               ▼
+┌────────┐    ┌────────┐
+│ GitHub │    │ GitLab │
+│ Data   │    │ Data   │
+└────────┘    └────────┘
+----
+
+== Cryptographic Layer
+
+=== Algorithms
+
+[cols="1,1,2"]
+|===
+| Purpose | Algorithm | Notes
+
+| Hashing | BLAKE3 | Primary hash function, fast and secure
+| XOF | SHAKE3-512 | Extendable output for variable-length hashes
+| Signatures | Ed448 | Classical elliptic curve signatures
+| Post-Quantum Sig | Dilithium | NIST PQC standard (planned)
+| Key Encapsulation | Kyber-1024 | Post-quantum KEM (planned)
+| Key Generation | Strong primes | Proven primes from flat distribution
+|===
+
+=== Key Hierarchy
+
+[source,text]
+----
+Master Key (derived from user credentials)
+    │
+    ├── Platform Keys (per GitHub/GitLab connection)
+    │
+    ├── Storage Keys (database encryption)
+    │
+    └── Session Keys (API tokens)
+----
+
+== API Design
+
+=== GraphQL Schema
+
+The API follows GraphQL best practices:
+
+* Relay-style pagination with cursors
+* Node interface for global IDs
+* Mutations return affected objects
+* Subscriptions for real-time updates
+
+**Example Query**:
+
+[source,graphql]
+----
+query {
+  viewer {
+    id
+    login
+    platforms {
+      type
+      connected
+    }
+  }
+  repository(platform: GITHUB, owner: "hyperpolymath", name: "git-hud") {
+    issues(first: 10, states: [OPEN]) {
+      edges {
+        node {
+          number
+          title
+          labels { name color }
+        }
+      }
+    }
+  }
+}
+----
+
+== Deployment Architecture
+
+=== Single-Node (Development)
+
+[source,text]
+----
+┌─────────────────────────────────────┐
+│           Development Host          │
+│  ┌─────────────────────────────┐   │
+│  │      Nix Development Shell  │   │
+│  │  ┌───────┐ ┌───────┐ ┌───┐ │   │
+│  │  │Backend│ │Frontend│ │TUI│ │   │
+│  │  └───────┘ └───────┘ └───┘ │   │
+│  │         ┌───────┐          │   │
+│  │         │ CubDB │          │   │
+│  │         └───────┘          │   │
+│  └─────────────────────────────┘   │
+└─────────────────────────────────────┘
+----
+
+=== Production (Distributed)
+
+[source,text]
+----
+                    ┌─────────────┐
+                    │ Cloudflare  │
+                    │    CDN      │
+                    └──────┬──────┘
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+              ▼                         ▼
+       ┌──────────┐              ┌──────────┐
+       │   Web    │              │   API    │
+       │ Frontend │              │ Backend  │
+       └──────────┘              └────┬─────┘
+                                      │
+                    ┌─────────────────┼─────────────────┐
+                    │                 │                 │
+                    ▼                 ▼                 ▼
+             ┌──────────┐      ┌──────────┐      ┌──────────┐
+             │ ArangoDB │      │   XTDB   │      │Dragonfly │
+             │ (Primary)│      │ (Audit)  │      │ (Cache)  │
+             └──────────┘      └──────────┘      └──────────┘
+----
+
+== Security Model
+
+=== Authentication Flow
+
+1. User initiates OAuth with GitHub/GitLab
+2. Backend receives OAuth callback with code
+3. Backend exchanges code for platform token
+4. Backend creates session with JWT
+5. Platform token stored encrypted
+
+=== Security Headers
+
+Production deployments include:
+
+* `Content-Security-Policy`: Strict CSP
+* `Strict-Transport-Security`: HSTS with preload
+* `X-Content-Type-Options`: nosniff
+* `X-Frame-Options`: DENY
+* `Referrer-Policy`: strict-origin-when-cross-origin
+* `Permissions-Policy`: Restricted features
+
+=== DNSSEC
+
+All DNS zones support:
+
+* Full DNSSEC chain validation
+* ZONEMD for zone integrity
+* CAA records for certificate issuance
+
+== Integration Points
+
+=== External Services
+
+[cols="1,2,1"]
+|===
+| Service | Purpose | Status
+
+| GitHub API | Repository, issues, PRs | Implemented
+| GitLab API | Repository, issues, MRs | Implemented
+| Cloudflare | CDN, DNS, security | Planned
+| IPFS | Decentralized storage | Planned
+|===
+
+=== Internal Projects
+
+[cols="1,2,1"]
+|===
+| Project | Integration | Location
+
+| ReScript-TEA | Frontend architecture | github.com/hyperpolymath/Rescript-TEA
+| RSR | Compliance framework | github.com/hyperpolymath/Rhodium-Standard-Repositories
+| Palimpsest | License philosophy | github.com/hyperpolymath/palimpsest-license
+| Rhodibot | RSR enforcement | To be created
+| CADRE Router | Request routing | To be created
+|===
+
+== Performance Considerations
+
+=== Caching Strategy
+
+* **L1**: In-process ETS tables (Elixir)
+* **L2**: Dragonfly/Redis for distributed cache
+* **L3**: Database query results with TTL
+
+=== Rate Limiting
+
+Platform API calls are rate-limited per:
+
+* User
+* Platform
+* Operation type
+
+The `Gitvisor.Platforms.RateLimiter` module handles this.
+
+== Future Roadmap
+
+1. **v0.1**: GitHub + GitLab integration (current)
+2. **v0.2**: Dashboard customization
+3. **v0.3**: Analytics module integration
+4. **v0.4**: Gitea, Codeberg support
+5. **v0.5**: Custom widgets API
+6. **v1.0**: Production-ready release

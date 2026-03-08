@@ -1,0 +1,15 @@
+#!/usr/bin/env ion
+# entrypoint.ion - Ion shell entrypoint for Must
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2025 Jonathan D.A. Jewell
+
+if not exists -b must
+    if test -x ./bin/must
+        exec ./bin/must @args
+    else
+        echo "Error: 'must' not found. Build with 'just build' or install." >&2
+        exit 1
+    end
+end
+
+exec must @args

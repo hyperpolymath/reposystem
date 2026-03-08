@@ -1,0 +1,129 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+name: Gnosis Benchmarks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'gnosis/src/**'
+      - 'gnosis/bench/**'
+      - 'gnosis/gnosis.cabal'
+      - '.github/workflows/gnosis-benchmarks.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'gnosis/src/**'
+      - 'gnosis/bench/**'
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  benchmarks:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup Haskell
+        uses: haskell-actions/setup@33c6834e5a4ec21f93e28ca2d2c03d1c3414cc8c # v2
+        with:
+          ghc-version: '9.6.7'
+
+      - name: Cache cabal dependencies
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4
+        with:
+          path: |
+            ~/.cabal/store
+            gnosis/dist-newstyle
+          key: ${{ runner.os }}-cabal-bench-${{ hashFiles('gnosis/gnosis.cabal') }}
+          restore-keys: |
+            ${{ runner.os }}-cabal-bench-
+
+      - name: Build benchmarks
+        working-directory: gnosis
+        run: cabal build gnosis-bench
+
+      - name: Run Haskell benchmarks
+        working-directory: gnosis
+        run: |
+          cabal bench 2>&1 | tee benchmark-output.txt
+
+      - name: Run unit tests
+        working-directory: gnosis
+        run: cabal test
+
+      - name: Run point-to-point tests
+        working-directory: stateful-artefacts
+        run: bash tests/point-to-point-test.sh
+
+      - name: Run integration tests
+        working-directory: stateful-artefacts
+        run: bash tests/integration-test.sh
+
+      - name: Check binary size
+        working-directory: gnosis
+        run: |
+          GNOSIS_BIN=$(cabal list-bin gnosis 2>/dev/null)
+          SIZE=$(stat -c%s "$GNOSIS_BIN" 2>/dev/null || stat -f%z "$GNOSIS_BIN")
+          SIZE_MB=$(echo "scale=2; $SIZE / 1048576" | bc)
+          echo "Binary size: ${SIZE_MB} MB ($SIZE bytes)"
+
+          # Fail if binary exceeds 50 MB (regression guard)
+          if [ "$SIZE" -gt 52428800 ]; then
+            echo "::error::Binary size regression: ${SIZE_MB} MB exceeds 50 MB limit"
+            exit 1
+          fi
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@ea165de6abb5050e17c80995d4e2caaec6d72898 # v4
+        with:
+          name: benchmark-results
+          path: gnosis/benchmark-output.txt
+          retention-days: 90
+
+  test-matrix:
+    name: Tests (GHC ${{ matrix.ghc }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ghc: ['9.4.8', '9.6.7']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup Haskell
+        uses: haskell-actions/setup@33c6834e5a4ec21f93e28ca2d2c03d1c3414cc8c # v2
+        with:
+          ghc-version: ${{ matrix.ghc }}
+
+      - name: Cache cabal dependencies
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4
+        with:
+          path: |
+            ~/.cabal/store
+            gnosis/dist-newstyle
+          key: ${{ runner.os }}-cabal-${{ matrix.ghc }}-${{ hashFiles('gnosis/gnosis.cabal') }}
+          restore-keys: |
+            ${{ runner.os }}-cabal-${{ matrix.ghc }}-
+
+      - name: Build and test
+        working-directory: gnosis
+        run: |
+          cabal build all
+          cabal test
+
+      - name: Check for GHC warnings
+        working-directory: gnosis
+        run: |
+          cabal build all -Wall 2>&1 | tee build-output.txt
+          # Count warnings (excluding "up to date" lines)
+          WARNINGS=$(grep -c "warning:" build-output.txt || true)
+          echo "GHC warnings: $WARNINGS"
+          if [ "$WARNINGS" -gt 5 ]; then
+            echo "::warning::$WARNINGS GHC warnings detected — consider fixing"
+          fi

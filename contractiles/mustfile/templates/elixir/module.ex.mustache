@@ -1,0 +1,32 @@
+# {{module_name}}
+# {{description}}
+# {{copyright}}
+# SPDX-License-Identifier: {{license}}
+
+defmodule {{app_name}}.{{module_name}} do
+  @moduledoc """
+  {{description}}
+
+  ## Examples
+
+      iex> {{app_name}}.{{module_name}}.example()
+      :ok
+  """
+
+{{#functions}}
+  @doc """
+  {{description}}
+
+  ## Examples
+
+      iex> {{app_name}}.{{module_name}}.{{name}}()
+      :not_implemented
+
+  """
+  @spec {{name}}() :: term()
+  def {{name}} do
+    :not_implemented
+  end
+
+{{/functions}}
+end

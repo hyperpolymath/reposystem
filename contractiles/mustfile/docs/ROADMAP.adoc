@@ -1,0 +1,182 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Mustfile Specification Technical Roadmap
+:toc:
+:sectnums:
+
+[NOTE]
+====
+This is the **detailed technical roadmap** for the Mustfile format specification.
+
+* For the high-level specification roadmap, see link:../ROADMAP.adoc[ROADMAP.adoc]
+* For the implementation roadmap, see https://github.com/hyperpolymath/must/ROADMAP.adoc[must/ROADMAP.adoc]
+====
+
+== Overview
+
+This roadmap tracks the evolution of the **Mustfile format specification** (not the implementation). The Mustfile specification defines the declarative format for physical state contracts in deployment orchestration.
+
+**Relationship:** `Mustfile:must :: Justfile:just`
+
+== Current Status (v0.1.0-alpha)
+
+[cols="1,2,1"]
+|===
+|Component |Description |Status
+
+|Core Specification
+|must-spec format definition
+|80%
+
+|Physical State Contract
+|File presence/absence/content requirements
+|100%
+
+|Golden Examples
+|Reference test cases
+|60%
+
+|Documentation
+|Specification document, examples
+|70%
+
+|Implementation Alignment
+|Coordination with must binary (Ada)
+|50%
+|===
+
+== Specification Components
+
+=== Core Format (v0.1.0-alpha - Current)
+
+* [x] `must_have` directive - files that must exist
+* [x] `must_not_have` directive - files that must not exist
+* [x] Basic task structure
+* [x] Template variable syntax (Mustache-compatible)
+* [ ] Content requirement checks (partial)
+* [ ] File permission specifications
+
+=== Extended Format (v0.2.0)
+
+* [ ] Nested task dependencies
+* [ ] Conditional requirements
+* [ ] Platform-specific sections
+* [ ] Variable scope definitions
+* [ ] Import/include mechanism for modular Mustfiles
+
+=== Advanced Features (v0.3.0)
+
+* [ ] State transition validation
+* [ ] Rollback specifications
+* [ ] Partial state application
+* [ ] Lock file format for reproducibility
+
+== Documentation Roadmap
+
+=== v0.1.0-alpha (Current)
+* [x] Basic must-spec.adoc
+* [x] Simple golden examples
+* [ ] Complete format reference
+* [ ] Migration guide from Makefiles
+
+=== v0.2.0
+* [ ] Comprehensive format specification
+* [ ] Complete golden test suite
+* [ ] Platform-specific guidelines
+* [ ] Integration patterns (nickel, just, etc.)
+
+=== v1.0.0
+* [ ] Formal grammar definition
+* [ ] Conformance test suite
+* [ ] Best practices guide
+* [ ] Security considerations document
+
+== Golden Test Suite
+
+=== Current Coverage
+* Basic file presence checks
+* Simple task execution
+* Template variable expansion
+
+=== Planned Coverage
+* [ ] Content requirement validation
+* [ ] Permission checks
+* [ ] Error handling edge cases
+* [ ] Circular dependency detection
+* [ ] Invalid Mustfile rejection
+
+== Integration Points
+
+=== must Binary (Implementation)
+* **Status:** In active coordination
+* **Repository:** https://github.com/hyperpolymath/must[hyperpolymath/must]
+* **Language:** Ada 2022
+* **Sync Plan:** Bi-weekly specification/implementation alignment
+
+=== nickel Configuration
+* **Status:** Planned
+* **Purpose:** Type-safe Mustfile generation
+* **Use Case:** Complex deployment manifests
+
+=== _pathroot Integration
+* **Status:** Planned (nicaug engine)
+* **Purpose:** Cross-platform substrate management
+* **Use Case:** Multi-environment orchestration
+
+=== just Task Runner
+* **Status:** Sibling tool
+* **Relationship:** just handles development tasks, must handles deployment state
+
+== Versioning Strategy
+
+=== Pre-1.0 (Current Phase)
+* Breaking changes allowed between minor versions
+* Active iteration on format
+* Implementation can lag specification
+
+=== Post-1.0
+* Semantic versioning strictly followed
+* Breaking changes only in major versions
+* Specification frozen, extensions via opt-in features
+* Implementation must maintain backward compatibility
+
+== Timeline
+
+[cols="1,2,2"]
+|===
+|Version |Target Date |Key Deliverables
+
+|v0.1.0-alpha
+|2025-12-27 (Released)
+|Initial specification, basic golden tests
+
+|v0.2.0
+|2026-Q2
+|Extended format, comprehensive docs, test suite
+
+|v0.3.0
+|2026-Q3
+|Advanced features, platform guidelines
+
+|v1.0.0
+|2026-Q4
+|Frozen specification, conformance suite, production docs
+|===
+
+== Community & Governance
+
+=== Specification Process
+1. **Proposal:** RFC-style proposals for format changes
+2. **Discussion:** Community feedback period (2 weeks minimum)
+3. **Implementation:** Prototype in must binary
+4. **Acceptance:** Golden test cases added, specification updated
+
+=== Breaking Changes
+* Pre-1.0: Announced in release notes
+* Post-1.0: Major version bump, migration guide required
+
+== References
+
+* https://github.com/hyperpolymath/must[must Implementation Repository]
+* https://github.com/hyperpolymath/mustfile[Mustfile Specification Repository]
+* https://github.com/hyperpolymath/_pathroot[_pathroot Integration Point]
+* https://just.systems[just Task Runner] (analogous tool)

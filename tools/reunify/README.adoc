@@ -1,0 +1,88 @@
+= git-reunify
+
+image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+
+*Safe repository reunification for diverged codebases*
+
+== The Problem
+
+Developers fork, branch, or split repos. Time passes. They want to merge back together.
+
+Traditional `git merge` often fails because:
+
+- Unrelated histories
+- Conflicting directory structures  
+- Risk of losing one developer's work
+- No clear audit trail of what came from where
+
+== The Solution
+
+`git-reunify` safely merges diverged repositories:
+
+[source,bash]
+----
+git-reunify \
+  --primary repo-a \
+  --absorb repo-b \
+  --strategy subdirectory \
+  --backup-tag "pre-merge-$(date +%Y%m%d)"
+----
+
+== Features
+
+- **Safety first**: Creates tagged backups before any operation
+- **History preservation**: All commits from both repos survive
+- **Conflict detection**: Identifies overlapping files before merge
+- **Audit trail**: Generates merge report showing what went where
+- **Rollback support**: Easy undo if something goes wrong
+
+== Strategies
+
+|===
+| Strategy | Use Case | Preserves Structure
+
+| `subdirectory`
+| Different components (frontend/backend)
+| Yes - puts absorbed repo in subdir
+
+| `overlay`
+| Same project, parallel development
+| Merges at root, renames conflicts
+
+| `timestamp`
+| Keep both versions, decide later
+| Suffixes files with source repo name
+
+|===
+
+== Installation
+
+[source,bash]
+----
+# Homebrew (macOS/Linux)
+brew install hyperpolymath/tap/git-reunify
+
+# Cargo (Rust)
+cargo install git-reunify
+
+# From source
+just install
+----
+
+== Quick Start
+
+[source,bash]
+----
+# 1. Analyze what would happen
+git-reunify analyze --primary ./main-repo --absorb ./diverged-repo
+
+# 2. Preview the merge (dry run)
+git-reunify merge --primary ./main-repo --absorb ./diverged-repo --dry-run
+
+# 3. Execute the merge
+git-reunify merge --primary ./main-repo --absorb ./diverged-repo
+----
+
+== License
+
+MIT OR Palimpsest-0.8

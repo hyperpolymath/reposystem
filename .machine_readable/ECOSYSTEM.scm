@@ -1,20 +1,3 @@
-;; SPDX-License-Identifier: AGPL-3.0-or-later
-;; ECOSYSTEM.scm - Ecosystem position for reposystem
-;; Media-Type: application/vnd.ecosystem+scm
-
-(ecosystem
-  (version "1.0")
-  (name "reposystem")
-  (type "")
-  (purpose "")
-
-  (position-in-ecosystem
-    (category "")
-    (subcategory "")
-    (unique-value ()))
-
-  (related-projects ())
-
-  (what-this-is ())
-
-  (what-this-is-not ()))
+;; SPDX-License-Identifier: PMPL-1.0-or-later
+(ecosystem (metadata (version "0.1.0") (last-updated "2026-02-08"))
+  (project (name "language-bridges") (purpose "FFI bridges between languages via Zig") (role ffi-infrastructure)))

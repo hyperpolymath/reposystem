@@ -1,0 +1,36 @@
+= git-rsr-certified - Citation Guide
+:toc:
+
+== BibTeX
+
+[source,bibtex]
+----
+@software{git-rsr-certified_2025,
+  author = {Polymath, Hyper},
+  title = {git-rsr-certified},
+  year = {2025},
+  url = {https://github.com/hyperpolymath/git-rsr-certified},
+  license = {AGPL-3.0-or-later}
+}
+----
+
+== Harvard Style
+
+Polymath, H. (2025) _git-rsr-certified_ [Computer software]. Available at: https://github.com/hyperpolymath/git-rsr-certified
+
+== OSCOLA
+
+Hyper Polymath, 'git-rsr-certified' (2025) <https://github.com/hyperpolymath/git-rsr-certified>
+
+== MLA
+
+Polymath, Hyper. "git-rsr-certified." 2025, github.com/hyperpolymath/git-rsr-certified.
+
+== APA 7
+
+Polymath, H. (2025). _git-rsr-certified_ [Computer software]. GitHub. https://github.com/hyperpolymath/git-rsr-certified
+
+== See Also
+
+* link:../CITATION.cff[CITATION.cff]
+* link:../codemeta.json[codemeta.json]

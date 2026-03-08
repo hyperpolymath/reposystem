@@ -5,11 +5,9 @@ name: Workflow Security Linter
 
 on:
   push:
-    paths:
-      - '.github/workflows/**'
+    branches: [main, master, develop]
   pull_request:
-    paths:
-      - '.github/workflows/**'
+    branches: [main, master, develop]
   workflow_dispatch:
 
 permissions: read-all
@@ -22,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Check SPDX Headers
         run: |
@@ -36,7 +34,7 @@ jobs:
             fi
           done
           if [ $failed -eq 1 ]; then
-            echo "Add '# SPDX-License-Identifier: AGPL-3.0-or-later' as first line"
+            echo "Add '# SPDX-License-Identifier: PMPL-1.0-or-later' as first line"
             exit 1
           fi
           echo "All workflows have SPDX headers"
@@ -72,7 +70,7 @@ jobs:
             echo "$unpinned"
             echo ""
             echo "Replace version tags with SHA pins, e.g.:"
-            echo "  uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1"
+            echo "  uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2"
             exit 1
           fi
           echo "All actions are SHA-pinned"

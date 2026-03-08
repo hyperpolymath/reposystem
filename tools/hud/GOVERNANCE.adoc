@@ -1,0 +1,61 @@
+= Governance
+:toc:
+
+== Overview
+
+Gitvisor follows a transparent, community-oriented governance model based on
+the TPCF (Transparent Participatory Consensus Framework) principles from the
+Rhodium Standard.
+
+== Decision Making
+
+=== Consensus Model
+
+* **Lazy consensus** for minor changes
+* **Active consensus** for architectural decisions
+* **Community vote** for breaking changes
+
+=== Roles
+
+==== Maintainers
+
+* Full commit access
+* Release authority
+* Final say on disputes
+
+==== Contributors
+
+* Submit PRs and issues
+* Participate in discussions
+* Vote on community decisions
+
+==== Users
+
+* Report issues
+* Request features
+* Provide feedback
+
+== Roadmap Process
+
+1. Proposals submitted as GitHub Discussions
+2. Community feedback period (minimum 7 days)
+3. Maintainer review and decision
+4. Implementation tracked in project board
+
+== Conflict Resolution
+
+1. Discussion in relevant issue/PR
+2. Escalation to maintainers if needed
+3. Community vote for unresolved disputes
+4. External mediation as last resort
+
+== Transparency
+
+* All decisions documented publicly
+* Financial matters disclosed (see FUNDING.yml)
+* Meeting notes published when applicable
+
+== Amendments
+
+This governance document may be amended through the standard PR process
+with extended community review (14 days minimum).

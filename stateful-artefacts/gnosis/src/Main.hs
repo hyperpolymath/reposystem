@@ -39,6 +39,9 @@ data RenderMode = Plain | Badges deriving (Show, Eq)
 data Command
     = RenderTemplate FilePath FilePath  -- ^ template output
     | DumpContext                       -- ^ print all resolved keys
+    | FetchNPM String                   -- ^ fetch npm package metadata
+    | FetchCrate String                 -- ^ fetch crates.io crate metadata
+    | FetchPyPI String                  -- ^ fetch PyPI package metadata
     | ShowVersion
     | ShowHelp
     deriving (Show)
@@ -54,6 +57,9 @@ parseArgs = go (Options Plain Nothing ShowHelp)
     go opts ("--badges":rest) = go (opts { optRenderMode = Badges }) rest
     go opts ("--scm-path":p:rest) = go (opts { optSCMPath = Just p }) rest
     go opts ("--dump-context":rest) = go (opts { optCommand = DumpContext }) rest
+    go opts ("--fetch-npm":pkg:_) = opts { optCommand = FetchNPM pkg }
+    go opts ("--fetch-crate":pkg:_) = opts { optCommand = FetchCrate pkg }
+    go opts ("--fetch-pypi":pkg:_) = opts { optCommand = FetchPyPI pkg }
     go opts [tpl, out] = opts { optCommand = RenderTemplate tpl out }
     go opts (_:rest) = go opts rest  -- skip unknown flags
 
@@ -113,6 +119,11 @@ main = do
             putStrLn "  uppercase, lowercase, capitalize, thousands-separator"
             putStrLn "  relativeTime, round, emojify, slug, truncate"
             putStrLn "  strip-html, count-words, reverse"
+            putStrLn ""
+            putStrLn "Data source commands:"
+            putStrLn "  --fetch-npm <pkg>    Fetch metadata from npm registry"
+            putStrLn "  --fetch-crate <pkg>  Fetch metadata from crates.io"
+            putStrLn "  --fetch-pypi <pkg>   Fetch metadata from PyPI"
 
         DumpContext -> do
             scmPath <- case optSCMPath opts of
@@ -128,6 +139,33 @@ main = do
             mapM_ (\(k, FlexiText v _) ->
                 putStrLn $ "  " ++ k ++ " = " ++ show v
                 ) (Map.toAscList ctx)
+
+        FetchNPM pkg -> do
+            putStrLn $ "Fetching npm metadata for: " ++ pkg
+            putStrLn $ "  API: https://registry.npmjs.org/" ++ pkg
+            putStrLn "  (Data source plugins require http-client; showing placeholder output)"
+            putStrLn $ "  npm-name = " ++ pkg
+            putStrLn "  npm-version = (requires network fetch)"
+            putStrLn "  npm-license = (requires network fetch)"
+            putStrLn "  npm-downloads = (requires network fetch)"
+
+        FetchCrate pkg -> do
+            putStrLn $ "Fetching crates.io metadata for: " ++ pkg
+            putStrLn $ "  API: https://crates.io/api/v1/crates/" ++ pkg
+            putStrLn "  (Data source plugins require http-client; showing placeholder output)"
+            putStrLn $ "  crate-name = " ++ pkg
+            putStrLn "  crate-version = (requires network fetch)"
+            putStrLn "  crate-license = (requires network fetch)"
+            putStrLn "  crate-downloads = (requires network fetch)"
+
+        FetchPyPI pkg -> do
+            putStrLn $ "Fetching PyPI metadata for: " ++ pkg
+            putStrLn $ "  API: https://pypi.org/pypi/" ++ pkg ++ "/json"
+            putStrLn "  (Data source plugins require http-client; showing placeholder output)"
+            putStrLn $ "  pypi-name = " ++ pkg
+            putStrLn "  pypi-version = (requires network fetch)"
+            putStrLn "  pypi-license = (requires network fetch)"
+            putStrLn "  pypi-author = (requires network fetch)"
 
         RenderTemplate templatePath outputPath -> do
             putStrLn "Gnosis: Stateful Artefacts Engine v1.2.0"

@@ -18,11 +18,20 @@ module Main (main) where
 import qualified Data.Map.Strict as Map
 import Data.Time.Clock (getCurrentTime, diffUTCTime)
 import System.IO (hFlush, stdout)
+import Control.DeepSeq (NFData, rnf)
+import Control.Exception (evaluate)
 
 import Types (FlexiText(..), Context)
-import SExp (parseSExp)
+import SExp (SExp(..), parseSExp)
 import Render (render, renderWithBadges)
 import DAX (processConditionals, processLoops, processTemplate, applyFilter)
+
+instance NFData SExp where
+    rnf (Atom s)  = rnf s
+    rnf (List xs) = rnf xs
+
+instance NFData FlexiText where
+    rnf (FlexiText v a) = rnf v `seq` rnf a
 
 -- | Benchmark result
 data BenchResult = BenchResult
@@ -46,9 +55,9 @@ bench name iters action = do
     go 0 = return ()
     go n = action >> go (n - 1)
 
--- | Run a pure benchmark
-benchPure :: String -> Int -> a -> IO BenchResult
-benchPure name iters val = bench name iters (val `seq` return val)
+-- | Run a pure benchmark, fully forcing evaluation with deepseq
+benchPure :: NFData a => String -> Int -> a -> IO BenchResult
+benchPure name iters val = bench name iters (evaluate (rnf val))
 
 -- | Print benchmark result
 printResult :: BenchResult -> IO ()

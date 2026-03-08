@@ -18,7 +18,6 @@ module Types
     ) where
 
 import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map
 
 -- | FlexiText ensures accessibility by pairing visual and semantic content.
 -- The Tri-Guard system requires this for all dynamic output.

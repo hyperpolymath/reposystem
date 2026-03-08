@@ -64,17 +64,33 @@
         "api-base": "https://crates.io/api/v1/crates",
         "user-agent": "gnosis-data-source/1.0"
       }
+    },
+    {
+      "id": "pypi-data-source",
+      "name": "PyPI Data Source",
+      "type": "data-source",
+      "version": "1.0.0",
+      "module": "Plugins.DataSources.PyPI",
+      "function": "fetchPyPIStats",
+      "description": "Fetches package metadata from the PyPI JSON API",
+      "author": "Jonathan D.A. Jewell",
+      "license": "PMPL-1.0-or-later",
+      "tags": ["data-source", "pypi", "python", "registry"],
+      "enabled": true,
+      "configuration": {
+        "api-base": "https://pypi.org/pypi"
+      }
     }
   ],
   "categories": {
     "filters": ["emojify-filter"],
     "ai-agents": ["core-ai-agent"],
-    "data-sources": ["npm-data-source", "crates-io-data-source"],
+    "data-sources": ["npm-data-source", "crates-io-data-source", "pypi-data-source"],
     "renderers": []
   },
   "metadata": {
-    "registry-version": "1.1.0",
+    "registry-version": "1.2.0",
     "last-updated": "2026-03-08T00:00:00Z",
-    "total-plugins": 4
+    "total-plugins": 5
   }
 }

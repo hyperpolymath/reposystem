@@ -17,7 +17,6 @@ module SExp
     ) where
 
 import Data.Char (isSpace)
-import Data.List (find)
 
 -- | An S-Expression is either an Atom or a List of S-Expressions.
 -- This is the universal representation of Lisp data.
@@ -76,11 +75,6 @@ stripComments = unlines . filter (not . isComment) . lines
 -- | Parse whitespace
 spaces :: Parser ()
 spaces input = Just ((), dropWhile isSpace input)
-
--- | Parse a character
-char :: Char -> Parser Char
-char c (x:xs) | c == x = Just (c, xs)
-char _ _ = Nothing
 
 -- | Parse a quoted string
 quotedString :: Parser String

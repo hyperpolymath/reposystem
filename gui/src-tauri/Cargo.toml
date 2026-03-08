@@ -6,7 +6,7 @@ name = "reposystem-gui"
 version = "0.1.0"
 description = "Railway yard GUI for repository ecosystem management"
 authors = ["Jonathan D.A. Jewell"]
-license = "AGPL-3.0-or-later"
+license = "MPL-2.0"
 repository = "https://github.com/hyperpolymath/reposystem"
 edition = "2021"
 rust-version = "1.70"
@@ -22,8 +22,8 @@ serde_json = "1"
 anyhow = "1"
 chrono = { version = "0.4", features = ["serde"] }
 
-# Local dependency on reposystem library
-reposystem = { path = "../../reposystem-plan" }
+# Local dependency on reposystem library (root crate)
+reposystem = { path = "../.." }
 
 [features]
 default = ["custom-protocol"]

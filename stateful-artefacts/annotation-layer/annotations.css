@@ -1,0 +1,300 @@
+/* SPDX-License-Identifier: PMPL-1.0-or-later */
+/* Gnosis Annotation Layer - Styles */
+
+/* Sidebar */
+#gnosis-annotation-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 320px;
+  height: 100vh;
+  background: #ffffff;
+  border-left: 2px solid #e2e8f0;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 10000;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  transition: transform 0.3s ease;
+}
+
+#gnosis-annotation-sidebar.collapsed {
+  transform: translateX(280px);
+}
+
+#gnosis-annotation-sidebar.collapsed .gnosis-sidebar-toggle {
+  transform: rotate(180deg);
+}
+
+.gnosis-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f7fafc;
+}
+
+.gnosis-sidebar-header h3 {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  color: #2d3748;
+}
+
+.gnosis-annotation-count {
+  background: #667eea;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.gnosis-sidebar-toggle {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #718096;
+  padding: 4px 8px;
+  transition: transform 0.3s;
+}
+
+.gnosis-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.gnosis-sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 8px;
+}
+
+.gnosis-sidebar-footer button {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+  color: #4a5568;
+}
+
+.gnosis-sidebar-footer button:hover {
+  background: #f7fafc;
+}
+
+/* Annotation Cards */
+.gnosis-annotation-card {
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.gnosis-annotation-card:hover {
+  background: #f7fafc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.gnosis-annotation-card.gnosis-card-active {
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
+}
+
+.gnosis-reply {
+  margin-left: 20px;
+  border-left: 3px solid #667eea;
+}
+
+.gnosis-annotation-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.gnosis-annotation-author {
+  font-weight: 600;
+  font-size: 13px;
+  color: #2d3748;
+}
+
+.gnosis-annotation-date {
+  font-size: 12px;
+  color: #a0aec0;
+}
+
+.gnosis-annotation-quote {
+  background: #fffbeb;
+  border-left: 3px solid #ecc94b;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #744210;
+  border-radius: 0 4px 4px 0;
+}
+
+.gnosis-annotation-note {
+  color: #4a5568;
+  line-height: 1.5;
+}
+
+.gnosis-annotation-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.gnosis-annotation-actions button {
+  padding: 4px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+  color: #718096;
+}
+
+.gnosis-annotation-actions button:hover {
+  background: #f7fafc;
+  color: #2d3748;
+}
+
+.gnosis-delete-btn:hover {
+  color: #e53e3e !important;
+  border-color: #fed7d7 !important;
+}
+
+.gnosis-no-annotations {
+  text-align: center;
+  color: #a0aec0;
+  padding: 24px 12px;
+  font-style: italic;
+}
+
+/* Highlights in document */
+.gnosis-highlight {
+  background: rgba(102, 126, 234, 0.15);
+  border-bottom: 2px solid #667eea;
+  cursor: pointer;
+  padding: 1px 0;
+  transition: background 0.3s;
+}
+
+.gnosis-highlight:hover {
+  background: rgba(102, 126, 234, 0.3);
+}
+
+.gnosis-highlight-active {
+  background: rgba(236, 201, 75, 0.4) !important;
+  border-bottom-color: #ecc94b !important;
+}
+
+/* Annotation Form */
+#gnosis-annotation-form {
+  position: fixed;
+  bottom: 20px;
+  right: 340px;
+  width: 360px;
+  z-index: 10001;
+  animation: gnosis-form-appear 0.2s ease;
+}
+
+@keyframes gnosis-form-appear {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.gnosis-form-content {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.gnosis-form-content h4 {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  color: #2d3748;
+}
+
+.gnosis-form-quote {
+  background: #fffbeb;
+  border-left: 3px solid #ecc94b;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #744210;
+  border-radius: 0 4px 4px 0;
+  max-height: 60px;
+  overflow: hidden;
+}
+
+#gnosis-note-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 14px;
+  resize: vertical;
+  margin-bottom: 8px;
+  font-family: inherit;
+}
+
+#gnosis-author-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.gnosis-form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.gnosis-form-actions button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#gnosis-save-btn {
+  background: #667eea;
+  color: white;
+}
+
+#gnosis-save-btn:hover {
+  background: #5a67d8;
+}
+
+#gnosis-cancel-btn {
+  background: #edf2f7;
+  color: #4a5568;
+}
+
+#gnosis-cancel-btn:hover {
+  background: #e2e8f0;
+}
+
+/* Responsive: push main content when sidebar visible */
+@media (min-width: 768px) {
+  body:has(#gnosis-annotation-sidebar:not(.collapsed)) {
+    margin-right: 320px;
+  }
+}

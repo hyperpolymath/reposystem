@@ -107,6 +107,7 @@ main = do
             putStrLn "  {{#if key == val}}     Conditional (==, !=, >, <, >=, <=)"
             putStrLn "  {{#else}}              Else branch in conditional"
             putStrLn "  {{#for x in list}}     Loop block"
+            putStrLn "  {{@index}}             Loop iteration index (0-based)"
 
         DumpContext -> do
             scmPath <- case optSCMPath opts of

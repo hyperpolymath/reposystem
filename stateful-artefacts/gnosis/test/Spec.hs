@@ -83,8 +83,20 @@ main = do
     runTests daxLoopTests
 
     putStrLn ""
+    putStrLn "--- DAX Loop Index ---"
+    runTests daxIndexTests
+
+    putStrLn ""
     putStrLn "--- DAX Filters ---"
     runTests daxFilterTests
+
+    putStrLn ""
+    putStrLn "--- relativeTime Filter ---"
+    runTests relativeTimeTests
+
+    putStrLn ""
+    putStrLn "--- roundValue Filter ---"
+    runTests roundValueTests
 
 -- ============================================================================
 -- S-Expression Parser Tests
@@ -377,6 +389,31 @@ daxLoopTests =
     ]
 
 -- ============================================================================
+-- DAX Loop Index Tests
+-- ============================================================================
+
+daxIndexTests :: [Test]
+daxIndexTests =
+    let ctx = mkCtx [("items", "a,b,c"), ("single", "x")]
+    in
+    [ assertEqual "@index basic"
+        "0:a 1:b 2:c "
+        (processLoops ctx "{{#for x in items}}{{@index}}:(:x) {{/for}}")
+
+    , assertEqual "@index single item"
+        "0:x"
+        (processLoops ctx "{{#for x in single}}{{@index}}:(:x){{/for}}")
+
+    , assertEqual "@index in list"
+        "0. a\n1. b\n2. c\n"
+        (processLoops ctx "{{#for x in items}}{{@index}}. (:x)\n{{/for}}")
+
+    , assertEqual "@index without usage"
+        "[a][b][c]"
+        (processLoops ctx "{{#for x in items}}[(:x)]{{/for}}")
+    ]
+
+-- ============================================================================
 -- DAX Filter Tests
 -- ============================================================================
 
@@ -413,4 +450,74 @@ daxFilterTests =
     , assertEqual "capitalize empty"
         ""
         (applyFilter "capitalize" "")
+    ]
+
+-- ============================================================================
+-- relativeTime Filter Tests
+-- ============================================================================
+
+relativeTimeTests :: [Test]
+relativeTimeTests =
+    [ assertEqual "relativeTime ISO date"
+        "January 2025"
+        (relativeTime "2025-01-24")
+
+    , assertEqual "relativeTime ISO datetime"
+        "March 2026"
+        (relativeTime "2026-03-07T14:30:00")
+
+    , assertEqual "relativeTime December"
+        "December 2024"
+        (relativeTime "2024-12-01")
+
+    , assertEqual "relativeTime invalid returns as-is"
+        "not-a-date"
+        (relativeTime "not-a-date")
+
+    , assertEqual "parseISODate valid"
+        (Just (2025, 1, 24))
+        (parseISODate "2025-01-24")
+
+    , assertEqual "parseISODate with time"
+        (Just (2026, 3, 7))
+        (parseISODate "2026-03-07T14:30:00")
+
+    , assertEqual "parseISODate invalid month"
+        Nothing
+        (parseISODate "2025-13-01")
+
+    , assertEqual "parseISODate too short"
+        Nothing
+        (parseISODate "2025-1")
+    ]
+
+-- ============================================================================
+-- roundValue Filter Tests
+-- ============================================================================
+
+roundValueTests :: [Test]
+roundValueTests =
+    [ assertEqual "round 3.14 down"
+        "3"
+        (roundValue "3.14")
+
+    , assertEqual "round 99.9 up"
+        "100"
+        (roundValue "99.9")
+
+    , assertEqual "round 42.5 up"
+        "43"
+        (roundValue "42.5")
+
+    , assertEqual "round integer unchanged"
+        "42"
+        (roundValue "42")
+
+    , assertEqual "round non-numeric unchanged"
+        "abc"
+        (roundValue "abc")
+
+    , assertEqual "round negative"
+        "-4"
+        (roundValue "-3.7")
     ]

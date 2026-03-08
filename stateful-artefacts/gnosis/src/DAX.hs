@@ -17,7 +17,9 @@ module DAX
     , applyFilter
     , thousandsSeparator
     , relativeTime
+    , roundValue
     , readInt
+    , parseISODate
     ) where
 
 import qualified Data.Map.Strict as Map
@@ -162,6 +164,7 @@ processForBlocks ctx template = go template
         | otherwise = safeHead str ++ go (safeTail str)
 
 -- | Process a single loop: extract variable name and list key, then iterate
+-- Supports {{@index}} (0-based) inside loop body.
 processLoop :: Context -> String -> String -> String
 processLoop ctx loopSpec loopBody =
     case parseLoopSpec (trim loopSpec) of
@@ -169,7 +172,7 @@ processLoop ctx loopSpec loopBody =
             case Map.lookup listKey ctx of
                 Just (FlexiText listStr _) ->
                     let items = splitList listStr
-                        renderedItems = map (renderLoopItem itemVar loopBody) items
+                        renderedItems = zipWith (renderLoopItemWithIndex itemVar loopBody) [0..] items
                     in concat renderedItems
                 Nothing -> ""  -- List key not found, render nothing
         Nothing -> ""  -- Invalid loop syntax, render nothing
@@ -192,9 +195,21 @@ splitList str = map trim (splitOn ',' str)
             [] -> []
             (_:xs) -> splitOn delim xs
 
--- | Render loop body with item variable replaced
-renderLoopItem :: String -> String -> String -> String
-renderLoopItem varName body itemValue = replacePlaceholder varName itemValue body
+-- | Render loop body with item variable and @index replaced
+renderLoopItemWithIndex :: String -> String -> Int -> String -> String
+renderLoopItemWithIndex varName body idx itemValue =
+    let withItem = replacePlaceholder varName itemValue body
+        withIndex = replaceIndexPlaceholder idx withItem
+    in withIndex
+
+-- | Replace {{@index}} with the current loop index (0-based)
+replaceIndexPlaceholder :: Int -> String -> String
+replaceIndexPlaceholder idx = go
+  where
+    go [] = []
+    go str
+        | "{{@index}}" `isPrefixOf` str = show idx ++ go (drop 10 str)
+        | otherwise = safeHead str ++ go (safeTail str)
 
 -- | Replace (:varName) or (:varName | filter) with value in string
 -- Handles both simple placeholders and filter syntax
@@ -300,18 +315,57 @@ thousandsSeparator str =
     intercalate _ [x] = x
     intercalate sep (x:xs) = x ++ sep ++ intercalate sep xs
 
--- | Convert timestamp to relative time (simplified)
+-- | Convert ISO timestamp (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS) to relative description.
+-- Compares against a reference date. For static rendering, describes the date itself.
 relativeTime :: String -> String
-relativeTime _ = "recently"  -- Simplified for v1.0
+relativeTime str =
+    case parseISODate str of
+        Just (y, m, d) -> formatRelativeDate y m d
+        Nothing -> str  -- Not a valid date, return as-is
+
+-- | Parse YYYY-MM-DD prefix from ISO timestamp
+parseISODate :: String -> Maybe (Int, Int, Int)
+parseISODate s =
+    case s of
+        (y1:y2:y3:y4:'-':m1:m2:'-':d1:d2:_) ->
+            case (readInt [y1,y2,y3,y4], readInt [m1,m2], readInt [d1,d2]) of
+                (Just y, Just m, Just d)
+                    | m >= 1 && m <= 12 && d >= 1 && d <= 31 -> Just (y, m, d)
+                _ -> Nothing
+        _ -> Nothing
+
+-- | Format a date as a human-readable relative description
+formatRelativeDate :: Int -> Int -> Int -> String
+formatRelativeDate y m _d =
+    let monthNames = ["January","February","March","April","May","June",
+                      "July","August","September","October","November","December"]
+        monthName = if m >= 1 && m <= 12 then monthNames !! (m - 1) else "Unknown"
+    in monthName ++ " " ++ show y
 
 -- | Capitalize first letter
 capitalize :: String -> String
 capitalize [] = []
 capitalize (x:xs) = toUpper x : xs
 
--- | Round numeric value (simplified)
+-- | Round a numeric value: truncates decimal portion.
+-- "3.14" -> "3", "99.9" -> "100", "42" -> "42"
 roundValue :: String -> String
-roundValue str = str  -- Simplified for v1.0
+roundValue str =
+    case break (== '.') str of
+        (intPart, '.':decPart) ->
+            case (readInt intPart, readNatDigits decPart) of
+                (Just n, Just (firstDec, _)) ->
+                    if firstDec >= 5
+                        then show (if n >= 0 then n + 1 else n - 1)
+                        else show n
+                _ -> str  -- Not a valid number
+        _ -> str  -- No decimal point, return as-is
+  where
+    readNatDigits :: String -> Maybe (Int, Int)
+    readNatDigits [] = Nothing
+    readNatDigits (c:_)
+        | c >= '0' && c <= '9' = Just (fromEnum c - fromEnum '0', 0)
+        | otherwise = Nothing
 
 -- | Convert to uppercase
 toUpper :: Char -> Char

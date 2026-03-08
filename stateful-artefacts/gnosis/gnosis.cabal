@@ -21,7 +21,6 @@ executable gnosis
                      , Render
                      , Types
                      , Paxos
-                     , SixSCM
                      , SixSCMEnhanced
                      , DAX
   hs-source-dirs:      src

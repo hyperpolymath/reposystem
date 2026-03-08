@@ -4,10 +4,10 @@
 
 (state
   (metadata
-    (version "1.2.0")
+    (version "1.3.0")
     (schema-version "1.0")
     (created "2025-01-24")
-    (updated "2026-03-07")
+    (updated "2026-03-08")
     (project "stateful-artefacts")
     (repo "github.com/hyperpolymath/stateful-artefacts"))
 
@@ -21,31 +21,33 @@
 
   (current-position
     (phase "alpha")
-    (overall-completion 55)
+    (overall-completion 75)
     (components
       (sexp-parser "complete" "Recursive descent S-expression parser")
       (template-renderer "complete" "(:placeholder) syntax with filter pipeline")
       (flexitext "complete" "Accessibility model: visual + alt-text pairing")
       (tri-guard "complete" "Sanitization for URL, alt-text, table contexts")
-      (sixscm-loader "complete" "Loads all 6 SCM files, merges contexts")
+      (sixscm-loader "removed" "Replaced by SixSCMEnhanced, archived")
       (sixscm-enhanced "complete" "Deep tree traversal, dotted paths, leaf keys")
       (dax-conditionals "complete" "{{#if}} blocks with ==, !=, >, <, >=, <= operators")
       (dax-else "complete" "{{#else}} blocks with nesting support")
       (dax-loops "complete" "{{#for x in list}} iteration over comma-sep values")
+      (dax-index "complete" "{{@index}} 0-based counter in loops")
       (dax-filters "complete" "uppercase, lowercase, capitalize, thousands-separator")
       (numeric-comparison "complete" "DAX >=, <=, >, < operators for integer values")
+      (relative-time "complete" "ISO timestamp parsing to human-readable dates")
+      (round-value "complete" "Numeric rounding with decimal truncation")
       (paxos-lite "complete" "Timestamp-based ballot for concurrent STATE.scm edits")
       (badges-mode "complete" "Shields.io badge rendering for visual emphasis")
       (plain-mode "complete" "Plain text rendering (default)")
       (cli "complete" "--plain, --badges, --scm-path, --dump-context flags")
-      (test-suite "complete" "66 tests: SExp parser, renderer, DAX conditionals, else, numeric, loops, filters")
+      (test-suite "complete" "84 tests: SExp, renderer, DAX conditionals, else, numeric, loops, index, filters, relativeTime, roundValue")
       (pre-commit-hook "complete" "Auto-hydrate .template.md files on git commit")
-      (plugin-system "scaffolded" "Directory structure only, no implementation")
-      (browser-extension "scaffolded" "Manifest + popup + content script, not functional")
-      (dashboard "scaffolded" "HTML/CSS/JS shell, not connected to engine")
-      (annotation-layer "designed" "Hypothesis-style post-it notes on rendered docs")
       (nested-conditionals "complete" "{{#if}} inside {{#if}} via recursive processing")
-      (index-access "planned" "{{@index}} counter in loops"))
+      (dashboard "complete" "HTML/CSS/JS with dual mode: Git forge API + local SCM file loading, component status grid")
+      (annotation-layer "complete" "Hypothesis-style post-it notes: sidebar, highlights, threading, export/import JSON")
+      (plugin-system "scaffolded" "Directory structure only, no implementation")
+      (browser-extension "scaffolded" "Manifest + popup + content script, not functional"))
     (working-features
       ("S-expression parsing with comment stripping and dotted pairs")
       ("Template hydration: (:key), (:dotted.path.key), (:key | filter)")
@@ -53,32 +55,27 @@
       ("Enhanced extraction: deep tree traversal + leaf key shortcuts")
       ("DAX conditionals: {{#if key == value}} ... {{#else}} ... {{/if}}")
       ("DAX numeric comparison: >, <, >=, <= with integer parsing")
-      ("DAX loops: {{#for item in list}} ... {{/for}}")
-      ("Filter pipeline: uppercase, lowercase, capitalize, thousands-separator")
+      ("DAX loops: {{#for item in list}} ... {{/for}} with {{@index}}")
+      ("Filter pipeline: uppercase, lowercase, capitalize, thousands-separator, relativeTime, round")
       ("Dual render modes: --plain (default) and --badges")
       ("Context dump: --dump-context shows all resolved keys")
       ("Configurable SCM path: --scm-path for cross-repo rendering")
       ("Paxos-Lite: timestamp-based conflict resolution for concurrent edits")
       ("Pre-commit hook: auto-hydrate .template.md on commit")
-      ("Test suite: 66 tests across 7 categories")))
+      ("Dashboard: dual-mode (forge API + local SCM), component grid, health score")
+      ("Annotation layer: highlights, sidebar, threading, JSON export/import")
+      ("Test suite: 84 tests across 10 categories")))
 
   (blockers-and-issues
     (high
-      ("Browser extension and dashboard are empty shells"))
+      ("Browser extension is an empty shell"))
     (medium
-      ("relativeTime filter returns hardcoded 'recently'")
-      ("roundValue filter is a no-op")
-      ("Annotation layer only designed, not implemented"))
-    (low
-      ("SixSCM.hs (basic loader) still in codebase but unused")))
+      ("Plugin system only scaffolded")))
 
   (critical-next-actions
-    (immediate
-      ("Implement {{@index}} counter in loops")
-      ("Implement relativeTime filter (parse ISO timestamps)"))
     (this-week
-      ("Begin annotation layer implementation")
-      ("Connect dashboard to gnosis engine output"))
+      ("Make browser extension functional")
+      ("Implement plugin system"))
     (this-month
-      ("Implement roundValue filter for numeric formatting")
-      ("Remove or archive SixSCM.hs (replaced by SixSCMEnhanced)"))))
+      ("End-to-end integration testing")
+      ("Gnosis CLI packaging for distribution"))))

@@ -39,7 +39,7 @@ sha2 = "0.10"
 hex = "0.4"
 
 # Git operations
-gix = { version = "0.76", default-features = false }
+gix = { version = "0.80", default-features = false }
 
 # Logging
 tracing = "0.1"

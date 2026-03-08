@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "plugins": [
     {
       "id": "emojify-filter",
@@ -9,7 +9,7 @@
       "module": "Plugins.Filters.Emojify",
       "function": "emojify",
       "description": "Adds emoji prefixes to phase and status values",
-      "author": "Gnosis Team",
+      "author": "Jonathan D.A. Jewell",
       "license": "PMPL-1.0-or-later",
       "tags": ["filter", "emoji", "formatting"],
       "enabled": true
@@ -22,7 +22,7 @@
       "module": "Plugins.AI.CoreAgent",
       "function": "analyzeRepo",
       "description": "Analyzes repository health and suggests STATE.scm updates",
-      "author": "Gnosis Team",
+      "author": "Jonathan D.A. Jewell",
       "license": "PMPL-1.0-or-later",
       "tags": ["ai", "analysis", "suggestions"],
       "enabled": true,
@@ -30,17 +30,51 @@
         "auto-apply": false,
         "suggestion-threshold": 70
       }
+    },
+    {
+      "id": "npm-data-source",
+      "name": "npm Registry Data Source",
+      "type": "data-source",
+      "version": "1.0.0",
+      "module": "Plugins.DataSources.NPM",
+      "function": "fetchNPMStats",
+      "description": "Fetches package metadata from the npm registry API",
+      "author": "Jonathan D.A. Jewell",
+      "license": "PMPL-1.0-or-later",
+      "tags": ["data-source", "npm", "javascript", "registry"],
+      "enabled": true,
+      "configuration": {
+        "api-base": "https://registry.npmjs.org",
+        "downloads-api": "https://api.npmjs.org/downloads/point/last-month"
+      }
+    },
+    {
+      "id": "crates-io-data-source",
+      "name": "crates.io Data Source",
+      "type": "data-source",
+      "version": "1.0.0",
+      "module": "Plugins.DataSources.CratesIO",
+      "function": "fetchCrateStats",
+      "description": "Fetches crate metadata from the crates.io API",
+      "author": "Jonathan D.A. Jewell",
+      "license": "PMPL-1.0-or-later",
+      "tags": ["data-source", "crates", "rust", "registry"],
+      "enabled": true,
+      "configuration": {
+        "api-base": "https://crates.io/api/v1/crates",
+        "user-agent": "gnosis-data-source/1.0"
+      }
     }
   ],
   "categories": {
     "filters": ["emojify-filter"],
     "ai-agents": ["core-ai-agent"],
-    "data-sources": [],
+    "data-sources": ["npm-data-source", "crates-io-data-source"],
     "renderers": []
   },
   "metadata": {
-    "registry-version": "1.0.0",
-    "last-updated": "2026-01-24T00:00:00Z",
-    "total-plugins": 2
+    "registry-version": "1.1.0",
+    "last-updated": "2026-03-08T00:00:00Z",
+    "total-plugins": 4
   }
 }

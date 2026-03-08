@@ -4,7 +4,7 @@
 
 (state
   (metadata
-    (version "1.4.0")
+    (version "1.5.0")
     (schema-version "1.0")
     (created "2025-01-24")
     (updated "2026-03-08")
@@ -21,7 +21,7 @@
 
   (current-position
     (phase "beta")
-    (overall-completion 92)
+    (overall-completion 96)
     (components
       (sexp-parser "complete" "Recursive descent S-expression parser")
       (template-renderer "complete" "(:placeholder) syntax with filter pipeline")
@@ -40,14 +40,18 @@
       (badges-mode "complete" "Shields.io badge rendering for visual emphasis")
       (plain-mode "complete" "Plain text rendering (default)")
       (cli "complete" "--plain, --badges, --scm-path, --dump-context, --version, --help flags")
-      (test-suite "complete" "94 unit tests + 23 integration tests across 11 categories")
+      (test-suite "complete" "94 unit + 23 integration + 23 P2P tests across 11 categories")
+      (benchmarks "complete" "Haskell in-process benchmarks + 8-phase benchmark harness")
       (pre-commit-hook "complete" "Auto-hydrate .template.md files on git commit")
       (nested-conditionals "complete" "{{#if}} inside {{#if}} via recursive processing")
       (dashboard "complete" "Dual mode: Git forge API + local SCM file loading, component grid, health score")
       (annotation-layer "complete" "Hypothesis-style post-it notes: sidebar, highlights, threading, export/import JSON")
-      (plugin-system "complete" "6 filter plugins + 2 renderer plugins, wired into DAX pipeline")
+      (plugin-system "complete" "6 filter plugins + 2 renderer plugins + 2 data source plugins (npm, crates.io)")
       (browser-extension "complete" "MV3 extension: SCM detection on GitHub/GitLab, status badge, format toggle, annotation injection")
+      (extension-icons "complete" "SVG source icon with PNG renders at 16, 48, 128px")
+      (chrome-web-store-prep "complete" "MPL-2.0 license file for Chrome Web Store submission")
       (integration-tests "complete" "23 end-to-end tests: placeholders, conditionals, loops, filters, badges, context dump, cross-file, CLI, plugins")
+      (point-to-point-tests "complete" "23 P2P tests: CLI parsing, SCM loading, DAX->renderer, renderer->output")
       (cli-packaging "complete" "install.sh script with PATH detection and pre-commit hook setup"))
     (working-features
       ("S-expression parsing with comment stripping and dotted pairs")
@@ -66,16 +70,16 @@
       ("Dashboard: dual-mode (forge API + local SCM), component grid, health score")
       ("Annotation layer: highlights, sidebar, threading, JSON export/import")
       ("Browser extension: SCM detection, status badge, format toggle, annotation injection")
-      ("Plugin system: 6 built-in filters + 2 renderers (JSON, CSV)")
-      ("Test suite: 94 unit tests + 23 integration tests")))
+      ("Plugin system: 6 built-in filters + 2 renderers (JSON, CSV) + 2 data sources (npm, crates.io)")
+      ("Test suite: 94 unit tests + 23 integration tests + 23 point-to-point tests")
+      ("Benchmarks: Haskell in-process (26 benchmarks) + 8-phase harness (precompile, compile, build eval, execution, large file, install, E2E, in-process)")))
 
   (blockers-and-issues
-    (low
-      ("Browser extension icons are placeholder PNGs")))
+    (none))
 
   (critical-next-actions
     (this-month
-      ("Design real extension icons")
-      ("Publish to Chrome Web Store (requires MPL-2.0 license file)")
-      ("Add more data source plugins (npm, crates.io)")
-      ("Performance benchmarks for large 6scm files"))))
+      ("Publish to Chrome Web Store")
+      ("Wire data source plugins into CLI (--fetch-npm, --fetch-crate flags)")
+      ("Add PyPI data source plugin")
+      ("Performance regression testing in CI"))))

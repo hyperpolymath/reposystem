@@ -289,7 +289,8 @@ isPrefixOf [] _ = True
 isPrefixOf _ [] = False
 isPrefixOf (x:xs) (y:ys) = x == y && isPrefixOf xs ys
 
--- | Apply a filter function to a value
+-- | Apply a filter function to a value.
+-- Built-in filters are checked first, then plugin filters via the registry.
 applyFilter :: String -> String -> String
 applyFilter "thousands-separator" value = thousandsSeparator value
 applyFilter "relativeTime" value = relativeTime value
@@ -297,7 +298,56 @@ applyFilter "uppercase" value = map toUpper value
 applyFilter "lowercase" value = map toLower value
 applyFilter "capitalize" value = capitalize value
 applyFilter "round" value = roundValue value
+-- Plugin filters (registered in PluginLoader)
+applyFilter "emojify" value = emojifyBuiltin value
+applyFilter "slug" value = slugBuiltin value
+applyFilter "truncate" value = truncateBuiltin value
+applyFilter "strip-html" value = stripHtmlBuiltin value
+applyFilter "count-words" value = countWordsBuiltin value
+applyFilter "reverse" value = reverse value
 applyFilter _ value = value  -- Unknown filter, return as-is
+
+-- | Emojify plugin: add emoji to phase/status values
+emojifyBuiltin :: String -> String
+emojifyBuiltin "alpha"       = "🔬 alpha"
+emojifyBuiltin "beta"        = "🧪 beta"
+emojifyBuiltin "stable"      = "✅ stable"
+emojifyBuiltin "production"  = "🚀 production"
+emojifyBuiltin "deprecated"  = "⚠️  deprecated"
+emojifyBuiltin "complete"    = "✅ complete"
+emojifyBuiltin "planned"     = "📋 planned"
+emojifyBuiltin "scaffolded"  = "🏗️  scaffolded"
+emojifyBuiltin "active"      = "✨ active"
+emojifyBuiltin s             = s
+
+-- | Slug plugin: convert to URL-safe slug
+slugBuiltin :: String -> String
+slugBuiltin = map slugChar . filter validSlugChar
+  where
+    slugChar ' ' = '-'
+    slugChar c   = toLower c
+    validSlugChar c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+                   || (c >= '0' && c <= '9') || c == ' ' || c == '-' || c == '_'
+
+-- | Truncate to 50 characters with ellipsis
+truncateBuiltin :: String -> String
+truncateBuiltin s
+    | length s <= 50 = s
+    | otherwise = take 47 s ++ "..."
+
+-- | Strip HTML tags
+stripHtmlBuiltin :: String -> String
+stripHtmlBuiltin = go False
+  where
+    go _ [] = []
+    go True  ('>':rest)  = go False rest
+    go True  (_:rest)    = go True rest
+    go False ('<':rest)  = go True rest
+    go False (c:rest)    = c : go False rest
+
+-- | Count words
+countWordsBuiltin :: String -> String
+countWordsBuiltin = show . length . words
 
 -- | Add thousands separator to numbers
 thousandsSeparator :: String -> String

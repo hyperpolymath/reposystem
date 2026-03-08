@@ -4,7 +4,7 @@
 
 (state
   (metadata
-    (version "1.3.0")
+    (version "1.4.0")
     (schema-version "1.0")
     (created "2025-01-24")
     (updated "2026-03-08")
@@ -20,14 +20,13 @@
       (state-files "6scm")))
 
   (current-position
-    (phase "alpha")
-    (overall-completion 75)
+    (phase "beta")
+    (overall-completion 92)
     (components
       (sexp-parser "complete" "Recursive descent S-expression parser")
       (template-renderer "complete" "(:placeholder) syntax with filter pipeline")
       (flexitext "complete" "Accessibility model: visual + alt-text pairing")
       (tri-guard "complete" "Sanitization for URL, alt-text, table contexts")
-      (sixscm-loader "removed" "Replaced by SixSCMEnhanced, archived")
       (sixscm-enhanced "complete" "Deep tree traversal, dotted paths, leaf keys")
       (dax-conditionals "complete" "{{#if}} blocks with ==, !=, >, <, >=, <= operators")
       (dax-else "complete" "{{#else}} blocks with nesting support")
@@ -40,14 +39,16 @@
       (paxos-lite "complete" "Timestamp-based ballot for concurrent STATE.scm edits")
       (badges-mode "complete" "Shields.io badge rendering for visual emphasis")
       (plain-mode "complete" "Plain text rendering (default)")
-      (cli "complete" "--plain, --badges, --scm-path, --dump-context flags")
-      (test-suite "complete" "84 tests: SExp, renderer, DAX conditionals, else, numeric, loops, index, filters, relativeTime, roundValue")
+      (cli "complete" "--plain, --badges, --scm-path, --dump-context, --version, --help flags")
+      (test-suite "complete" "94 unit tests + 23 integration tests across 11 categories")
       (pre-commit-hook "complete" "Auto-hydrate .template.md files on git commit")
       (nested-conditionals "complete" "{{#if}} inside {{#if}} via recursive processing")
-      (dashboard "complete" "HTML/CSS/JS with dual mode: Git forge API + local SCM file loading, component status grid")
+      (dashboard "complete" "Dual mode: Git forge API + local SCM file loading, component grid, health score")
       (annotation-layer "complete" "Hypothesis-style post-it notes: sidebar, highlights, threading, export/import JSON")
-      (plugin-system "scaffolded" "Directory structure only, no implementation")
-      (browser-extension "scaffolded" "Manifest + popup + content script, not functional"))
+      (plugin-system "complete" "6 filter plugins + 2 renderer plugins, wired into DAX pipeline")
+      (browser-extension "complete" "MV3 extension: SCM detection on GitHub/GitLab, status badge, format toggle, annotation injection")
+      (integration-tests "complete" "23 end-to-end tests: placeholders, conditionals, loops, filters, badges, context dump, cross-file, CLI, plugins")
+      (cli-packaging "complete" "install.sh script with PATH detection and pre-commit hook setup"))
     (working-features
       ("S-expression parsing with comment stripping and dotted pairs")
       ("Template hydration: (:key), (:dotted.path.key), (:key | filter)")
@@ -56,7 +57,7 @@
       ("DAX conditionals: {{#if key == value}} ... {{#else}} ... {{/if}}")
       ("DAX numeric comparison: >, <, >=, <= with integer parsing")
       ("DAX loops: {{#for item in list}} ... {{/for}} with {{@index}}")
-      ("Filter pipeline: uppercase, lowercase, capitalize, thousands-separator, relativeTime, round")
+      ("Filters: uppercase, lowercase, capitalize, thousands-separator, relativeTime, round, emojify, slug, truncate, strip-html, count-words, reverse")
       ("Dual render modes: --plain (default) and --badges")
       ("Context dump: --dump-context shows all resolved keys")
       ("Configurable SCM path: --scm-path for cross-repo rendering")
@@ -64,18 +65,17 @@
       ("Pre-commit hook: auto-hydrate .template.md on commit")
       ("Dashboard: dual-mode (forge API + local SCM), component grid, health score")
       ("Annotation layer: highlights, sidebar, threading, JSON export/import")
-      ("Test suite: 84 tests across 10 categories")))
+      ("Browser extension: SCM detection, status badge, format toggle, annotation injection")
+      ("Plugin system: 6 built-in filters + 2 renderers (JSON, CSV)")
+      ("Test suite: 94 unit tests + 23 integration tests")))
 
   (blockers-and-issues
-    (high
-      ("Browser extension is an empty shell"))
-    (medium
-      ("Plugin system only scaffolded")))
+    (low
+      ("Browser extension icons are placeholder PNGs")))
 
   (critical-next-actions
-    (this-week
-      ("Make browser extension functional")
-      ("Implement plugin system"))
     (this-month
-      ("End-to-end integration testing")
-      ("Gnosis CLI packaging for distribution"))))
+      ("Design real extension icons")
+      ("Publish to Chrome Web Store (requires MPL-2.0 license file)")
+      ("Add more data source plugins (npm, crates.io)")
+      ("Performance benchmarks for large 6scm files"))))

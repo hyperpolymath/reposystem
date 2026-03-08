@@ -2,98 +2,139 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Gnosis Format Toggle</title>
+  <title>Gnosis</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      width: 300px;
-      padding: 16px;
+      width: 380px;
       font-family: system-ui, -apple-system, sans-serif;
-      margin: 0;
-    }
-    h1 {
-      font-size: 16px;
-      font-weight: 600;
-      margin: 0 0 12px 0;
+      font-size: 13px;
       color: #1a1a1a;
+      background: #fff;
     }
-    .option {
+    .header {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 14px 16px;
+    }
+    .header h1 { font-size: 15px; font-weight: 600; }
+    .header .subtitle { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+    .status-bar {
+      padding: 8px 16px;
+      font-size: 12px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px;
-      border: 1px solid #e0e0e0;
-      border-radius: 6px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
+      gap: 6px;
     }
-    .option:hover {
-      border-color: #0066cc;
-      background: #f5f9ff;
+    .status-bar.detected { background: #f0fff4; color: #276749; }
+    .status-bar.not-detected { background: #fffbeb; color: #744210; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .status-dot.green { background: #48bb78; }
+    .status-dot.yellow { background: #ecc94b; }
+    .section { padding: 12px 16px; border-top: 1px solid #edf2f7; }
+    .section-title { font-size: 11px; font-weight: 600; color: #718096; text-transform: uppercase; margin-bottom: 8px; }
+    .kv-grid { display: grid; grid-template-columns: 110px 1fr; gap: 4px 12px; }
+    .kv-key { color: #718096; font-size: 12px; }
+    .kv-value { font-weight: 500; font-size: 12px; word-break: break-word; }
+    .component-list { list-style: none; }
+    .component-list li {
+      display: flex; align-items: center; gap: 6px;
+      padding: 3px 0; font-size: 12px;
     }
-    .option.active {
-      border-color: #0066cc;
-      background: #e6f2ff;
+    .status-badge {
+      display: inline-block; padding: 1px 6px; border-radius: 3px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
     }
-    .option input[type="radio"] {
-      margin: 0;
+    .status-complete { background: #c6f6d5; color: #276749; }
+    .status-scaffolded { background: #feebc8; color: #744210; }
+    .status-planned { background: #e2e8f0; color: #4a5568; }
+    .status-designed { background: #bee3f8; color: #2a4365; }
+    .status-removed { background: #fed7d7; color: #742a2a; }
+    .progress-bar { height: 6px; background: #edf2f7; border-radius: 3px; margin-top: 8px; }
+    .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #667eea, #764ba2); }
+    .toggle-section { padding: 10px 16px; border-top: 1px solid #edf2f7; }
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 0;
     }
-    .option-label {
-      flex: 1;
+    .toggle-label { font-size: 12px; }
+    .toggle-switch {
+      width: 36px; height: 20px; border-radius: 10px;
+      background: #cbd5e0; cursor: pointer; position: relative;
+      transition: background 0.2s;
     }
-    .option-title {
-      font-weight: 500;
-      color: #1a1a1a;
+    .toggle-switch.on { background: #667eea; }
+    .toggle-switch::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; border-radius: 50%; background: white;
+      transition: left 0.2s;
     }
-    .option-desc {
-      font-size: 12px;
-      color: #666;
-      margin-top: 2px;
-    }
-    .status {
-      margin-top: 12px;
-      padding: 8px 12px;
-      background: #f0f0f0;
-      border-radius: 4px;
-      font-size: 12px;
-      color: #666;
-    }
-    .info {
-      margin-top: 12px;
-      padding: 12px;
-      background: #fff9e6;
-      border: 1px solid #ffe066;
-      border-radius: 4px;
-      font-size: 12px;
-      color: #666;
-    }
+    .toggle-switch.on::after { left: 18px; }
+    .empty-state { padding: 24px 16px; text-align: center; color: #a0aec0; }
+    .empty-state p { margin-top: 8px; font-size: 12px; }
+    .footer { padding: 8px 16px; border-top: 1px solid #edf2f7; font-size: 11px; color: #a0aec0; text-align: center; }
+    .footer a { color: #667eea; text-decoration: none; }
   </style>
 </head>
 <body>
-  <h1>Gnosis Format Preference</h1>
-
-  <div class="option" data-mode="visual">
-    <input type="radio" name="format" id="visual" value="visual">
-    <label class="option-label" for="visual">
-      <div class="option-title">🎨 Visual Mode</div>
-      <div class="option-desc">Show badges and emoji (default)</div>
-    </label>
+  <div class="header">
+    <h1>Gnosis</h1>
+    <div class="subtitle">Stateful Artefacts Viewer</div>
   </div>
 
-  <div class="option" data-mode="accessible">
-    <input type="radio" name="format" id="accessible" value="accessible">
-    <label class="option-label" for="accessible">
-      <div class="option-title">📖 Accessible Mode</div>
-      <div class="option-desc">Plain text for screen readers</div>
-    </label>
+  <div id="status-bar" class="status-bar not-detected">
+    <span class="status-dot yellow"></span>
+    <span id="status-text">Scanning page...</span>
   </div>
 
-  <div class="status">
-    <span id="status-text">Loading preference...</span>
+  <div id="project-info" style="display: none;">
+    <div class="section">
+      <div class="section-title">Project</div>
+      <div class="kv-grid">
+        <span class="kv-key">Name</span>
+        <span class="kv-value" id="val-name">-</span>
+        <span class="kv-key">Version</span>
+        <span class="kv-value" id="val-version">-</span>
+        <span class="kv-key">Phase</span>
+        <span class="kv-value" id="val-phase">-</span>
+        <span class="kv-key">Completion</span>
+        <span class="kv-value" id="val-completion">-</span>
+        <span class="kv-key">Updated</span>
+        <span class="kv-value" id="val-updated">-</span>
+        <span class="kv-key">License</span>
+        <span class="kv-value" id="val-license">-</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+
+    <div class="section" id="components-section" style="display: none;">
+      <div class="section-title">Components (<span id="component-count">0</span>)</div>
+      <ul class="component-list" id="component-list"></ul>
+    </div>
+
+    <div class="section" id="blockers-section" style="display: none;">
+      <div class="section-title">Blockers</div>
+      <ul class="component-list" id="blockers-list"></ul>
+    </div>
   </div>
 
-  <div class="info">
-    This extension detects Gnosis-rendered content and applies your preferred format. Refresh the page after changing.
+  <div id="empty-state" class="empty-state">
+    <p>Navigate to a GitHub/GitLab repository with<br><code>.machine_readable/STATE.scm</code></p>
+  </div>
+
+  <div class="toggle-section">
+    <div class="toggle-row">
+      <span class="toggle-label">Accessible mode (plain text)</span>
+      <div class="toggle-switch" id="format-toggle"></div>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Inject annotation layer</span>
+      <div class="toggle-switch" id="annotation-toggle"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="https://github.com/hyperpolymath/stateful-artefacts">Gnosis</a> &middot; Stateful Artefacts
   </div>
 
   <script src="scripts/popup.js"></script>

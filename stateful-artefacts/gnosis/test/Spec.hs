@@ -98,6 +98,10 @@ main = do
     putStrLn "--- roundValue Filter ---"
     runTests roundValueTests
 
+    putStrLn ""
+    putStrLn "--- Plugin Filters ---"
+    runTests pluginFilterTests
+
 -- ============================================================================
 -- S-Expression Parser Tests
 -- ============================================================================
@@ -520,4 +524,51 @@ roundValueTests =
     , assertEqual "round negative"
         "-4"
         (roundValue "-3.7")
+    ]
+
+-- ============================================================================
+-- Plugin Filter Tests
+-- ============================================================================
+
+pluginFilterTests :: [Test]
+pluginFilterTests =
+    [ assertEqual "emojify alpha"
+        "🔬 alpha"
+        (applyFilter "emojify" "alpha")
+
+    , assertEqual "emojify stable"
+        "✅ stable"
+        (applyFilter "emojify" "stable")
+
+    , assertEqual "emojify unknown passes through"
+        "custom"
+        (applyFilter "emojify" "custom")
+
+    , assertEqual "slug filter"
+        "hello-world"
+        (applyFilter "slug" "Hello World")
+
+    , assertEqual "slug special chars"
+        "test-123"
+        (applyFilter "slug" "Test 123!")
+
+    , assertEqual "truncate short unchanged"
+        "short"
+        (applyFilter "truncate" "short")
+
+    , assertEqual "truncate long adds ellipsis"
+        True
+        (length (applyFilter "truncate" (replicate 60 'x')) <= 50)
+
+    , assertEqual "strip-html"
+        "hello world"
+        (applyFilter "strip-html" "<b>hello</b> <i>world</i>")
+
+    , assertEqual "count-words"
+        "3"
+        (applyFilter "count-words" "one two three")
+
+    , assertEqual "reverse"
+        "dcba"
+        (applyFilter "reverse" "abcd")
     ]

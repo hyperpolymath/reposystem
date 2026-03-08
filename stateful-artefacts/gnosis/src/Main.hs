@@ -108,6 +108,11 @@ main = do
             putStrLn "  {{#else}}              Else branch in conditional"
             putStrLn "  {{#for x in list}}     Loop block"
             putStrLn "  {{@index}}             Loop iteration index (0-based)"
+            putStrLn ""
+            putStrLn "Filters:"
+            putStrLn "  uppercase, lowercase, capitalize, thousands-separator"
+            putStrLn "  relativeTime, round, emojify, slug, truncate"
+            putStrLn "  strip-html, count-words, reverse"
 
         DumpContext -> do
             scmPath <- case optSCMPath opts of

@@ -13,6 +13,8 @@ Usage: gnosis [OPTIONS] <template> <output>
        gnosis --badges README.template.md README.md
        gnosis --scm-path /path/to/.machine_readable --plain tpl.md out.md
        gnosis --dump-context --scm-path .machine_readable
+       gnosis --fetch-npm lodash
+       gnosis --npm-pkg lodash --plain tpl.md out.md
 -}
 
 module Main (main) where
@@ -22,16 +24,25 @@ import System.Directory (doesFileExist, getCurrentDirectory)
 import System.FilePath ((</>), takeDirectory, isAbsolute)
 import qualified Data.Map.Strict as Map
 
-import Types (FlexiText(..))
+import Types (FlexiText(..), Context)
 import Render (render, renderWithBadges)
 import SixSCMEnhanced (loadAll6SCMEnhanced, SCMContext(..))
+import DataSources (fetchNPM, fetchCrate, fetchPyPI, DataSourceResult(..))
 import qualified DAX
+
+-- | A data source to fetch and merge into context during rendering.
+data DataSource
+    = DSNpm String
+    | DSCrate String
+    | DSPyPI String
+    deriving (Show)
 
 -- | CLI options parsed from arguments.
 data Options = Options
-    { optRenderMode :: RenderMode
-    , optSCMPath    :: Maybe FilePath
-    , optCommand    :: Command
+    { optRenderMode   :: RenderMode
+    , optSCMPath      :: Maybe FilePath
+    , optDataSources  :: [DataSource]      -- ^ Data sources to merge into context
+    , optCommand      :: Command
     } deriving (Show)
 
 data RenderMode = Plain | Badges deriving (Show, Eq)
@@ -39,16 +50,16 @@ data RenderMode = Plain | Badges deriving (Show, Eq)
 data Command
     = RenderTemplate FilePath FilePath  -- ^ template output
     | DumpContext                       -- ^ print all resolved keys
-    | FetchNPM String                   -- ^ fetch npm package metadata
-    | FetchCrate String                 -- ^ fetch crates.io crate metadata
-    | FetchPyPI String                  -- ^ fetch PyPI package metadata
+    | FetchNPM String                   -- ^ fetch npm package metadata (standalone)
+    | FetchCrate String                 -- ^ fetch crates.io crate metadata (standalone)
+    | FetchPyPI String                  -- ^ fetch PyPI package metadata (standalone)
     | ShowVersion
     | ShowHelp
     deriving (Show)
 
 -- | Parse CLI arguments into Options.
 parseArgs :: [String] -> Options
-parseArgs = go (Options Plain Nothing ShowHelp)
+parseArgs = go (Options Plain Nothing [] ShowHelp)
   where
     go opts [] = opts
     go opts ("--version":_) = opts { optCommand = ShowVersion }
@@ -57,9 +68,17 @@ parseArgs = go (Options Plain Nothing ShowHelp)
     go opts ("--badges":rest) = go (opts { optRenderMode = Badges }) rest
     go opts ("--scm-path":p:rest) = go (opts { optSCMPath = Just p }) rest
     go opts ("--dump-context":rest) = go (opts { optCommand = DumpContext }) rest
+    -- Standalone fetch commands (print and exit)
     go opts ("--fetch-npm":pkg:_) = opts { optCommand = FetchNPM pkg }
     go opts ("--fetch-crate":pkg:_) = opts { optCommand = FetchCrate pkg }
     go opts ("--fetch-pypi":pkg:_) = opts { optCommand = FetchPyPI pkg }
+    -- Data sources to merge into rendering context
+    go opts ("--npm-pkg":pkg:rest) =
+        go (opts { optDataSources = optDataSources opts ++ [DSNpm pkg] }) rest
+    go opts ("--crate-pkg":pkg:rest) =
+        go (opts { optDataSources = optDataSources opts ++ [DSCrate pkg] }) rest
+    go opts ("--pypi-pkg":pkg:rest) =
+        go (opts { optDataSources = optDataSources opts ++ [DSPyPI pkg] }) rest
     go opts [tpl, out] = opts { optCommand = RenderTemplate tpl out }
     go opts (_:rest) = go opts rest  -- skip unknown flags
 
@@ -83,6 +102,24 @@ resolveSCMPath opts templatePath = do
                     cwd <- getCurrentDirectory
                     return (cwd </> ".machine_readable")
 
+-- | Fetch all data sources and merge into a context map.
+fetchDataSources :: [DataSource] -> IO Context
+fetchDataSources sources = do
+    results <- mapM fetchOne sources
+    let allKeys = concatMap dsKeys results
+    return $ Map.fromList
+        [ (k, FlexiText v k) | (k, v) <- allKeys, not (null v) ]
+  where
+    fetchOne (DSNpm pkg)   = fetchNPM pkg
+    fetchOne (DSCrate pkg) = fetchCrate pkg
+    fetchOne (DSPyPI pkg)  = fetchPyPI pkg
+
+-- | Print data source results as key-value pairs.
+printDataSourceResult :: DataSourceResult -> IO ()
+printDataSourceResult dsr = do
+    putStrLn $ "Source: " ++ dsSource dsr
+    mapM_ (\(k, v) -> putStrLn $ "  " ++ k ++ " = " ++ v) (dsKeys dsr)
+
 -- | Main entry point.
 main :: IO ()
 main = do
@@ -91,13 +128,14 @@ main = do
 
     case optCommand opts of
         ShowVersion ->
-            putStrLn "Gnosis v1.2.0 - Stateful Artefacts Engine (6scm + DAX + Paxos-Lite)"
+            putStrLn "Gnosis v1.6.0 - Stateful Artefacts Engine (6scm + DAX + Paxos-Lite)"
 
         ShowHelp -> do
             putStrLn "Gnosis - The Stateful Artefacts Rendering Engine"
             putStrLn ""
             putStrLn "Usage: gnosis [OPTIONS] <template> <output>"
             putStrLn "       gnosis --dump-context [--scm-path PATH]"
+            putStrLn "       gnosis --fetch-npm <pkg>"
             putStrLn ""
             putStrLn "Options:"
             putStrLn "  --plain        Render placeholders as plain text (default)"
@@ -120,10 +158,17 @@ main = do
             putStrLn "  relativeTime, round, emojify, slug, truncate"
             putStrLn "  strip-html, count-words, reverse"
             putStrLn ""
-            putStrLn "Data source commands:"
-            putStrLn "  --fetch-npm <pkg>    Fetch metadata from npm registry"
-            putStrLn "  --fetch-crate <pkg>  Fetch metadata from crates.io"
-            putStrLn "  --fetch-pypi <pkg>   Fetch metadata from PyPI"
+            putStrLn "Data source commands (standalone):"
+            putStrLn "  --fetch-npm <pkg>    Fetch and display npm package metadata"
+            putStrLn "  --fetch-crate <pkg>  Fetch and display crates.io crate metadata"
+            putStrLn "  --fetch-pypi <pkg>   Fetch and display PyPI package metadata"
+            putStrLn ""
+            putStrLn "Data sources (merge into template context):"
+            putStrLn "  --npm-pkg <pkg>      Add npm package data to context"
+            putStrLn "  --crate-pkg <pkg>    Add crates.io crate data to context"
+            putStrLn "  --pypi-pkg <pkg>     Add PyPI package data to context"
+            putStrLn ""
+            putStrLn "Example: gnosis --npm-pkg lodash --plain tpl.md out.md"
 
         DumpContext -> do
             scmPath <- case optSCMPath opts of
@@ -134,41 +179,29 @@ main = do
             putStrLn $ "Loading 6scm from: " ++ scmPath
             scmCtx <- loadAll6SCMEnhanced scmPath
             let ctx = mergedContext scmCtx
-            putStrLn $ "Resolved " ++ show (Map.size ctx) ++ " keys:"
+            -- Also fetch any data sources
+            dsCtx <- fetchDataSources (optDataSources opts)
+            let fullCtx = Map.union dsCtx ctx  -- data sources override SCM keys
+            putStrLn $ "Resolved " ++ show (Map.size fullCtx) ++ " keys:"
             putStrLn ""
             mapM_ (\(k, FlexiText v _) ->
                 putStrLn $ "  " ++ k ++ " = " ++ show v
-                ) (Map.toAscList ctx)
+                ) (Map.toAscList fullCtx)
 
         FetchNPM pkg -> do
-            putStrLn $ "Fetching npm metadata for: " ++ pkg
-            putStrLn $ "  API: https://registry.npmjs.org/" ++ pkg
-            putStrLn "  (Data source plugins require http-client; showing placeholder output)"
-            putStrLn $ "  npm-name = " ++ pkg
-            putStrLn "  npm-version = (requires network fetch)"
-            putStrLn "  npm-license = (requires network fetch)"
-            putStrLn "  npm-downloads = (requires network fetch)"
+            result <- fetchNPM pkg
+            printDataSourceResult result
 
         FetchCrate pkg -> do
-            putStrLn $ "Fetching crates.io metadata for: " ++ pkg
-            putStrLn $ "  API: https://crates.io/api/v1/crates/" ++ pkg
-            putStrLn "  (Data source plugins require http-client; showing placeholder output)"
-            putStrLn $ "  crate-name = " ++ pkg
-            putStrLn "  crate-version = (requires network fetch)"
-            putStrLn "  crate-license = (requires network fetch)"
-            putStrLn "  crate-downloads = (requires network fetch)"
+            result <- fetchCrate pkg
+            printDataSourceResult result
 
         FetchPyPI pkg -> do
-            putStrLn $ "Fetching PyPI metadata for: " ++ pkg
-            putStrLn $ "  API: https://pypi.org/pypi/" ++ pkg ++ "/json"
-            putStrLn "  (Data source plugins require http-client; showing placeholder output)"
-            putStrLn $ "  pypi-name = " ++ pkg
-            putStrLn "  pypi-version = (requires network fetch)"
-            putStrLn "  pypi-license = (requires network fetch)"
-            putStrLn "  pypi-author = (requires network fetch)"
+            result <- fetchPyPI pkg
+            printDataSourceResult result
 
         RenderTemplate templatePath outputPath -> do
-            putStrLn "Gnosis: Stateful Artefacts Engine v1.2.0"
+            putStrLn "Gnosis: Stateful Artefacts Engine v1.6.0"
             putStrLn $ "  Template: " ++ templatePath
             putStrLn $ "  Output:   " ++ outputPath
             putStrLn $ "  Mode:     " ++ show (optRenderMode opts)
@@ -180,7 +213,15 @@ main = do
             -- Load all 6scm files with enhanced deep extraction
             scmCtx <- loadAll6SCMEnhanced scmPath
             let ctx = mergedContext scmCtx
-            putStrLn $ "  Keys:     " ++ show (Map.size ctx) ++ " resolved"
+
+            -- Fetch and merge data sources into context
+            dsCtx <- fetchDataSources (optDataSources opts)
+            let fullCtx = Map.union dsCtx ctx  -- data sources override SCM keys
+            let dsCount = Map.size dsCtx
+            putStrLn $ "  Keys:     " ++ show (Map.size fullCtx) ++ " resolved"
+                ++ (if dsCount > 0
+                    then " (" ++ show dsCount ++ " from data sources)"
+                    else "")
 
             -- Read template
             templateExists <- doesFileExist templatePath
@@ -190,10 +231,10 @@ main = do
                     template <- readFile templatePath
 
                     -- Pipeline: DAX conditionals/loops -> placeholder rendering
-                    let withDAX = DAX.processTemplate ctx template
+                    let withDAX = DAX.processTemplate fullCtx template
                     let result = case optRenderMode opts of
-                            Plain  -> render ctx withDAX
-                            Badges -> renderWithBadges ctx withDAX
+                            Plain  -> render fullCtx withDAX
+                            Badges -> renderWithBadges fullCtx withDAX
 
                     writeFile outputPath result
                     putStrLn "Hydration complete."

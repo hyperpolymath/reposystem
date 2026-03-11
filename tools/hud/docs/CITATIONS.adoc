@@ -10,7 +10,7 @@
   title = {git-hud},
   year = {2025},
   url = {https://github.com/hyperpolymath/git-hud},
-  license = {AGPL-3.0-or-later}
+  license = {PMPL-1.0-or-later}
 }
 ----
 

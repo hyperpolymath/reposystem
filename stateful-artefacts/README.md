@@ -665,7 +665,7 @@ sed -i "s/(active-count . [0-9]*)/(active-count . $ACTIVE)/" STATE.scm
 
 ## License
 
-- **Gnosis engine:** AGPL-3.0-or-later (Haskell code)
+- **Gnosis engine:** PMPL-1.0-or-later (Haskell code)
 - **6scm standard:** PMPL-1.0-or-later (Scheme metadata format)
 - **Templates:** Your choice (MIT, CC0, etc.)
 

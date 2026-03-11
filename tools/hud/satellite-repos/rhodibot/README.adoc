@@ -215,7 +215,7 @@ curl -X POST http://localhost:8080/check \
 
 == License
 
-MIT OR AGPL-3.0-or-later WITH Palimpsest-0.8
+PMPL-1.0-or-later
 
 == Related Projects
 

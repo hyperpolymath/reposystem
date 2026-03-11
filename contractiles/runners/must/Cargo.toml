@@ -3,7 +3,7 @@ name = "must"
 version = "1.0.0"
 edition = "2021"
 authors = ["Jonathan D.A. Jewell <jonathan@hyperpolymath.tech>"]
-license = "AGPL-3.0-or-later"
+license = "PMPL-1.0-or-later"
 description = "Authority-First State Orchestrator with Reversible Contracts"
 repository = "https://github.com/hyperpolymath/must"
 

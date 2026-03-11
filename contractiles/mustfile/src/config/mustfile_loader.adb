@@ -1,7 +1,7 @@
 -- mustfile_loader.adb
 -- Mustfile configuration loader for Must
 -- Copyright (C) 2025 Jonathan D.A. Jewell
--- SPDX-License-Identifier: AGPL-3.0-or-later
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 
 pragma Ada_2022;
 
@@ -149,7 +149,7 @@ package body Mustfile_Loader is
       Put_Line (F, "[project]");
       Put_Line (F, "name = ""my-project""");
       Put_Line (F, "version = ""0.1.0""");
-      Put_Line (F, "license = ""AGPL-3.0-or-later""");
+      Put_Line (F, "license = ""PMPL-1.0-or-later""");
       Put_Line (F, "author = ""Your Name""");
       Put_Line (F, "");
       Put_Line (F, "# Variables available in tasks and templates");
@@ -194,7 +194,7 @@ package body Mustfile_Loader is
       Put_Line (F, "");
       Put_Line (F, "# Enforcement rules");
       Put_Line (F, "[enforcement]");
-      Put_Line (F, "license = ""AGPL-3.0-or-later""");
+      Put_Line (F, "license = ""PMPL-1.0-or-later""");
       Put_Line (F, "copyright_holder = ""Your Name""");
       Put_Line (F, "podman_not_docker = true");
       Put_Line (F, "gitlab_not_github = true");

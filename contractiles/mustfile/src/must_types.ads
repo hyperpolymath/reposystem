@@ -1,7 +1,7 @@
 -- must_types.ads
 -- Common type definitions for Must
 -- Copyright (C) 2025 Jonathan D.A. Jewell
--- SPDX-License-Identifier: AGPL-3.0-or-later
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 
 pragma Ada_2022;
 

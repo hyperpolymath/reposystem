@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT OR AGPL-3.0-or-later WITH Palimpsest-0.8
+# SPDX-License-Identifier: PMPL-1.0-or-later
 
 defmodule Rhodibot.Fixer do
   @moduledoc """
@@ -91,13 +91,13 @@ defmodule Rhodibot.Fixer do
 
     == License
 
-    MIT OR AGPL-3.0-or-later WITH Palimpsest-0.8
+    PMPL-1.0-or-later
     """
   end
 
   defp render_template(:license, _opts) do
     """
-    SPDX-License-Identifier: MIT OR AGPL-3.0-or-later WITH Palimpsest-0.8
+    SPDX-License-Identifier: PMPL-1.0-or-later
 
     This project is available under your choice of:
     1. MIT License

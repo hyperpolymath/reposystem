@@ -8,12 +8,12 @@ schema = "0.1"
 [project]
 name = "must"
 version = "0.1.0"
-license = "AGPL-3.0-or-later"
+license = "PMPL-1.0-or-later"
 author = "Jonathan D.A. Jewell"
 
 [variables]
 copyright = "Copyright (C) 2025 Jonathan D.A. Jewell"
-license = "AGPL-3.0-or-later"
+license = "PMPL-1.0-or-later"
 
 # Task definitions
 [tasks]
@@ -96,7 +96,7 @@ must_not_have = [
 # Content requirements - strings that must appear in files
 [requirements.content]
 "LICENSE.txt" = ["AGPL", "Version 3"]
-"src/must.adb" = ["SPDX-License-Identifier: AGPL-3.0-or-later"]
+"src/must.adb" = ["SPDX-License-Identifier: PMPL-1.0-or-later"]
 
 # Templates
 [templates]
@@ -118,7 +118,7 @@ description = "Generate Elixir module"
 
 # Enforcement rules
 [enforcement]
-license = "AGPL-3.0-or-later"
+license = "PMPL-1.0-or-later"
 copyright_holder = "Jonathan D.A. Jewell"
 podman_not_docker = true
 gitlab_not_github = false

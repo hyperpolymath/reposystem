@@ -155,7 +155,7 @@ Project-wide policy enforcement:
 [source,toml]
 ----
 [enforcement]
-license = "AGPL-3.0-or-later"      # Required license
+license = "PMPL-1.0-or-later"      # Required license
 copyright_holder = "Author Name"   # Copyright holder
 podman_not_docker = true           # Container engine policy
 gitlab_not_github = false          # Git hosting policy
@@ -310,7 +310,7 @@ An Ada project with strict enforcement:
 [project]
 name = "flight-controller"
 version = "2.1.0"
-license = "AGPL-3.0-or-later"
+license = "PMPL-1.0-or-later"
 author = "Aerospace Team <safety@example.com>"
 
 [variables]
@@ -366,12 +366,12 @@ must_not_have = [
 [requirements.content]
 "src/main.adb" = [
     "pragma SPARK_Mode",
-    "SPDX-License-Identifier: AGPL-3.0-or-later",
+    "SPDX-License-Identifier: PMPL-1.0-or-later",
 ]
 "SAFETY.adoc" = ["DO-178C", "Level A"]
 
 [enforcement]
-license = "AGPL-3.0-or-later"
+license = "PMPL-1.0-or-later"
 copyright_holder = "Aerospace Corp"
 podman_not_docker = true
 
@@ -491,7 +491,7 @@ A deployment automation project (like Must itself):
 [project]
 name = "must"
 version = "0.1.0"
-license = "AGPL-3.0-or-later"
+license = "PMPL-1.0-or-later"
 author = "Jonathan D.A. Jewell"
 
 [variables]
@@ -549,7 +549,7 @@ must_not_have = [
 
 [requirements.content]
 "LICENSE.txt" = ["AGPL", "Version 3"]
-"src/must.adb" = ["SPDX-License-Identifier: AGPL-3.0-or-later"]
+"src/must.adb" = ["SPDX-License-Identifier: PMPL-1.0-or-later"]
 
 [templates.ada_package]
 source = "templates/ada/package.ads.mustache"
@@ -562,7 +562,7 @@ destination = "src/{{module_name}}.adb"
 description = "Generate Ada package body"
 
 [enforcement]
-license = "AGPL-3.0-or-later"
+license = "PMPL-1.0-or-later"
 copyright_holder = "Jonathan D.A. Jewell"
 podman_not_docker = true
 

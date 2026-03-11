@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT OR AGPL-3.0-or-later WITH Palimpsest-0.8
+# SPDX-License-Identifier: PMPL-1.0-or-later
 
 defmodule Gitvisor.Crypto do
   @moduledoc """

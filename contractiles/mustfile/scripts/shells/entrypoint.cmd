@@ -1,6 +1,6 @@
 @echo off
 REM entrypoint.cmd - Windows CMD entrypoint for Must
-REM SPDX-License-Identifier: AGPL-3.0-or-later
+REM SPDX-License-Identifier: PMPL-1.0-or-later
 REM Copyright (C) 2025 Jonathan D.A. Jewell
 
 where must >nul 2>&1

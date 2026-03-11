@@ -4,7 +4,7 @@
   "name": "Contractiles",
   "description": "A file-first contract system for operating, verifying, and evolving gateway policy.",
   "version": "1.0.0",
-  "license": "AGPL-3.0-or-later",
+  "license": "PMPL-1.0-or-later",
   "author": [
     {
       "@type": "Person",

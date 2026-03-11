@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT OR AGPL-3.0-or-later WITH Palimpsest-0.8
+# SPDX-License-Identifier: PMPL-1.0-or-later
 
 defmodule Gitvisor.Attestation do
   @moduledoc """
@@ -396,8 +396,8 @@ defmodule Gitvisor.Attestation do
     PackageVersion: #{version}
     PackageDownloadLocation: https://github.com/hyperpolymath/gitvisor
     FilesAnalyzed: false
-    PackageLicenseConcluded: (MIT OR AGPL-3.0-or-later)
-    PackageLicenseDeclared: (MIT OR AGPL-3.0-or-later)
+    PackageLicenseConcluded: PMPL-1.0-or-later
+    PackageLicenseDeclared: PMPL-1.0-or-later
     PackageCopyrightText: NOASSERTION
     """
   end

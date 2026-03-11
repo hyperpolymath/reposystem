@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MPL-2.0-or-later
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 
 [package]
@@ -11,7 +11,7 @@ description = "Railway yard for your repository ecosystem"
 documentation = "https://github.com/hyperpolymath/reposystem#readme"
 homepage = "https://github.com/hyperpolymath/reposystem"
 repository = "https://github.com/hyperpolymath/reposystem"
-license = "AGPL-3.0-or-later"
+license = "PMPL-1.0-or-later"
 keywords = ["git", "dependency", "graph", "visualization", "tui"]
 categories = ["command-line-utilities", "development-tools", "visualization"]
 readme = "README.adoc"

@@ -1,6 +1,6 @@
 #!/usr/bin/env nu
 # entrypoint.nu - Nushell entrypoint for Must
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # Copyright (C) 2025 Jonathan D.A. Jewell
 
 def main [...args: string] {

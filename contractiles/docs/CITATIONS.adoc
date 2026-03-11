@@ -10,7 +10,7 @@
   title = {Contractiles},
   year = {2026},
   url = {https://github.com/hyperpolymath/contractiles},
-  license = {AGPL-3.0-or-later}
+  license = {PMPL-1.0-or-later}
 }
 ----
 

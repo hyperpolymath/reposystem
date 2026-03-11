@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 #
 # Reposystem Container Image
@@ -75,6 +75,6 @@ CMD ["--help"]
 LABEL org.opencontainers.image.title="Reposystem"
 LABEL org.opencontainers.image.description="Railway yard for your repository ecosystem"
 LABEL org.opencontainers.image.vendor="Hyperpolymath"
-LABEL org.opencontainers.image.licenses="AGPL-3.0-or-later"
+LABEL org.opencontainers.image.licenses="PMPL-1.0-or-later"
 LABEL org.opencontainers.image.source="https://github.com/hyperpolymath/reposystem"
 LABEL org.opencontainers.image.documentation="https://github.com/hyperpolymath/reposystem#readme"

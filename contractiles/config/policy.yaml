@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# policy.yaml — Simple policy config (validated by must checks).
+# For complex policies, use policy/policy.ncl (Nickel) instead.
+
+project:
+  name: contractiles
+  version: 1.1.0
+  license: PMPL-1.0-or-later
+
+deployment:
+  registry: ghcr.io/hyperpolymath
+  container_engine: podman
+  ban_dockerfile: true
+
+enforcement:
+  spdx_headers: true
+  no_trailing_whitespace: true
+  unix_line_endings: true

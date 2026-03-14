@@ -1,0 +1,32 @@
+= GitOps Configuration Promotion
+:author: Jonathan D.A. Jewell
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+
+This directory contains Flux-compatible GitOps configuration for promoting
+contractile-managed policies from staging to production.
+
+== Structure
+
+[source]
+----
+.flux/
+├── clusters/
+│   ├── staging/         # Staging environment configs
+│   └── production/      # Production environment configs
+└── README.adoc          # This file
+----
+
+== Promotion Flow
+
+1. Changes to `policy/policy.ncl` are applied to staging first
+2. `must check` and `trust verify` run against staging
+3. After verification, promote to production via PR
+4. Flux reconciles the production cluster
+
+== Integration with Contractiles
+
+- `must check` validates policy before promotion
+- `trust verify` ensures artifact integrity
+- `dust rollback` provides recovery if promotion fails
+- `intend check` tracks whether GitOps adoption is complete

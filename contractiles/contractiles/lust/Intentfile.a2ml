@@ -39,7 +39,7 @@ and observability goals for the policy gateway.
 
 ### gitops-config-promotion
 - description: Move to GitOps-backed configuration promotion
-- status: accepted
+- status: in-progress
 - priority: high
 - target: 2026-Q2
 - evidence: .flux/ exists
@@ -47,7 +47,7 @@ and observability goals for the policy gateway.
 
 ### canary-rollouts
 - description: Add canary and staged rollout support
-- status: declared
+- status: in-progress
 - priority: medium
 - evidence: config/canary.ncl exists
 
@@ -55,10 +55,10 @@ and observability goals for the policy gateway.
 
 ### nickel-policy-language
 - description: Adopt Nickel as the primary policy language
-- status: in-progress
+- status: realised
 - priority: high
 - evidence: policy/policy.ncl exists
-- notes: Migration from YAML to Nickel underway; policy.ncl already exists
+- notes: policy/policy.ncl created with full trust/must/dust/intend/k9/deployment policy
 
 ### signed-artifact-promotion
 - description: Automate policy promotion from dev to prod with signed artifacts

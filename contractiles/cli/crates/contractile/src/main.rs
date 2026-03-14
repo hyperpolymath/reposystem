@@ -16,6 +16,7 @@
 
 mod dust;
 mod gen_just;
+mod init;
 mod intend;
 mod k9_cmd;
 mod must;
@@ -78,6 +79,17 @@ enum Commands {
         #[arg(long, short, default_value = "contractile.just")]
         output: String,
     },
+
+    /// Scaffold contractile files into a repository
+    Init {
+        /// Project name (auto-detected from Cargo.toml/deno.json if omitted)
+        #[arg(long)]
+        name: Option<String>,
+
+        /// Overwrite existing contractile files
+        #[arg(long)]
+        force: bool,
+    },
 }
 
 fn main() {
@@ -121,6 +133,7 @@ fn run_unified() -> anyhow::Result<()> {
         Some(Commands::Intend { action }) => intend::run(action),
         Some(Commands::K9 { action }) => k9_cmd::run(action),
         Some(Commands::GenJust { dir, output }) => gen_just::run(&dir, &output),
+        Some(Commands::Init { name, force }) => init::run(name.as_deref(), force),
         None => {
             // No subcommand — print help.
             use clap::CommandFactory;

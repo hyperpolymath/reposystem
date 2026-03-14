@@ -17,3 +17,4 @@ clap.workspace = true
 anyhow.workspace = true
 serde_json.workspace = true
 colored.workspace = true
+toml.workspace = true

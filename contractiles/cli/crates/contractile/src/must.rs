@@ -34,6 +34,10 @@ pub enum MustAction {
         #[arg(long, short)]
         verbose: bool,
 
+        /// Output results as JSON (for CI/CD consumption)
+        #[arg(long)]
+        json: bool,
+
         /// Path to the Mustfile (auto-detected if omitted)
         #[arg(long)]
         file: Option<String>,
@@ -108,10 +112,15 @@ pub fn run(action: MustAction) -> Result<()> {
         MustAction::Check {
             strict: _,
             verbose,
+            json,
             file,
         } => {
             let doc = load_mustfile(file.as_deref())?;
-            run_all_checks(&doc, verbose, false)
+            if json {
+                run_all_checks_json(&doc)
+            } else {
+                run_all_checks(&doc, verbose, false)
+            }
         }
         MustAction::Fix {
             dry_run,
@@ -247,6 +256,49 @@ fn run_all_checks(doc: &a2ml::A2mlDocument, verbose: bool, dry_run: bool) -> Res
 
     if failed > 0 {
         bail!("{} must check(s) failed", failed);
+    }
+
+    Ok(())
+}
+
+/// Run all checks and output results as JSON for CI/CD consumption.
+fn run_all_checks_json(doc: &a2ml::A2mlDocument) -> Result<()> {
+    let items = doc.executable_items();
+    let mut results = Vec::new();
+
+    for item in &items {
+        let status = Command::new("sh")
+            .args(["-c", item.command])
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status()
+            .with_context(|| format!("executing check: {}", item.subsection))?;
+
+        results.push(serde_json::json!({
+            "name": item.subsection,
+            "section": item.section,
+            "description": item.description.unwrap_or(""),
+            "command": item.command,
+            "passed": status.success(),
+            "exit_code": status.code().unwrap_or(-1),
+        }));
+    }
+
+    let passed = results.iter().filter(|r| r["passed"] == true).count();
+    let failed = results.len() - passed;
+
+    let output = serde_json::json!({
+        "tool": "must",
+        "total": results.len(),
+        "passed": passed,
+        "failed": failed,
+        "checks": results,
+    });
+
+    println!("{}", serde_json::to_string_pretty(&output)?);
+
+    if failed > 0 {
+        std::process::exit(2);
     }
 
     Ok(())

@@ -134,6 +134,7 @@ dependencies = [
  "colored",
  "contractile-core",
  "serde_json",
+ "toml",
 ]
 
 [[package]]

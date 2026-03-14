@@ -493,4 +493,109 @@ Declarative state contract describing what must be true.
         assert_eq!(execs[0].key, "rollback");
         assert_eq!(execs[1].key, "undo");
     }
+
+    /// Verify the parser handles Intentfile-style structured intents
+    /// with metadata fields (status, priority, evidence, depends_on).
+    #[test]
+    fn parse_intentfile_structured() {
+        let input = r#"
+# Intentfile (A2ML Canonical)
+
+@abstract:
+Declared future intent.
+@end
+
+@requires:
+- section: Tooling
+@end
+
+## Tooling
+
+### cli-integration
+- description: Build the CLI
+- status: realised
+- priority: critical
+- evidence: command: contractile --version
+- notes: Done 2026-03-14
+
+### k9-validators
+- description: Write K9 validators
+- status: in-progress
+- priority: medium
+- evidence: contractiles/k9/validators/ exists
+- depends_on: cli-integration
+"#;
+
+        let doc = parse(input).unwrap();
+        assert_eq!(doc.file_type.as_deref(), Some("Intentfile"));
+
+        let tooling = doc.section("Tooling").unwrap();
+        assert_eq!(tooling.subsections.len(), 2);
+
+        // Structured intent has metadata fields accessible via get().
+        let cli = tooling.subsection("cli-integration").unwrap();
+        assert_eq!(cli.get("status"), Some("realised"));
+        assert_eq!(cli.get("priority"), Some("critical"));
+        assert_eq!(cli.get("evidence"), Some("command: contractile --version"));
+
+        let k9 = tooling.subsection("k9-validators").unwrap();
+        assert_eq!(k9.get("status"), Some("in-progress"));
+        assert_eq!(k9.get("depends_on"), Some("cli-integration"));
+
+        // Intentfile has no executable items (no run/command/handler/etc.)
+        let execs = doc.executable_items();
+        assert_eq!(execs.len(), 0);
+    }
+
+    /// Verify colon-containing values are preserved (URLs, openssl commands).
+    #[test]
+    fn parse_values_with_colons() {
+        let input = r#"
+# Trustfile (A2ML Canonical)
+
+## Verifications
+
+### tls-check
+- description: TLS cert valid
+- command: openssl x509 -in certs/server.pem -checkend 2592000 -noout
+"#;
+
+        let doc = parse(input).unwrap();
+        let execs = doc.executable_items();
+        assert_eq!(execs.len(), 1);
+        // The full command including colons must be preserved.
+        assert_eq!(
+            execs[0].command,
+            "openssl x509 -in certs/server.pem -checkend 2592000 -noout"
+        );
+    }
+
+    /// Verify the parser handles the severity field alongside executable keys.
+    #[test]
+    fn parse_severity_field() {
+        let input = r#"
+# Mustfile (A2ML Canonical)
+
+## Checks
+
+### critical-check
+- description: Must pass
+- run: test -f LICENSE
+- severity: critical
+
+### warn-check
+- description: Should pass
+- run: test -f CHANGELOG
+- severity: warning
+"#;
+
+        let doc = parse(input).unwrap();
+        let checks = doc.section("Checks").unwrap();
+
+        let critical = checks.subsection("critical-check").unwrap();
+        assert_eq!(critical.get("severity"), Some("critical"));
+
+        let warning = checks.subsection("warn-check").unwrap();
+        assert_eq!(warning.get("severity"), Some("warning"));
+    }
 }

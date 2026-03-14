@@ -69,10 +69,10 @@ and observability goals for the policy gateway.
 
 ### contractile-cli-integration
 - description: Integrate contractile CLI into CI/CD pipeline
-- status: in-progress
+- status: realised
 - priority: critical
 - evidence: command: contractile --version
-- notes: Rust CLI built; needs installation and workflow integration
+- notes: Realised 2026-03-14 — Rust CLI built, installed, symlinks in ~/.local/bin
 
 ## Introspection
 
@@ -92,22 +92,24 @@ and observability goals for the policy gateway.
 
 ### just-integration
 - description: Generate contractile.just and import into Justfile
-- status: in-progress
+- status: realised
 - priority: high
 - evidence: contractile.just exists
-- notes: gen-just command built; needs Justfile import
+- notes: Realised 2026-03-14 — contractile.just generated (35 recipes), imported in Justfile
 
 ### k9-validation-contracts
 - description: Write Yard-level K9 components to validate A2ML files
-- status: declared
+- status: realised
 - priority: medium
 - evidence: contractiles/k9/validators/ exists
+- notes: Realised 2026-03-14 — 4 Yard-level validators (must/trust/dust/intent)
 
 ### symlink-installation
 - description: Install must/trust/dust/intend/k9 symlinks to ~/.local/bin/
-- status: declared
+- status: realised
 - priority: high
 - evidence: command: which must
+- notes: Realised 2026-03-14 — 6 symlinks installed (must/trust/dust/intend/k9/contractile)
 
 ## Deprecations
 
@@ -120,7 +122,7 @@ and observability goals for the policy gateway.
 
 ### ada-must-runner
 - description: Replace Ada must runner with unified Rust contractile CLI
-- status: in-progress
+- status: realised
 - priority: medium
 - evidence: command: contractile must --help
-- notes: Rust CLI built and tested; Ada runner preserved as reference implementation
+- notes: Realised 2026-03-14 — Rust CLI supersedes Ada runner; Ada preserved as reference

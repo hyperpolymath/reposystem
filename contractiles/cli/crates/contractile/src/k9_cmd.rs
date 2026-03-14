@@ -127,6 +127,8 @@ pub fn run(action: K9Action) -> Result<()> {
             // ── Signature check ──
             if component.requires_signature() && !no_verify {
                 let sig_path = format!("{}.sig", file);
+                let pub_path = format!("{}.pub", file);
+
                 if !Path::new(&sig_path).exists() {
                     bail!(
                         "Hunt-level component requires signature but {} not found.\n\
@@ -134,8 +136,53 @@ pub fn run(action: K9Action) -> Result<()> {
                         sig_path
                     );
                 }
-                // Future: actually verify the signature.
-                println!("  {} Signature file found (verification pending)", "OK".green());
+
+                // Verify the signature if a public key is available.
+                if Path::new(&pub_path).exists() {
+                    println!("  {} Verifying signature...", "k9:".bold());
+                    let verify_status = Command::new("openssl")
+                        .args([
+                            "dgst",
+                            "-sha256",
+                            "-verify",
+                            &pub_path,
+                            "-signature",
+                            &sig_path,
+                            &file,
+                        ])
+                        .output()
+                        .context("running openssl for signature verification")?;
+
+                    if verify_status.status.success() {
+                        println!(
+                            "  {} Signature verified against {}",
+                            "VERIFIED".green().bold(),
+                            pub_path
+                        );
+                    } else {
+                        let stderr = String::from_utf8_lossy(&verify_status.stderr);
+                        bail!(
+                            "Signature verification FAILED for Hunt-level component.\n\
+                             sig: {}\n\
+                             pub: {}\n\
+                             openssl: {}",
+                            sig_path,
+                            pub_path,
+                            stderr.trim()
+                        );
+                    }
+                } else {
+                    // Signature file exists but no public key — warn but proceed.
+                    println!(
+                        "  {} Signature file found but no public key at {}",
+                        "WARNING".yellow().bold(),
+                        pub_path
+                    );
+                    println!(
+                        "  {} Signature cannot be verified — proceeding on trust",
+                        "WARNING".yellow().bold()
+                    );
+                }
             }
 
             if component.recipes.is_empty() {

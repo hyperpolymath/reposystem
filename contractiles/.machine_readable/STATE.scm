@@ -19,7 +19,7 @@
 
   (current-position
     (phase "active-development")
-    (overall-completion 65)
+    (overall-completion 85)
     (components
       ("contractile-cli" "complete" "Unified Rust CLI with must/trust/dust/intend/k9/gen-just")
       ("contractile-core" "complete" "A2ML parser, K9 Nickel bridge, Just recipe emitter")
@@ -50,9 +50,9 @@
       ("just-integration" "done" "contractile.just generated and imported")
       ("ci-cd-workflow" "done" "contractile.yml workflow: build CLI, run checks, show progress")
       ("lifecycle-commands" "done" "intend accept/start/realise/abandon/supersede with guard rails")
-      ("toml-compat" "todo" "must CLI reads mustfile.toml as fallback format")
-      ("dust-preconditions" "todo" "dust run --check-precondition support")
-      ("k9-hunt-signatures" "todo" "Actual signature verification for Hunt-level K9")))
+      ("toml-compat" "done" "must CLI reads mustfile.toml as fallback, auto-detects format")
+      ("dust-preconditions" "done" "dust runs precondition/verify_after, shows blast_radius warnings")
+      ("k9-hunt-signatures" "done" "openssl dgst verification of .sig against .pub for Hunt-level K9")))
 
   (blockers-and-issues
     (critical)

@@ -20,9 +20,10 @@ mod init;
 mod intend;
 mod k9_cmd;
 mod must;
+mod status;
 mod trust;
 
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
 use std::env;
 
 /// Contractile — unified runner for Must/Trust/Dust/Intend/K9 contract files.
@@ -90,6 +91,19 @@ enum Commands {
         #[arg(long)]
         force: bool,
     },
+
+    /// Show unified status dashboard across all contractile types
+    Status {
+        /// Quick mode: just count items without running checks
+        #[arg(long, short)]
+        quick: bool,
+    },
+
+    /// Generate shell completions
+    Completions {
+        /// Shell to generate completions for (bash, zsh, fish, elvish, powershell)
+        shell: clap_complete::Shell,
+    },
 }
 
 fn main() {
@@ -134,9 +148,18 @@ fn run_unified() -> anyhow::Result<()> {
         Some(Commands::K9 { action }) => k9_cmd::run(action),
         Some(Commands::GenJust { dir, output }) => gen_just::run(&dir, &output),
         Some(Commands::Init { name, force }) => init::run(name.as_deref(), force),
+        Some(Commands::Status { quick }) => status::run(quick),
+        Some(Commands::Completions { shell }) => {
+            clap_complete::generate(
+                shell,
+                &mut Cli::command(),
+                "contractile",
+                &mut std::io::stdout(),
+            );
+            Ok(())
+        }
         None => {
             // No subcommand — print help.
-            use clap::CommandFactory;
             Cli::command().print_help()?;
             println!();
             Ok(())

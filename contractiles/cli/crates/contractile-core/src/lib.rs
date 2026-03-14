@@ -49,11 +49,19 @@ pub fn find_contractile(filename: &str) -> Option<std::path::PathBuf> {
         .to_lowercase()
         .replace("file", "");
 
-    let candidates = [
+    // Build candidate paths. The Intentfile has a legacy alias: the directory
+    // is called "lust" (future intent) not "intent", so we search both.
+    let mut candidates = vec![
         format!("contractiles/{}/{}", type_dir, filename),
         format!("{}/{}", type_dir, filename),
         filename.to_string(),
     ];
+
+    // Add legacy "lust" alias for Intentfile.
+    if type_dir == "intent" {
+        candidates.insert(0, format!("contractiles/lust/{}", filename));
+        candidates.insert(1, format!("lust/{}", filename));
+    }
 
     for candidate in &candidates {
         let path = std::path::PathBuf::from(candidate);

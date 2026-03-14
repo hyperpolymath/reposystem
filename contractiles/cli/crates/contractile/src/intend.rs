@@ -40,6 +40,10 @@ pub enum IntendAction {
 
         #[arg(long, short)]
         verbose: bool,
+
+        /// Output results as JSON (for CI/CD consumption)
+        #[arg(long)]
+        json: bool,
     },
 
     /// Summary of intent realisation progress
@@ -118,9 +122,13 @@ pub fn run(action: IntendAction) -> Result<()> {
             display_intents(&doc);
             Ok(())
         }
-        IntendAction::Check { file, verbose } => {
+        IntendAction::Check { file, verbose, json } => {
             let doc = load_intentfile(file.as_deref())?;
-            check_intents(&doc, verbose)
+            if json {
+                check_intents_json(&doc)
+            } else {
+                check_intents(&doc, verbose)
+            }
         }
         IntendAction::Progress { file } => {
             let doc = load_intentfile(file.as_deref())?;
@@ -332,6 +340,49 @@ fn check_intents(doc: &a2ml::A2mlDocument, verbose: bool) -> Result<()> {
         probed,
         (total - realised).to_string().yellow()
     );
+    Ok(())
+}
+
+/// Run all intent checks and output as JSON.
+fn check_intents_json(doc: &a2ml::A2mlDocument) -> Result<()> {
+    let mut results = Vec::new();
+
+    for section in &doc.sections {
+        for sub in &section.subsections {
+            let description = sub.get("description").unwrap_or(&sub.name);
+            let status = sub.get("status").unwrap_or("declared");
+            let evidence = sub.get("evidence");
+
+            let realised = if status == "realised" {
+                true
+            } else if let Some(ev) = evidence {
+                run_evidence_probe(ev, false)
+            } else {
+                false
+            };
+
+            results.push(serde_json::json!({
+                "name": sub.name,
+                "section": section.name,
+                "description": description,
+                "status": status,
+                "evidence": evidence.unwrap_or(""),
+                "realised": realised,
+            }));
+        }
+    }
+
+    let realised_count = results.iter().filter(|r| r["realised"] == true).count();
+
+    let output = serde_json::json!({
+        "tool": "intend",
+        "total": results.len(),
+        "realised": realised_count,
+        "remaining": results.len() - realised_count,
+        "intents": results,
+    });
+
+    println!("{}", serde_json::to_string_pretty(&output)?);
     Ok(())
 }
 

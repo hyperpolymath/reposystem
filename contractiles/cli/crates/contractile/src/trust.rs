@@ -35,6 +35,10 @@ pub enum TrustAction {
         #[arg(long)]
         dry_run: bool,
 
+        /// Output results as JSON (for CI/CD consumption)
+        #[arg(long)]
+        json: bool,
+
         #[arg(long)]
         file: Option<String>,
     },
@@ -82,10 +86,13 @@ pub fn run(action: TrustAction) -> Result<()> {
             name,
             verbose,
             dry_run,
+            json,
             file,
         } => {
             let doc = load_trustfile(file.as_deref())?;
-            if let Some(name) = name {
+            if json {
+                run_all_verifications_json(&doc)
+            } else if let Some(name) = name {
                 run_single_verification(&doc, &name, verbose, dry_run)
             } else {
                 run_all_verifications(&doc, verbose, dry_run)
@@ -243,6 +250,48 @@ fn run_single_verification(
         println!("{} {}", "FAILED".red().bold(), desc);
         bail!("trust verification '{}' failed", name);
     }
+}
+
+/// Run all verifications and output results as JSON.
+fn run_all_verifications_json(doc: &a2ml::A2mlDocument) -> Result<()> {
+    let items = doc.executable_items();
+    let mut results = Vec::new();
+
+    for item in &items {
+        let status = Command::new("sh")
+            .args(["-c", item.command])
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status()
+            .with_context(|| format!("executing verification: {}", item.subsection))?;
+
+        results.push(serde_json::json!({
+            "name": item.subsection,
+            "section": item.section,
+            "description": item.description.unwrap_or(""),
+            "command": item.command,
+            "verified": status.success(),
+            "exit_code": status.code().unwrap_or(-1),
+        }));
+    }
+
+    let verified = results.iter().filter(|r| r["verified"] == true).count();
+    let failed = results.len() - verified;
+
+    let output = serde_json::json!({
+        "tool": "trust",
+        "total": results.len(),
+        "verified": verified,
+        "failed": failed,
+        "verifications": results,
+    });
+
+    println!("{}", serde_json::to_string_pretty(&output)?);
+
+    if failed > 0 {
+        std::process::exit(2);
+    }
+    Ok(())
 }
 
 /// List all available verifications.

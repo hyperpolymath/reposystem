@@ -48,9 +48,9 @@
       ("cli-complete" "done" "Rust CLI built, tested, installed")
       ("k9-validators" "done" "Yard-level validators for all contractile types")
       ("just-integration" "done" "contractile.just generated and imported")
-      ("ci-cd-workflow" "todo" "GitHub Actions workflow for contractile check/verify")
+      ("ci-cd-workflow" "done" "contractile.yml workflow: build CLI, run checks, show progress")
+      ("lifecycle-commands" "done" "intend accept/start/realise/abandon/supersede with guard rails")
       ("toml-compat" "todo" "must CLI reads mustfile.toml as fallback format")
-      ("lifecycle-commands" "todo" "intend accept/start/realise/abandon modifying A2ML in place")
       ("dust-preconditions" "todo" "dust run --check-precondition support")
       ("k9-hunt-signatures" "todo" "Actual signature verification for Hunt-level K9")))
 
@@ -74,4 +74,4 @@
       ("Add K9 Hunt-level signature verification")))
 
   (session-history
-    ("2026-03-14" "Built unified Rust CLI, wrote 3 specs, expanded A2ML files, K9 validators, Just integration, installed CLI, updated intent lifecycle")))
+    ("2026-03-14" "Built unified Rust CLI, wrote 3 specs (trust/dust/intent), expanded A2ML files, K9 validators, Just integration, installed CLI, intend lifecycle commands, CI workflow, 6 A2ML parser tests")))

@@ -15,7 +15,7 @@
 //
 // Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 /// A fully parsed A2ML document, representing one contractile file.
 #[derive(Debug, Clone)]
@@ -139,10 +139,8 @@ pub fn parse(input: &str) -> Result<A2mlDocument> {
     let mut state = ParseState::TopLevel;
     let mut abstract_lines: Vec<String> = Vec::new();
 
-    for (line_num, raw_line) in input.lines().enumerate() {
+    for (_line_num, raw_line) in input.lines().enumerate() {
         let line = raw_line.trim_end();
-        let line_ctx = || format!("line {}", line_num + 1);
-
         // ── Blank lines ──
         if line.trim().is_empty() {
             if state == ParseState::AbstractBlock {
@@ -237,14 +235,22 @@ pub fn parse(input: &str) -> Result<A2mlDocument> {
                 // ── ### Subsection heading ──
                 if let Some(heading) = line.strip_prefix("### ") {
                     let heading = heading.trim();
+                    // Strip brackets for extended A2ML dialects (e.g., `### [META]` → `META`).
+                    let heading = heading
+                        .strip_prefix('[')
+                        .and_then(|h| h.strip_suffix(']'))
+                        .unwrap_or(heading);
                     if !heading.is_empty() {
-                        let section = doc.sections.last_mut().with_context(|| {
-                            format!(
-                                "{}: subsection '{}' found before any section",
-                                line_ctx(),
-                                heading
-                            )
-                        })?;
+                        // If no section exists yet, create a default one.
+                        if doc.sections.is_empty() {
+                            doc.sections.push(Section {
+                                name: "Default".to_string(),
+                                entries: Vec::new(),
+                                subsections: Vec::new(),
+                                prose: Vec::new(),
+                            });
+                        }
+                        let section = doc.sections.last_mut().unwrap();
                         section.subsections.push(Subsection {
                             name: heading.to_string(),
                             entries: Vec::new(),

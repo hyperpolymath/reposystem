@@ -1,0 +1,66 @@
+{
+  "deployment": {
+    "ban_dockerfile": true,
+    "require_intent_review": false,
+    "require_must_check": true,
+    "require_pinned_images": true,
+    "require_trust_verify": true
+  },
+  "dust": {
+    "require_idempotent_annotation": true,
+    "require_precondition_for_wide_blast": true,
+    "require_recovery_coverage": false
+  },
+  "intend": {
+    "require_evidence_probes": false,
+    "require_owner_for_active": false,
+    "require_target_for_critical": true
+  },
+  "k9": {
+    "hunt_requires_signature": true,
+    "kennel_always_allowed": true,
+    "yard_signature_recommended": true
+  },
+  "must": {
+    "critical_checks_required": true,
+    "minimum_checks": 4,
+    "warnings_block_deploy": false
+  },
+  "policy": {
+    "description": "Operational policy for the contractiles project",
+    "name": "contractiles-policy",
+    "version": "1.0.0"
+  },
+  "required_contractiles": {
+    "dustfile": true,
+    "intentfile": true,
+    "k9_validators": true,
+    "mustfile": true,
+    "trustfile": true
+  },
+  "trust": {
+    "approved_hash_algorithms": [
+      "SHA-256",
+      "SHA-384",
+      "SHA-512",
+      "SHA3-256",
+      "SHA3-512",
+      "SHAKE256",
+      "BLAKE3"
+    ],
+    "approved_signature_algorithms": [
+      "Ed25519",
+      "Ed448",
+      "Dilithium5",
+      "SPHINCS+"
+    ],
+    "banned_algorithms": [
+      "MD5",
+      "SHA1",
+      "RC4",
+      "DES",
+      "3DES"
+    ],
+    "require_pq_for_long_term": true
+  }
+}

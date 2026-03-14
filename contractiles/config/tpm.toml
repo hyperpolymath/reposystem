@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# tpm.toml — Hardware-backed key management configuration.
+#
+# Configures TPM 2.0 and YubiKey integration for the contractile trust system.
+# Used by `trust sign` and `trust verify` for hardware-backed operations.
+#
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
+
+[tpm]
+# TPM 2.0 device path (auto-detected if empty)
+device = ""
+
+# Key hierarchy
+primary_handle = "0x81000001"
+signing_handle = "0x81000002"
+
+# Algorithms supported by the TPM
+algorithms = ["RSA-2048", "ECC-P256", "Ed25519"]
+
+# Post-quantum: Dilithium5 requires firmware update
+# Set to true when TPM firmware supports PQC
+pq_supported = false
+
+[yubikey]
+# YubiKey slot for signing operations
+slot = "9a"
+
+# PIV certificate subject
+subject = "CN=contractile-signing,O=hyperpolymath"
+
+# Require touch for every signing operation
+require_touch = true
+
+[rotation]
+# Key rotation schedule
+interval = "annual"
+
+# Notify before rotation (days)
+notify_before = 30
+
+# Archive old keys
+archive_old_keys = true
+archive_path = "keys/archive/"
+
+[fallback]
+# Software-only fallback when hardware is unavailable
+allow_software_fallback = true
+software_key_path = "keys/signing.key"
+software_pub_path = "keys/signing.pub"

@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# tracing.toml — End-to-end request tracing configuration.
+#
+# Configures OpenTelemetry-compatible tracing for contractile-managed
+# services. Traces request decisions through the policy gateway.
+#
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
+
+[tracing]
+enabled = true
+service_name = "contractiles-gateway"
+version = "1.0.0"
+
+[tracing.exporter]
+type = "otlp"
+endpoint = "http://localhost:4317"
+protocol = "grpc"
+
+[tracing.sampling]
+# Sample rate (0.0 to 1.0)
+rate = 0.1
+# Always sample errors
+always_sample_errors = true
+
+[tracing.propagation]
+# W3C Trace Context
+formats = ["tracecontext", "baggage"]
+
+[tracing.spans]
+# Span attributes to include
+include_policy_evaluation = true
+include_decision_latency = true
+include_capability_check = true
+
+[metrics]
+enabled = true
+endpoint = "http://localhost:9090"
+export_interval = 15
+
+[metrics.histograms]
+decision_latency_buckets = [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0]

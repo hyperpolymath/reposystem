@@ -61,7 +61,7 @@ validate-policy:
     @test -f config/policy.yaml || (echo "Missing config/policy.yaml" && exit 1)
     @test -f policy/policy.ncl || (echo "Missing policy/policy.ncl" && exit 1)
     @yq -e '.' config/policy.yaml >/dev/null
-    @nickel check policy/policy.ncl
+    @nickel typecheck policy/policy.ncl
     @echo "Validation complete"
 
 # Compile Nickel policies to JSON

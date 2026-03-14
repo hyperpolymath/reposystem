@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= Intend Runner
+
+The `intend` runner is now provided by the unified Rust CLI at `cli/crates/contractile/`.
+
+Install with:
+
+[source,bash]
+----
+just install-cli
+----
+
+This creates an `intend` symlink in `~/.local/bin/` pointing to the `contractile` binary.
+
+== Usage
+
+[source,bash]
+----
+intend list            # Display all intents with status/priority
+intend check           # Run evidence probes for realisation
+intend progress        # Summary of intent lifecycle status
+----
+
+== Specification
+
+See `intentfile/docs/intent-spec.adoc` for the full Intent specification.

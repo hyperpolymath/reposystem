@@ -181,3 +181,19 @@ k9-template-kennel:
 k9-template-yard:
     contractile k9 run contractiles/k9/template-yard.k9.ncl
 
+# K9 component: contractiles/k9/validators/dustfile-validator.k9.ncl
+k9-dustfile-validator:
+    contractile k9 run contractiles/k9/validators/dustfile-validator.k9.ncl
+
+# K9 component: contractiles/k9/validators/intentfile-validator.k9.ncl
+k9-intentfile-validator:
+    contractile k9 run contractiles/k9/validators/intentfile-validator.k9.ncl
+
+# K9 component: contractiles/k9/validators/mustfile-validator.k9.ncl
+k9-mustfile-validator:
+    contractile k9 run contractiles/k9/validators/mustfile-validator.k9.ncl
+
+# K9 component: contractiles/k9/validators/trustfile-validator.k9.ncl
+k9-trustfile-validator:
+    contractile k9 run contractiles/k9/validators/trustfile-validator.k9.ncl
+

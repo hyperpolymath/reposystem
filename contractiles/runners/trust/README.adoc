@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= Trust Runner
+
+The `trust` runner is now provided by the unified Rust CLI at `cli/crates/contractile/`.
+
+Install with:
+
+[source,bash]
+----
+just install-cli
+----
+
+This creates a `trust` symlink in `~/.local/bin/` pointing to the `contractile` binary.
+
+== Usage
+
+[source,bash]
+----
+trust verify           # Run all Trustfile.a2ml verifications
+trust verify NAME      # Run a single verification
+trust list             # List available verifications
+trust hash FILE        # Compute SHA-256 of a file
+trust sign FILE        # Sign a file (placeholder)
+----
+
+== Specification
+
+See `trustfile/docs/trust-spec.adoc` for the full Trust specification.

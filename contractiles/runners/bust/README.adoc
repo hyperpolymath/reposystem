@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= Bust Runner (Reserved)
+
+The `bust` runner is a reserved placeholder. The `dust` (recovery/rollback)
+runner is provided by the unified Rust CLI at `cli/crates/contractile/`.
+
+Install with:
+
+[source,bash]
+----
+just install-cli
+----
+
+This creates a `dust` symlink in `~/.local/bin/` pointing to the `contractile` binary.
+
+== Usage
+
+[source,bash]
+----
+dust status            # List available recovery actions
+dust rollback NAME     # Execute a named rollback
+dust replay NAME       # Replay a named handler
+dust run NAME          # Execute any dust action
+----
+
+== Specification
+
+See `dustfile/docs/dust-spec.adoc` for the full Dust specification.

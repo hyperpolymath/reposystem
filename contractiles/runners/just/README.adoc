@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= Just Integration Runner
+
+The `just` integration is now handled by `contractile gen-just`, which
+auto-generates a `contractile.just` file from all A2ML and K9 sources.
+
+== Usage
+
+[source,bash]
+----
+# Generate contractile.just
+contractile gen-just --dir contractiles --output contractile.just
+
+# Import in your Justfile
+# import "contractile.just"
+
+# Then use generated recipes
+just must-check
+just trust-verify
+just dust-status
+just intend-list
+----
+
+The generated file contains recipes for every executable entry in every
+A2ML file, plus stubs for K9 Hunt-level components.

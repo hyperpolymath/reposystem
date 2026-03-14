@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+
+= Vexometer — Integration Pointer
+
+This directory is an **integration stub**. The Vexometer (ISA) is its own monorepo.
+
+== Canonical Location
+
+```
+~/Documents/hyperpolymath-repos/vexometer/
+├── vexometer/              # ISA core (Ada) — 80% complete
+├── vexometer-satellites/   # Satellite intervention system — 45%
+├── satellite-template/     # Scaffolding for new satellites — 90%
+├── lazy-eliminator/        # Completeness enforcement (Rust) — 75%
+├── vext/                   # Verifiable comms protocol (Rust) — 85%
+└── vext-email-gateway/     # Email bridge prototype (Rust) — 30%
+```
+
+== Relationship to Reposystem
+
+Reposystem integrates with ISA via:
+
+- **PanLL Panel-W**: Vexometer scores feed into the ecosystem health dashboard
+- **Aspect annotations**: ISA metrics can be attached as weighted aspects on repos/edges
+- **Slot system**: ISA is a provider for the `efficacy-measurement` slot
+
+== Do Not Add Code Here
+
+All vexometer development happens in the `vexometer` repo. This stub exists only to document the integration point within reposystem.

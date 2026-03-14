@@ -1078,6 +1078,185 @@ svg.addEventListener("mouseleave", () => {
   panning = false;
 });
 
+// ============================================================================
+// PanLL Integration — Three-panel bridge
+// ============================================================================
+//
+// Panel-L: Ecosystem constraints (slot policies, edge rules, governance)
+// Panel-N: Ecosystem health reasoning (dependency analysis, orphan detection)
+// Panel-W: Graph visualization, scan results, health dashboard
+//
+// Communication via window.postMessage when embedded in PanLL, or
+// fetch() to PanLL's HTTP API when running standalone.
+
+const panllBridge = {
+  status: "disconnected", // disconnected | connecting | connected | error
+  instanceId: null,
+  autoSync: false,
+  endpoint: "http://localhost:1430",
+
+  /** Detect if running inside a PanLL host (iframe or same-origin embed). */
+  isPanllHost() {
+    return typeof window.__PANLL_INTERNALS__ !== "undefined" && window.__PANLL_INTERNALS__ !== null;
+  },
+
+  /** Attempt to connect to PanLL. */
+  async connect() {
+    panllBridge.status = "connecting";
+    updatePanllStatusUI();
+
+    if (panllBridge.isPanllHost()) {
+      panllBridge.status = "connected";
+      panllBridge.instanceId = "embedded";
+      updatePanllStatusUI();
+      return;
+    }
+
+    try {
+      const resp = await fetch(panllBridge.endpoint + "/api/v1/health");
+      if (resp.ok) {
+        panllBridge.status = "connected";
+        panllBridge.instanceId = "standalone";
+      } else {
+        panllBridge.status = "error";
+      }
+    } catch {
+      panllBridge.status = "error";
+    }
+    updatePanllStatusUI();
+  },
+
+  /** Disconnect from PanLL. */
+  disconnect() {
+    panllBridge.status = "disconnected";
+    panllBridge.instanceId = null;
+    panllBridge.autoSync = false;
+    updatePanllStatusUI();
+  },
+
+  /** Push graph snapshot to PanLL Panel-W. */
+  syncGraph() {
+    if (panllBridge.status !== "connected") return;
+
+    const payload = {
+      type: "reposystem:graph-snapshot",
+      source: "reposystem-web",
+      timestamp: new Date().toISOString(),
+      data: {
+        nodes: graphData.nodes,
+        edges: graphData.edges,
+        groups: graphData.groups,
+        annotations: graphData.annotations,
+      },
+    };
+
+    if (panllBridge.isPanllHost()) {
+      // Embedded — postMessage to parent PanLL window
+      window.parent.postMessage(payload, "*");
+    }
+    // Standalone HTTP sync is a TODO — requires Panel-W API endpoint
+
+    setStatus(`Synced ${graphData.nodes.length} nodes to PanLL Panel-W`);
+  },
+
+  /** Push constraint summary to PanLL Panel-L. */
+  syncConstraints(constraints) {
+    if (panllBridge.status !== "connected") return;
+
+    const payload = {
+      type: "reposystem:constraint-update",
+      source: "reposystem-web",
+      timestamp: new Date().toISOString(),
+      data: constraints,
+    };
+
+    if (panllBridge.isPanllHost()) {
+      window.parent.postMessage(payload, "*");
+    }
+  },
+
+  /** Push health event to PanLL Panel-N. */
+  emitHealthEvent(event) {
+    if (panllBridge.status !== "connected") return;
+
+    const payload = {
+      type: "reposystem:health-event",
+      source: "reposystem-web",
+      timestamp: new Date().toISOString(),
+      data: event,
+    };
+
+    if (panllBridge.isPanllHost()) {
+      window.parent.postMessage(payload, "*");
+    }
+  },
+};
+
+/** Listen for inbound PanLL messages. */
+window.addEventListener("message", (event) => {
+  if (!event.data || typeof event.data.type !== "string") return;
+  if (!event.data.type.startsWith("panll:")) return;
+
+  switch (event.data.type) {
+    case "panll:constraint-request":
+      // Panel-L is requesting current ecosystem constraints
+      panllBridge.syncConstraints({
+        groups: graphData.groups.length,
+        edges: graphData.edges.length,
+        nodes: graphData.nodes.length,
+      });
+      break;
+
+    case "panll:scan-request":
+      // Panel-N is requesting a fresh scan — reload data
+      if (loadSampleBtn) loadSampleBtn.click();
+      break;
+
+    case "panll:export-request":
+      // Panel-W wants a JSON export
+      panllBridge.syncGraph();
+      break;
+
+    case "panll:filter-request":
+      // Panel-W wants to apply a filter
+      if (event.data.aspect && aspectSelect) {
+        aspectSelect.value = event.data.aspect;
+        render();
+      }
+      break;
+  }
+});
+
+/** Update PanLL status indicator in the UI. */
+function updatePanllStatusUI() {
+  const el = document.getElementById("panllStatus");
+  if (!el) return;
+
+  const labels = {
+    disconnected: "PanLL: Off",
+    connecting: "PanLL: ...",
+    connected: "PanLL: On",
+    error: "PanLL: Err",
+  };
+
+  el.textContent = labels[panllBridge.status] || "PanLL: ?";
+  el.className = "panll-status panll-" + panllBridge.status;
+}
+
+// Auto-sync graph on data changes when PanLL autoSync is enabled
+const originalLoadGraph = loadGraph;
+loadGraph = function (raw) {
+  originalLoadGraph(raw);
+  if (panllBridge.autoSync && panllBridge.status === "connected") {
+    panllBridge.syncGraph();
+  }
+};
+
+// Auto-detect PanLL host on startup
+if (panllBridge.isPanllHost()) {
+  panllBridge.connect();
+}
+
 document.addEventListener("keydown", (event) => {
   if (event.target.tagName === "INPUT" || event.target.tagName === "SELECT") return;
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {

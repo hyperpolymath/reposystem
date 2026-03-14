@@ -1,0 +1,104 @@
+= git-morph
+// SPDX-License-Identifier: PMPL-1.0-or-later
+:author: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+A git extension that morphs repositories between monorepo components and standalone repos.
+
+== Problem
+
+Large project ecosystems face a tension: monorepos reduce organizational overhead, but individual components sometimes need to function as standalone repos (for CI, package registries, users who want just one piece, or contributors focused on one area).
+
+Currently this is a manual, error-prone process.
+
+== Solution
+
+A single command with directional subcommands:
+
+[source,bash]
+----
+git morph inflate ffi/libgit2/          # monorepo component → standalone repo
+git morph deflate ~/repos/libgit2-ffi   # standalone repo → monorepo component
+----
+
+=== `git morph inflate <component-path>`
+
+Extracts a component from a monorepo into a fully functional standalone repository, adding all necessary boilerplate (LICENSE, CI, SECURITY.md, build config, etc.) from configurable templates.
+
+=== `git morph deflate <repo-path>`
+
+Takes a standalone repository and packs it into the current monorepo as a component, stripping boilerplate that the monorepo provides at root level.
+
+== Key Features
+
+* **Manifest-driven**: Each component has a `.morph.a2ml` manifest defining owned files, inherited files, and template rules
+* **Deterministic**: Same input always produces same output
+* **Reversible**: inflate then deflate (or vice versa) round-trips cleanly
+* **History-aware**: Optionally preserves/filters git history for the component
+* **Template system**: Boilerplate added during inflation comes from configurable templates (default: rsr-template-repo)
+* **Extensible**: `git morph` is designed for additional subcommands beyond inflate/deflate
+
+== Usage
+
+[source,bash]
+----
+# Inflate a monorepo component to a standalone repo
+git morph inflate src/libgit2-ffi/ --output ~/repos/libgit2-ffi --with-history
+
+# Deflate a standalone repo into the current monorepo
+git morph deflate ~/repos/libgit2-ffi --at ffi/libgit2/
+
+# Dry-run to preview what would change
+git morph inflate src/libgit2-ffi/ --dry-run
+
+# Use a custom template instead of rsr-template-repo
+git morph inflate src/libgit2-ffi/ --template ~/my-template/
+
+# List components that have morph manifests
+git morph list
+----
+
+== Manifest Format
+
+Each component declares a `.morph.a2ml` manifest:
+
+[source,yaml]
+----
+[component]
+name = "libgit2-ffi"
+path = "ffi/libgit2/"
+
+[files]
+owned = [
+  "ffi/**",
+  "src/abi/**",
+  "build.zig",
+  "docs/**",
+  "examples/**",
+]
+
+inherited = [
+  "LICENSE",
+  "SECURITY.md",
+  "CODE_OF_CONDUCT.md",
+  "CONTRIBUTING.md",
+  ".github/workflows/*.yml",
+]
+
+[template]
+name = "rsr-template-repo"
+vars = { repo_name = "libgit2-ffi", description = "Zig FFI bindings for libgit2" }
+
+[dependencies]
+components = []
+
+[registry]
+type = "none"
+----
+
+== Status
+
+Phase 1 implementation (Rust).
+
+== License
+
+PMPL-1.0-or-later

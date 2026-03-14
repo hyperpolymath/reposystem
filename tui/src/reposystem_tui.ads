@@ -29,24 +29,35 @@ package Reposystem_TUI is
    subtype Bounded_String is String (1 .. Max_String);
 
    --  View mode enumeration
-   type View_Mode is (Graph_View, List_View, Detail_View, Scenario_View);
+   type View_Mode is (Graph_View, List_View, Detail_View, Scenario_View,
+                      PanLL_View);
 
    --  Aspect filter
    type Aspect_Filter is (All_Aspects, Security, Reliability,
                           Performance, Supply_Chain, Compliance);
 
+   --  PanLL connection state
+   type PanLL_Status is (PanLL_Disconnected, PanLL_Connecting,
+                         PanLL_Connected, PanLL_Error);
+
+   --  PanLL panel target for display routing
+   type PanLL_Panel is (Panel_L, Panel_N, Panel_W);
+
    --  Application state (verified invariants)
    type App_State is record
-      Width        : Screen_Width;
-      Height       : Screen_Height;
-      Cursor_X     : Positive;
-      Cursor_Y     : Positive;
-      Mode         : View_Mode;
-      Filter       : Aspect_Filter;
-      Repo_Count   : Repo_Count;
-      Edge_Count   : Edge_Count;
-      Selected     : Natural;
-      Running      : Boolean;
+      Width          : Screen_Width;
+      Height         : Screen_Height;
+      Cursor_X       : Positive;
+      Cursor_Y       : Positive;
+      Mode           : View_Mode;
+      Filter         : Aspect_Filter;
+      Repo_Count     : Repo_Count;
+      Edge_Count     : Edge_Count;
+      Selected        : Natural;
+      Running         : Boolean;
+      --  PanLL integration
+      PanLL          : PanLL_Status;
+      Active_Panel   : PanLL_Panel;
    end record
      with Dynamic_Predicate =>
        App_State.Cursor_X <= App_State.Width and

@@ -331,11 +331,47 @@ impl MergeResolver {
         Ok(conflicts)
     }
 
-    /// Detect the type of conflict for a file
-    fn detect_conflict_type(&self, _file: &Path) -> Result<ConflictType> {
-        // For now, assume both_modified. A more sophisticated version
-        // would parse `git status --porcelain` to determine the exact type.
-        Ok(ConflictType::BothModified)
+    /// Detect the type of conflict for a file by parsing `git status --porcelain`.
+    ///
+    /// Maps git porcelain two-character conflict codes to `ConflictType`:
+    /// - `UU` -> BothModified (both branches modified the same file)
+    /// - `DU` -> DeleteModify (deleted by us, modified by them)
+    /// - `UD` -> DeleteModify (modified by us, deleted by them)
+    /// - `AA` -> AddAdd (file added in both branches with different content)
+    /// - `AU` / `UA` -> BothModified (added/unmerged combinations)
+    ///
+    /// Falls back to `BothModified` if the porcelain output cannot be parsed.
+    fn detect_conflict_type(&self, file: &Path) -> Result<ConflictType> {
+        let output = Command::new("git")
+            .args([
+                "-C",
+                &self.repo_path.display().to_string(),
+                "status",
+                "--porcelain",
+                &file.display().to_string(),
+            ])
+            .output()
+            .context("Failed to run git status --porcelain")?;
+
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let line = stdout.lines().next().unwrap_or("");
+
+        // Porcelain format: XY <path>
+        // For unmerged entries the two-character code indicates the conflict type.
+        // We need at least 2 characters to read X and Y.
+        if line.len() < 2 {
+            return Ok(ConflictType::BothModified);
+        }
+
+        let xy = &line[..2];
+        match xy {
+            "UU" => Ok(ConflictType::BothModified),
+            "DU" => Ok(ConflictType::DeleteModify),
+            "UD" => Ok(ConflictType::DeleteModify),
+            "AA" => Ok(ConflictType::AddAdd),
+            "AU" | "UA" => Ok(ConflictType::BothModified),
+            _ => Ok(ConflictType::BothModified),
+        }
     }
 
     /// Get the current branch name

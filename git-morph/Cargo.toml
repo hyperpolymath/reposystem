@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+
+[package]
+name = "git-morph"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+authors = ["Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"]
+description = "Transform repos between monorepo components and standalone repos"
+license = "PMPL-1.0-or-later"
+repository = "https://github.com/hyperpolymath/reposystem"
+readme = "README.adoc"
+
+[[bin]]
+name = "git-morph"
+path = "src/main.rs"
+
+[dependencies]
+# CLI
+clap = { version = "4.4", features = ["derive", "env", "wrap_help"] }
+
+# Serialization (for .morph.a2ml manifest parsing)
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+
+# File system
+walkdir = "2.4"
+globset = "0.4"
+ignore = "0.4"
+
+# Git (for history filtering)
+gix = { version = "0.78", default-features = false, features = ["max-performance-safe"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Colours
+owo-colors = "4.0"
+
+# Date/time
+chrono = { version = "0.4", features = ["serde"] }
+
+[dev-dependencies]
+tempfile = "3.9"
+assert_cmd = "2.0"
+predicates = "3.0"

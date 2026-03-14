@@ -14,16 +14,18 @@ package body Reposystem_TUI is
      return App_State
    is
    begin
-      return (Width      => Width,
-              Height     => Height,
-              Cursor_X   => 1,
-              Cursor_Y   => 1,
-              Mode       => Graph_View,
-              Filter     => All_Aspects,
-              Repo_Count => 0,
-              Edge_Count => 0,
-              Selected   => 0,
-              Running    => True);
+      return (Width        => Width,
+              Height       => Height,
+              Cursor_X     => 1,
+              Cursor_Y     => 1,
+              Mode         => Graph_View,
+              Filter       => All_Aspects,
+              Repo_Count   => 0,
+              Edge_Count   => 0,
+              Selected     => 0,
+              Running      => True,
+              PanLL        => PanLL_Disconnected,
+              Active_Panel => Panel_W);
    end Initialize;
 
    --  Process user input
@@ -64,6 +66,29 @@ package body Reposystem_TUI is
 
          when '4' =>
             State.Mode := Scenario_View;
+
+         when '5' =>
+            State.Mode := PanLL_View;
+
+         --  PanLL panel switching (when in PanLL view)
+         when 'L' =>
+            State.Active_Panel := Panel_L;
+
+         when 'W' =>
+            State.Active_Panel := Panel_W;
+
+         when 'M' =>  --  M for Machine (Panel-N = Neural)
+            State.Active_Panel := Panel_N;
+
+         when 'c' =>  --  Connect/disconnect PanLL
+            case State.PanLL is
+               when PanLL_Disconnected | PanLL_Error =>
+                  State.PanLL := PanLL_Connecting;
+               when PanLL_Connected =>
+                  State.PanLL := PanLL_Disconnected;
+               when PanLL_Connecting =>
+                  null;  --  Wait for connection attempt to finish
+            end case;
 
          when 'a' =>
             State.Filter := All_Aspects;
@@ -107,10 +132,11 @@ package body Reposystem_TUI is
       --  Draw mode indicator
       Ada.Text_IO.Put ("║  Mode: ");
       case State.Mode is
-         when Graph_View    => Ada.Text_IO.Put ("[GRAPH]");
-         when List_View     => Ada.Text_IO.Put ("[LIST] ");
-         when Detail_View   => Ada.Text_IO.Put ("[DETAIL]");
+         when Graph_View    => Ada.Text_IO.Put ("[GRAPH]   ");
+         when List_View     => Ada.Text_IO.Put ("[LIST]    ");
+         when Detail_View   => Ada.Text_IO.Put ("[DETAIL]  ");
          when Scenario_View => Ada.Text_IO.Put ("[SCENARIO]");
+         when PanLL_View    => Ada.Text_IO.Put ("[PANLL]   ");
       end case;
       Ada.Text_IO.Put ("  Filter: ");
       case State.Filter is
@@ -124,14 +150,53 @@ package body Reposystem_TUI is
       Ada.Text_IO.New_Line;
 
       Ada.Text_IO.Put_Line ("╠══════════════════════════════════════════════════════════════╣");
+
+      --  PanLL status line
+      Ada.Text_IO.Put ("║  PanLL: ");
+      case State.PanLL is
+         when PanLL_Disconnected => Ada.Text_IO.Put ("[-]");
+         when PanLL_Connecting   => Ada.Text_IO.Put ("[...]");
+         when PanLL_Connected    => Ada.Text_IO.Put ("[OK]");
+         when PanLL_Error        => Ada.Text_IO.Put ("[ERR]");
+      end case;
+      Ada.Text_IO.Put ("  Panel: ");
+      case State.Active_Panel is
+         when Panel_L => Ada.Text_IO.Put ("[L:Constraints]");
+         when Panel_N => Ada.Text_IO.Put ("[N:Reasoning]  ");
+         when Panel_W => Ada.Text_IO.Put ("[W:Barycentre] ");
+      end case;
+      Ada.Text_IO.New_Line;
+
+      Ada.Text_IO.Put_Line ("╠══════════════════════════════════════════════════════════════╣");
       Ada.Text_IO.Put_Line ("║  Repos:" & Natural'Image (State.Repo_Count) &
                             "  Edges:" & Natural'Image (State.Edge_Count) &
                             "  Selected:" & Natural'Image (State.Selected));
+
+      --  PanLL view content
+      if State.Mode = PanLL_View then
+         Ada.Text_IO.Put_Line ("╠══════════════════════════════════════════════════════════════╣");
+         case State.Active_Panel is
+            when Panel_L =>
+               Ada.Text_IO.Put_Line ("║  Panel-L: Ecosystem Constraints                            ║");
+               Ada.Text_IO.Put_Line ("║  - Slot policies    - Edge cardinality limits               ║");
+               Ada.Text_IO.Put_Line ("║  - Aspect rules     - Governance invariants                 ║");
+            when Panel_N =>
+               Ada.Text_IO.Put_Line ("║  Panel-N: Ecosystem Health Reasoning                       ║");
+               Ada.Text_IO.Put_Line ("║  - Dependency analysis  - Vulnerability propagation         ║");
+               Ada.Text_IO.Put_Line ("║  - Slot coverage gaps   - Orphan detection                  ║");
+            when Panel_W =>
+               Ada.Text_IO.Put_Line ("║  Panel-W: Ecosystem Barycentre                             ║");
+               Ada.Text_IO.Put_Line ("║  - Graph snapshot   - Health dashboard                      ║");
+               Ada.Text_IO.Put_Line ("║  - Scan results     - Scenario output                       ║");
+         end case;
+      end if;
+
       Ada.Text_IO.Put_Line ("╚══════════════════════════════════════════════════════════════╝");
 
       --  Draw status line
       Ada.Text_IO.New_Line;
-      Ada.Text_IO.Put_Line ("  [1-4] View  [a/s/r/p] Filter  [hjkl] Navigate  [q] Quit");
+      Ada.Text_IO.Put_Line ("  [1-5] View  [a/s/r/p] Filter  [hjkl] Navigate  [q] Quit");
+      Ada.Text_IO.Put_Line ("  [c] PanLL connect  [L/M/W] Switch panel");
    end Render;
 
    --  Shutdown application

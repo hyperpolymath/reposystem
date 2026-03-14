@@ -69,6 +69,8 @@ type t = {
   // Loading state
   loading: bool,
   error: option<string>,
+  // PanLL integration
+  panll: PanllBridge.panllState,
 }
 
 // Initial model
@@ -88,6 +90,7 @@ let init = () => {
   graphLinks: [],
   loading: true,
   error: None,
+  panll: PanllBridge.init,
 }
 
 // Tab helpers

@@ -569,6 +569,61 @@ select:focus {
   }
 }
 
+/* ============================================================================
+   PanLL Integration Status Indicator
+   ============================================================================ */
+
+.panll-status {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: default;
+  user-select: none;
+}
+
+.panll-disconnected {
+  background: var(--panel-strong);
+  color: var(--muted);
+}
+
+.panll-connecting {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.panll-connected {
+  background: #d4edda;
+  color: #155724;
+}
+
+.panll-error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.dark .panll-disconnected {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.dark .panll-connecting {
+  background: rgba(255, 243, 205, 0.15);
+  color: #ffc107;
+}
+
+.dark .panll-connected {
+  background: rgba(72, 199, 142, 0.15);
+  color: #48c78e;
+}
+
+.dark .panll-error {
+  background: rgba(248, 81, 73, 0.15);
+  color: #f85149;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     scroll-behavior: auto !important;

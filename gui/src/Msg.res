@@ -57,6 +57,13 @@ type t =
   | GraphZoom(float)
   // Error handling
   | DismissError
+  // PanLL integration
+  | PanllConnect
+  | PanllDisconnect
+  | PanllConnectionChanged(PanllBridge.panllConnectionStatus)
+  | PanllSyncGraph
+  | PanllInbound(PanllBridge.panllInbound)
+  | PanllToggleAutoSync
 
 // Helper types for complex messages
 and loadedData = {

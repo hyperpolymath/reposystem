@@ -28,7 +28,7 @@ let view = (model: Model.t): Vdom.t<Msg.t> => {
 // Header
 // ============================================================================
 
-let renderHeader = (_model: Model.t) => {
+let renderHeader = (model: Model.t) => {
   header(
     [class("app-header")],
     [
@@ -37,10 +37,51 @@ let renderHeader = (_model: Model.t) => {
       div(
         [class("header-actions")],
         [
+          renderPanllStatus(model),
           button([onClick(Msg.SaveGraph), class("btn-save")], [text("Save")]),
           button([onClick(Msg.LoadAllData), class("btn-refresh")], [text("Refresh")]),
         ],
       ),
+    ],
+  )
+}
+
+// PanLL connection indicator in the header
+let renderPanllStatus = (model: Model.t) => {
+  let panll = model.panll
+  let (statusClass, statusLabel) = switch panll.connection {
+  | PanllDisconnected => ("panll-disconnected", "PanLL: Off")
+  | PanllConnecting => ("panll-connecting", "PanLL: ...")
+  | PanllConnected(_) => ("panll-connected", "PanLL: On")
+  | PanllError(_) => ("panll-error", "PanLL: Err")
+  }
+
+  div(
+    [class("panll-status " ++ statusClass)],
+    [
+      span([class("panll-indicator")], [text(statusLabel)]),
+      switch panll.connection {
+      | PanllDisconnected | PanllError(_) =>
+        button(
+          [onClick(Msg.PanllConnect), class("btn-panll")],
+          [text("Connect")],
+        )
+      | PanllConnected(_) =>
+        div(
+          [],
+          [
+            button(
+              [onClick(Msg.PanllSyncGraph), class("btn-panll")],
+              [text("Sync")],
+            ),
+            button(
+              [onClick(Msg.PanllDisconnect), class("btn-panll-disconnect")],
+              [text("X")],
+            ),
+          ],
+        )
+      | PanllConnecting => noNode
+      },
     ],
   )
 }

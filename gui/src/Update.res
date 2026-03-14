@@ -213,6 +213,57 @@ let update = (msg: Msg.t, model: Model.t): (Model.t, Cmd.t<Msg.t>) => {
 
   // Error handling
   | DismissError => ({...model, error: None}, Cmd.none)
+
+  // PanLL integration
+  | PanllConnect => (
+      {...model, panll: {...model.panll, connection: PanllConnecting}},
+      Cmd.call(_ => {
+        connectToPanll()
+      }),
+    )
+
+  | PanllDisconnect => (
+      {...model, panll: {...model.panll, connection: PanllDisconnected, instanceId: None}},
+      Cmd.none,
+    )
+
+  | PanllConnectionChanged(status) => (
+      {
+        ...model,
+        panll: {
+          ...model.panll,
+          connection: status,
+          instanceId: switch status {
+          | PanllConnected(id) => Some(id)
+          | _ => model.panll.instanceId
+          },
+        },
+      },
+      Cmd.none,
+    )
+
+  | PanllSyncGraph => (
+      model,
+      Cmd.call(_ => {
+        syncGraphToPanll(model)
+      }),
+    )
+
+  | PanllInbound(request) => (
+      model,
+      switch request {
+      | PanllConstraintRequest => Cmd.none // TODO: send constraints to Panel-L
+      | PanllScanRequest => Cmd.msg(Msg.LoadAllData)
+      | PanllExportRequest(_format) => Cmd.none // TODO: export in requested format
+      | PanllFilterRequest(_filter) => Cmd.none // TODO: apply PanLL-requested filter
+      | PanllScenarioRequest(_scenario) => Cmd.none // TODO: run requested scenario
+      },
+    )
+
+  | PanllToggleAutoSync => (
+      {...model, panll: {...model.panll, autoSync: !model.panll.autoSync}},
+      Cmd.none,
+    )
   }
 }
 
@@ -361,5 +412,53 @@ let saveGraph = async () => {
     Msg.GraphSaved(Ok())
   } catch {
   | Exn.Error(e) => Msg.GraphSaved(Error(Exn.message(e)->Option.getOr("Unknown error")))
+  }
+}
+
+// ============================================================================
+// PanLL bridge helpers
+// ============================================================================
+
+/// Attempt to connect to a running PanLL instance.
+let connectToPanll = async () => {
+  if PanllBridge.isPanllHost() {
+    // Running inside PanLL — direct connection via shared internals
+    Msg.PanllConnectionChanged(PanllConnected("embedded"))
+  } else {
+    // Standalone — attempt HTTP handshake with PanLL service
+    try {
+      let _response = await Fetch.fetch(
+        PanllBridge.defaultEndpoint ++ "/api/v1/health",
+        {method: #GET},
+      )
+      Msg.PanllConnectionChanged(PanllConnected("standalone"))
+    } catch {
+    | Exn.Error(e) =>
+      Msg.PanllConnectionChanged(
+        PanllError(Exn.message(e)->Option.getOr("Failed to reach PanLL")),
+      )
+    }
+  }
+}
+
+/// Push the current ecosystem graph to PanLL for Panel-W rendering.
+let syncGraphToPanll = async (model: Model.t) => {
+  if !(model.panll->PanllBridge.isConnected) {
+    Msg.DismissError
+  } else {
+    let graphJson = {
+      "repos": model.repos,
+      "edges": model.edges,
+      "groups": model.groups,
+      "aspects": model.aspects,
+      "slots": model.slots,
+      "providers": model.providers,
+      "bindings": model.bindings,
+      "plans": model.plans,
+    }
+    let payload = JSON.stringifyAny(graphJson)->Option.getOr("{}")
+    ignore(payload)
+    // TODO: send via postMessage (embedded) or HTTP POST (standalone)
+    Msg.DismissError
   }
 }

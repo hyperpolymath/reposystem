@@ -208,7 +208,9 @@ fn parse_remote_url(
 }
 
 /// Parse owner and name from a git URL
-fn parse_owner_name(url: &str) -> Option<(String, String)> {
+///
+/// Supports SSH (`git@host:owner/name.git`) and HTTPS (`https://host/owner/name.git`) formats.
+pub fn parse_owner_name(url: &str) -> Option<(String, String)> {
     // Handle SSH URLs: git@github.com:owner/name.git
     if url.starts_with("git@") {
         let parts: Vec<&str> = url.splitn(2, ':').collect();
@@ -232,7 +234,7 @@ fn parse_owner_name(url: &str) -> Option<(String, String)> {
 }
 
 /// Extract owner/name from a path like "owner/name.git" or "owner/name"
-fn extract_from_path(path: &str) -> Option<(String, String)> {
+pub fn extract_from_path(path: &str) -> Option<(String, String)> {
     let path = path.trim_end_matches(".git").trim_matches('/');
     let parts: Vec<&str> = path.split('/').collect();
 

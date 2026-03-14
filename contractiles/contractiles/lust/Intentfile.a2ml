@@ -115,10 +115,10 @@ and observability goals for the policy gateway.
 
 ### legacy-yaml-contractiles
 - description: Phase out legacy YAML-format contractile files (Mustfile, Dustfile, Intentfile)
-- status: in-progress
+- status: realised
 - priority: medium
 - evidence: command: find contractiles/ -name 'Mustfile' -o -name 'Dustfile' -o -name 'Intentfile' | grep -v '.a2ml' | wc -l | grep -q '^0$'
-- notes: A2ML is canonical; YAML retained for backward compatibility only
+- notes: Removed all YAML/Haskell legacy files across contractiles, proven, explicit-trust-plane
 
 ### ada-must-runner
 - description: Replace Ada must runner with unified Rust contractile CLI

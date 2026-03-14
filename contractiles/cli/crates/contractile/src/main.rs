@@ -14,6 +14,7 @@
 //
 // Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
+mod doctor;
 mod dust;
 mod gen_just;
 mod init;
@@ -99,6 +100,9 @@ enum Commands {
         quick: bool,
     },
 
+    /// Diagnose tooling availability and versions
+    Doctor,
+
     /// Generate shell completions
     Completions {
         /// Shell to generate completions for (bash, zsh, fish, elvish, powershell)
@@ -149,6 +153,7 @@ fn run_unified() -> anyhow::Result<()> {
         Some(Commands::GenJust { dir, output }) => gen_just::run(&dir, &output),
         Some(Commands::Init { name, force }) => init::run(name.as_deref(), force),
         Some(Commands::Status { quick }) => status::run(quick),
+        Some(Commands::Doctor) => doctor::run(),
         Some(Commands::Completions { shell }) => {
             clap_complete::generate(
                 shell,

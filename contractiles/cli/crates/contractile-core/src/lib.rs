@@ -14,6 +14,7 @@
 pub mod a2ml;
 pub mod just_emitter;
 pub mod k9;
+pub mod toml_compat;
 
 /// Canonical file names for each contractile type.
 /// The CLI tools search for these (case-insensitive) when no explicit

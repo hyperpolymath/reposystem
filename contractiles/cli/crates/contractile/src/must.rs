@@ -18,7 +18,7 @@
 use anyhow::{bail, Context, Result};
 use clap::{Parser, Subcommand};
 use colored::Colorize;
-use contractile_core::{a2ml, filenames, find_contractile};
+use contractile_core::{a2ml, filenames, find_contractile, toml_compat};
 use std::fs;
 use std::process::Command;
 
@@ -153,18 +153,39 @@ pub fn run(action: MustAction) -> Result<()> {
 }
 
 /// Load and parse the Mustfile, trying A2ML first, then TOML fallback.
+/// Search order: explicit path → Mustfile.a2ml → mustfile.toml
 fn load_mustfile(explicit_path: Option<&str>) -> Result<a2ml::A2mlDocument> {
-    let path = if let Some(p) = explicit_path {
-        std::path::PathBuf::from(p)
-    } else {
-        find_contractile(filenames::MUSTFILE_A2ML)
-            .context("Mustfile.a2ml not found. Searched: contractiles/must/, must/, ./")?
-    };
+    if let Some(p) = explicit_path {
+        let path = std::path::PathBuf::from(p);
+        // Detect format by extension.
+        if p.ends_with(".toml") {
+            return toml_compat::parse_mustfile_toml(&path);
+        }
+        let content = fs::read_to_string(&path)
+            .with_context(|| format!("reading Mustfile: {}", path.display()))?;
+        return a2ml::parse(&content)
+            .with_context(|| format!("parsing Mustfile: {}", path.display()));
+    }
 
-    let content = fs::read_to_string(&path)
-        .with_context(|| format!("reading Mustfile: {}", path.display()))?;
+    // Try A2ML first.
+    if let Some(path) = find_contractile(filenames::MUSTFILE_A2ML) {
+        let content = fs::read_to_string(&path)
+            .with_context(|| format!("reading Mustfile: {}", path.display()))?;
+        return a2ml::parse(&content)
+            .with_context(|| format!("parsing Mustfile: {}", path.display()));
+    }
 
-    a2ml::parse(&content).with_context(|| format!("parsing Mustfile: {}", path.display()))
+    // Fall back to mustfile.toml.
+    if let Some(path) = find_contractile(filenames::MUSTFILE_TOML) {
+        println!(
+            "{} Using {} (A2ML not found)",
+            "must:".bold(),
+            path.display().to_string().dimmed()
+        );
+        return toml_compat::parse_mustfile_toml(&path);
+    }
+
+    bail!("No Mustfile found. Searched for Mustfile.a2ml and mustfile.toml in: contractiles/must/, must/, ./")
 }
 
 /// Run all executable checks in the document. Returns an error if any check fails.

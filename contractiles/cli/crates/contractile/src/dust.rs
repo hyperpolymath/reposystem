@@ -179,6 +179,7 @@ fn list_actions(doc: &a2ml::A2mlDocument) {
 }
 
 /// Execute a dust action by name, optionally filtering by key type.
+/// Checks preconditions before executing, runs verify_after on success.
 fn run_action(
     doc: &a2ml::A2mlDocument,
     name: &str,
@@ -211,10 +212,22 @@ fn run_action(
         );
     }
 
+    // Look up precondition, verify_after, and blast_radius from the subsection.
+    let subsection_meta = doc.sections.iter()
+        .flat_map(|s| s.subsections.iter())
+        .find(|sub| sub.name == name);
+
+    let precondition = subsection_meta.and_then(|s| s.get("precondition"));
+    let verify_after = subsection_meta.and_then(|s| s.get("verify_after"));
+    let blast_radius = subsection_meta.and_then(|s| s.get("blast_radius"));
+
     for item in &matching {
         let desc = item.description.unwrap_or(item.subsection);
 
         if dry_run {
+            if let Some(pre) = precondition {
+                println!("  {} precondition: {}", "[DRY-RUN]".cyan(), pre);
+            }
             println!(
                 "  {} [{}] {} → {}",
                 "[DRY-RUN]".cyan(),
@@ -222,9 +235,53 @@ fn run_action(
                 desc,
                 item.command
             );
+            if let Some(verify) = verify_after {
+                println!("  {} verify_after: {}", "[DRY-RUN]".cyan(), verify);
+            }
             continue;
         }
 
+        // ── Precondition check ──
+        if let Some(pre_cmd) = precondition {
+            if verbose {
+                println!("  {} precondition: {}", "checking".dimmed(), pre_cmd);
+            }
+            let pre_status = Command::new("sh")
+                .args(["-c", pre_cmd])
+                .status()
+                .with_context(|| format!("running precondition for: {}", name))?;
+
+            if !pre_status.success() {
+                bail!(
+                    "precondition failed for dust action '{}': {}",
+                    name,
+                    pre_cmd
+                );
+            }
+            if verbose {
+                println!("  {} precondition passed", "OK".green());
+            }
+        }
+
+        // ── Show blast radius warning ──
+        if let Some(radius) = blast_radius {
+            match radius {
+                "cluster" | "global" => {
+                    println!(
+                        "  {} blast radius: {} — proceed with caution",
+                        "WARNING".yellow().bold(),
+                        radius.red().bold()
+                    );
+                }
+                _ => {
+                    if verbose {
+                        println!("  {} blast radius: {}", "info".dimmed(), radius);
+                    }
+                }
+            }
+        }
+
+        // ── Execute the action ──
         println!(
             "{} Executing {} for {}...",
             "dust:".bold(),
@@ -241,9 +298,7 @@ fn run_action(
             .status()
             .with_context(|| format!("executing dust action: {}", item.subsection))?;
 
-        if status.success() {
-            println!("  {} {}", "DONE".green().bold(), desc);
-        } else {
+        if !status.success() {
             println!("  {} {}", "FAILED".red().bold(), desc);
             bail!(
                 "dust {} '{}' failed (exit {})",
@@ -251,6 +306,33 @@ fn run_action(
                 name,
                 status.code().unwrap_or(-1)
             );
+        }
+
+        println!("  {} {}", "DONE".green().bold(), desc);
+
+        // ── Post-recovery verification ──
+        if let Some(verify_cmd) = verify_after {
+            println!(
+                "  {} verifying recovery...",
+                "dust:".bold()
+            );
+            if verbose {
+                println!("  {}", verify_cmd.dimmed());
+            }
+            let verify_status = Command::new("sh")
+                .args(["-c", verify_cmd])
+                .status()
+                .with_context(|| format!("running verify_after for: {}", name))?;
+
+            if verify_status.success() {
+                println!("  {} post-recovery verification passed", "VERIFIED".green().bold());
+            } else {
+                println!(
+                    "  {} post-recovery verification failed: {}",
+                    "WARNING".yellow().bold(),
+                    verify_cmd
+                );
+            }
         }
     }
 

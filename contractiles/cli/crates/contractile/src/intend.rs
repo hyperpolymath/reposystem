@@ -2,17 +2,23 @@
 // intend.rs — `intend` subcommand: Future intent & roadmap from Intentfile.a2ml.
 //
 // Intentfiles are purely declarative — they declare what the project intends
-// to do, not what it does now. The `intend` CLI displays this information
-// and optionally probes whether declared intents have been realised.
+// to do, not what it does now. The `intend` CLI displays this information,
+// probes whether declared intents have been realised, and provides lifecycle
+// commands that modify the Intentfile in place.
 //
 // Commands:
-//   intend list     — display all declared intents as a readable checklist
-//   intend check    — probe whether declared intents have been realised
-//   intend progress — summary of intent realisation status
+//   intend list      — display all declared intents as a readable checklist
+//   intend check     — probe whether declared intents have been realised
+//   intend progress  — summary of intent realisation status
+//   intend accept    — move intent from declared → accepted
+//   intend start     — move intent from accepted → in-progress
+//   intend realise   — move intent from in-progress → realised
+//   intend abandon   — move intent to abandoned (with reason)
+//   intend supersede — mark intent as superseded by another
 //
 // Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use clap::{Parser, Subcommand};
 use colored::Colorize;
 use contractile_core::{a2ml, filenames, find_contractile};
@@ -38,6 +44,54 @@ pub enum IntendAction {
 
     /// Summary of intent realisation progress
     Progress {
+        #[arg(long)]
+        file: Option<String>,
+    },
+
+    /// Move an intent from declared → accepted
+    Accept {
+        /// Name of the intent (matches ### heading)
+        name: String,
+        #[arg(long)]
+        file: Option<String>,
+    },
+
+    /// Move an intent from accepted → in-progress
+    Start {
+        /// Name of the intent (matches ### heading)
+        name: String,
+        #[arg(long)]
+        file: Option<String>,
+    },
+
+    /// Move an intent from in-progress → realised
+    Realise {
+        /// Name of the intent (matches ### heading)
+        name: String,
+        /// Optional note to add (defaults to "Realised YYYY-MM-DD")
+        #[arg(long)]
+        note: Option<String>,
+        #[arg(long)]
+        file: Option<String>,
+    },
+
+    /// Move an intent to abandoned status
+    Abandon {
+        /// Name of the intent (matches ### heading)
+        name: String,
+        /// Reason for abandonment (required)
+        #[arg(long)]
+        reason: String,
+        #[arg(long)]
+        file: Option<String>,
+    },
+
+    /// Mark an intent as superseded by another
+    Supersede {
+        /// Name of the intent to supersede
+        old: String,
+        /// Name of the new intent that replaces it
+        new: String,
         #[arg(long)]
         file: Option<String>,
     },
@@ -72,6 +126,32 @@ pub fn run(action: IntendAction) -> Result<()> {
             let doc = load_intentfile(file.as_deref())?;
             show_progress(&doc);
             Ok(())
+        }
+        IntendAction::Accept { name, file } => {
+            transition_intent(file.as_deref(), &name, "declared", "accepted", None)
+        }
+        IntendAction::Start { name, file } => {
+            transition_intent(file.as_deref(), &name, "accepted", "in-progress", None)
+        }
+        IntendAction::Realise { name, note, file } => {
+            let today = today_string();
+            let default_note = format!("Realised {}", today);
+            let note_text = note.as_deref().unwrap_or(&default_note);
+            transition_intent(
+                file.as_deref(),
+                &name,
+                "in-progress",
+                "realised",
+                Some(note_text),
+            )
+        }
+        IntendAction::Abandon { name, reason, file } => {
+            let note = format!("Abandoned: {}", reason);
+            transition_intent(file.as_deref(), &name, "", "abandoned", Some(&note))
+        }
+        IntendAction::Supersede { old, new, file } => {
+            let note = format!("Superseded by {}", new);
+            transition_intent(file.as_deref(), &old, "", "superseded", Some(&note))
         }
     }
 }
@@ -338,6 +418,196 @@ fn run_evidence_probe(evidence: &str, verbose: bool) -> bool {
 
     // Unknown probe format — cannot determine.
     false
+}
+
+/// Transition an intent's status by editing the Intentfile.a2ml in place.
+/// Finds the `### name` subsection and updates its `- status:` line.
+/// If `expected_from` is non-empty, validates the current status first.
+fn transition_intent(
+    explicit_path: Option<&str>,
+    name: &str,
+    expected_from: &str,
+    new_status: &str,
+    note: Option<&str>,
+) -> Result<()> {
+    let path = if let Some(p) = explicit_path {
+        std::path::PathBuf::from(p)
+    } else {
+        find_contractile(filenames::INTENTFILE_A2ML)
+            .context("Intentfile.a2ml not found")?
+    };
+
+    let content = fs::read_to_string(&path)
+        .with_context(|| format!("reading Intentfile: {}", path.display()))?;
+
+    // Parse to validate the intent exists and check current status.
+    let doc = a2ml::parse(&content)
+        .with_context(|| format!("parsing Intentfile: {}", path.display()))?;
+
+    // Find the intent across all sections.
+    let mut found = false;
+    let mut current_status = String::new();
+    for section in &doc.sections {
+        if let Some(sub) = section.subsection(name) {
+            found = true;
+            current_status = sub.get("status").unwrap_or("declared").to_string();
+            break;
+        }
+    }
+
+    if !found {
+        let all_names: Vec<&str> = doc
+            .sections
+            .iter()
+            .flat_map(|s| s.subsections.iter().map(|sub| sub.name.as_str()))
+            .collect();
+        bail!(
+            "intent '{}' not found. Available:\n  {}",
+            name,
+            all_names.join("\n  ")
+        );
+    }
+
+    // Validate transition if expected_from is specified.
+    if !expected_from.is_empty() && current_status != expected_from {
+        bail!(
+            "intent '{}' is '{}', expected '{}'. Cannot transition to '{}'",
+            name,
+            current_status,
+            expected_from,
+            new_status
+        );
+    }
+
+    // Edit the file in place using line-level manipulation.
+    // Strategy: track when we're inside the target `### name` subsection,
+    // replace `- status:` and `- notes:` lines, and handle the boundary
+    // between subsections correctly.
+    let lines: Vec<&str> = content.lines().collect();
+    let mut new_lines: Vec<String> = Vec::with_capacity(lines.len() + 2);
+    let mut in_target = false;
+    let mut status_replaced = false;
+    let mut notes_replaced = false;
+
+    for line in &lines {
+        let trimmed = line.trim();
+
+        // ── Heading detection ──
+        // When we hit a new heading (### or ##), check if we're leaving
+        // the target subsection or entering it.
+        if trimmed.starts_with("### ") || trimmed.starts_with("## ") {
+            // If we were in the target and leaving without replacing status,
+            // insert the status line before this heading.
+            if in_target && !status_replaced {
+                new_lines.push(format!("- status: {}", new_status));
+                status_replaced = true;
+                if let Some(note_text) = note {
+                    if !notes_replaced {
+                        new_lines.push(format!("- notes: {}", note_text));
+                        notes_replaced = true;
+                    }
+                }
+            }
+
+            // Check if this heading IS the target subsection.
+            if let Some(heading) = trimmed.strip_prefix("### ") {
+                in_target = heading.trim() == name;
+            } else {
+                // It's a ## section heading — we've left any subsection.
+                in_target = false;
+            }
+
+            new_lines.push(line.to_string());
+            continue;
+        }
+
+        // ── Inside the target subsection: replace status/notes lines ──
+        if in_target {
+            if trimmed.starts_with("- status:") {
+                new_lines.push(format!("- status: {}", new_status));
+                status_replaced = true;
+                continue;
+            }
+
+            if let Some(note_text) = note {
+                if trimmed.starts_with("- notes:") {
+                    new_lines.push(format!("- notes: {}", note_text));
+                    notes_replaced = true;
+                    continue;
+                }
+            }
+        }
+
+        new_lines.push(line.to_string());
+    }
+
+    // If we reached EOF still inside the target without replacing, append.
+    if in_target && !status_replaced {
+        new_lines.push(format!("- status: {}", new_status));
+    }
+
+    // If we have a note but no existing notes line was found, insert it
+    // right after the status line within the target subsection.
+    if let Some(note_text) = note {
+        if !notes_replaced {
+            let mut final_lines: Vec<String> = Vec::with_capacity(new_lines.len() + 1);
+            let mut inserted = false;
+            let mut scanning_target = false;
+            for line in &new_lines {
+                if line.trim().starts_with("### ") {
+                    let heading = line.trim().strip_prefix("### ").unwrap_or("").trim();
+                    scanning_target = heading == name;
+                }
+                final_lines.push(line.clone());
+                if scanning_target
+                    && line.trim().starts_with("- status:")
+                    && !inserted
+                {
+                    final_lines.push(format!("- notes: {}", note_text));
+                    inserted = true;
+                }
+            }
+            new_lines = final_lines;
+        }
+    }
+
+    // Write the modified content back.
+    let new_content = new_lines.join("\n");
+    // Preserve trailing newline if original had one.
+    let new_content = if content.ends_with('\n') && !new_content.ends_with('\n') {
+        format!("{}\n", new_content)
+    } else {
+        new_content
+    };
+
+    fs::write(&path, &new_content)
+        .with_context(|| format!("writing Intentfile: {}", path.display()))?;
+
+    println!(
+        "{} '{}': {} → {}",
+        "intend:".bold(),
+        name.cyan(),
+        current_status.dimmed(),
+        new_status.green()
+    );
+
+    if let Some(note_text) = note {
+        println!("  {}", note_text.dimmed());
+    }
+
+    Ok(())
+}
+
+/// Get today's date as YYYY-MM-DD string.
+fn today_string() -> String {
+    // Use a simple approach without chrono dependency.
+    let output = std::process::Command::new("date")
+        .args(["+%Y-%m-%d"])
+        .output()
+        .ok()
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+        .unwrap_or_else(|| "unknown-date".to_string());
+    output
 }
 
 /// Show a summary of intent progress.

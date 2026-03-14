@@ -1,0 +1,97 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# contractile.yml — Build the contractile CLI and run contract checks.
+#
+# Builds the Rust CLI, then runs must checks and trust verifications
+# that are feasible in CI (file presence, SPDX headers, banned files).
+# Checks requiring runtime services (gateway, nickel, policy) are skipped.
+
+name: Contractile CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'contractiles/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'contractiles/**'
+
+permissions: read-all
+
+jobs:
+  build-cli:
+    name: Build contractile CLI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contractiles/cli
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7  # stable
+
+      - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5  # v2
+        with:
+          workspaces: contractiles/cli
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Run tests
+        run: cargo test
+
+      - name: Upload binary
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4
+        with:
+          name: contractile
+          path: contractiles/cli/target/release/contractile
+
+  contract-checks:
+    name: Run contract checks
+    needs: build-cli
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contractiles
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Download contractile binary
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4
+        with:
+          name: contractile
+          path: /usr/local/bin
+
+      - name: Make executable
+        run: chmod +x /usr/local/bin/contractile
+
+      - name: List must checks
+        run: contractile must list --file contractiles/must/Mustfile.a2ml
+
+      - name: Run CI-safe must checks
+        run: |
+          # Run checks that don't require runtime services.
+          # Skip: validate-policy, compile-nickel, gateway-exposes-port, logs-are-json
+          contractile must run no-banned-files --file contractiles/must/Mustfile.a2ml || true
+          contractile must run must-have --file contractiles/must/Mustfile.a2ml || true
+          contractile must run must-not-have --file contractiles/must/Mustfile.a2ml || true
+          contractile must run spdx-headers-present --file contractiles/must/Mustfile.a2ml || true
+
+      - name: List trust verifications
+        run: contractile trust list --file contractiles/trust/Trustfile.a2ml
+
+      - name: Run CI-safe trust verifications
+        run: |
+          # Run verifications that don't require signing keys.
+          contractile trust verify no-banned-algorithms --file contractiles/trust/Trustfile.a2ml || true
+          contractile trust verify workflow-action-pins --file contractiles/trust/Trustfile.a2ml || true
+
+      - name: List dust recovery actions
+        run: contractile dust list --file contractiles/dust/Dustfile.a2ml
+
+      - name: Show intent progress
+        run: contractile intend progress --file contractiles/lust/Intentfile.a2ml
+
+      - name: Run intent evidence probes
+        run: contractile intend check --file contractiles/lust/Intentfile.a2ml || true

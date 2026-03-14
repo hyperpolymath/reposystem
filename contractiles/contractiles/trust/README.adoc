@@ -1,0 +1,82 @@
+= Trustfile — Integrity & Provenance Contract
+:author: Jonathan D.A. Jewell
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+
+A Trustfile declares **what to verify** — content hashes, digital signatures, provenance chains, and algorithm compliance. It is the Provenance State contract.
+
+== Canonical File
+
+`Trustfile.a2ml` (this directory)
+
+== Quick Start
+
+Copy `Trustfile.a2ml` into your project at `contractiles/trust/Trustfile.a2ml`, then edit to match your project's integrity requirements.
+
+== Format
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Trustfile (A2ML Canonical)
+
+@abstract:
+What this project verifies for integrity.
+@end
+
+@requires:
+- section: Inputs
+- section: Verifications
+@end
+
+## Inputs
+
+- artifact_path: path/to/artifact
+- hash_path: path/to/artifact.sha256
+- sig_path: path/to/artifact.sig
+- pub_path: keys/signing.pub
+
+## Keys
+
+### signing-key-name
+- type: Ed25519 | Dilithium5 | SPHINCS+
+- file: keys/signing.pub
+- usage: artifact-signing
+- rotation: per-release | annual
+
+## Verifications
+
+### verification-name
+- description: What is being verified
+- command: shell command (exit 0 = verified)
+- algorithm: SHA-256 | Ed25519 | Dilithium5
+- severity: critical | warning
+----
+
+== Required Fields
+
+Each verification (`### name`) MUST have:
+
+- `command:` — the shell command to execute
+
+Each verification SHOULD have:
+
+- `description:` — what is being verified
+- `algorithm:` — which crypto algorithm is used
+- `severity:` — `critical` (default) or `warning`
+
+== CLI Commands
+
+[source,bash]
+----
+trust verify            # Run all verifications
+trust verify --json     # JSON output for CI
+trust verify NAME       # Run a single verification
+trust list              # List verifications
+trust hash FILE         # Compute SHA-256 of a file
+trust sign FILE         # Sign a file (placeholder)
+----
+
+== Full Specification
+
+See `trustfile/docs/trust-spec.adoc` for the complete Provenance State spec with 5 golden examples, key management, formal proofs, and extended infrastructure sections.

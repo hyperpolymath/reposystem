@@ -1,0 +1,64 @@
+= Mustfile — Physical State Contract
+:author: Jonathan D.A. Jewell
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+
+A Mustfile declares **what must be true** about a project — file existence, configuration validity, runtime invariants, and banned patterns. It is the Physical State contract.
+
+== Canonical File
+
+`Mustfile.a2ml` (this directory)
+
+== Quick Start
+
+Copy `Mustfile.a2ml` into your project at `contractiles/must/Mustfile.a2ml`, then edit to match your project's requirements.
+
+== Format
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Mustfile (A2ML Canonical)
+
+@abstract:
+What this project's invariants are.
+@end
+
+@requires:
+- section: Checks
+@end
+
+## Checks
+
+### check-name
+- description: What this check verifies
+- run: shell command (exit 0 = pass)
+- severity: critical | warning
+----
+
+== Required Fields
+
+Each check (`### name`) MUST have:
+
+- `run:` — the shell command to execute
+
+Each check SHOULD have:
+
+- `description:` — human-readable explanation
+- `severity:` — `critical` (default) or `warning`
+
+== CLI Commands
+
+[source,bash]
+----
+must check            # Run all checks
+must check --json     # JSON output for CI
+must list             # List checks without running
+must run NAME         # Run a single check
+must fix              # Auto-fix where possible
+must enforce          # check → fix → verify cycle
+----
+
+== Full Specification
+
+See `mustfile/docs/must-spec.adoc` for the complete Physical State spec with 5 golden examples, exit codes, and K9 integration.

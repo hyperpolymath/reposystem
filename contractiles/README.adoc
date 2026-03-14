@@ -225,13 +225,71 @@ Optional: `kyber-verify` for post-quantum signature verification.
 6. Use `intend list` to track roadmap progress
 7. Use `dust rollback` when recovery is needed
 
+== Format Policy
+
+**A2ML is the canonical and preferred format for all contractile formulation.**
+
+- A2ML (`.a2ml`) is the source of truth for every contractile type
+- K9 Nickel (`.k9.ncl`) is the validation/execution layer — it validates A2ML semantics and provides Hunt-level automation, but does not replace A2ML
+- TOML (`mustfile.toml`) is a legacy fallback for backward compatibility with the Ada runner
+- YAML (`Mustfile`, `Dustfile`, `Intentfile`) is deprecated and will be removed
+
+See `docs/A2ML-FORMAT.adoc` for the full A2ML syntax reference.
+
+== Documentation Map
+
+[cols="1,3"]
+|===
+| Document | What It Covers
+
+| `docs/A2ML-FORMAT.adoc`
+| A2ML syntax reference — blocks, sections, entries, executable fields, templates
+
+| `contractiles/must/README.adoc`
+| Quick-reference: how to write a Mustfile.a2ml
+
+| `contractiles/trust/README.adoc`
+| Quick-reference: how to write a Trustfile.a2ml
+
+| `contractiles/dust/README.adoc`
+| Quick-reference: how to write a Dustfile.a2ml
+
+| `contractiles/lust/README.adoc`
+| Quick-reference: how to write an Intentfile.a2ml
+
+| `mustfile/docs/must-spec.adoc`
+| Full Physical State specification (659 lines, 5 examples)
+
+| `trustfile/docs/trust-spec.adoc`
+| Full Provenance State specification (759 lines, 5 examples)
+
+| `dustfile/docs/dust-spec.adoc`
+| Full Reversibility State specification (592 lines, 5 examples)
+
+| `intentfile/docs/intent-spec.adoc`
+| Full Intent State specification (705 lines, 5 examples)
+
+| `contractiles/k9/README.adoc`
+| K9 security model, Kennel/Yard/Hunt levels, usage guide
+
+| `standards/a2ml/docs/CONTRACTILES-A2ML-V1.adoc`
+| Formal A2ML field requirements for contractile surface (external)
+
+| `standards/a2ml/docs/STATE-OF-A2ML.adoc`
+| A2ML language design overview (external)
+|===
+
 == Status
 
-The contractile system is in active development:
+The contractile system is complete and ready for adoption:
 
-* **CLI**: Rust implementation complete, installed via symlinks
-* **Specs**: All four specs written (must, trust, dust, intent)
+* **CLI**: 9 commands — must, trust, dust, intend, k9, gen-just, init, status, completions
+* **Specs**: All four written with 5 golden examples each
 * **A2ML files**: Expanded with full field coverage per specs
-* **K9 validators**: Yard-level validators for all four contractile types
-* **Just integration**: `contractile.just` auto-generated from A2ML + K9
-* **Ada runner**: Preserved as reference implementation in `runners/must/`
+* **Quick-reference READMEs**: One per contractile type directory
+* **A2ML format guide**: `docs/A2ML-FORMAT.adoc`
+* **K9 validators**: Yard-level validators for all four types
+* **Just integration**: 35 recipes auto-generated from A2ML + K9
+* **CI workflow**: GitHub Actions builds CLI and runs contract checks
+* **JSON output**: `--json` for must, trust, and intend (CI consumption)
+* **Shell completions**: bash, zsh, fish, elvish, powershell

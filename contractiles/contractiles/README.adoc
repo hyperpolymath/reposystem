@@ -1,27 +1,117 @@
-= Contractiles Contract Set
+= Contractiles — Portable Contract Set
 :toc:
 :sectnums:
 
-This directory is the portable contract set. Copy the entire `contractiles/` directory into a project to establish a consistent operational, validation, trust, recovery, and intent framework.
+// SPDX-License-Identifier: PMPL-1.0-or-later
 
-== Canonical Format
+This directory is the portable contract set. Copy it into any repository to establish a consistent operational, validation, trust, recovery, and intent framework.
 
-* A2ML is the canonical format for all contract files in this directory.
-* Legacy non-A2ML files are deprecated and retained only for compatibility.
-* New projects should edit only the `.a2ml` files.
+== Format Policy
+
+**A2ML is the canonical and preferred format for all contractile formulation.**
+
+K9 Nickel components (`.k9.ncl`) serve as the validation and execution layer _above_ A2ML — they validate A2ML semantics via type contracts and provide Hunt-level automation, but they do not replace A2ML as the source of truth.
+
+Legacy non-A2ML files (YAML Mustfile, Dustfile, Intentfile; Haskell Trustfile.hs) are deprecated and retained only for backward compatibility.
+
+== The Five Contractile Types
+
+[cols="1,2,2"]
+|===
+| Type | File | Purpose
+
+| **Must** — Physical State
+| `must/Mustfile.a2ml`
+| What must be true (files, configs, invariants)
+
+| **Trust** — Provenance State
+| `trust/Trustfile.a2ml`
+| What to verify (hashes, signatures, proofs)
+
+| **Dust** — Reversibility State
+| `dust/Dustfile.a2ml`
+| How to recover (rollback, undo, replay)
+
+| **Intend** — Intent State
+| `lust/Intentfile.a2ml`
+| What we commit to making true (roadmap)
+
+| **K9** — Validated Components
+| `k9/*.k9.ncl`
+| Self-validating Nickel components (Kennel/Yard/Hunt)
+|===
+
+Each type has:
+
+- A **canonical A2ML file** — the source of truth
+- A **README** in its directory — quick-reference format guide
+- A **full specification** — 600+ line `.adoc` with 5 golden examples
+- A **K9 validator** — Yard-level Nickel contract for structural correctness
+
+== Quick Start
+
+[source,bash]
+----
+# Option 1: Scaffold from scratch
+contractile init --name my-project
+
+# Option 2: Copy from this directory
+cp -r contractiles/ /path/to/my-project/contractiles/
+
+# Then:
+contractile gen-just                 # Generate Just recipes
+must check                           # Verify Physical State
+trust list                           # See available verifications
+intend list                          # View roadmap
+contractile status                   # Unified dashboard
+----
 
 == Contents
 
-* `must/Mustfile.a2ml` - required invariants and validations (canonical).
-* `trust/Trustfile.a2ml` - cryptographic verification steps (canonical).
-* `dust/Dustfile.a2ml` - rollback and recovery semantics (canonical).
-* `lust/Intentfile.a2ml` - future intent and roadmap direction (canonical).
-* Legacy files (`Mustfile`, `Trustfile.hs`, `Dustfile`, `Intentfile`) are deprecated compatibility shims.
+[source]
+----
+contractiles/
+├── README.adoc                      # This file
+├── must/
+│   ├── Mustfile.a2ml                # Canonical Physical State contract
+│   ├── README.adoc                  # Quick-reference format guide
+│   └── Mustfile                     # DEPRECATED legacy shim
+├── trust/
+│   ├── Trustfile.a2ml               # Canonical Provenance State contract
+│   ├── README.adoc                  # Quick-reference format guide
+│   └── Trustfile.hs                 # DEPRECATED legacy shim
+├── dust/
+│   ├── Dustfile.a2ml                # Canonical Reversibility State contract
+│   ├── README.adoc                  # Quick-reference format guide
+│   └── Dustfile                     # DEPRECATED legacy shim
+├── lust/
+│   ├── Intentfile.a2ml              # Canonical Intent State contract
+│   ├── README.adoc                  # Quick-reference format guide
+│   └── Intentfile                   # DEPRECATED legacy shim
+└── k9/
+    ├── README.adoc                  # K9 security model & usage
+    ├── validators/                  # Yard-level A2ML validators
+    │   ├── mustfile-validator.k9.ncl
+    │   ├── trustfile-validator.k9.ncl
+    │   ├── dustfile-validator.k9.ncl
+    │   └── intentfile-validator.k9.ncl
+    ├── examples/                    # Example K9 components
+    └── template-*.k9.ncl            # K9 templates (Kennel/Yard/Hunt)
+----
 
-== Usage
+== A2ML Format
 
-1. Copy this directory into your project root.
-2. Wire the Justfile commands to your real tooling.
-3. Keep the `.a2ml` files as the contract of record.
-4. Generate/validate any legacy files from A2ML if you still need compatibility.
-5. Update `Intentfile.a2ml` during roadmap reviews.
+See `docs/A2ML-FORMAT.adoc` for the full A2ML syntax reference, including metadata blocks, sections, subsections, entry format, executable fields, and minimal templates for each contractile type.
+
+== Specifications
+
+[cols="1,2"]
+|===
+| Spec | Location
+
+| Must (Physical State) | `mustfile/docs/must-spec.adoc`
+| Trust (Provenance State) | `trustfile/docs/trust-spec.adoc`
+| Dust (Reversibility State) | `dustfile/docs/dust-spec.adoc`
+| Intent (Intent State) | `intentfile/docs/intent-spec.adoc`
+| A2ML Language | `standards/a2ml/docs/CONTRACTILES-A2ML-V1.adoc`
+|===

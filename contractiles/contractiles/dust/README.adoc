@@ -1,0 +1,104 @@
+= Dustfile — Recovery & Rollback Contract
+:author: Jonathan D.A. Jewell
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+
+A Dustfile declares **how to recover** — rollback targets, undo actions, log replay handlers, and event transforms. It is the Reversibility State contract.
+
+== Canonical File
+
+`Dustfile.a2ml` (this directory)
+
+== Quick Start
+
+Copy `Dustfile.a2ml` into your project at `contractiles/dust/Dustfile.a2ml`, then edit to declare your project's recovery paths.
+
+== Format
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Dustfile (A2ML Canonical)
+
+@abstract:
+How to recover from failures in this project.
+@end
+
+@requires:
+- section: Source
+- section: Deployment
+@end
+
+## Source
+
+### config-rollback
+- description: Revert config to previous version
+- rollback: git checkout HEAD~1 -- config/
+- blast_radius: file
+- precondition: git diff --quiet config/ || echo "uncommitted changes"
+- verify_after: must check
+
+## Deployment
+
+### bad-deploy
+- event: deploy.failure
+- description: Undo a failed deployment
+- undo: kubectl rollout undo deployment/myapp
+- blast_radius: service
+- preserves_audit: true
+----
+
+== Action Types
+
+Each recovery action MUST have exactly one executable field:
+
+[cols="1,3"]
+|===
+| Field | Use When
+
+| `rollback:`
+| Reverting a file/config to a previous version (typically git-based)
+
+| `undo:`
+| Compensating for a failed operation (deployment, infrastructure)
+
+| `handler:`
+| Replaying or reversing a log/event stream
+
+| `transform:`
+| Converting operational data into reversible dust events
+|===
+
+== Optional Fields
+
+[cols="1,3"]
+|===
+| Field | Meaning
+
+| `description:` | What this recovery does
+| `precondition:` | Command that must succeed before recovery is allowed
+| `verify_after:` | Command to run after recovery to confirm success
+| `blast_radius:` | `file`, `service`, `cluster`, `global`
+| `idempotent:` | `true` (default) or `false`
+| `preserves_audit:` | `true` (default) or `false`
+| `path:` | File or resource this recovery targets
+| `event:` | Event type that triggers this recovery
+|===
+
+== CLI Commands
+
+[source,bash]
+----
+dust status           # List available recovery actions
+dust list             # Alias for status
+dust rollback NAME    # Execute a named rollback
+dust replay NAME      # Execute a named handler
+dust run NAME         # Execute any action by name
+dust run NAME --dry-run  # Preview without executing
+----
+
+The CLI checks preconditions before executing, warns on high blast_radius, and runs verify_after on success.
+
+== Full Specification
+
+See `dustfile/docs/dust-spec.adoc` for the complete Reversibility State spec with 5 golden examples, transaction semantics, and K9 integration.

@@ -1,0 +1,319 @@
+= A2ML Format for Contractiles
+:author: Jonathan D.A. Jewell
+:revnumber: 1.0.0
+:toc: left
+:icons: font
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
+
+== What is A2ML?
+
+A2ML (Annotated Markup with Machine Logic) is a line-oriented, human-readable format designed for contract files that are both human-auditable and machine-parseable. It is the **canonical format** for all contractile types.
+
+== Format Policy
+
+**A2ML is the preferred and canonical format for contractile formulation.**
+
+[cols="1,3"]
+|===
+| Format | Role
+
+| **A2ML** (`.a2ml`)
+| Canonical. Source of truth. Human-readable declarations. Parsed by the `contractile` CLI.
+
+| **K9 Nickel** (`.k9.ncl`)
+| Validation and execution layer. Type-checks A2ML semantics via Nickel contracts. Hunt-level components execute with Just recipes. **K9 does not replace A2ML — it validates and extends it.**
+
+| **TOML** (`mustfile.toml`)
+| Legacy fallback. Backward compatibility with the Ada must runner. The CLI reads it but A2ML is preferred.
+
+| **YAML** (Mustfile, Dustfile, etc.)
+| Deprecated. Retained only as compatibility shims. Will be removed.
+|===
+
+== Syntax Reference
+
+=== Comments
+
+Lines starting with `#` (but not `##`) are comments. The first comment often contains the SPDX header and file type identifier:
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Mustfile (A2ML Canonical)
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
+----
+
+=== Metadata Blocks
+
+Metadata blocks are delimited by `@name:` and `@end`:
+
+[source,a2ml]
+----
+@abstract:
+A human-readable summary of what this contractile file declares.
+Can span multiple lines.
+@end
+
+@requires:
+- section: Parameters
+- section: Checks
+@end
+----
+
+Recognised blocks:
+
+[cols="1,3"]
+|===
+| Block | Purpose
+
+| `@abstract:`
+| Human-readable summary of the contractile's purpose
+
+| `@requires:`
+| Lists mandatory sections (for completeness validation)
+|===
+
+Unknown `@block:` names are silently ignored for forward compatibility.
+
+=== Sections
+
+Sections are introduced by level-2 headings (`## Name`):
+
+[source,a2ml]
+----
+## Parameters
+
+- gateway_port: 8080
+- schema_version: v1.0.0
+
+## Checks
+
+### policy-config-valid
+- description: config/policy.yaml must be valid
+- run: just validate-policy
+----
+
+Sections contain:
+
+- **Direct entries** (`- key: value`) — simple key-value pairs
+- **Subsections** (`### Name`) — named items with their own entries
+- **Prose** — plain text lines (used in Intentfiles for simple intents)
+
+=== Subsections
+
+Subsections are introduced by level-3 headings (`### Name`) within a section:
+
+[source,a2ml]
+----
+### policy-hash
+- description: SHA-256 of policy matches expected value
+- command: sha256sum -c policy/policy.ncl.sha256
+- algorithm: SHA-256
+- severity: critical
+----
+
+Each subsection represents one _item_ — a check, verification, recovery action, or intent.
+
+=== Entries
+
+Entries follow the format `- key: value`:
+
+[source,a2ml]
+----
+- description: All source files must have SPDX headers
+- run: find src/ -name '*.rs' -exec grep -L 'SPDX' {} + | wc -l | grep -q '^0$'
+- severity: warning
+----
+
+Rules:
+
+- Split on the **first** colon only — values may contain colons (URLs, commands)
+- Leading `- ` is required
+- Keys and values are trimmed of whitespace
+- Empty values are allowed (`- key:`)
+
+== Executable Fields
+
+Each contractile type uses specific keys to mark entries as executable:
+
+[cols="1,1,3"]
+|===
+| Key | Contractile | Meaning
+
+| `run`
+| Mustfile
+| Shell command for a check (exit 0 = pass)
+
+| `command`
+| Trustfile
+| Shell command for a verification (exit 0 = verified)
+
+| `handler`
+| Dustfile
+| Shell command to replay/reverse a log or event stream
+
+| `rollback`
+| Dustfile
+| Shell command to revert a file/config to a previous version
+
+| `undo`
+| Dustfile
+| Shell command to compensate for a failed operation
+
+| `transform`
+| Dustfile
+| Shell command to convert data into reversible dust events
+|===
+
+The `contractile` CLI and `gen-just` recognise these keys automatically.
+
+== Common Fields
+
+These fields are used across multiple contractile types:
+
+[cols="1,3"]
+|===
+| Field | Meaning
+
+| `description`
+| Human-readable description of the item
+
+| `severity`
+| `critical` (default) or `warning`
+
+| `notes`
+| Additional context for operators
+
+| `status`
+| Intentfile lifecycle: `declared`, `accepted`, `in-progress`, `realised`, `superseded`, `abandoned`
+
+| `priority`
+| `critical`, `high`, `medium`, `low`
+
+| `evidence`
+| Intentfile probe expression for realisation checking
+
+| `precondition`
+| Dustfile command that must succeed before recovery
+
+| `verify_after`
+| Dustfile command to run after recovery
+
+| `blast_radius`
+| Dustfile scope: `file`, `service`, `cluster`, `global`
+
+| `algorithm`
+| Trustfile cryptographic algorithm used
+
+| `target`
+| Intentfile target date or milestone
+
+| `depends_on`
+| Intentfile dependency on another intent
+|===
+
+== Minimal Templates
+
+=== Mustfile.a2ml
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Mustfile (A2ML Canonical)
+
+@abstract:
+Physical State contract for my-project.
+@end
+
+@requires:
+- section: Checks
+@end
+
+## Checks
+
+### license-present
+- description: LICENSE file must exist
+- run: test -f LICENSE
+- severity: critical
+----
+
+=== Trustfile.a2ml
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Trustfile (A2ML Canonical)
+
+@abstract:
+Integrity verification for my-project.
+@end
+
+@requires:
+- section: Verifications
+@end
+
+## Verifications
+
+### lock-file-hash
+- description: Lock file unchanged
+- command: sha256sum -c Cargo.lock.sha256
+- algorithm: SHA-256
+- severity: critical
+----
+
+=== Dustfile.a2ml
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Dustfile (A2ML Canonical)
+
+@abstract:
+Recovery paths for my-project.
+@end
+
+@requires:
+- section: Source
+@end
+
+## Source
+
+### source-rollback
+- description: Revert source to last commit
+- rollback: git checkout HEAD -- src/
+- blast_radius: file
+----
+
+=== Intentfile.a2ml
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Intentfile (A2ML Canonical)
+
+@abstract:
+Roadmap for my-project.
+@end
+
+@requires:
+- section: Features
+@end
+
+## Features
+
+### initial-release
+- description: Ship v1.0.0
+- status: in-progress
+- priority: critical
+- evidence: command: grep -q '1.0.0' Cargo.toml
+----
+
+== See Also
+
+- **Full specifications**: `mustfile/docs/must-spec.adoc`, `trustfile/docs/trust-spec.adoc`, `dustfile/docs/dust-spec.adoc`, `intentfile/docs/intent-spec.adoc`
+- **A2ML language spec**: `standards/a2ml/docs/CONTRACTILES-A2ML-V1.adoc` (formal field requirements)
+- **A2ML language overview**: `standards/a2ml/docs/STATE-OF-A2ML.adoc`
+- **K9 Nickel components**: `contractiles/k9/README.adoc`
+- **CLI reference**: `contractile --help`

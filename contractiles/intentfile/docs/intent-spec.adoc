@@ -1,0 +1,705 @@
+= Intent Specification
+:author: Jonathan D.A. Jewell
+:revnumber: 0.1.0
+:toc: macro
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
+
+toc::[]
+
+== Overview
+
+Intend is a **contract-driven roadmap tool** that enforces **Intent State** — the declared future direction of a project, expressed as verifiable commitments that can be tracked from declaration through realisation.
+
+Where Must declares _what is true now_, Trust declares _what to verify_, and Dust declares _how to recover_, Intend declares _what we commit to making true_ — and provides the tools to track whether those commitments have been honoured.
+
+The Intentfile is the only contractile that is purely declarative by default — it has no executable commands. Its power comes from making intent _explicit, versioned, and auditable_, rather than leaving roadmap decisions in wiki pages, issue trackers, or people's heads.
+
+== Intent State: Definition
+
+**Intent State** is the complete set of declared future directions for a project:
+
+[cols="1,3"]
+|===
+| Dimension | What It Captures
+
+| **Architectural Intent**
+| Planned structural changes to the system (e.g., "migrate to post-quantum crypto")
+
+| **Feature Intent**
+| Capabilities planned for future delivery (e.g., "add canary rollout support")
+
+| **Migration Intent**
+| Technology transitions underway (e.g., "replace Node with Deno")
+
+| **Compliance Intent**
+| Regulatory or policy requirements being worked toward (e.g., "achieve SOC2 Type II")
+
+| **Deprecation Intent**
+| Components or patterns being phased out (e.g., "remove legacy YAML configs")
+
+| **Integration Intent**
+| Planned connections to external systems (e.g., "integrate with GitBot-Fleet")
+|===
+
+=== Intent Lifecycle
+
+Every intent moves through a defined lifecycle:
+
+[source]
+----
+declared → accepted → in-progress → realised → superseded
+                                         ↘ abandoned
+----
+
+[cols="1,3"]
+|===
+| Status | Meaning
+
+| `declared`
+| Intent has been written into the Intentfile but not yet reviewed or committed to
+
+| `accepted`
+| Intent has been reviewed and the team commits to pursuing it
+
+| `in-progress`
+| Active work is underway to realise this intent
+
+| `realised`
+| The intent has been fully implemented and verified
+
+| `superseded`
+| The intent has been replaced by a different approach
+
+| `abandoned`
+| The intent has been explicitly dropped (with documented reason)
+|===
+
+=== Relationship to STATE.scm
+
+Intents are _forward-looking state_. STATE.scm captures _current state_ (what has been done). The relationship:
+
+- An `in-progress` intent corresponds to an active task in STATE.scm
+- A `realised` intent corresponds to a completed milestone in STATE.scm
+- An `abandoned` intent should be documented in STATE.scm's session history
+
+== Relationship to Other Contractiles
+
+[cols="1,3"]
+|===
+| Contractile | Intend's Relationship
+
+| **Must**
+| Must declares _what is true_. Intend declares _what we want to become true_. When an intent is realised, it typically results in new Must checks being added.
+
+| **Trust**
+| Trust declares _what to verify_. Intend can track crypto-related intents (e.g., "migrate to post-quantum") whose realisation is verified by Trust (e.g., "Dilithium5 keys deployed").
+
+| **Dust**
+| Dust declares _how to recover_. If an intent's implementation causes problems, Dust provides the recovery path. Intend does not undo — it only tracks direction.
+
+| **K9**
+| K9 Yard-level components can validate intent coverage. K9 Hunt-level components can implement intent realisation probes.
+|===
+
+== Contract Format: A2ML
+
+=== Header
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Intentfile (A2ML Canonical)
+
+@abstract:
+Declared future intent for this project.
+Tracks architectural direction, planned features, and migration roadmap.
+@end
+
+@requires:
+- section: Architecture
+- section: Features
+- section: Migrations
+@end
+----
+
+Sections are named by the _domain_ of intent (Architecture, Features, Migrations, Compliance, Deprecations, Integrations, etc.). The section names are free-form — use whatever categories make sense for the project.
+
+=== Intent Entry Structure
+
+There are two ways to express intents in A2ML:
+
+==== Simple Intents (Prose)
+
+For lightweight intent tracking, intents can be expressed as prose entries within a section:
+
+[source,a2ml]
+----
+## Architecture
+
+- integrate hardware-backed key management
+- support node attestation for deployments
+- move to capability-based access control
+----
+
+Simple intents have no metadata beyond their text. They are useful for early-stage roadmapping where detail would be premature.
+
+==== Structured Intents (Subsections)
+
+For intents that need tracking metadata, use named subsections:
+
+[source,a2ml]
+----
+## Architecture
+
+### hardware-key-management
+- description: Integrate hardware-backed key management (TPM 2.0, YubiKey)
+- status: in-progress
+- priority: high
+- target: 2026-Q3
+- owner: security-team
+- evidence: keys/tpm-config.toml exists
+- depends_on: post-quantum-migration
+- notes: Blocked until Dilithium5 key support lands in TPM firmware
+
+### node-attestation
+- description: Support node attestation for deployment targets
+- status: declared
+- priority: medium
+- target: 2026-Q4
+- evidence: config/attestation.ncl exists
+----
+
+=== Intent Entry Fields
+
+[cols="1,1,3"]
+|===
+| Field | Required | Meaning
+
+| `description`
+| SHOULD
+| Human-readable description of the intent
+
+| `status`
+| OPTIONAL
+| Lifecycle status: `declared` (default), `accepted`, `in-progress`, `realised`, `superseded`, `abandoned`
+
+| `priority`
+| OPTIONAL
+| `critical`, `high`, `medium`, `low` — relative importance
+
+| `target`
+| OPTIONAL
+| Target date or milestone (e.g., `2026-Q3`, `v2.0`, `before-release`)
+
+| `owner`
+| OPTIONAL
+| Person or team responsible for realising this intent
+
+| `evidence`
+| OPTIONAL
+| A probe expression used by `intend check` to detect realisation. Can be a file existence check, a command, or a pattern match.
+
+| `depends_on`
+| OPTIONAL
+| Name of another intent that must be realised first
+
+| `supersedes`
+| OPTIONAL
+| Name of a previous intent that this one replaces
+
+| `abandoned_reason`
+| OPTIONAL
+| Why this intent was dropped (required when status is `abandoned`)
+
+| `notes`
+| OPTIONAL
+| Additional context for humans and AI agents
+|===
+
+=== Evidence Probes
+
+The `evidence:` field declares how `intend check` can detect whether an intent has been realised. Evidence probes are the bridge between declarative intent and verifiable state.
+
+Probe types (detected by format):
+
+[cols="1,3"]
+|===
+| Format | Meaning
+
+| `FILE exists`
+| Check if a file exists (e.g., `keys/tpm-config.toml exists`)
+
+| `FILE contains PATTERN`
+| Check if a file contains a string (e.g., `Cargo.toml contains dilithium`)
+
+| `command: COMMAND`
+| Run a shell command; exit 0 = realised (e.g., `command: kyber-verify --version`)
+
+| `must: CHECK_NAME`
+| Check if a specific Must check passes (e.g., `must: pq-keys-deployed`)
+
+| `trust: VERIFY_NAME`
+| Check if a specific Trust verification passes (e.g., `trust: dilithium-signature`)
+|===
+
+== Golden Examples
+
+=== Example 1: Minimal Library Roadmap
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Intentfile (A2ML Canonical)
+
+@abstract:
+Roadmap for a Rust library.
+@end
+
+@requires:
+- section: Features
+- section: Quality
+@end
+
+## Features
+
+- add async support for all public APIs
+- support no_std environments
+- add WASM compilation target
+
+## Quality
+
+- achieve 90% test coverage
+- add property-based testing with proptest
+- set up continuous fuzzing
+----
+
+=== Example 2: Gateway with Structured Intents
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Intentfile (A2ML Canonical)
+
+@abstract:
+Declared future intent for a policy gateway system.
+Tracks security, operations, and tooling direction.
+@end
+
+@requires:
+- section: Trust-Engine
+- section: Control-Plane
+- section: Pipeline
+- section: Introspection
+@end
+
+## Trust-Engine
+
+### hardware-key-management
+- description: Integrate hardware-backed key management (TPM 2.0, YubiKey)
+- status: in-progress
+- priority: high
+- target: 2026-Q3
+- owner: security-team
+- evidence: config/tpm.toml exists
+- notes: Waiting on TPM firmware update for Dilithium5
+
+### node-attestation
+- description: Support node attestation for deployment targets
+- status: declared
+- priority: medium
+- target: 2026-Q4
+- evidence: command: attestation-agent --version
+- depends_on: hardware-key-management
+
+## Control-Plane
+
+### gitops-config-promotion
+- description: Move to GitOps-backed configuration promotion
+- status: accepted
+- priority: high
+- target: 2026-Q2
+- evidence: .flux/ exists
+- notes: Evaluating Flux vs ArgoCD
+
+### canary-rollouts
+- description: Add canary and staged rollout support
+- status: declared
+- priority: medium
+- evidence: config/canary.ncl exists
+
+## Pipeline
+
+### nickel-policy-language
+- description: Adopt Nickel as the primary policy language
+- status: in-progress
+- priority: high
+- evidence: policy/policy.ncl exists
+- notes: Migration from YAML to Nickel underway
+
+### signed-artifact-promotion
+- description: Automate policy promotion from dev to prod with signed artifacts
+- status: declared
+- priority: medium
+- depends_on: hardware-key-management
+- evidence: trust: artifact-signature
+
+## Introspection
+
+### decision-latency-metrics
+- description: Expose decision latency and policy evaluation metrics
+- status: declared
+- priority: low
+- evidence: command: curl -s localhost:9090/metrics | grep -q decision_latency
+
+### request-tracing
+- description: Add tracing for end-to-end request decisions
+- status: declared
+- priority: low
+- evidence: config/tracing.toml exists
+----
+
+=== Example 3: Migration-Focused Intentfile
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Intentfile (A2ML Canonical)
+
+@abstract:
+Technology migration roadmap for a polyglot project.
+@end
+
+@requires:
+- section: Migrations
+- section: Deprecations
+@end
+
+## Migrations
+
+### typescript-to-rescript
+- description: Convert all TypeScript code to ReScript
+- status: in-progress
+- priority: critical
+- owner: frontend-team
+- target: 2026-Q2
+- evidence: command: find . -name '*.ts' -not -path '*/node_modules/*' | wc -l | grep -q '^0$'
+- notes: 47 files remaining as of 2026-03-01
+
+### node-to-deno
+- description: Replace Node.js runtime with Deno
+- status: in-progress
+- priority: critical
+- owner: platform-team
+- target: 2026-Q3
+- evidence: deno.json exists
+- depends_on: typescript-to-rescript
+
+### go-to-rust
+- description: Rewrite Go services in Rust
+- status: accepted
+- priority: high
+- target: 2026-Q4
+- evidence: command: find . -name '*.go' | wc -l | grep -q '^0$'
+
+### post-quantum-migration
+- description: Migrate all cryptographic operations to post-quantum algorithms
+- status: in-progress
+- priority: critical
+- target: 2026-Q3
+- evidence: trust: pq-keys-deployed
+- notes: Dilithium5 for signatures, Kyber1024 for key exchange
+
+## Deprecations
+
+### yaml-configs
+- description: Phase out YAML configuration in favour of Nickel
+- status: in-progress
+- priority: medium
+- evidence: command: find . -name '*.yaml' -o -name '*.yml' | grep -v .github | wc -l | grep -q '^0$'
+- notes: Keep .github/workflows/ YAML (GitHub requires it)
+
+### legacy-auth-middleware
+- description: Remove legacy session-based auth (replaced by capability tokens)
+- status: accepted
+- priority: high
+- abandoned_reason:
+- evidence: command: grep -rn 'session_token' src/ | wc -l | grep -q '^0$'
+----
+
+=== Example 4: Compliance-Driven Intentfile
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Intentfile (A2ML Canonical)
+
+@abstract:
+Compliance and security intent for a regulated system.
+@end
+
+@requires:
+- section: Compliance
+- section: Security
+@end
+
+## Compliance
+
+### soc2-type-ii
+- description: Achieve SOC2 Type II certification
+- status: in-progress
+- priority: critical
+- target: 2026-Q4
+- owner: compliance-team
+- evidence: docs/SOC2-REPORT.pdf exists
+
+### gdpr-data-mapping
+- description: Complete data flow mapping for GDPR compliance
+- status: accepted
+- priority: high
+- evidence: docs/DATA-FLOW-MAP.adoc exists
+
+## Security
+
+### sbom-generation
+- description: Generate SBOM for every release
+- status: in-progress
+- priority: high
+- evidence: sbom.json exists
+- notes: Using SPDX format, generated by cargo-sbom
+
+### vuln-scanning
+- description: Automated vulnerability scanning in CI
+- status: realised
+- evidence: command: grep -q 'trivy' .github/workflows/*.yml
+- notes: Realised 2026-02-15 — Trivy integrated into quality.yml
+----
+
+=== Example 5: Ada Safety-Critical Roadmap
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Intentfile (A2ML Canonical)
+
+@abstract:
+Certification and verification roadmap for a safety-critical Ada system.
+@end
+
+@requires:
+- section: Certification
+- section: Verification
+- section: Tooling
+@end
+
+## Certification
+
+### do178c-level-a
+- description: Achieve DO-178C Level A certification
+- status: in-progress
+- priority: critical
+- target: 2026-Q4
+- evidence: docs/DO178C-COMPLIANCE.adoc exists
+
+### mcdc-coverage
+- description: Achieve MC/DC structural coverage on all critical modules
+- status: in-progress
+- priority: critical
+- evidence: command: gcov --summary src/ | grep -q 'MC/DC.*100%'
+
+## Verification
+
+### full-spark-proof
+- description: Discharge all SPARK proof obligations at level 4
+- status: in-progress
+- priority: critical
+- evidence: command: gnatprove -P flight.gpr --level=4 --report=all 2>&1 | grep -q '0 unproved'
+
+### timing-analysis
+- description: Complete WCET analysis for all critical paths
+- status: declared
+- priority: high
+- depends_on: full-spark-proof
+
+## Tooling
+
+### lean4-integration
+- description: Add LEAN4 formal proofs alongside SPARK
+- status: declared
+- priority: medium
+- evidence: lakefile.lean exists
+----
+
+== Command Reference
+
+=== Display Commands
+
+[source,bash]
+----
+intend list               # Display all intents as a readable checklist
+intend list --status in-progress  # Filter by status
+intend list --priority critical   # Filter by priority
+intend list --section Migrations  # Filter by section
+----
+
+=== Verification Commands
+
+[source,bash]
+----
+intend check              # Run evidence probes for all intents
+intend check NAME         # Run evidence probe for a specific intent
+intend check --verbose    # Show probe commands and output
+----
+
+=== Progress Commands
+
+[source,bash]
+----
+intend progress           # Summary of intent realisation status
+intend progress --json    # Machine-readable progress report
+----
+
+=== Lifecycle Commands
+
+[source,bash]
+----
+intend accept NAME        # Move intent from declared → accepted
+intend start NAME         # Move intent from accepted → in-progress
+intend realise NAME       # Move intent from in-progress → realised
+intend abandon NAME --reason "..."  # Move intent to abandoned with reason
+intend supersede OLD NEW  # Mark OLD as superseded by NEW
+----
+
+NOTE: Lifecycle commands modify the Intentfile.a2ml in place. They are the only contractile commands that write to an A2ML file.
+
+=== Integration with Just
+
+[source,bash]
+----
+contractile gen-just    # Generates intend-list recipe
+just intend-list        # Display intents via Just
+----
+
+== Exit Codes
+
+[cols="1,3"]
+|===
+| Code | Meaning
+
+| 0
+| Command completed successfully (for `intend check`: all probed intents are realised)
+
+| 1
+| General error (command failed to execute)
+
+| 2
+| Intent not realised (evidence probe returned non-zero)
+
+| 3
+| Missing Intentfile.a2ml (no contract found)
+
+| 4
+| Invalid Intentfile.a2ml syntax (parse error)
+
+| 5
+| Named intent not found
+
+| 6
+| Lifecycle transition invalid (e.g., moving from `abandoned` to `in-progress`)
+|===
+
+== K9 Integration
+
+=== Yard-Level: Intent Coverage Validation
+
+A K9 Yard-level component can validate that intents are well-formed — every `in-progress` intent has an owner and target, every intent has an evidence probe, etc.
+
+[source,nickel]
+----
+# intent-validator.k9.ncl (Yard level)
+{
+  pedigree = { security = { leash = 'Yard } },
+  validation = {
+    # In-progress intents must have an owner
+    check_owners = std.array.all
+      (fun i => i.status != "in-progress" || i.owner != null)
+      intentfile.intents,
+
+    # All intents should have evidence probes
+    check_evidence = std.array.all
+      (fun i => i.evidence != null)
+      intentfile.intents,
+
+    # Critical intents must have a target date
+    check_targets = std.array.all
+      (fun i => i.priority != "critical" || i.target != null)
+      intentfile.intents,
+  },
+}
+----
+
+=== Hunt-Level: Automated Intent Checking
+
+A K9 Hunt-level component can automate intent checking as part of a CI/CD pipeline.
+
+[source,nickel]
+----
+# intent-ci.k9.ncl (Hunt level — requires signature)
+{
+  pedigree = { security = { leash = 'Hunt, signature_required = true } },
+  recipes = {
+    "check-all-intents" = {
+      description = "Run all intent evidence probes and report",
+      commands = [
+        "intend check --verbose",
+        "intend progress --json > intent-report.json",
+      ],
+    },
+    "update-state" = {
+      description = "Sync realised intents to STATE.scm",
+      commands = [
+        "intend progress --json | intent-to-state > .machine_readable/STATE.scm",
+      ],
+    },
+  },
+}
+----
+
+== Design Philosophy
+
+=== Why Intents Are Not Issues
+
+Issues track _work_ — they have assignees, due dates, comments, and close when done. Intents track _direction_ — they express _where the project is going_, not _what tasks need doing_. An intent like "migrate to post-quantum crypto" may spawn dozens of issues, but the intent itself is a single declaration.
+
+=== Why Intents Live in the Repo
+
+Putting intents in the repository (not a wiki, not an issue tracker) means:
+
+1. **They are versioned**: You can see when an intent was declared, modified, or realised
+2. **They are reviewed**: PRs that change intents go through code review
+3. **They are colocated**: The intent to "add WASM support" lives next to the code that implements it
+4. **They are machine-readable**: CI/CD pipelines can check intent realisation automatically
+5. **They are portable**: Forking a repo includes its intents; they survive platform migration
+
+=== Why Evidence Probes Exist
+
+Without evidence probes, intent checking is a manual process: someone reads the Intentfile, reads the code, and decides whether each intent has been realised. Evidence probes automate this by declaring _what to look for_ — a file that exists, a command that succeeds, a Must check that passes.
+
+Evidence probes turn intents from aspirational prose into verifiable commitments.
+
+== Best Practices
+
+1. **Start simple**: Use prose intents (`- add WASM support`) until they need tracking metadata
+2. **Add evidence probes early**: Even a rough probe is better than none
+3. **Review intents quarterly**: Remove `realised` intents after they've been stable for a quarter
+4. **Document abandonment**: Always set `abandoned_reason` when dropping an intent
+5. **Link intents to Must**: When an intent is realised, add corresponding Must checks
+6. **Use `depends_on` sparingly**: Only for true blocking dependencies, not preferences
+7. **Keep sections domain-focused**: "Migrations", "Security", "Features" — not "Sprint 17"
+8. **CI integration**: Run `intend check` in pipelines to track realisation automatically
+9. **One Intentfile per project**: Don't split intents across multiple files
+10. **Intents are not tasks**: Keep them strategic, not tactical

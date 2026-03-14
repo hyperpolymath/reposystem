@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# contractile — unified CLI for Must/Trust/Dust/Intend/K9 contractile runners
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
+
+[package]
+name = "contractile"
+description = "Unified CLI for executing contractile files: must check, trust verify, dust rollback, intend list, k9 eval"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+contractile-core.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+serde_json.workspace = true
+colored.workspace = true

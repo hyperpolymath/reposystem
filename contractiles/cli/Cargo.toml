@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Contractile CLI — unified runner for Must/Trust/Dust/Intend/K9 contractiles
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
+
+[workspace]
+resolver = "2"
+members = [
+    "crates/contractile-core",
+    "crates/contractile",
+]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"]
+license = "PMPL-1.0-or-later"
+edition = "2024"
+rust-version = "1.85"
+
+[workspace.dependencies]
+contractile-core = { path = "crates/contractile-core" }
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+colored = "3"
+toml = "0.8"

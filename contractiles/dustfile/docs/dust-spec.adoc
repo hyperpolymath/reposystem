@@ -1,0 +1,592 @@
+= Dust Specification
+:author: Jonathan D.A. Jewell
+:revnumber: 0.1.0
+:toc: macro
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
+
+toc::[]
+
+== Overview
+
+Dust is a **contract-driven recovery tool** that enforces **Reversibility State** — the declared ability to undo, roll back, or replay any operation that changes a project's physical or operational state.
+
+Where Must declares _what must be true_ and Trust declares _what to verify_, Dust declares _what to do when things go wrong_ — and provides the commands to execute those recoveries mechanically.
+
+The name "Dust" reflects the philosophy: every action produces dust (side effects, state changes, artifacts). A Dustfile declares how to sweep that dust away — returning to a known-good state.
+
+== Reversibility State: Definition
+
+**Reversibility State** is the complete set of declared recovery paths for a project:
+
+[cols="1,3"]
+|===
+| Dimension | What It Captures
+
+| **Rollback Targets**
+| Files and configurations that can be reverted to a previous version (e.g., `git checkout HEAD~1 -- file`)
+
+| **Undo Actions**
+| Deployment and infrastructure operations that can be reversed (e.g., `kubectl rollout undo`)
+
+| **Replay Handlers**
+| Log and event streams that can be replayed in reverse to undo decisions
+
+| **Transform Pipelines**
+| Operations that convert operational logs into reversible dust events
+
+| **Recovery Preconditions**
+| Conditions that must hold before a recovery action is safe to execute
+
+| **Blast Radius**
+| The scope of impact for each recovery action (single file, service, cluster)
+|===
+
+=== Recovery Semantics
+
+Dust follows **compensating transaction** semantics:
+
+1. **Every forward action has a declared reverse**: No operation should be irreversible without explicit acknowledgement
+2. **Recovery is selective**: You roll back _specific things_, not everything
+3. **Recovery preserves audit trail**: Undo actions do not destroy logs; they create new log entries
+4. **Recovery is idempotent**: Running a rollback twice produces the same state as running it once
+5. **Recovery is verifiable**: After rollback, `must check` should pass for the rolled-back component
+
+== Relationship to Other Contractiles
+
+[cols="1,3"]
+|===
+| Contractile | Dust's Relationship
+
+| **Must**
+| Must declares _what must be true_. Dust declares _how to restore that truth when it breaks_. After `dust rollback`, `must check` should pass.
+
+| **Trust**
+| Trust declares _how to verify integrity_. Dust can invoke `trust verify` after rollback to confirm the restored state is genuine. Dust actions SHOULD NOT bypass trust verification.
+
+| **Intend**
+| Intend declares _what we plan to do_. If a planned change causes problems, Dust provides the path back. Dust does not remove intents — it undoes their _implementations_.
+
+| **K9**
+| K9 Hunt-level components can automate dust operations. K9 Yard-level components can validate that Dustfile coverage is complete (every Must check has a corresponding Dust recovery).
+|===
+
+== Contract Format: A2ML
+
+=== Header
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Dustfile (A2ML Canonical)
+
+@abstract:
+Recovery and rollback semantics for this project.
+Declares how to undo every significant state change.
+@end
+
+@requires:
+- section: Logs
+- section: Policy
+- section: Gateway
+- section: Dust-Events
+@end
+----
+
+Sections are named by the _domain_ of recovery (Logs, Policy, Gateway, Database, etc.), not by action type. This keeps related recovery actions together.
+
+=== Recovery Entry Structure
+
+Each recovery action is a named subsection (`### name`) within a domain section. A recovery entry MUST have exactly one executable field from the following set:
+
+[cols="1,1,3"]
+|===
+| Field | Type | Meaning
+
+| `handler`
+| Replay
+| A command that replays or reverses a log/event stream. Used for decision logs, event sourcing, audit trails.
+
+| `rollback`
+| Revert
+| A command that reverts a file, config, or data store to a previous known-good version. Typically git-based.
+
+| `undo`
+| Compensate
+| A command that compensates for a failed operation. Used for deployments, infrastructure changes, external service calls.
+
+| `transform`
+| Convert
+| A command that converts operational data into reversible dust events. A preparation step, not a recovery action itself.
+|===
+
+=== Recovery Entry Fields
+
+[cols="1,1,3"]
+|===
+| Field | Required | Meaning
+
+| `handler` / `rollback` / `undo` / `transform`
+| MUST (exactly one)
+| The shell command to execute for recovery
+
+| `description`
+| SHOULD
+| Human-readable description of what this recovery does
+
+| `path`
+| OPTIONAL
+| The file or resource this recovery targets
+
+| `event`
+| OPTIONAL
+| The event type that triggers this recovery (e.g., `deploy.failure`)
+
+| `source`
+| OPTIONAL
+| The input data source for transforms
+
+| `notes`
+| OPTIONAL
+| Additional context for operators and auditors
+
+| `precondition`
+| OPTIONAL
+| A command that must succeed (exit 0) before the recovery is allowed to execute
+
+| `blast_radius`
+| OPTIONAL
+| `file`, `service`, `cluster`, `global` — scope of impact
+
+| `idempotent`
+| OPTIONAL
+| `true` (default) or `false` — whether repeated execution is safe
+
+| `preserves_audit`
+| OPTIONAL
+| `true` (default) or `false` — whether the action preserves audit logs
+
+| `verify_after`
+| OPTIONAL
+| A command to run after recovery to confirm success (e.g., `must check`)
+|===
+
+=== Complete Dustfile Example
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Dustfile (A2ML Canonical)
+
+@abstract:
+Recovery and rollback semantics for a policy gateway.
+Covers log replay, policy rollback, deployment undo, and event transforms.
+@end
+
+@requires:
+- section: Logs
+- section: Policy
+- section: Gateway
+- section: Dust-Events
+@end
+
+## Logs
+
+### gateway-decision-log
+- path: logs/decisions.json
+- description: Replay decision log in reverse to undo gateway decisions
+- handler: dust-replay --reverse logs/decisions.json
+- blast_radius: service
+- idempotent: true
+- preserves_audit: true
+- verify_after: just validate-policy
+
+## Policy
+
+### policy-rollback
+- path: policy/policy.ncl
+- description: Revert policy to the previous known-good revision
+- rollback: git checkout HEAD~1 -- policy/policy.ncl
+- blast_radius: file
+- precondition: git diff --quiet policy/policy.ncl || echo "Warning: uncommitted changes will be lost"
+- verify_after: trust verify policy-hash
+
+### policy-config-rollback
+- path: config/policy.yaml
+- description: Revert policy config to previous revision
+- rollback: git checkout HEAD~1 -- config/policy.yaml
+- blast_radius: file
+
+## Gateway
+
+### bad-deployment
+- event: deploy.failure
+- description: Undo a failed gateway deployment, preserving audit logs
+- undo: gatewayctl rollback --last
+- blast_radius: service
+- preserves_audit: true
+- notes: Rollback to the previous deployment version; audit logs are retained
+
+### bad-container-deploy
+- event: container.failure
+- description: Roll back to the previous container image
+- undo: podman rollback gateway:latest
+- blast_radius: service
+- precondition: podman image exists gateway:previous
+
+## Dust-Events
+
+### decision-log-to-dust
+- source: logs/decisions.json
+- description: Transform decision logs into reversible dust events
+- transform: dustify --input logs/decisions.json --output logs/dust-events.json
+- notes: Produces a dust-events.json file that can be fed back to dust-replay
+----
+
+== Golden Examples
+
+=== Example 1: Minimal Library
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Dustfile (A2ML Canonical)
+
+@abstract:
+Recovery paths for a minimal Rust library.
+@end
+
+@requires:
+- section: Source
+- section: Dependencies
+@end
+
+## Source
+
+### source-rollback
+- path: src/
+- description: Revert all source changes to last commit
+- rollback: git checkout HEAD -- src/
+- blast_radius: file
+- precondition: git stash
+
+## Dependencies
+
+### cargo-lock-rollback
+- path: Cargo.lock
+- description: Revert dependency changes
+- rollback: git checkout HEAD~1 -- Cargo.lock && cargo update
+- blast_radius: file
+- verify_after: trust verify cargo-lock-hash
+----
+
+=== Example 2: Microservice with Database
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Dustfile (A2ML Canonical)
+
+@abstract:
+Recovery paths for a microservice with database migrations.
+@end
+
+@requires:
+- section: Database
+- section: Deployment
+- section: Config
+@end
+
+## Database
+
+### migration-rollback
+- description: Roll back the last database migration
+- rollback: diesel migration revert
+- blast_radius: service
+- precondition: diesel migration pending | wc -l | grep -q '^0$'
+- verify_after: diesel migration list
+- idempotent: false
+- notes: Database rollbacks are NOT idempotent — only run once
+
+### seed-data-restore
+- description: Restore seed data from backup
+- undo: pg_restore --clean --dbname=myapp backups/latest.dump
+- blast_radius: service
+- precondition: test -f backups/latest.dump
+
+## Deployment
+
+### service-rollback
+- event: deploy.failure
+- description: Roll back to previous deployment
+- undo: kubectl rollout undo deployment/myapp
+- blast_radius: service
+- preserves_audit: true
+
+### canary-abort
+- event: canary.failure
+- description: Abort canary deployment and route all traffic to stable
+- undo: kubectl delete canary myapp-canary && kubectl scale deployment/myapp --replicas=3
+- blast_radius: service
+
+## Config
+
+### env-rollback
+- path: config/production.env
+- description: Revert production configuration
+- rollback: git checkout HEAD~1 -- config/production.env
+- blast_radius: file
+----
+
+=== Example 3: Monorepo with Per-Component Recovery
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Dustfile (A2ML Canonical)
+
+@abstract:
+Per-component recovery for a polyglot monorepo.
+@end
+
+@requires:
+- section: API
+- section: CLI
+- section: Web
+@end
+
+## API
+
+### api-rollback
+- description: Revert API to last known-good state
+- rollback: cd api && git checkout HEAD~1 -- . && gleam build
+- blast_radius: service
+- verify_after: cd api && gleam test
+
+## CLI
+
+### cli-rollback
+- description: Revert CLI to last known-good state
+- rollback: cd cli && git checkout HEAD~1 -- . && cargo build
+- blast_radius: service
+- verify_after: cd cli && cargo test
+
+## Web
+
+### web-rollback
+- description: Revert frontend to last known-good state
+- rollback: cd web && git checkout HEAD~1 -- . && deno task build
+- blast_radius: service
+- verify_after: cd web && deno task test
+----
+
+=== Example 4: Ada Safety-Critical with Formal Verification
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Dustfile (A2ML Canonical)
+
+@abstract:
+Recovery paths for a safety-critical Ada system.
+Rollbacks require re-proof of SPARK obligations.
+@end
+
+@requires:
+- section: Source
+- section: Proofs
+@end
+
+## Source
+
+### source-rollback
+- path: src/
+- description: Revert source to previous audited version
+- rollback: git checkout $(git log --oneline --grep='[AUDITED]' -1 --format='%H') -- src/
+- blast_radius: file
+- verify_after: gnatprove -P flight.gpr --level=2
+
+## Proofs
+
+### proof-rollback
+- path: proofs/
+- description: Revert formal proofs to match source version
+- rollback: git checkout HEAD~1 -- proofs/
+- blast_radius: file
+- verify_after: lake build && lake exectest
+- notes: Proof rollback must be paired with source rollback
+----
+
+=== Example 5: Infrastructure with Transparency Log
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Dustfile (A2ML Canonical)
+
+@abstract:
+Infrastructure recovery with transparency log preservation.
+@end
+
+@requires:
+- section: DNS
+- section: TLS
+- section: Audit
+@end
+
+## DNS
+
+### dns-rollback
+- description: Revert DNS records to previous configuration
+- rollback: terraform apply -target=module.dns -var-file=dns-previous.tfvars
+- blast_radius: global
+- precondition: terraform plan -target=module.dns -var-file=dns-previous.tfvars
+- notes: DNS changes propagate globally — allow 24h for full resolution
+
+## TLS
+
+### cert-rollback
+- description: Revert to previous TLS certificate
+- rollback: cp certs/server.pem.bak certs/server.pem && systemctl reload nginx
+- blast_radius: service
+- verify_after: openssl x509 -in certs/server.pem -checkend 0 -noout
+
+## Audit
+
+### audit-log-archive
+- description: Archive current audit logs before any recovery operation
+- handler: tar czf backups/audit-$(date +%Y%m%d%H%M%S).tar.gz logs/
+- blast_radius: file
+- notes: Always run this BEFORE any other dust action
+----
+
+== Command Reference
+
+=== Status and Listing
+
+[source,bash]
+----
+dust status             # List all available recovery actions with types
+dust list               # Alias for dust status
+----
+
+=== Recovery Commands
+
+[source,bash]
+----
+dust rollback NAME      # Execute a named rollback action
+dust replay NAME        # Execute a named handler (log replay)
+dust run NAME           # Execute any dust action by name, regardless of type
+dust run NAME --dry-run # Preview the command without executing
+dust run NAME --verbose # Show command output
+----
+
+=== Precondition Checking
+
+[source,bash]
+----
+dust run NAME --check-precondition  # Run precondition only, don't execute
+----
+
+=== Integration with Just
+
+[source,bash]
+----
+contractile gen-just    # Generates dust-status, dust-<name> recipes
+just dust-status        # List recovery actions via Just
+just dust-policy-rollback  # Execute a specific rollback via Just
+----
+
+== Exit Codes
+
+[cols="1,3"]
+|===
+| Code | Meaning
+
+| 0
+| Recovery action completed successfully
+
+| 1
+| General error (command failed to execute)
+
+| 2
+| Recovery action failed (the undo/rollback/handler command returned non-zero)
+
+| 3
+| Missing Dustfile.a2ml (no contract found)
+
+| 4
+| Invalid Dustfile.a2ml syntax (parse error)
+
+| 5
+| Precondition failed (recovery aborted because precondition returned non-zero)
+
+| 6
+| Verification after recovery failed (`verify_after` command returned non-zero)
+
+| 7
+| Named action not found in Dustfile
+|===
+
+== K9 Integration
+
+=== Yard-Level: Dustfile Coverage Validation
+
+A K9 Yard-level component can validate that every Must check has a corresponding Dust recovery path — ensuring that every invariant is recoverable.
+
+[source,nickel]
+----
+# dust-coverage-validator.k9.ncl (Yard level)
+{
+  pedigree = { security = { leash = 'Yard } },
+  validation = {
+    # Every must check should have a dust recovery
+    check_coverage = std.array.all
+      (fun must_check =>
+        std.array.any
+          (fun dust_action => dust_action.path == must_check.path)
+          dustfile.actions)
+      mustfile.checks,
+  },
+}
+----
+
+=== Hunt-Level: Automated Recovery
+
+A K9 Hunt-level component can automate recovery workflows — running precondition checks, executing the recovery, verifying the result, and logging the action.
+
+[source,nickel]
+----
+# auto-recover.k9.ncl (Hunt level — requires signature)
+{
+  pedigree = { security = { leash = 'Hunt, signature_required = true } },
+  recipes = {
+    "full-recovery" = {
+      description = "Automated recovery: precondition → rollback → verify",
+      commands = [
+        "dust run audit-log-archive",
+        "dust rollback policy-rollback",
+        "trust verify policy-hash",
+        "must check",
+      ],
+    },
+  },
+}
+----
+
+== Best Practices
+
+1. **Every Must check needs a Dust recovery**: If `must check` can fail, `dust rollback` should fix it
+2. **Always archive audit logs first**: Run `dust run audit-log-archive` before any recovery
+3. **Use preconditions**: Prevent unsafe recoveries with `precondition:` checks
+4. **Verify after rollback**: Use `verify_after:` to confirm recovery success
+5. **Mark non-idempotent actions**: Database rollbacks and similar should set `idempotent: false`
+6. **Document blast radius**: Operators need to know if a recovery affects one file or the entire cluster
+7. **Test recoveries regularly**: A recovery path that has never been tested is not a recovery path
+8. **Preserve audit trails**: Recovery actions should create new log entries, not destroy old ones
+9. **Pair source and proof rollbacks**: In formally verified systems, rolling back source without rolling back proofs leaves the system in an inconsistent state
+10. **CI integration**: Run `dust status` in pipelines to verify recovery paths are declared

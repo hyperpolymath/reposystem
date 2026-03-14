@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PLMP-1.0-or-later
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # Contractiles Justfile
 # Usage: just <command>
 
@@ -13,11 +13,32 @@ version := "1.0.0"
 gateway_port := "8080"
 schema_version := "v1.0.0"
 
+# Import auto-generated contractile recipes (must-check, trust-verify, etc.)
+# Re-generate with: just gen-just
+import? "contractile.just"
+
 # Show all available recipes
 _default:
     @just --list --unsorted
 
 default: _default
+
+# ── Contractile CLI ──
+
+# Generate contractile.just from all A2ML and K9 sources
+gen-just:
+    @contractile gen-just --dir contractiles --output contractile.just
+
+# Run all must checks (Physical State verification)
+check: must-check
+
+# Run all trust verifications (integrity + provenance)
+verify: trust-verify
+
+# Full lifecycle: check → verify
+audit: check verify
+
+# ── Project Setup ──
 
 # Initialize repo scaffolding for policy, schema, and logs
 setup:
@@ -30,7 +51,9 @@ setup:
 # Start the gateway (placeholder)
 run-gateway:
     @echo "Starting gateway on port {{gateway_port}}..."
-    @echo "Hook this to your runtime (systemd, docker-compose, etc.)"
+    @echo "Hook this to your runtime (systemd, podman, etc.)"
+
+# ── Policy Management ──
 
 # Validate policy config and policy source
 validate-policy:
@@ -48,11 +71,29 @@ compile-nickel:
     @nickel export policy/policy.ncl -f json -o policy/policy.json
     @echo "Nickel export complete"
 
-# Generate or refresh the Mustfile contract
-# (Currently a stub; keep Mustfile.a2ml hand-edited and versioned.)
+# ── Build ──
+
+# Build the contractile CLI (Rust)
+build-cli:
+    @cd cli && cargo build --release
+    @echo "Built: cli/target/release/contractile"
+
+# Install contractile CLI symlinks to ~/.local/bin
+install-cli: build-cli
+    @mkdir -p ~/.local/bin
+    @for name in must trust dust intend k9 contractile; do \
+      ln -sf $(pwd)/cli/target/release/contractile ~/.local/bin/$$name; \
+    done
+    @echo "Installed: must, trust, dust, intend, k9, contractile → ~/.local/bin/"
+
+# ── Legacy ──
+
+# Generate or refresh the Mustfile contract (stub)
 gen-mustfile:
     @echo "Canonical contract lives at contractiles/must/Mustfile.a2ml"
     @echo "Legacy contractiles/must/Mustfile is deprecated compatibility only"
+
+# ── Metadata ──
 
 # Sync .machine_readable metadata into 6scm mirrors
 sync-6scm:

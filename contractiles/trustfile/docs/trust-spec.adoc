@@ -1,0 +1,759 @@
+= Trust Specification
+:author: Jonathan D.A. Jewell
+:revnumber: 0.1.0
+:toc: macro
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
+
+toc::[]
+
+== Overview
+
+Trust is a **contract-driven integrity tool** that enforces **Provenance State** — the verifiable chain of cryptographic evidence binding every artifact to its origin, its author, and its expected content.
+
+Where Must declares _what exists_, Trust declares _what to believe_ — and provides the commands to verify those beliefs mechanically.
+
+== Provenance State: Definition
+
+**Provenance State** is the complete set of verifiable integrity facts about a project:
+
+[cols="1,3"]
+|===
+| Dimension | What It Captures
+
+| **Content Hashes**
+| Cryptographic digests binding file contents to known-good values (SHA-256, SHA3-512, SHAKE256, BLAKE3)
+
+| **Digital Signatures**
+| Author attestations over artifacts using classical (Ed448, Ed25519) or post-quantum (Dilithium5, SPHINCS+) algorithms
+
+| **Provenance Chains**
+| Signed records linking each artifact to the commit, pipeline, and author that produced it
+
+| **Key Material**
+| Public keys, key IDs, rotation history, and trust anchors used for verification
+
+| **Formal Proofs**
+| Machine-checked theorems (LEAN4, Idris2) that the integrity model itself is sound
+
+| **Transparency Logs**
+| Append-only logs (RFC 9162) recording every integrity-relevant event for auditability
+|===
+
+=== Trust Hierarchy
+
+Provenance State follows a **trust hierarchy** from strongest to weakest evidence:
+
+1. **Formal proof**: A LEAN4/Idris2 theorem proves a property holds for all inputs
+2. **Cryptographic signature**: A key holder attests to a specific artifact
+3. **Content hash**: A digest matches the expected value
+4. **Policy assertion**: A Rego/Nickel rule evaluates to true
+
+Higher levels subsume lower: a formal proof that a signing scheme is correct makes its signatures trustworthy, which in turn makes the hashes it covers trustworthy.
+
+== Relationship to Other Contractiles
+
+[cols="1,3"]
+|===
+| Contractile | Trust's Relationship
+
+| **Must**
+| Must declares _what must exist_. Trust declares _how to verify those things are genuine_. A Mustfile says `LICENSE` must exist; a Trustfile says `LICENSE` must hash to a specific SHA-256.
+
+| **Dust**
+| Dust declares _how to recover_. Trust provides _integrity evidence for recovery targets_. Before rolling back, dust actions can invoke trust verifications to confirm the rollback target is genuine.
+
+| **Intend**
+| Intend declares _what we plan to do_. Trust can track _whether crypto-related intents have been realised_ (e.g., "migrate to post-quantum" → check if PQ keys are deployed).
+
+| **K9**
+| K9 Yard-level components can validate Trustfile entries using Nickel contracts. K9 Hunt-level components require trust verification (signature check) before execution.
+|===
+
+== Contract Format: A2ML
+
+The canonical format for Trustfiles is A2ML. The TOML format used by Mustfiles is not used for Trust — A2ML's flexibility better serves the heterogeneous verification landscape.
+
+=== Header
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Trustfile (A2ML Canonical)
+
+@abstract:
+Cryptographic and provenance verification steps for this project.
+@end
+
+@requires:
+- section: Inputs
+- section: Verifications
+@end
+----
+
+=== Inputs Section (Required)
+
+Declares all files, keys, and artifacts that the Trustfile references. This serves as both documentation and a pre-flight check — the runner can verify inputs exist before attempting verification.
+
+[source,a2ml]
+----
+## Inputs
+
+- policy_path: policy/policy.ncl
+- policy_hash_path: policy/policy.ncl.sha256
+- schema_path: schema/schema.json
+- schema_sig_path: schema/schema.sig
+- schema_pub_path: schema/schema.pub
+----
+
+Recognised input key conventions:
+
+[cols="1,3"]
+|===
+| Key suffix | Meaning
+
+| `_path`
+| Path to the artifact being verified
+
+| `_hash_path`
+| Path to the file containing the expected hash
+
+| `_sig_path`
+| Path to the detached signature file
+
+| `_pub_path`
+| Path to the public key for signature verification
+
+| `_cert_path`
+| Path to the certificate for TLS/mTLS verification
+|===
+
+=== Verifications Section (Required)
+
+Each verification is a named subsection under `## Verifications` (or any section name declared in `@requires:`). A verification MUST have a `command:` entry containing the shell command that performs the check. It SHOULD have a `description:` entry.
+
+[source,a2ml]
+----
+## Verifications
+
+### policy-hash
+- description: SHA-256 of policy matches expected value
+- command: sha256sum -c policy/policy.ncl.sha256
+- algorithm: SHA-256
+- severity: critical
+
+### schema-signature
+- description: Schema signature verifies against the project signing key
+- command: openssl dgst -sha256 -verify schema/schema.pub -signature schema/schema.sig schema/schema.json
+- algorithm: Ed25519
+- severity: critical
+
+### driver-signatures
+- description: Post-quantum signatures verify for compiled drivers
+- command: kyber-verify --pub drivers/gateway-driver.bin.pub --sig drivers/gateway-driver.bin.sig --file drivers/gateway-driver.bin
+- algorithm: Kyber1024
+- severity: critical
+
+### license-content
+- description: LICENSE file contains expected SPDX identifier
+- command: grep -q "PMPL-1.0-or-later" LICENSE
+- severity: warning
+----
+
+=== Verification Entry Fields
+
+[cols="1,1,3"]
+|===
+| Field | Required | Meaning
+
+| `description`
+| SHOULD
+| Human-readable description of what is verified
+
+| `command`
+| MUST
+| Shell command to execute; exit 0 = verified, non-zero = failed
+
+| `algorithm`
+| OPTIONAL
+| Cryptographic algorithm used (for documentation and K9 contract validation)
+
+| `severity`
+| OPTIONAL
+| `critical` (default) or `warning`; controls whether failure aborts the verification run
+
+| `proof`
+| OPTIONAL
+| Path to a LEAN4/Idris2 formal proof of this verification's soundness
+
+| `ci_cd`
+| OPTIONAL
+| CI/CD automation hint (e.g., "re-verify-on-push", "rotate-keys-on-compromise")
+|===
+
+=== Keys Section (Optional)
+
+Declares the public keys and algorithms used for verification. This section is informational for the A2ML runner but critical for K9 validation contracts and LEAN4 proofs.
+
+[source,a2ml]
+----
+## Keys
+
+### primary-sig
+- type: HybridKey2024
+- classical_algorithm: Ed448
+- pq_algorithm: Dilithium5
+- fallback_algorithm: SPHINCS+
+- usage: authentication, assertion
+- rotation: annual
+- proof: Crypto.HybridKey.lean
+
+### build-sig
+- type: Ed25519
+- usage: artifact-signing
+- rotation: per-release
+----
+
+=== Policies Section (Optional)
+
+Declares verification policies written in Rego, Nickel, or formal logic. These are not directly executed by `trust verify` but are referenced by K9 Yard-level validators and CI/CD pipelines.
+
+[source,a2ml]
+----
+## Policies
+
+### dns-policy
+- language: rego
+- file: policies/dns.rego
+- description: All DNS records must have integrity proofs and ZONEMD hashes
+- proof: Policies.DNS.lean
+
+### http-policy
+- language: nickel
+- file: policies/http.ncl
+- description: All HTTP endpoints require capability tokens and consent headers
+----
+
+=== Proofs Section (Optional)
+
+Declares formal proofs (LEAN4, Idris2) that verify the soundness of the trust model itself. These are the strongest form of evidence — they prove properties hold for _all_ inputs, not just specific artifacts.
+
+[source,a2ml]
+----
+## Proofs
+
+### dns-correctness
+- file: proofs/DNS.Core.lean
+- description: All DNS records are conflict-free and correctly signed
+- status: proven
+- ci_cd: reprove-on-dns-change
+
+### tls-handshake-safety
+- file: proofs/TLS.Handshake.lean
+- description: TLS 1.3 + Kyber1024 handshake resists downgrade attacks
+- status: proven
+
+### capability-gateway-correctness
+- file: proofs/HTTP.Capabilities.lean
+- description: OCAP-style capability gateway enforces minimal authority
+- status: proven
+----
+
+Recognised `status` values: `proven`, `in-progress`, `axiom`, `conjecture`.
+
+== Extended A2ML: Cyberwar-Ready Trustfile
+
+The canonical Trustfile also supports extended sections for infrastructure-level trust. These sections are processed by specialised validators (Hypatia, GitBot-Fleet) rather than the `trust` CLI directly, but they live in the same A2ML file to keep all trust declarations in one place.
+
+[cols="1,3"]
+|===
+| Section | Purpose
+
+| `DNS`
+| DNS records with ZONEMD integrity, DNSSEC, CAA, DMARC, TLSA
+
+| `SSL/TLS`
+| Cipher suites, protocol versions, OCSP, certificate transparency
+
+| `Threat Model`
+| Adversary types and mitigations (APT, ransomware, quantum)
+
+| `Capability Gateway`
+| Resource-level access policies with formal proofs
+
+| `SDP Rules`
+| Software-Defined Perimeter access policies
+
+| `Transparency Log`
+| RFC 9162 append-only log entries
+
+| `Cloudflare`
+| WAF rules, Workers scripts, route bindings
+
+| `PHP Hardening`
+| Aegis + Sanctify directives (for PHP-serving infrastructure)
+
+| `Automation`
+| GitBot-Fleet hashing, diffing, and integrity automation
+
+| `Hypatia Scans`
+| Neurosymbolic scan configurations
+|===
+
+== Golden Examples
+
+=== Example 1: Minimal Rust Library
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Trustfile (A2ML Canonical)
+
+@abstract:
+Integrity verification for a minimal Rust library.
+@end
+
+@requires:
+- section: Inputs
+- section: Verifications
+@end
+
+## Inputs
+
+- cargo_lock: Cargo.lock
+- license: LICENSE
+- source_dir: src/
+
+## Verifications
+
+### cargo-lock-hash
+- description: Cargo.lock matches committed hash (no supply-chain tampering)
+- command: sha256sum -c Cargo.lock.sha256
+- algorithm: SHA-256
+- severity: critical
+
+### license-present
+- description: LICENSE file contains SPDX identifier
+- command: grep -q "SPDX-License-Identifier" LICENSE
+- severity: warning
+
+### source-spdx-headers
+- description: All source files have SPDX headers
+- command: find src/ -name '*.rs' -exec grep -L 'SPDX-License-Identifier' {} + | wc -l | grep -q '^0$'
+- severity: warning
+----
+
+=== Example 2: Gateway with Post-Quantum Crypto
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Trustfile (A2ML Canonical)
+
+@abstract:
+Cryptographic and provenance verification for a policy gateway.
+Covers hash integrity, hybrid PQ signatures, and formal proofs.
+@end
+
+@requires:
+- section: Inputs
+- section: Keys
+- section: Verifications
+- section: Proofs
+@end
+
+## Inputs
+
+- policy_path: policy/policy.ncl
+- policy_hash_path: policy/policy.ncl.sha256
+- schema_path: schema/schema.json
+- schema_sig_path: schema/schema.sig
+- schema_pub_path: keys/schema.pub
+- driver_path: drivers/gateway-driver.bin
+- driver_sig_path: drivers/gateway-driver.bin.sig
+- driver_pub_path: keys/driver.pub
+- migrations_path: migrations/provenance.json
+- migrations_sig_path: migrations/provenance.sig
+- migrations_pub_path: keys/migrations.pub
+
+## Keys
+
+### schema-signing-key
+- type: Ed25519
+- file: keys/schema.pub
+- usage: schema-signing
+- rotation: per-release
+
+### driver-signing-key
+- type: Dilithium5
+- file: keys/driver.pub
+- usage: driver-signing
+- rotation: per-build
+
+### migration-signing-key
+- type: Ed448
+- file: keys/migrations.pub
+- usage: provenance-attestation
+- rotation: annual
+
+## Verifications
+
+### policy-hash
+- description: SHA-256 of policy matches committed hash
+- command: sha256sum -c policy/policy.ncl.sha256
+- algorithm: SHA-256
+- severity: critical
+
+### schema-signature
+- description: Schema signature verifies against schema signing key
+- command: openssl dgst -sha256 -verify keys/schema.pub -signature schema/schema.sig schema/schema.json
+- algorithm: Ed25519
+- severity: critical
+
+### driver-signatures
+- description: Post-quantum signature verifies for compiled driver
+- command: kyber-verify --pub keys/driver.pub --sig drivers/gateway-driver.bin.sig --file drivers/gateway-driver.bin
+- algorithm: Dilithium5
+- severity: critical
+
+### migration-provenance
+- description: Migration provenance chain is intact
+- command: openssl dgst -sha256 -verify keys/migrations.pub -signature migrations/provenance.sig migrations/provenance.json
+- algorithm: Ed448
+- severity: critical
+
+### no-banned-algorithms
+- description: No MD5 or SHA1 used anywhere in the project
+- command: grep -rn 'md5\|sha1\|MD5\|SHA1' --include='*.toml' --include='*.json' --include='*.yaml' --include='*.yml' . | grep -v 'sha1sum' | wc -l | grep -q '^0$'
+- severity: warning
+
+## Proofs
+
+### crypto-algorithm-safety
+- file: proofs/Crypto.Algorithms.lean
+- description: All hash and signature algorithms meet post-quantum resistance thresholds
+- status: proven
+
+### key-rotation-liveness
+- file: proofs/Crypto.KeyRotation.lean
+- description: Key rotation schedule ensures no key is used beyond its safe lifetime
+- status: in-progress
+----
+
+=== Example 3: Monorepo with Per-Component Verification
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Trustfile (A2ML Canonical)
+
+@abstract:
+Per-component integrity verification for a polyglot monorepo.
+Each component has its own signing key and hash file.
+@end
+
+@requires:
+- section: Verifications
+@end
+
+## Verifications
+
+### api-lock-hash
+- description: API dependencies unchanged (Gleam lock file)
+- command: sha256sum -c api/manifest.toml.sha256
+- severity: critical
+
+### cli-lock-hash
+- description: CLI dependencies unchanged (Cargo lock)
+- command: sha256sum -c cli/Cargo.lock.sha256
+- severity: critical
+
+### web-lock-hash
+- description: Web dependencies unchanged (deno lock)
+- command: sha256sum -c web/deno.lock.sha256
+- severity: critical
+
+### container-image-digests
+- description: All Containerfile base images use pinned digests
+- command: grep -rn 'FROM ' */Containerfile | grep -v '@sha256:' | wc -l | grep -q '^0$'
+- severity: critical
+
+### workflow-action-pins
+- description: All GitHub Actions are SHA-pinned
+- command: grep -rn 'uses:' .github/workflows/*.yml | grep -v '@[a-f0-9]\{40\}' | grep -v '#' | wc -l | grep -q '^0$'
+- severity: warning
+----
+
+=== Example 4: Ada Safety-Critical with SPARK Proofs
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Trustfile (A2ML Canonical)
+
+@abstract:
+Integrity and formal verification for a safety-critical Ada system.
+Combines cryptographic hashing with SPARK proof obligations.
+@end
+
+@requires:
+- section: Verifications
+- section: Proofs
+@end
+
+## Verifications
+
+### source-hash
+- description: Source tree hash matches release manifest
+- command: find src/ -name '*.ad[bs]' -exec sha256sum {} + | sha256sum | cut -d' ' -f1 | diff - RELEASE_HASH
+- algorithm: SHA-256
+- severity: critical
+
+### gpr-integrity
+- description: GNAT project file unchanged since last audit
+- command: sha256sum -c flight.gpr.sha256
+- severity: critical
+
+### spark-proof-obligations
+- description: All SPARK proof obligations discharged
+- command: gnatprove -P flight.gpr --level=2 --report=all 2>&1 | grep -q "0 unproved"
+- severity: critical
+
+### no-unsafe-pragmas
+- description: No unsafe pragmas present in source
+- command: grep -rn 'pragma Suppress\|pragma Import.*System' src/ | wc -l | grep -q '^0$'
+- severity: critical
+
+## Proofs
+
+### memory-safety
+- file: proofs/Memory.lean
+- description: No buffer overflow, use-after-free, or dangling pointer possible
+- status: proven
+
+### timing-analysis
+- file: proofs/Timing.lean
+- description: All critical paths complete within WCET bounds
+- status: in-progress
+----
+
+=== Example 5: Infrastructure with Transparency Log
+
+[source,a2ml]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Trustfile (A2ML Canonical)
+
+@abstract:
+Infrastructure trust verification with transparency logging.
+@end
+
+@requires:
+- section: Verifications
+- section: Transparency
+@end
+
+## Verifications
+
+### config-hash
+- description: Infrastructure config hashes match
+- command: sha256sum -c config/infra.sha256
+- severity: critical
+
+### tls-cert-valid
+- description: TLS certificate is valid and not expiring within 30 days
+- command: openssl x509 -in certs/server.pem -checkend 2592000 -noout
+- severity: critical
+
+### tls-no-weak-ciphers
+- description: No weak cipher suites configured
+- command: openssl ciphers -v 'ALL' | grep -i 'RC4\|DES\|MD5\|NULL' | wc -l | grep -q '^0$'
+- severity: critical
+
+## Transparency
+
+### deployment-log
+- uri: https://example.com/log/deployments.json
+- format: RFC 9162
+- description: All deployments recorded in append-only transparency log
+- verify: curl -s https://example.com/log/deployments.json | jq -e '.entries | length > 0'
+----
+
+== Command Reference
+
+=== Verification Commands
+
+[source,bash]
+----
+trust verify               # Run all verifications
+trust verify NAME          # Run a single named verification
+trust verify --strict      # Fail on warnings (default: warnings are non-fatal)
+trust verify --verbose     # Show command output for each verification
+trust verify --dry-run     # Preview commands without executing
+
+trust list                 # List available verifications with descriptions
+----
+
+=== Hash Commands
+
+[source,bash]
+----
+trust hash FILE            # Compute and display SHA-256 hash of a file
+trust hash FILE --algo sha3-512   # Use a specific algorithm
+trust hash FILE --check FILE.sha256  # Verify against a hash file
+----
+
+=== Signing Commands
+
+[source,bash]
+----
+trust sign FILE                    # Sign a file (uses default key)
+trust sign FILE --key KEY_PATH     # Sign with a specific key
+trust sign FILE --algo dilithium5  # Use a specific algorithm
+trust sign --verify FILE           # Verify a file's signature
+----
+
+=== Integration with Just
+
+[source,bash]
+----
+contractile gen-just    # Generates trust-verify, trust-<name> recipes
+just trust-verify       # Run all trust verifications via Just
+just trust-policy-hash  # Run a single verification via Just
+----
+
+== Exit Codes
+
+[cols="1,3"]
+|===
+| Code | Meaning
+
+| 0
+| All verifications passed
+
+| 1
+| General error (command failed to execute)
+
+| 2
+| Verification failed (integrity violation detected)
+
+| 3
+| Missing Trustfile.a2ml (no contract found)
+
+| 4
+| Invalid Trustfile.a2ml syntax (parse error)
+
+| 5
+| Missing input (a file referenced in the Inputs section does not exist)
+
+| 6
+| Signature verification failed (distinct from hash failure)
+
+| 7
+| Formal proof invalid or not found
+|===
+
+== K9 Integration
+
+=== Yard-Level: Trustfile Validation
+
+A K9 Yard-level component can validate the _structure_ of a Trustfile — ensuring all verifications use approved algorithms, all critical checks have formal proofs, etc.
+
+[source,nickel]
+----
+# trust-validator.k9.ncl (Yard level)
+{
+  pedigree = { security = { leash = 'Yard } },
+  validation = {
+    # All verifications must specify an algorithm
+    check_algorithms = std.array.all
+      (fun v => v.algorithm != null)
+      trustfile.verifications,
+
+    # Critical verifications must have a proof reference
+    check_proofs = std.array.all
+      (fun v => v.severity != "critical" || v.proof != null)
+      trustfile.verifications,
+
+    # No banned algorithms
+    check_no_weak = std.array.all
+      (fun v => !std.string.contains "MD5" v.algorithm
+             && !std.string.contains "SHA1" v.algorithm)
+      trustfile.verifications,
+  },
+}
+----
+
+=== Hunt-Level: Automated Trust Operations
+
+A K9 Hunt-level component can automate trust operations like key rotation, hash regeneration, and transparency log updates.
+
+[source,nickel]
+----
+# trust-ops.k9.ncl (Hunt level — requires signature)
+{
+  pedigree = { security = { leash = 'Hunt, signature_required = true } },
+  recipes = {
+    "regenerate-hashes" = {
+      description = "Recompute all hash files from current artifacts",
+      commands = [
+        "sha256sum policy/policy.ncl > policy/policy.ncl.sha256",
+        "sha256sum Cargo.lock > Cargo.lock.sha256",
+      ],
+    },
+    "rotate-keys" = {
+      description = "Generate new signing keys and re-sign all artifacts",
+      commands = [
+        "openssl genpkey -algorithm Ed25519 -out keys/schema.key",
+        "openssl pkey -in keys/schema.key -pubout -out keys/schema.pub",
+        "trust sign schema/schema.json --key keys/schema.key",
+      ],
+    },
+  },
+}
+----
+
+== Automation Integration
+
+=== GitBot-Fleet
+
+The Trustfile declares automation hooks that GitBot-Fleet acts on:
+
+- `ci_cd: "auto-hash-on-push"` → GitBot-Fleet recomputes hashes on every push
+- `ci_cd: "rotate-keys-on-compromise"` → GitBot-Fleet triggers key rotation on security advisory
+- `ci_cd: "reprove-on-dns-change"` → GitBot-Fleet re-runs LEAN4 proofs when DNS records change
+
+=== Hypatia
+
+Hypatia neurosymbolic scans reference the Trustfile for:
+
+- Crypto algorithm validation (no weak algorithms)
+- Key rotation compliance
+- DNS integrity (ZONEMD, DNSSEC, CAA)
+- Certificate transparency monitoring
+
+=== CI/CD Pipeline
+
+[source,bash]
+----
+# In GitHub Actions / CI pipeline:
+trust verify --strict      # Fail the build on any integrity violation
+trust hash --check *.sha256  # Verify all hash files
+----
+
+== Best Practices
+
+1. **Hash everything that matters**: Cargo.lock, deno.lock, key config files
+2. **Sign release artifacts**: Binaries, containers, and tarballs
+3. **Use post-quantum algorithms**: Dilithium5 or SPHINCS+ for long-lived signatures
+4. **Pin all base images**: Use `@sha256:` digests in Containerfiles
+5. **SHA-pin all actions**: Use full 40-char SHA in GitHub Actions
+6. **Record provenance**: Use transparency logs for deployment history
+7. **Prove what you can**: Formal proofs are the strongest evidence
+8. **Automate hash updates**: GitBot-Fleet prevents manual hash management
+9. **Separate signing keys per use**: Schema keys, driver keys, migration keys
+10. **CI integration**: Run `trust verify --strict` in every pipeline

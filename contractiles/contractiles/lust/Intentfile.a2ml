@@ -1,9 +1,11 @@
-# SPDX-License-Identifier: PLMP-1.0-or-later
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # Intentfile (A2ML Canonical)
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 @abstract:
-Declared future intent for the system.
-This is the canonical Intent contract format.
+Declared future intent for the contractiles system.
+Tracks security improvements, operational maturity, tooling adoption,
+and observability goals for the policy gateway.
 @end
 
 @requires:
@@ -11,24 +13,114 @@ This is the canonical Intent contract format.
 - section: Control-Plane
 - section: Pipeline
 - section: Introspection
+- section: Tooling
+- section: Deprecations
 @end
 
 ## Trust-Engine
 
-- integrate hardware-backed key management
-- support node attestation for deployments
+### hardware-key-management
+- description: Integrate hardware-backed key management (TPM 2.0, YubiKey)
+- status: declared
+- priority: high
+- target: 2026-Q3
+- evidence: config/tpm.toml exists
+- notes: Waiting on TPM firmware support for Dilithium5
+
+### node-attestation
+- description: Support node attestation for deployment targets
+- status: declared
+- priority: medium
+- target: 2026-Q4
+- evidence: command: attestation-agent --version
+- depends_on: hardware-key-management
 
 ## Control-Plane
 
-- move to GitOps-backed configuration promotion
-- add canary and staged rollout support
+### gitops-config-promotion
+- description: Move to GitOps-backed configuration promotion
+- status: accepted
+- priority: high
+- target: 2026-Q2
+- evidence: .flux/ exists
+- notes: Evaluating Flux vs ArgoCD for policy promotion
+
+### canary-rollouts
+- description: Add canary and staged rollout support
+- status: declared
+- priority: medium
+- evidence: config/canary.ncl exists
 
 ## Pipeline
 
-- adopt Nickel (or your DSL) as the primary policy language
-- automate policy promotion from dev to prod with signed artifacts
+### nickel-policy-language
+- description: Adopt Nickel as the primary policy language
+- status: in-progress
+- priority: high
+- evidence: policy/policy.ncl exists
+- notes: Migration from YAML to Nickel underway; policy.ncl already exists
+
+### signed-artifact-promotion
+- description: Automate policy promotion from dev to prod with signed artifacts
+- status: declared
+- priority: medium
+- depends_on: hardware-key-management
+- evidence: trust: artifact-signature
+
+### contractile-cli-integration
+- description: Integrate contractile CLI into CI/CD pipeline
+- status: in-progress
+- priority: critical
+- evidence: command: contractile --version
+- notes: Rust CLI built; needs installation and workflow integration
 
 ## Introspection
 
-- expose decision latency and policy evaluation metrics
-- add tracing for end-to-end request decisions
+### decision-latency-metrics
+- description: Expose decision latency and policy evaluation metrics
+- status: declared
+- priority: low
+- evidence: command: curl -s localhost:9090/metrics | grep -q decision_latency
+
+### request-tracing
+- description: Add end-to-end tracing for request decisions
+- status: declared
+- priority: low
+- evidence: config/tracing.toml exists
+
+## Tooling
+
+### just-integration
+- description: Generate contractile.just and import into Justfile
+- status: in-progress
+- priority: high
+- evidence: contractile.just exists
+- notes: gen-just command built; needs Justfile import
+
+### k9-validation-contracts
+- description: Write Yard-level K9 components to validate A2ML files
+- status: declared
+- priority: medium
+- evidence: contractiles/k9/validators/ exists
+
+### symlink-installation
+- description: Install must/trust/dust/intend/k9 symlinks to ~/.local/bin/
+- status: declared
+- priority: high
+- evidence: command: which must
+
+## Deprecations
+
+### legacy-yaml-contractiles
+- description: Phase out legacy YAML-format contractile files (Mustfile, Dustfile, Intentfile)
+- status: in-progress
+- priority: medium
+- evidence: command: find contractiles/ -name 'Mustfile' -o -name 'Dustfile' -o -name 'Intentfile' | grep -v '.a2ml' | wc -l | grep -q '^0$'
+- notes: A2ML is canonical; YAML retained for backward compatibility only
+
+### ada-must-runner
+- description: Replace Ada must runner with unified Rust contractile CLI
+- status: in-progress
+- priority: medium
+- evidence: command: contractile must --help
+- notes: Rust CLI built and tested; Ada runner preserved as reference implementation

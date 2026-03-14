@@ -1,13 +1,16 @@
-# SPDX-License-Identifier: PLMP-1.0-or-later
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # Trustfile (A2ML Canonical)
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 @abstract:
-Cryptographic and provenance verification steps.
-This is the canonical Trust contract format.
+Cryptographic and provenance verification steps for the contractiles
+project. Covers content hashing, digital signatures, provenance chains,
+and algorithm compliance.
 @end
 
 @requires:
 - section: Inputs
+- section: Keys
 - section: Verifications
 @end
 
@@ -19,24 +22,64 @@ This is the canonical Trust contract format.
 - schema_sig_path: schema/schema.sig
 - schema_pub_path: schema/schema.pub
 - driver_paths: drivers/gateway-driver.bin
+- driver_sig_path: drivers/gateway-driver.bin.sig
+- driver_pub_path: drivers/gateway-driver.bin.pub
 - migrations_path: migrations/provenance.json
 - migrations_sig_path: migrations/provenance.sig
 - migrations_pub_path: migrations/provenance.pub
+
+## Keys
+
+### schema-signing-key
+- type: Ed25519
+- file: schema/schema.pub
+- usage: schema-signing
+- rotation: per-release
+
+### driver-signing-key
+- type: Dilithium5
+- file: drivers/gateway-driver.bin.pub
+- usage: driver-signing
+- rotation: per-build
+
+### migration-signing-key
+- type: Ed448
+- file: migrations/provenance.pub
+- usage: provenance-attestation
+- rotation: annual
 
 ## Verifications
 
 ### policy-hash
 - description: SHA-256 of policy matches policy.ncl.sha256
-- command: sha256sum policy/policy.ncl
+- command: sha256sum -c policy/policy.ncl.sha256
+- algorithm: SHA-256
+- severity: critical
 
 ### schema-signature
-- description: schema signature verifies against schema.pub
+- description: Schema signature verifies against schema.pub
 - command: openssl dgst -sha256 -verify schema/schema.pub -signature schema/schema.sig schema/schema.json
+- algorithm: Ed25519
+- severity: critical
 
 ### driver-signatures
-- description: Kyber signatures verify for drivers
+- description: Post-quantum signatures verify for compiled drivers
 - command: kyber-verify --pub drivers/gateway-driver.bin.pub --sig drivers/gateway-driver.bin.sig --file drivers/gateway-driver.bin
+- algorithm: Dilithium5
+- severity: critical
 
 ### migration-provenance
-- description: migrations provenance signature verifies
+- description: Migration provenance chain is intact
 - command: openssl dgst -sha256 -verify migrations/provenance.pub -signature migrations/provenance.sig migrations/provenance.json
+- algorithm: Ed448
+- severity: critical
+
+### no-banned-algorithms
+- description: No MD5 or SHA1 used for security purposes
+- command: grep -rn 'md5\|sha1\|MD5\|SHA1' --include='*.toml' --include='*.json' --include='*.yaml' . | wc -l | grep -q '^0$'
+- severity: warning
+
+### workflow-action-pins
+- description: All GitHub Actions are SHA-pinned (not tag-only)
+- command: grep -rn 'uses:' .github/workflows/*.yml | grep -v '@[a-f0-9]\{40\}' | grep -v '#' | wc -l | grep -q '^0$'
+- severity: warning

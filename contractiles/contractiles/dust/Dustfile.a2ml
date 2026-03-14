@@ -1,42 +1,92 @@
-# SPDX-License-Identifier: PLMP-1.0-or-later
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # Dustfile (A2ML Canonical)
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 @abstract:
-Recovery and rollback semantics for failures and bad deployments.
-This is the canonical Dust contract format.
+Recovery and rollback semantics for the contractiles project.
+Declares how to undo every significant state change — policy reverts,
+deployment rollbacks, log replays, and event transformations.
 @end
 
 @requires:
+- section: Audit
 - section: Logs
 - section: Policy
 - section: Gateway
+- section: Schema
 - section: Dust-Events
 @end
+
+## Audit
+
+### archive-audit-logs
+- description: Archive current audit logs before any recovery operation
+- handler: tar czf backups/audit-$(date +%Y%m%d%H%M%S).tar.gz logs/
+- blast_radius: file
+- idempotent: true
+- preserves_audit: true
+- notes: Always run this BEFORE any other dust action
 
 ## Logs
 
 ### gateway-decision-log
 - path: logs/decisions.json
-- reversible: true
+- description: Replay decision log in reverse to undo gateway decisions
 - handler: dust-replay --reverse logs/decisions.json
+- blast_radius: service
+- idempotent: true
+- preserves_audit: true
+- verify_after: just validate-policy
 
 ## Policy
 
 ### policy-rollback
 - path: policy/policy.ncl
+- description: Revert policy to the previous known-good revision
 - rollback: git checkout HEAD~1 -- policy/policy.ncl
-- notes: rollback policy to the last known-good revision
+- blast_radius: file
+- precondition: git diff --quiet policy/policy.ncl || echo "Warning: uncommitted changes"
+- verify_after: trust verify policy-hash
+- notes: Rollback policy to the last known-good revision
+
+### policy-config-rollback
+- path: config/policy.yaml
+- description: Revert policy YAML config to previous revision
+- rollback: git checkout HEAD~1 -- config/policy.yaml
+- blast_radius: file
+- verify_after: just validate-policy
 
 ## Gateway
 
 ### bad-deployment
 - event: deploy.failure
+- description: Undo a failed gateway deployment, preserving audit logs
 - undo: gatewayctl rollback --last
-- notes: preserve audit logs while rolling back
+- blast_radius: service
+- idempotent: true
+- preserves_audit: true
+- notes: Rollback to the previous deployment version; audit logs are retained
+
+### bad-container-deploy
+- event: container.failure
+- description: Roll back to the previous container image
+- undo: podman rollback gateway:latest
+- blast_radius: service
+- precondition: podman image exists gateway:previous
+
+## Schema
+
+### schema-rollback
+- path: schema/schema.json
+- description: Revert schema to previous version
+- rollback: git checkout HEAD~1 -- schema/schema.json
+- blast_radius: file
+- verify_after: trust verify schema-signature
 
 ## Dust-Events
 
 ### decision-log-to-dust
 - source: logs/decisions.json
+- description: Transform decision logs into reversible dust events
 - transform: dustify --input logs/decisions.json --output logs/dust-events.json
-- notes: map decision logs into reversible dust events
+- notes: Produces a dust-events.json file that can be fed back to dust-replay

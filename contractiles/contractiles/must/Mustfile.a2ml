@@ -1,14 +1,17 @@
-# SPDX-License-Identifier: PLMP-1.0-or-later
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # Mustfile (A2ML Canonical)
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 @abstract:
-Declarative state contract describing what must be true.
-This is the canonical Must contract format.
+Declarative state contract describing what must be true for the
+contractiles project. Covers policy validity, compilation, runtime
+exposure, log format, and schema version consistency.
 @end
 
 @requires:
 - section: Parameters
 - section: Checks
+- section: Files
 @end
 
 ## Parameters
@@ -19,21 +22,48 @@ This is the canonical Must contract format.
 ## Checks
 
 ### policy-config-valid
-- description: config/policy.yaml must be valid
+- description: config/policy.yaml must be valid YAML
 - run: just validate-policy
+- severity: critical
 
 ### policy-nickel-compiles
-- description: policy/policy.ncl must compile
+- description: policy/policy.ncl must compile without errors
 - run: just compile-nickel
+- severity: critical
 
 ### gateway-exposes-port
-- description: gateway must expose the configured port
+- description: Gateway must expose the configured port
 - run: ss -lnt | rg ":8080"
+- severity: critical
 
 ### logs-are-json
-- description: logs must be JSON
+- description: All log files must be valid JSON
 - run: rg --files -g "*.json" logs | xargs -r jq -e .
+- severity: warning
 
 ### schema-version-matches
-- description: schema must match v1.0.0
+- description: Schema version must match v1.0.0
 - run: rg -n "v1.0.0" schema
+- severity: critical
+
+### spdx-headers-present
+- description: All source files must have SPDX license headers
+- run: find contractiles/ -name '*.a2ml' -exec grep -L 'SPDX-License-Identifier' {} + | wc -l | grep -q '^0$'
+- severity: warning
+
+### no-banned-files
+- description: No Dockerfiles or Makefiles present
+- run: test ! -f Dockerfile && test ! -f Makefile
+- severity: critical
+
+## Files
+
+### must-have
+- description: Files that must exist in this project
+- run: test -f LICENSE && test -f README.adoc && test -f SECURITY.md && test -f Justfile
+- severity: critical
+
+### must-not-have
+- description: Banned files must not exist
+- run: test ! -f Dockerfile && test ! -f Makefile && test ! -f .env && test ! -d node_modules
+- severity: critical

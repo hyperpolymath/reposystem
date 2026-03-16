@@ -14,6 +14,7 @@
 //
 // Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
+#![forbid(unsafe_code)]
 mod doctor;
 mod dust;
 mod gen_just;

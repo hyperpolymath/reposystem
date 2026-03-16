@@ -11,6 +11,7 @@
 //
 // Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
+#![forbid(unsafe_code)]
 pub mod a2ml;
 pub mod just_emitter;
 pub mod k9;

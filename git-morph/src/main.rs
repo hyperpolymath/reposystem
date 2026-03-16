@@ -9,6 +9,7 @@
 //!   - `git morph list`    — list morphable components
 //!   - `git morph diff`    — preview changes without writing
 
+#![forbid(unsafe_code)]
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 use tracing_subscriber::EnvFilter;

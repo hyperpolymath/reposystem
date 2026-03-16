@@ -3,6 +3,7 @@
 //! This crate provides a platform-agnostic compliance checking engine
 //! for repository certification across GitHub, GitLab, Bitbucket, and more.
 
+#![forbid(unsafe_code)]
 pub mod adapters;
 pub mod compliance;
 pub mod db;

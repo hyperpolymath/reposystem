@@ -2,6 +2,7 @@
 //!
 //! Provides IDE integration for real-time RSR compliance checking.
 
+#![forbid(unsafe_code)]
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tower_lsp::jsonrpc::Result;

@@ -10,6 +10,7 @@
 //! Every conflict resolution decision is logged as structured JSON,
 //! stored as a VeriSimDB hexad, and visualizable in PanLL.
 
+#![forbid(unsafe_code)]
 pub mod decision;
 pub mod snapshot;
 pub mod verify;

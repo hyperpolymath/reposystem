@@ -17,7 +17,7 @@ edition = "2024"
 rust-version = "1.85"
 
 [workspace.dependencies]
-contractile-core = { path = "crates/contractile-core" }
+contractile-core = { version = "0.1.0", path = "crates/contractile-core" }
 clap = { version = "4", features = ["derive"] }
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }

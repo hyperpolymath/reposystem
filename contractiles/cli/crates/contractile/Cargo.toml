@@ -13,7 +13,7 @@ edition.workspace = true
 rust-version.workspace = true
 repository = "https://github.com/hyperpolymath/contractiles"
 homepage = "https://github.com/hyperpolymath/contractiles"
-readme = "../../README.adoc"
+readme = "../../../../contractiles/docs/QUICKSTART.adoc"
 keywords = ["contractile", "must", "trust", "dust", "devops"]
 categories = ["command-line-utilities", "development-tools"]
 

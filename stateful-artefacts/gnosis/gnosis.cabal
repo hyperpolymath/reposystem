@@ -9,7 +9,7 @@ description:         Gnosis reads Guile Scheme metadata files and renders
 license:             MPL-2.0
 license-file:        LICENSE
 author:              Jonathan D.A. Jewell
-maintainer:          jonathan.jewell@open.ac.uk
+maintainer:          j.d.a.jewell@open.ac.uk
 copyright:           2025-2026 Jonathan D.A. Jewell
 category:            Development
 build-type:          Simple

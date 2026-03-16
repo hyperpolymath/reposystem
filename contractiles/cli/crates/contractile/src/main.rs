@@ -103,6 +103,9 @@ enum Commands {
     /// Diagnose tooling availability and versions
     Doctor,
 
+    /// Create symlinks (must, trust, dust, intend, k9) pointing to this binary
+    Setup,
+
     /// Generate shell completions
     Completions {
         /// Shell to generate completions for (bash, zsh, fish, elvish, powershell)
@@ -140,6 +143,42 @@ fn main() {
     }
 }
 
+/// Create symlinks for must, trust, dust, intend, k9 alongside the contractile binary.
+fn setup_symlinks() -> anyhow::Result<()> {
+    let exe = env::current_exe()?;
+    let dir = exe
+        .parent()
+        .ok_or_else(|| anyhow::anyhow!("cannot determine binary directory"))?;
+
+    let commands = ["must", "trust", "dust", "intend", "k9"];
+
+    for cmd in &commands {
+        let link_path = dir.join(cmd);
+
+        // Remove existing symlink/file if present
+        if link_path.exists() || link_path.symlink_metadata().is_ok() {
+            std::fs::remove_file(&link_path).ok();
+        }
+
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(&exe, &link_path)?;
+
+        #[cfg(windows)]
+        std::fs::copy(&exe, &link_path)?;
+
+        println!("  {} → {}", cmd, exe.display());
+    }
+
+    println!(
+        "\n{} symlinks created in {}",
+        commands.len(),
+        dir.display()
+    );
+    println!("Make sure {} is in your PATH.", dir.display());
+
+    Ok(())
+}
+
 /// Run the unified `contractile <subcommand>` dispatcher.
 fn run_unified() -> anyhow::Result<()> {
     let cli = Cli::parse();
@@ -154,6 +193,7 @@ fn run_unified() -> anyhow::Result<()> {
         Some(Commands::Init { name, force }) => init::run(name.as_deref(), force),
         Some(Commands::Status { quick }) => status::run(quick),
         Some(Commands::Doctor) => doctor::run(),
+        Some(Commands::Setup) => setup_symlinks(),
         Some(Commands::Completions { shell }) => {
             clap_complete::generate(
                 shell,

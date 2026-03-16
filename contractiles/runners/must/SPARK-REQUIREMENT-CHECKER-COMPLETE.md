@@ -16,7 +16,7 @@ Successfully converted requirement_checker to use bounded strings. The file syst
 
 ### requirement_checker.ads
 **Changes:**
-- Fixed license header (`AGPL-3.0-or-later` → `MPL-2.0`)
+- Fixed license header (`PMPL-1.0-or-later` → `MPL-2.0`)
 - Removed `Ada.Strings.Unbounded` dependency
 - Updated `Check_Result` to use `Bounded_Description`:
   ```ada

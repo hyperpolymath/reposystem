@@ -261,7 +261,7 @@ All files updated to correct license:
 -- (PMPL-1.0-or-later preferred; MPL-2.0 required for GNAT ecosystem)
 ```
 
-**Changed from:** `AGPL-3.0-or-later` (old license)
+**Changed from:** `PMPL-1.0-or-later` (old license)
 **Changed to:** `MPL-2.0` (GNAT ecosystem requirement)
 **Preferred:** `PMPL-1.0-or-later` (Palimpsest License)
 

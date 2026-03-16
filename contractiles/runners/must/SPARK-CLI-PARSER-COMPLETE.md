@@ -16,7 +16,7 @@ Successfully converted CLI_Parser and must.adb to use bounded strings. The argum
 
 ### cli_parser.ads
 **Changes:**
-- Fixed license header (`AGPL-3.0-or-later` → `MPL-2.0`)
+- Fixed license header (`PMPL-1.0-or-later` → `MPL-2.0`)
 - Removed `Ada.Strings.Unbounded` dependency
 - Updated `Parsed_Args` record:
   ```ada

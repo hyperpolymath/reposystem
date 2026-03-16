@@ -16,7 +16,7 @@ Successfully converted task_runner to use bounded strings. The task execution an
 
 ### task_runner.ads
 **Changes:**
-- Fixed license header (`AGPL-3.0-or-later` → `MPL-2.0`)
+- Fixed license header (`PMPL-1.0-or-later` → `MPL-2.0`)
 - Updated all API functions to use `Bounded_String` instead of `String`:
   ```ada
   procedure Run_Task

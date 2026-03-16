@@ -1,8 +1,8 @@
-SPDX-License-Identifier: MIT OR AGPL-3.0-or-later
+SPDX-License-Identifier: MIT OR PMPL-1.0-or-later
 SPDX-FileCopyrightText: 2024-2025 hyperpolymath
 
 ================================================================================
-DUAL LICENSE: MIT OR AGPL-3.0-or-later
+DUAL LICENSE: MIT OR PMPL-1.0-or-later
 ================================================================================
 
 This project is dual-licensed under the MIT License OR the GNU Affero General
@@ -59,12 +59,12 @@ CHOOSING YOUR LICENSE
 
 You may choose to use this work under:
   1. MIT License - Standard permissive open source license
-  2. AGPL-3.0-or-later - Copyleft license requiring source disclosure for
+  2. PMPL-1.0-or-later - Copyleft license requiring source disclosure for
      network services
 
 For most uses, MIT License provides maximum flexibility.
 For ensuring open source remains open (especially for SaaS/network services),
-AGPL-3.0-or-later provides stronger protections.
+PMPL-1.0-or-later provides stronger protections.
 
 ================================================================================
 PALIMPSEST PHILOSOPHICAL OVERLAY (NON-BINDING)

@@ -16,7 +16,7 @@ Successfully converted mustache_engine to use bounded strings. The template rend
 
 ### mustache_engine.ads
 **Changes:**
-- Fixed license header (`AGPL-3.0-or-later` → `MPL-2.0`)
+- Fixed license header (`PMPL-1.0-or-later` → `MPL-2.0`)
 - No API changes needed (already used String_Map from must_types)
 
 ### mustache_engine.adb

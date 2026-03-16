@@ -9,7 +9,7 @@
 ## What Was Done
 
 ### 1. License Headers Fixed ✅
-- Changed `AGPL-3.0-or-later` → `MPL-2.0` (GNAT ecosystem requirement)
+- Changed `PMPL-1.0-or-later` → `MPL-2.0` (GNAT ecosystem requirement)
 - Added note: `(PMPL-1.0-or-later preferred; MPL-2.0 required for GNAT ecosystem)`
 - Applied to: `must_types.ads`, `must_types.adb`
 

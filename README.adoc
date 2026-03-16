@@ -48,7 +48,7 @@ Run `just web-serve` or `just web-serve-port 1803` to preview.
 
 [NOTE]
 ====
-Machine-readable context lives in the six `.scm` files (`STATE.scm`, `ECOSYSTEM.scm`, `META.scm`, `PLAYBOOK.scm`, `AGENTIC.scm`, `NEUROSYM.scm`). Agents should read them before mutating the graph so they know the current completion, blockers, and the OPSM/doc narrative.
+Machine-readable context lives in the six `.scm` files (`.machine_readable/6a2/STATE.a2ml`, `.machine_readable/6a2/ECOSYSTEM.a2ml`, `.machine_readable/6a2/META.a2ml`, `.machine_readable/6a2/PLAYBOOK.a2ml`, `.machine_readable/6a2/AGENTIC.a2ml`, `.machine_readable/6a2/NEUROSYM.a2ml`). Agents should read them before mutating the graph so they know the current completion, blockers, and the OPSM/doc narrative.
 ====
 
 == Next Up for Documentation + OPSM
@@ -420,7 +420,7 @@ dot -Tsvg ecosystem.dot -o ecosystem.svg
 
 |State files
 |Guile Scheme
-|STATE.scm, META.scm, ECOSYSTEM.scm
+|.machine_readable/6a2/STATE.a2ml, .machine_readable/6a2/META.a2ml, .machine_readable/6a2/ECOSYSTEM.a2ml
 |===
 
 == Project Structure
@@ -438,12 +438,12 @@ reposystem/
 ├── spec/
 │   ├── DATA-MODEL.adoc  # Entity specifications
 │   └── CONCEPTS.adoc    # Mental model
-├── STATE.scm            # Project state
-├── ECOSYSTEM.scm        # Ecosystem position
-├── META.scm             # Architecture decisions
-├── PLAYBOOK.scm         # Operational runbooks
-├── AGENTIC.scm          # AI agent patterns
-├── NEUROSYM.scm         # Neural-symbolic integration
+├── .machine_readable/6a2/STATE.a2ml            # Project state
+├── .machine_readable/6a2/ECOSYSTEM.a2ml        # Ecosystem position
+├── .machine_readable/6a2/META.a2ml             # Architecture decisions
+├── .machine_readable/6a2/PLAYBOOK.a2ml         # Operational runbooks
+├── .machine_readable/6a2/AGENTIC.a2ml          # AI agent patterns
+├── .machine_readable/6a2/NEUROSYM.a2ml         # Neural-symbolic integration
 ├── ROADMAP.adoc         # f/i staged plan
 ├── Mustfile             # Build recipes
 └── justfile             # Development tasks

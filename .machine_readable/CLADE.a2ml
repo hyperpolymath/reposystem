@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Clade declaration — part of the gv-clade-index registry
+# See: https://github.com/hyperpolymath/gv-clade-index
+
+[identity]
+uuid = "e96fb1bc-2796-5a0b-b1ea-c6d0a3a6fea1"
+primary-forge = "github"
+primary-owner = "hyperpolymath"
+canonical-name = "reposystem"
+prefixed-name = "rm-reposystem"
+
+[clade]
+primary = "rm"
+secondary = []
+assigned = "2026-03-16"
+rationale = ""
+
+[forges]
+github = "hyperpolymath/reposystem"
+gitlab = "hyperpolymath/reposystem"
+bitbucket = "hyperpolymath/reposystem"
+
+[lineage]
+type = "monorepo"
+parent = "Monorepo — graph engine for repository ecosystem management"
+born = "2026-03-16"

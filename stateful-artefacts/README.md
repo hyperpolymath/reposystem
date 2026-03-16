@@ -673,7 +673,7 @@ sed -i "s/(active-count . [0-9]*)/(active-count . $ACTIVE)/" STATE.scm
 
 ## Author
 
-Jonathan D.A. Jewell <jonathan.jewell@open.ac.uk>
+Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 
 ---
 

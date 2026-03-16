@@ -3,7 +3,7 @@
 
 = Maintainers
 :author: Jonathan D.A. Jewell
-:email: jonathan.jewell@open.ac.uk
+:email: j.d.a.jewell@open.ac.uk
 
 == Active Maintainers
 
@@ -12,7 +12,7 @@
 | Name | Email | GitHub | Role
 
 | Jonathan D.A. Jewell
-| jonathan.jewell@open.ac.uk
+| j.d.a.jewell@open.ac.uk
 | https://github.com/hyperpolymath[@hyperpolymath]
 | Owner / Lead Maintainer
 |===

@@ -181,7 +181,7 @@ fn run_all_verifications(doc: &a2ml::A2mlDocument, verbose: bool, dry_run: bool)
             println!("  {} {}", "Verifying:".dimmed(), item.command);
         }
 
-        let status = Command::new("sh")
+        let status = Command::new("bash")
             .args(["-c", item.command])
             .status()
             .with_context(|| format!("executing verification: {}", item.subsection))?;
@@ -238,7 +238,7 @@ fn run_single_verification(
         println!("Verifying: {}", item.command);
     }
 
-    let status = Command::new("sh")
+    let status = Command::new("bash")
         .args(["-c", item.command])
         .status()
         .with_context(|| format!("executing verification: {}", name))?;
@@ -258,7 +258,7 @@ fn run_all_verifications_json(doc: &a2ml::A2mlDocument) -> Result<()> {
     let mut results = Vec::new();
 
     for item in &items {
-        let status = Command::new("sh")
+        let status = Command::new("bash")
             .args(["-c", item.command])
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())

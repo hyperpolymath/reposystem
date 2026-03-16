@@ -246,7 +246,7 @@ fn run_action(
             if verbose {
                 println!("  {} precondition: {}", "checking".dimmed(), pre_cmd);
             }
-            let pre_status = Command::new("sh")
+            let pre_status = Command::new("bash")
                 .args(["-c", pre_cmd])
                 .status()
                 .with_context(|| format!("running precondition for: {}", name))?;
@@ -293,7 +293,7 @@ fn run_action(
             println!("  {}", item.command.dimmed());
         }
 
-        let status = Command::new("sh")
+        let status = Command::new("bash")
             .args(["-c", item.command])
             .status()
             .with_context(|| format!("executing dust action: {}", item.subsection))?;
@@ -319,7 +319,7 @@ fn run_action(
             if verbose {
                 println!("  {}", verify_cmd.dimmed());
             }
-            let verify_status = Command::new("sh")
+            let verify_status = Command::new("bash")
                 .args(["-c", verify_cmd])
                 .status()
                 .with_context(|| format!("running verify_after for: {}", name))?;

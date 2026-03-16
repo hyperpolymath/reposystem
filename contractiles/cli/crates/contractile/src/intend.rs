@@ -402,7 +402,7 @@ fn run_evidence_probe(evidence: &str, verbose: bool) -> bool {
         if verbose {
             println!("       probe: {}", cmd);
         }
-        return std::process::Command::new("sh")
+        return std::process::Command::new("bash")
             .args(["-c", cmd])
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())
@@ -417,7 +417,7 @@ fn run_evidence_probe(evidence: &str, verbose: bool) -> bool {
         if verbose {
             println!("       probe: {}", cmd);
         }
-        return std::process::Command::new("sh")
+        return std::process::Command::new("bash")
             .args(["-c", &cmd])
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())
@@ -432,7 +432,7 @@ fn run_evidence_probe(evidence: &str, verbose: bool) -> bool {
         if verbose {
             println!("       probe: {}", cmd);
         }
-        return std::process::Command::new("sh")
+        return std::process::Command::new("bash")
             .args(["-c", &cmd])
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())

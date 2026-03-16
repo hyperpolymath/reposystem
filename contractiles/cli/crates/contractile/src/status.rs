@@ -56,7 +56,7 @@ pub fn run(quick: bool) -> Result<()> {
             if failed > 0 {
                 // Show which ones failed.
                 for item in &items {
-                    let ok = Command::new("sh")
+                    let ok = Command::new("bash")
                         .args(["-c", item.command])
                         .stdout(std::process::Stdio::null())
                         .stderr(std::process::Stdio::null())
@@ -200,7 +200,7 @@ fn run_checks_silent(items: &[a2ml::ExecutableItem<'_>]) -> (usize, usize) {
     let mut failed = 0;
 
     for item in items {
-        let ok = Command::new("sh")
+        let ok = Command::new("bash")
             .args(["-c", item.command])
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())

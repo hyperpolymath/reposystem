@@ -7,9 +7,15 @@ name = "contractile"
 description = "Unified CLI for executing contractile files: must check, trust verify, dust rollback, intend list, k9 eval"
 version.workspace = true
 authors.workspace = true
-license.workspace = true
+# PMPL-1.0-or-later preferred; MPL-2.0 required for crates.io (no PMPL SPDX ID yet)
+license = "MPL-2.0"
 edition.workspace = true
 rust-version.workspace = true
+repository = "https://github.com/hyperpolymath/contractiles"
+homepage = "https://github.com/hyperpolymath/contractiles"
+readme = "../../README.adoc"
+keywords = ["contractile", "must", "trust", "dust", "devops"]
+categories = ["command-line-utilities", "development-tools"]
 
 [dependencies]
 contractile-core.workspace = true

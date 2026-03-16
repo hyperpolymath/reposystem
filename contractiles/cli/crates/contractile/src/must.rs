@@ -227,7 +227,7 @@ fn run_all_checks(doc: &a2ml::A2mlDocument, verbose: bool, dry_run: bool) -> Res
             println!("  {} {}", "Running:".dimmed(), item.command);
         }
 
-        let status = Command::new("sh")
+        let status = Command::new("bash")
             .args(["-c", item.command])
             .status()
             .with_context(|| format!("executing check: {}", item.subsection))?;
@@ -267,7 +267,7 @@ fn run_all_checks_json(doc: &a2ml::A2mlDocument) -> Result<()> {
     let mut results = Vec::new();
 
     for item in &items {
-        let status = Command::new("sh")
+        let status = Command::new("bash")
             .args(["-c", item.command])
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())
@@ -350,7 +350,7 @@ fn run_single_check(
         println!("Running: {}", item.command);
     }
 
-    let status = Command::new("sh")
+    let status = Command::new("bash")
         .args(["-c", item.command])
         .status()
         .with_context(|| format!("executing check: {}", name))?;

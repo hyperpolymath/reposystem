@@ -231,7 +231,7 @@ pub fn run(action: K9Action) -> Result<()> {
                 }
 
                 println!("  {} {}", "$".dimmed(), cmd);
-                let status = Command::new("sh")
+                let status = Command::new("bash")
                     .args(["-c", cmd])
                     .status()
                     .with_context(|| format!("executing K9 recipe command: {}", cmd))?;

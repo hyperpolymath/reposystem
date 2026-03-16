@@ -7,9 +7,13 @@ name = "contractile-core"
 description = "Core library for parsing A2ML contractile files, bridging K9 Nickel components, and emitting Just recipes"
 version.workspace = true
 authors.workspace = true
-license.workspace = true
+# PMPL-1.0-or-later preferred; MPL-2.0 required for crates.io (no PMPL SPDX ID yet)
+license = "MPL-2.0"
 edition.workspace = true
 rust-version.workspace = true
+repository = "https://github.com/hyperpolymath/contractiles"
+keywords = ["a2ml", "contractile", "parser"]
+categories = ["parsing", "development-tools"]
 
 [dependencies]
 anyhow.workspace = true

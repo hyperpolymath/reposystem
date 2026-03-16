@@ -1,0 +1,396 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= Contractiles Quick Start Guide
+:toc:
+:author: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+How to use the contractile system in your project.
+
+== What are Contractiles?
+
+Contractiles are file-first contracts that make your repository's rules
+executable. Instead of documenting "we don't commit secrets" in a wiki,
+you write a `Trustfile.a2ml` check that _verifies_ no secrets are committed.
+
+Five tools, five concerns:
+
+[cols="1,2,3"]
+|===
+| Tool | File | What it answers
+
+| `must`
+| `Mustfile.a2ml`
+| "What MUST be true right now?" — File presence, compilation, config validity
+
+| `trust`
+| `Trustfile.a2ml`
+| "Can we TRUST this repo?" — No secrets leaked, signatures valid, provenance traceable
+
+| `dust`
+| `Dustfile.a2ml`
+| "What needs cleaning up?" — Stale files, orphaned artifacts, expired tokens
+
+| `intend`
+| `Intentfile.a2ml`
+| "Where are we going?" — Design intent, roadmap, aspirational goals
+
+| `k9`
+| `*.k9.ncl`
+| "Are deployments valid?" — Nickel-based config validation with security levels
+|===
+
+== Installation
+
+=== From source (recommended)
+
+[source,bash]
+----
+# Clone and build
+git clone https://github.com/hyperpolymath/contractiles
+cd contractiles/cli
+cargo build --release
+
+# Install symlinks (creates must, trust, dust, intend, k9 in ~/.local/bin/)
+cargo install --path crates/contractile
+# Or manually:
+ln -sf $(pwd)/target/release/contractile ~/.local/bin/contractile
+for cmd in must trust dust intend k9; do
+  ln -sf ~/.local/bin/contractile ~/.local/bin/$cmd
+done
+----
+
+=== From crates.io
+
+[source,bash]
+----
+cargo install contractile
+----
+
+This installs the `contractile` binary. Create symlinks for the individual commands:
+
+[source,bash]
+----
+for cmd in must trust dust intend k9; do
+  ln -sf $(which contractile) ~/.local/bin/$cmd
+done
+----
+
+== Adding Contractiles to Your Project
+
+=== 1. Create the directory structure
+
+[source,bash]
+----
+mkdir -p contractiles/{must,trust,dust,lust,k9}
+----
+
+Or from an RSR template:
+[source,bash]
+----
+# RSR templates include contractiles in .machine_readable/contractiles/
+# Symlink to project root for CLI discovery:
+ln -sf .machine_readable/contractiles contractiles
+----
+
+=== 2. Write your first Mustfile
+
+Create `contractiles/must/Mustfile.a2ml`:
+
+[source]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Mustfile — What MUST be true about this repo
+
+@abstract:
+Physical state invariants. CI fails if any check fails.
+@end
+
+## File Presence
+
+### license-present
+- description: LICENSE file must exist
+- run: test -f LICENSE
+- severity: critical
+
+### readme-present
+- description: README must exist
+- run: test -f README.adoc || test -f README.md
+- severity: critical
+
+## Security
+
+### no-env-files
+- description: No .env files committed
+- run: test ! -f .env && test ! -f .env.local
+- severity: critical
+
+### no-secrets-in-source
+- description: No hardcoded API keys or passwords
+- run: test -z "$(grep -rE 'api[_-]?key.*=.*\"[A-Za-z0-9]{20,}\"' --include='*.rs' --include='*.ex' . 2>/dev/null)"
+- severity: critical
+----
+
+=== 3. Run your checks
+
+[source,bash]
+----
+# List available checks
+must list
+
+# Run all checks
+must check
+
+# Run a single check
+must run license-present
+
+# Verbose output (shows the command being run)
+must check --verbose
+
+# Dry run (shows what would run without executing)
+must check --dry-run
+----
+
+=== 4. Write a Trustfile
+
+Create `contractiles/trust/Trustfile.a2ml`:
+
+[source]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Trustfile — Integrity and provenance verification
+
+@abstract:
+Can we trust this repository hasn't been tampered with?
+@end
+
+## Secrets
+
+### no-private-keys
+- description: No private key files committed
+- run: test -z "$(find . -name '*.pem' -o -name '*.key' -o -name 'id_rsa' 2>/dev/null | grep -v node_modules)"
+- severity: critical
+
+## Provenance
+
+### author-correct
+- description: Git author matches expected identity
+- run: git log -1 --format='%ae' | grep -q 'yourname'
+- severity: warning
+----
+
+=== 5. Write a Dustfile
+
+Create `contractiles/dust/Dustfile.a2ml`:
+
+[source]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Dustfile — Cleanup tasks
+
+@abstract:
+Housekeeping items. Not blockers, but should be addressed.
+@end
+
+## Stale Files
+
+### no-stale-snapshots
+- description: No dated status files cluttering the root
+- run: test -z "$(ls *-STATUS-*.md 2>/dev/null)"
+- severity: info
+- rollback: git checkout HEAD -- .
+----
+
+=== 6. Write an Intentfile
+
+Create `contractiles/lust/Intentfile.a2ml`:
+
+[source]
+----
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Intentfile — Design intent and roadmap
+
+@abstract:
+Where this project is heading. Aspirational, not current state.
+@end
+
+## Architecture Intent
+
+### full-test-coverage
+- description: 80%+ code coverage
+- status: aspiration
+- target: Unit + integration + property-based tests
+
+### formal-proofs
+- description: Critical paths formally verified
+- status: declared
+- probe: test -d src/abi/
+----
+
+=== 7. Integrate with Just
+
+Generate `contractile.just` recipes from your contractile files:
+
+[source,bash]
+----
+# Generate contractile.just from all contractile files
+contractile gen-just
+
+# Add to your Justfile:
+# import? "contractile.just"
+----
+
+Then use via Just:
+[source,bash]
+----
+just must-check        # Same as: must check
+just trust-verify      # Same as: trust verify
+just dust-status       # Same as: dust status
+just intend-list       # Same as: intend list
+----
+
+=== 8. Add to CI
+
+[source,yaml]
+----
+# .github/workflows/contractiles.yml
+name: Contractile Checks
+on: [push, pull_request]
+permissions: read-all
+
+jobs:
+  must:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: cargo install contractile
+      - run: must check
+
+  trust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: cargo install contractile
+      - run: trust verify
+----
+
+=== 9. Add to pre-commit hook
+
+[source,bash]
+----
+# .githooks/pre-commit
+#!/usr/bin/env bash
+echo "[pre-commit] Running contractile checks..."
+must check || exit 1
+trust verify || exit 1
+echo "[pre-commit] All contractile checks passed."
+----
+
+== Command Reference
+
+=== must
+
+[source]
+----
+must check              # Run all must checks
+must check --verbose    # Show commands being run
+must check --dry-run    # Show what would run
+must fix                # Auto-fix violations (where deterministic)
+must enforce            # check → fix → verify cycle
+must list               # List available checks
+must run <name>         # Run a single named check
+----
+
+=== trust
+
+[source]
+----
+trust verify            # Run all trust verifications
+trust list              # List available verifications
+trust hash <file>       # Compute SHA-256 hash
+trust sign <file>       # Sign a file (creates .sig)
+----
+
+=== dust
+
+[source]
+----
+dust status             # Show cleanup status
+dust rollback <name>    # Roll back a specific item
+dust replay <name>      # Replay a recovery action
+dust run <name>         # Run a specific cleanup
+dust list               # List all cleanup items
+----
+
+=== intend
+
+[source]
+----
+intend list             # Show all intents with status
+intend check            # Verify probe conditions
+intend progress         # Show progress summary
+intend accept <name>    # Accept an intent (declared → accepted)
+intend start <name>     # Start work (accepted → in-progress)
+intend realise <name>   # Mark as realised (in-progress → realised)
+intend abandon <name>   # Abandon an intent
+intend supersede <name> # Supersede with a new intent
+----
+
+=== k9
+
+[source]
+----
+k9 eval <file>          # Evaluate a K9 Nickel contract
+k9 run <file>           # Run a K9 component
+k9 typecheck <file>     # Typecheck without executing
+k9 info <file>          # Show component metadata
+----
+
+=== contractile (unified)
+
+[source]
+----
+contractile must check  # Same as: must check
+contractile trust verify
+contractile dust status
+contractile intend list
+contractile k9 eval <file>
+contractile gen-just    # Generate contractile.just recipes
+contractile init        # Scaffold contractile files in current directory
+contractile status      # Unified dashboard of all contractile states
+contractile doctor      # Check tooling availability
+----
+
+== A2ML File Format
+
+A2ML (Annotated Markup with Machine Logic) is the file format for contractile files. It's a simple, line-oriented format:
+
+[source]
+----
+# Comments start with #
+# SPDX header required
+
+@abstract:
+Description of this contractile file.
+@end
+
+## Section Heading
+
+### Check Name
+- description: Human-readable description
+- run: shell command to execute
+- severity: critical | warning | info
+- notes: Optional explanation
+
+### Another Check
+- description: ...
+- run: ...
+----
+
+**Executable keys**: `run`, `command`, `handler`, `rollback`, `undo`, `transform`, `probe`
+
+**Severity levels**: `critical` (blocks CI), `warning` (reported), `info` (advisory)
+
+== License
+
+SPDX-License-Identifier: PMPL-1.0-or-later (MPL-2.0 for crates.io)
+
+Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)

@@ -202,7 +202,7 @@ mod tests {
         vars.insert("REPO".to_string(), "my-tool".to_string());
         vars.insert("OWNER".to_string(), "hyperpolymath".to_string());
 
-        let input = "name = \"{{REPO}}\"\nowner = \"{{OWNER}}\"";
+        let input = "name = \"reposystem\"\nowner = \"hyperpolymath\"";
         let result = expand(input, &vars);
         assert_eq!(result, "name = \"my-tool\"\nowner = \"hyperpolymath\"");
     }

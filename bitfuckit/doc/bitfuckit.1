@@ -1,0 +1,432 @@
+.\" SPDX-License-Identifier: PMPL-1.0
+.TH BITFUCKIT 1 "December 2025" "bitfuckit 0.2.0" "User Commands"
+.SH NAME
+bitfuckit \- The Bitbucket CLI Atlassian never made
+.SH SYNOPSIS
+.B bitfuckit
+[\fIcommand\fR] [\fIsubcommand\fR] [\fIoptions\fR]
+.PP
+.B bitfuckit
+[\fB\-\-help\fR | \fB\-h\fR] [\fB\-\-version\fR | \fB\-V\fR]
+.SH DESCRIPTION
+.B bitfuckit
+is a fault-tolerant, enterprise-grade command-line interface for Bitbucket Cloud,
+written in Ada/SPARK with formal verification. It provides repository management,
+pull request handling, authentication, mirroring, Git LFS support, and network-aware
+resilience features.
+.PP
+When invoked without arguments, launches the interactive TUI mode.
+.PP
+.B Key Features:
+.IP \(bu 2
+Full Bitbucket Cloud API integration
+.IP \(bu 2
+Git LFS support with Bitbucket-specific configuration
+.IP \(bu 2
+Circuit breaker and retry logic for fault tolerance
+.IP \(bu 2
+Network-aware operation (metered connection detection)
+.IP \(bu 2
+Security scanning integration (ClamAV, VirusTotal)
+.IP \(bu 2
+Syncthing sync for distributed configuration
+.IP \(bu 2
+SELinux and firewalld integration
+.IP \(bu 2
+Interactive TUI with troubleshooter
+.SH COMMANDS
+.SS Authentication
+.TP
+.B auth login
+Authenticate with Bitbucket using an app password.
+Prompts for username, app password, and workspace.
+Credentials are stored securely in the config file.
+.TP
+.B auth status
+Show current authentication status and configuration.
+.TP
+.B auth logout
+Remove stored credentials and log out.
+.SS Repository Management
+.TP
+.B repo create \fIname\fR [\fB\-\-private\fR] [\fB\-\-description\fR \fItext\fR]
+Create a new repository with the given name.
+.TP
+.B repo list
+List all repositories in the configured workspace.
+.TP
+.B repo delete \fIname\fR
+Delete a repository (requires confirmation).
+.TP
+.B repo exists \fIname\fR
+Check if a repository exists. Exit code 0 if exists, 1 if not.
+.TP
+.B repo clone \fIname\fR [\fB\-\-lfs\fR]
+Clone a repository. Use \fB\-\-lfs\fR to fetch LFS objects.
+.SS Pull Requests
+.TP
+.B pr list \fIrepo\fR [\fB\-\-state\fR \fISTATE\fR] [\fB\-\-all\fR]
+List pull requests for a repository.
+STATE can be OPEN, MERGED, DECLINED, or SUPERSEDED.
+Default is OPEN. Use \fB\-\-all\fR to show all states.
+.TP
+.B pr create \fIrepo\fR [\fB\-\-title\fR \fItext\fR] [\fB\-\-source\fR \fIbranch\fR] [\fB\-\-dest\fR \fIbranch\fR]
+Create a new pull request.
+.TP
+.B pr view \fIrepo\fR \fInumber\fR
+View details of a specific pull request.
+.TP
+.B pr merge \fIrepo\fR \fInumber\fR [\fB\-\-strategy\fR \fImerge|squash|fast-forward\fR]
+Merge a pull request.
+.SS Mirroring
+.TP
+.B mirror \fIname\fR [\fB\-\-from\fR \fIgithub|gitlab\fR]
+Mirror the current git repository to Bitbucket.
+Creates the repository if it doesn't exist, then pushes all branches and tags.
+.TP
+.B mirror status
+Show status of all mirror configurations.
+.SS Git LFS
+.TP
+.B lfs status
+Show Git LFS status for the current repository.
+.TP
+.B lfs track \fIpattern\fR
+Track files matching pattern with Git LFS.
+.TP
+.B lfs untrack \fIpattern\fR
+Stop tracking files matching pattern.
+.TP
+.B lfs fetch
+Fetch LFS objects from Bitbucket.
+.TP
+.B lfs pull
+Pull (fetch + checkout) LFS objects.
+.TP
+.B lfs push
+Push LFS objects to Bitbucket.
+.TP
+.B lfs locks
+List file locks.
+.TP
+.B lfs lock \fIfile\fR
+Lock a file to prevent concurrent edits.
+.TP
+.B lfs unlock \fIfile\fR [\fB\-\-force\fR]
+Unlock a file.
+.SS Network & Resilience
+.TP
+.B network status
+Show current network state (online, metered, offline).
+.TP
+.B network check
+Check connectivity to Bitbucket API.
+.SS Security
+.TP
+.B scan \fIpath\fR [\fB\-\-clamav\fR] [\fB\-\-virustotal\fR]
+Scan files for malware before upload.
+Requires ClamAV daemon or VirusTotal API key.
+.SS Interface
+.TP
+.B tui
+Launch the interactive terminal user interface with menus and troubleshooter.
+.TP
+.B help, \-\-help, \-h
+Show usage information.
+.TP
+.B \-\-version, \-V
+Show version information and build details.
+.SH OPTIONS
+.TP
+.B \-\-private
+When creating a repository, make it private.
+.TP
+.B \-\-description \fItext\fR
+When creating a repository, set its description.
+.TP
+.B \-\-state \fISTATE\fR
+Filter pull requests by state.
+.TP
+.B \-\-all
+Show all items regardless of state filters.
+.TP
+.B \-\-lfs
+Enable Git LFS operations.
+.TP
+.B \-\-force
+Force the operation (e.g., unlock without ownership).
+.TP
+.B \-\-quiet, \-q
+Suppress non-essential output.
+.TP
+.B \-\-verbose, \-v
+Show detailed output including API requests.
+.TP
+.B \-\-no\-color
+Disable colored output.
+.TP
+.B \-\-offline
+Use cached data only, do not make network requests.
+.SH FILES
+.TP
+.I ~/.config/bitfuckit/config
+Main configuration file storing credentials and settings.
+Format: Key-value pairs, one per line.
+.TP
+.I ~/.config/bitfuckit/credentials
+Encrypted credentials file (when using secure storage).
+.TP
+.I ~/.local/share/bitfuckit/cache/
+Local cache directory for API responses and offline mode.
+.TP
+.I ~/.local/share/bitfuckit/storage.db
+CubsDB database for persistent storage.
+.TP
+.I /etc/bitfuckit/selinux.te
+SELinux type enforcement policy (if installed system-wide).
+.SH TUI CONTROLS
+.TP
+.B j, Down Arrow
+Move selection down.
+.TP
+.B k, Up Arrow
+Move selection up.
+.TP
+.B Enter
+Select current item.
+.TP
+.B h
+Show help for current context.
+.TP
+.B t
+Open troubleshooter.
+.TP
+.B ?
+Open documentation in browser.
+.TP
+.B q, Escape
+Go back / Quit.
+.SH TROUBLESHOOTER
+The built-in troubleshooter (accessible via TUI or \fBbitfuckit troubleshoot\fR)
+helps diagnose common issues:
+.TP
+.B Authentication Issues
+Guides through app password creation and credential verification.
+See: https://bitbucket.org/account/settings/app-passwords/
+.TP
+.B Network Connectivity
+Checks DNS resolution, HTTPS connectivity, and API access.
+See: https://github.com/hyperpolymath/bitfuckit/wiki/Network-Troubleshooting
+.TP
+.B Git LFS Problems
+Verifies LFS installation, tracking, and Bitbucket LFS endpoint configuration.
+See: https://github.com/hyperpolymath/bitfuckit/wiki/Git-LFS-Setup
+.TP
+.B Permission Errors
+Diagnoses repository access and SSH key issues.
+See: https://github.com/hyperpolymath/bitfuckit/wiki/Permissions
+.TP
+.B Rate Limiting
+Explains Bitbucket rate limits and circuit breaker behavior.
+See: https://github.com/hyperpolymath/bitfuckit/wiki/Rate-Limiting
+.SH ENVIRONMENT
+.TP
+.B XDG_CONFIG_HOME
+If set, configuration is stored in $XDG_CONFIG_HOME/bitfuckit/
+instead of ~/.config/bitfuckit/.
+.TP
+.B XDG_DATA_HOME
+If set, data files are stored in $XDG_DATA_HOME/bitfuckit/
+instead of ~/.local/share/bitfuckit/.
+.TP
+.B BITFUCKIT_CONFIG
+Override the configuration file path.
+.TP
+.B BITFUCKIT_NO_COLOR
+Disable colored output (same as \-\-no\-color).
+.TP
+.B BITFUCKIT_OFFLINE
+Enable offline mode (same as \-\-offline).
+.TP
+.B VIRUSTOTAL_API_KEY
+API key for VirusTotal integration.
+.TP
+.B SYNCTHING_API_KEY
+API key for Syncthing integration.
+.TP
+.B HTTPS_PROXY, HTTP_PROXY
+Proxy server for API requests.
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+General error (authentication failure, API error, etc.).
+.TP
+.B 2
+Network error (offline, connection refused, timeout).
+.TP
+.B 3
+Rate limited (circuit breaker open).
+.TP
+.B 4
+Authentication required (not logged in).
+.TP
+.B 5
+Resource not found (repository, PR, etc. does not exist).
+.SH EXAMPLES
+.SS Authentication
+.TP
+Authenticate with Bitbucket:
+.B bitfuckit auth login
+.TP
+Check authentication status:
+.B bitfuckit auth status
+.SS Repository Operations
+.TP
+Create a private repository:
+.B bitfuckit repo create my-project \-\-private
+.TP
+Create with description:
+.B bitfuckit repo create my-project \-\-description "My awesome project"
+.TP
+List all repositories:
+.B bitfuckit repo list
+.SS Pull Requests
+.TP
+List open pull requests:
+.B bitfuckit pr list my-project
+.TP
+List all pull requests:
+.B bitfuckit pr list my-project \-\-all
+.TP
+List merged PRs only:
+.B bitfuckit pr list my-project \-\-state MERGED
+.SS Mirroring
+.TP
+Mirror current repo to Bitbucket:
+.B bitfuckit mirror my-project
+.SS Git LFS
+.TP
+Check LFS status:
+.B bitfuckit lfs status
+.TP
+Track large files:
+.B bitfuckit lfs track "*.psd" "*.ai"
+.TP
+Fetch LFS objects:
+.B bitfuckit lfs fetch
+.SS Scripting
+.TP
+Check if repo exists in a script:
+.nf
+if bitfuckit repo exists my-project; then
+    echo "Repository exists"
+else
+    bitfuckit repo create my-project
+fi
+.fi
+.TP
+Mirror only if online:
+.nf
+if bitfuckit network check; then
+    bitfuckit mirror my-project
+fi
+.fi
+.SH SECURITY
+.B bitfuckit
+implements several security measures:
+.IP \(bu 2
+Credentials are stored with restricted file permissions (600)
+.IP \(bu 2
+Optional ClamAV integration for malware scanning before upload
+.IP \(bu 2
+Optional VirusTotal API integration for enhanced detection
+.IP \(bu 2
+SELinux policy for confined execution
+.IP \(bu 2
+firewalld rules for network isolation
+.PP
+For security issues, see SECURITY.md or report to security@hyperpolymath.net.
+.SH RESILIENCE
+.B bitfuckit
+includes fault-tolerance features:
+.IP \(bu 2
+.B Circuit Breaker:
+Prevents cascading failures when API is unavailable.
+Opens after 5 consecutive failures, resets after 30 seconds.
+.IP \(bu 2
+.B Retry Logic:
+Automatic retries with exponential backoff and jitter.
+.IP \(bu 2
+.B Rate Limiting:
+Token bucket algorithm to respect Bitbucket rate limits.
+.IP \(bu 2
+.B Network Awareness:
+Detects metered connections (mobile data) and adjusts behavior.
+.IP \(bu 2
+.B Offline Mode:
+Works with cached data when network is unavailable.
+.SH INTEGRATIONS
+.B bitfuckit
+integrates with:
+.TP
+.B Syncthing
+Distributed configuration sync across devices.
+.TP
+.B ClamAV
+Local virus scanning before upload.
+.TP
+.B VirusTotal
+Cloud-based malware analysis.
+.TP
+.B lazygit
+Custom commands for Bitbucket operations.
+.TP
+.B TortoiseGit
+Windows context menu integration.
+.TP
+.B git-cola
+Python action scripts.
+.TP
+.B Gittyup
+Qt-based tool definitions.
+.SH CONTAINERS
+.B bitfuckit
+is available as container images:
+.TP
+.B Wolfi/Chainguard (recommended):
+nerdctl run ghcr.io/hyperpolymath/bitfuckit:latest
+.TP
+.B Alpine (fallback):
+nerdctl run ghcr.io/hyperpolymath/bitfuckit:alpine
+.PP
+Mount config volume for persistence:
+.nf
+nerdctl run -v ~/.config/bitfuckit:/home/bitfuckit/.config/bitfuckit \\
+    ghcr.io/hyperpolymath/bitfuckit auth status
+.fi
+.SH SEE ALSO
+.BR git (1),
+.BR git-lfs (1),
+.BR gh (1),
+.BR glab (1),
+.BR tea (1),
+.BR syncthing (1),
+.BR clamscan (1)
+.PP
+Project wiki: https://github.com/hyperpolymath/bitfuckit/wiki
+.SH BUGS
+Report bugs at: https://github.com/hyperpolymath/bitfuckit/issues
+.PP
+Known issues and workarounds: https://github.com/hyperpolymath/bitfuckit/wiki/Known-Issues
+.SH AUTHOR
+hyperpolymath <https://hyperpolymath.net>
+.SH COPYRIGHT
+Copyright (C) 2025 hyperpolymath.
+.PP
+License: PMPL-1.0-or-later (GNU Affero General Public License v3 or later).
+.PP
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.

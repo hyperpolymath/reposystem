@@ -1,0 +1,116 @@
+# SPDX-License-Identifier: MPL-2.0-or-later
+# Batch Propagation - Sync ALL repos to ALL forges
+# Use sparingly - this is a full sync operation
+
+name: Batch Propagate All
+
+on:
+  workflow_dispatch:
+    inputs:
+      forges:
+        description: 'Forges to sync (comma-separated, empty for all)'
+        required: false
+        type: string
+        default: ''
+      confirm:
+        description: 'Type CONFIRM to proceed with batch sync'
+        required: true
+        type: string
+
+  schedule:
+    # Weekly full sync on Sunday at 3am UTC
+    - cron: '0 3 * * 0'
+
+permissions:
+  contents: read
+
+env:
+  OWNER: hyperpolymath
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || inputs.confirm == 'CONFIRM'
+    outputs:
+      repos: ${{ steps.get-repos.outputs.repos }}
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+
+      - name: Get repos from manifest
+        id: get-repos
+        run: |
+          # Read repos from manifest
+          REPOS=$(jq -r '.repos | keys | @json' farm-manifest.json)
+          echo "repos=$REPOS" >> $GITHUB_OUTPUT
+
+  propagate-all:
+    needs: validate
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 3  # Limit concurrent to avoid rate limits
+      matrix:
+        repo: ${{ fromJson(needs.validate.outputs.repos) }}
+        forge: [gitlab, sourcehut, codeberg, bitbucket]
+
+    steps:
+      - name: Check if forge selected
+        id: check-forge
+        run: |
+          FORGES="${{ inputs.forges }}"
+          if [ -z "$FORGES" ] || echo "$FORGES" | grep -q "${{ matrix.forge }}"; then
+            echo "skip=false" >> $GITHUB_OUTPUT
+          else
+            echo "skip=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup SSH
+        if: steps.check-forge.outputs.skip != 'true'
+        uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
+        with:
+          ssh-private-key: |
+            ${{ matrix.forge == 'gitlab' && secrets.GITLAB_SSH_KEY || '' }}
+            ${{ matrix.forge == 'sourcehut' && secrets.SOURCEHUT_SSH_KEY || '' }}
+            ${{ matrix.forge == 'codeberg' && secrets.CODEBERG_SSH_KEY || '' }}
+            ${{ matrix.forge == 'bitbucket' && secrets.BITBUCKET_SSH_KEY || '' }}
+
+      - name: Add known hosts
+        if: steps.check-forge.outputs.skip != 'true'
+        run: |
+          mkdir -p ~/.ssh
+          case "${{ matrix.forge }}" in
+            gitlab)     ssh-keyscan gitlab.com >> ~/.ssh/known_hosts ;;
+            sourcehut)  ssh-keyscan git.sr.ht >> ~/.ssh/known_hosts ;;
+            codeberg)   ssh-keyscan codeberg.org >> ~/.ssh/known_hosts ;;
+            bitbucket)  ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts ;;
+          esac
+
+      - name: Sync ${{ matrix.repo }} to ${{ matrix.forge }}
+        if: steps.check-forge.outputs.skip != 'true'
+        run: |
+          REPO="${{ matrix.repo }}"
+
+          # Clone from GitHub
+          git clone --mirror "https://github.com/${{ env.OWNER }}/$REPO.git" repo.git || exit 0
+          cd repo.git
+
+          case "${{ matrix.forge }}" in
+            gitlab)     REMOTE="git@gitlab.com:${{ env.OWNER }}/$REPO.git" ;;
+            sourcehut)  REMOTE="git@git.sr.ht:~${{ env.OWNER }}/$REPO" ;;
+            codeberg)   REMOTE="git@codeberg.org:${{ env.OWNER }}/$REPO.git" ;;
+            bitbucket)  REMOTE="git@bitbucket.org:${{ env.OWNER }}/$REPO.git" ;;
+          esac
+
+          git push --mirror "$REMOTE" || echo "::warning::Failed to push $REPO to ${{ matrix.forge }}"
+
+  report:
+    needs: propagate-all
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Generate Report
+        run: |
+          echo "## Batch Propagation Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -Iseconds)" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY

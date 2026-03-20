@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: PMPL-1.0
+# Alpine-based fallback container for bitfuckit
+# For systems without Wolfi/Chainguard access
+# Build: nerdctl build -f Containerfile.alpine -t bitfuckit:alpine .
+
+# Stage 1: Build
+FROM alpine:edge AS builder
+
+# Enable testing repo for Ada packages
+RUN echo "@testing https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+
+RUN apk add --no-cache \
+    gcc-gnat@testing \
+    gprbuild@testing \
+    curl-dev \
+    git \
+    make
+
+WORKDIR /build
+COPY . .
+
+RUN gprbuild -P bitfuckit.gpr -j0
+
+# Stage 2: Runtime
+FROM alpine:edge
+
+RUN apk add --no-cache \
+    libcurl \
+    libgcc \
+    git \
+    ca-certificates
+
+# Create user
+RUN addgroup -S bitfuckit && adduser -S bitfuckit -G bitfuckit
+
+COPY --from=builder /build/bin/bitfuckit /usr/local/bin/
+COPY --from=builder /build/completions /usr/share/bitfuckit/completions/
+
+USER bitfuckit
+WORKDIR /home/bitfuckit
+
+VOLUME ["/home/bitfuckit/.config/bitfuckit"]
+
+ENTRYPOINT ["/usr/local/bin/bitfuckit"]
+CMD ["--help"]
+
+LABEL org.opencontainers.image.title="bitfuckit"
+LABEL org.opencontainers.image.description="The Bitbucket CLI Atlassian never made"
+LABEL org.opencontainers.image.version="0.2.0-alpine"

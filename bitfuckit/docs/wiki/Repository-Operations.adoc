@@ -1,0 +1,399 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Repository Operations
+:toc:
+
+This guide covers repository management with bitfuckit.
+
+== Listing Repositories
+
+List all repositories in your workspace:
+
+[source,bash]
+----
+bitfuckit repo list
+----
+
+Output:
+
+[source]
+----
+Repositories in myworkspace:
+
+  my-project
+  another-repo
+  shared-library
+  docs-site
+
+Total: 4 repositories
+----
+
+== Creating Repositories
+
+=== Basic Create
+
+[source,bash]
+----
+bitfuckit repo create my-new-repo
+----
+
+=== Private Repository
+
+[source,bash]
+----
+bitfuckit repo create my-new-repo --private
+----
+
+=== With Description
+
+[source,bash]
+----
+bitfuckit repo create my-new-repo --description "My awesome project"
+----
+
+=== Full Example
+
+[source,bash]
+----
+bitfuckit repo create my-new-repo \
+  --private \
+  --description "Internal tools and utilities"
+----
+
+Output:
+
+[source]
+----
+Creating repository my-new-repo... done!
+https://bitbucket.org/myworkspace/my-new-repo
+----
+
+== Checking Repository Existence
+
+[source,bash]
+----
+bitfuckit repo exists my-repo
+----
+
+Exit codes:
+
+* `0` - Repository exists
+* `1` - Repository not found
+
+Useful in scripts:
+
+[source,bash]
+----
+if bitfuckit repo exists my-project; then
+    echo "Repository exists"
+else
+    bitfuckit repo create my-project
+fi
+----
+
+== Deleting Repositories
+
+WARNING: This permanently deletes the repository and all its contents!
+
+[source,bash]
+----
+bitfuckit repo delete my-old-repo
+----
+
+Requires confirmation:
+
+[source]
+----
+Delete repository my-old-repo? Type 'yes' to confirm: yes
+Deleted: my-old-repo
+----
+
+== Cloning Repositories
+
+=== Basic Clone
+
+[source,bash]
+----
+bitfuckit repo clone my-repo
+----
+
+=== With LFS
+
+[source,bash]
+----
+bitfuckit repo clone my-repo --lfs
+----
+
+This automatically:
+
+1. Clones the repository
+2. Initializes Git LFS
+3. Fetches LFS objects
+
+== Repository Information
+
+=== View Details
+
+[source,bash]
+----
+bitfuckit repo info my-repo
+----
+
+Shows:
+
+* Name and slug
+* Description
+* Visibility (public/private)
+* Default branch
+* Size
+* Created/updated dates
+* Clone URLs
+
+=== Repository Settings
+
+[source,bash]
+----
+bitfuckit repo settings my-repo
+----
+
+Shows:
+
+* Branch restrictions
+* Merge settings
+* Pipeline status
+* Access level
+
+== Working with Remotes
+
+=== List Remotes
+
+[source,bash]
+----
+git remote -v
+----
+
+=== Add Bitbucket Remote
+
+[source,bash]
+----
+git remote add bitbucket git@bitbucket.org:myworkspace/my-repo.git
+----
+
+=== Change Remote URL
+
+[source,bash]
+----
+# SSH
+git remote set-url origin git@bitbucket.org:myworkspace/my-repo.git
+
+# HTTPS
+git remote set-url origin https://bitbucket.org/myworkspace/my-repo.git
+----
+
+== Repository URLs
+
+=== URL Formats
+
+[cols="1,2"]
+|===
+|Type |Format
+
+|Web
+|`https://bitbucket.org/WORKSPACE/REPO`
+
+|SSH Clone
+|`git@bitbucket.org:WORKSPACE/REPO.git`
+
+|HTTPS Clone
+|`https://bitbucket.org/WORKSPACE/REPO.git`
+
+|API
+|`https://api.bitbucket.org/2.0/repositories/WORKSPACE/REPO`
+|===
+
+=== Get Clone URL
+
+[source,bash]
+----
+bitfuckit repo url my-repo
+
+# SSH format
+bitfuckit repo url my-repo --ssh
+
+# HTTPS format
+bitfuckit repo url my-repo --https
+----
+
+== Forking
+
+=== Fork a Repository
+
+[source,bash]
+----
+bitfuckit repo fork original-workspace/original-repo
+----
+
+=== Fork with Custom Name
+
+[source,bash]
+----
+bitfuckit repo fork original-workspace/original-repo --name my-fork
+----
+
+== Branch Management
+
+=== List Branches
+
+[source,bash]
+----
+bitfuckit branch list my-repo
+----
+
+=== Create Branch
+
+[source,bash]
+----
+bitfuckit branch create my-repo feature/new-thing
+----
+
+=== Delete Branch
+
+[source,bash]
+----
+bitfuckit branch delete my-repo feature/old-thing
+----
+
+=== Set Default Branch
+
+[source,bash]
+----
+bitfuckit branch default my-repo main
+----
+
+== Repository Search
+
+=== Search by Name
+
+[source,bash]
+----
+bitfuckit repo search "api"
+----
+
+=== Search with Filters
+
+[source,bash]
+----
+# Only private repos
+bitfuckit repo search --private
+
+# Only public repos
+bitfuckit repo search --public
+
+# By language
+bitfuckit repo search --language ada
+----
+
+== Permissions
+
+=== View Access
+
+[source,bash]
+----
+bitfuckit repo access my-repo
+----
+
+Shows who has access and their permission level.
+
+=== Permission Levels
+
+[cols="1,2"]
+|===
+|Level |Capabilities
+
+|Read
+|Clone, view code
+
+|Write
+|Push, create branches
+
+|Admin
+|Settings, delete repo
+|===
+
+== Best Practices
+
+=== Naming Conventions
+
+* Use lowercase
+* Use hyphens for spaces: `my-project` not `my_project`
+* Be descriptive but concise
+* Include team/project prefix if needed: `team-api-server`
+
+=== Repository Description
+
+Always add a description:
+
+[source,bash]
+----
+bitfuckit repo create my-repo --description "Brief but clear description"
+----
+
+=== Private by Default
+
+For internal projects, use `--private`:
+
+[source,bash]
+----
+bitfuckit repo create internal-tool --private
+----
+
+=== Initialize with README
+
+After creating:
+
+[source,bash]
+----
+bitfuckit repo create my-repo
+cd my-repo
+git init
+echo "# My Repo" > README.md
+git add README.md
+git commit -m "Initial commit"
+git remote add origin git@bitbucket.org:myworkspace/my-repo.git
+git push -u origin main
+----
+
+== Scripting Examples
+
+=== Batch Create
+
+[source,bash]
+----
+#!/bin/bash
+repos=("api-server" "web-client" "shared-lib" "docs")
+for repo in "${repos[@]}"; do
+    bitfuckit repo create "$repo" --private
+done
+----
+
+=== Check Multiple Repos
+
+[source,bash]
+----
+#!/bin/bash
+repos=("api-server" "web-client" "shared-lib")
+for repo in "${repos[@]}"; do
+    if bitfuckit repo exists "$repo"; then
+        echo "✓ $repo exists"
+    else
+        echo "✗ $repo missing"
+    fi
+done
+----
+
+=== Export Repo List
+
+[source,bash]
+----
+bitfuckit repo list --format json > repos.json
+bitfuckit repo list --format csv > repos.csv
+----

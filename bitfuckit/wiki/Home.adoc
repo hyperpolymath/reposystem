@@ -1,0 +1,165 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= bitfuckit Wiki
+:toc: right
+:toclevels: 2
+:icons: font
+:source-highlighter: rouge
+
+image::https://img.shields.io/badge/language-Ada-blue[Ada]
+image::https://img.shields.io/badge/SPARK-verified-green[SPARK]
+image::https://img.shields.io/badge/license-PMPL--1.0[License]
+
+Welcome to the **bitfuckit** wiki — comprehensive documentation for the Bitbucket CLI that Atlassian never made.
+
+== Quick Links
+
+[cols="1,1,1"]
+|===
+|👤 **User Guide** |🛠️ **Developer Guide** |📚 **Reference**
+
+|link:Getting-Started[Getting Started]
+|link:Building-from-Source[Building from Source]
+|link:CLI-Reference[CLI Reference]
+
+|link:Authentication[Authentication]
+|link:Architecture[Architecture]
+|link:GraphQL-API[GraphQL API]
+
+|link:Repository-Operations[Repository Operations]
+|link:Contributing[Contributing]
+|link:Configuration[Configuration]
+
+|link:Pull-Requests[Pull Requests]
+|link:SPARK-Verification[SPARK Verification]
+|link:Troubleshooting[Troubleshooting]
+
+|link:TUI-Guide[Interactive TUI]
+|link:Testing[Testing]
+|link:FAQ[FAQ]
+|===
+
+== What is bitfuckit?
+
+`bitfuckit` is a command-line interface for Bitbucket Cloud, written in Ada/SPARK for reliability and formal verification.
+
+=== Why Does This Exist?
+
+Every major git forge has an official CLI:
+
+* **GitHub** → `gh`
+* **GitLab** → `glab`
+* **Codeberg** → `tea`
+* **SourceHut** → `hut`
+* **Gitea** → `tea`
+
+**Bitbucket has nothing.** Atlassian, a company valued at over $50 billion, has not provided CLI tooling for their flagship version control product.
+
+This tool fills that gap.
+
+=== Key Features
+
+* **Authentication** — App password-based authentication
+* **Repository CRUD** — Create, list, delete, check existence
+* **Pull Requests** — List PRs with state filtering
+* **Mirroring** — One-command GitHub-to-Bitbucket mirroring
+* **Interactive TUI** — Vim-style navigation with color interface
+* **GraphQL API** — Programmatic access for automation
+* **SPARK Verification** — Formally verified TUI specification
+
+== Installation
+
+=== Quick Install (Linux)
+
+[source,bash]
+----
+# Clone and build
+git clone https://github.com/hyperpolymath/bitfuckit.git
+cd bitfuckit
+just build install
+
+# Or with full installation (completions + man page)
+just install-full
+----
+
+=== Package Managers
+
+[cols="1,2,1"]
+|===
+|Platform |Command |Status
+
+|Arch Linux (AUR)
+|`yay -S bitfuckit`
+|✓ Ready
+
+|Fedora COPR
+|`dnf copr enable hyperpolymath/bitfuckit`
+|Planned
+
+|Homebrew
+|`brew install bitfuckit`
+|Planned
+
+|Nix
+|`nix-env -iA nixpkgs.bitfuckit`
+|Planned
+|===
+
+See link:Installation[Installation Guide] for detailed instructions.
+
+== Quick Start
+
+[source,bash]
+----
+# 1. Authenticate with Bitbucket
+bitfuckit auth login
+
+# 2. List your repositories
+bitfuckit repo list
+
+# 3. Create a new repository
+bitfuckit repo create my-new-repo --private
+
+# 4. Mirror from GitHub
+cd my-github-repo
+bitfuckit mirror my-repo
+
+# 5. Launch the TUI
+bitfuckit tui
+----
+
+== Project Status
+
+[cols="1,3,1"]
+|===
+|Version |Features |Status
+
+|v0.1.0
+|Auth, Repo CRUD, PR list, Mirror, TUI
+|✓ Released
+
+|v0.2.0
+|PR create/merge/decline, Comments
+|In Development
+
+|v0.3.0
+|Issue tracking
+|Planned
+
+|v0.4.0
+|Pipeline integration
+|Planned
+
+|v1.0.0
+|Feature parity with gh/glab
+|Planned Q4 2025
+|===
+
+== Getting Help
+
+* **Issues**: https://github.com/hyperpolymath/bitfuckit/issues[GitHub Issues]
+* **Discussions**: https://github.com/hyperpolymath/bitfuckit/discussions[GitHub Discussions]
+* **Security**: See link:../SECURITY.md[SECURITY.md] for reporting vulnerabilities
+
+== License
+
+PMPL-1.0-or-later — If Atlassian wants to use this, they contribute back. Fair's fair.

@@ -1,0 +1,36 @@
+title: "Welcome to bitfuckit!"
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # Welcome to bitfuckit!
+
+        **bitfuckit** is the community-built Bitbucket CLI that Atlassian never made.
+
+        ## Getting Started
+
+        1. **Install**: See the [README](../README.adoc) for installation options
+        2. **Authenticate**: `bitfuckit auth login`
+        3. **Explore**: `bitfuckit --help`
+
+        ## Discussion Categories
+
+        - **General**: Casual conversation and introductions
+        - **Q&A**: Get help with using bitfuckit
+        - **Ideas**: Suggest new features
+        - **Show and Tell**: Share how you're using bitfuckit
+
+        ## Contributing
+
+        We welcome contributions! This project is written in Ada/SPARK for reliability.
+        Check out [CONTRIBUTING.adoc](../CONTRIBUTING.adoc) to get started.
+
+        ## Code of Conduct
+
+        Be respectful. We follow the [Contributor Covenant](../CODE_OF_CONDUCT.md).
+
+        ---
+
+        Built with care by the hyperpolymath community.
+        Licensed under PMPL-1.0-or-later (Palimpsest License).

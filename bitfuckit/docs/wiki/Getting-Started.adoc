@@ -1,0 +1,211 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Getting Started with bitfuckit
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+
+This guide will get you up and running with bitfuckit in 5 minutes.
+
+== Prerequisites
+
+Before installing bitfuckit, ensure you have:
+
+* A Bitbucket Cloud account
+* An https://bitbucket.org/account/settings/app-passwords/[app password] with appropriate permissions
+* `curl` installed (usually pre-installed on Linux/macOS)
+
+== Installation
+
+=== Option 1: Build from Source (Recommended)
+
+[source,bash]
+----
+# Install build dependencies (Fedora)
+sudo dnf install gcc-gnat gprbuild
+
+# Install build dependencies (Debian/Ubuntu)
+sudo apt install gnat gprbuild
+
+# Clone and build
+git clone https://github.com/hyperpolymath/bitfuckit.git
+cd bitfuckit
+just build install
+----
+
+=== Option 2: AUR (Arch Linux)
+
+[source,bash]
+----
+yay -S bitfuckit
+----
+
+=== Option 3: Download Binary
+
+Download the latest release from https://github.com/hyperpolymath/bitfuckit/releases[GitHub Releases].
+
+== First-Time Setup
+
+=== Step 1: Create an App Password
+
+. Go to https://bitbucket.org/account/settings/app-passwords/[Bitbucket App Passwords]
+. Click **Create app password**
+. Name it something like "bitfuckit CLI"
+. Select permissions:
+** ✓ `repository:read`
+** ✓ `repository:write`
+** ✓ `repository:delete` (if you want to delete repos)
+** ✓ `pullrequest:read`
+. Click **Create**
+. **Copy the password immediately** — you won't see it again!
+
+=== Step 2: Authenticate
+
+[source,bash]
+----
+bitfuckit auth login
+----
+
+You'll be prompted for:
+
+* **Username**: Your Bitbucket username (not email)
+* **App Password**: The password you just created
+* **Workspace**: Your default workspace (usually your username)
+
+=== Step 3: Verify Authentication
+
+[source,bash]
+----
+bitfuckit auth status
+----
+
+Expected output:
+[source]
+----
+✓ Authenticated as: yourusername
+  Workspace: yourusername
+----
+
+== Your First Commands
+
+=== List Repositories
+
+[source,bash]
+----
+bitfuckit repo list
+----
+
+=== Create a Repository
+
+[source,bash]
+----
+# Public repository
+bitfuckit repo create my-project
+
+# Private repository
+bitfuckit repo create my-private-project --private
+
+# With description
+bitfuckit repo create my-project --description "My awesome project"
+----
+
+=== Check Repository Existence
+
+[source,bash]
+----
+bitfuckit repo exists my-project
+# Output: ✓ Repository 'my-project' exists
+----
+
+=== List Pull Requests
+
+[source,bash]
+----
+# List open PRs
+bitfuckit pr list my-project
+
+# List merged PRs
+bitfuckit pr list my-project --state MERGED
+
+# List all PRs
+bitfuckit pr list my-project --all
+----
+
+== Using the TUI
+
+Launch the interactive terminal interface:
+
+[source,bash]
+----
+bitfuckit tui
+# or just
+bitfuckit
+----
+
+=== TUI Navigation
+
+[cols="1,2"]
+|===
+|Key |Action
+
+|`j` / `↓`
+|Move down
+
+|`k` / `↑`
+|Move up
+
+|`Enter`
+|Select
+
+|`q` / `Esc`
+|Quit
+
+|Single letter in `[brackets]`
+|Quick select option
+|===
+
+== Mirroring from GitHub
+
+If you have a GitHub repository you want to mirror to Bitbucket:
+
+[source,bash]
+----
+# Navigate to your GitHub repo
+cd ~/my-github-repo
+
+# Mirror to Bitbucket (creates repo if needed)
+bitfuckit mirror my-repo
+----
+
+This will:
+
+. Create the repository on Bitbucket if it doesn't exist
+. Push all branches to Bitbucket
+. Push all tags to Bitbucket
+
+== Next Steps
+
+* link:Authentication[Authentication] — Advanced auth configuration
+* link:Repository-Operations[Repository Operations] — Full repo management
+* link:CLI-Reference[CLI Reference] — Complete command reference
+* link:TUI-Guide[TUI Guide] — Master the interactive interface
+
+== Common Issues
+
+=== "Authentication failed"
+
+* Verify your username (not email)
+* Regenerate your app password
+* Check that the password has required permissions
+
+=== "Workspace not found"
+
+* Use your actual workspace slug, not display name
+* Check at https://bitbucket.org/account/workspaces/
+
+=== "Repository not found"
+
+* Ensure you have access to the repository
+* Check that the repository name is correct (case-sensitive)
+
+See link:Troubleshooting[Troubleshooting] for more help.

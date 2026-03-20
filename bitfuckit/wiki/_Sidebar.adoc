@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= bitfuckit
+
+link:Home[**🏠 Home**]
+
+== 👤 User Guide
+
+* link:Getting-Started[Getting Started]
+* link:Installation[Installation]
+* link:Authentication[Authentication]
+* link:Repository-Operations[Repository Operations]
+* link:Pull-Requests[Pull Requests]
+* link:TUI-Guide[TUI Guide]
+* link:Mirroring[Mirroring]
+
+== 📚 Reference
+
+* link:CLI-Reference[CLI Reference]
+* link:GraphQL-API[GraphQL API]
+* link:Configuration[Configuration]
+* link:Troubleshooting[Troubleshooting]
+* link:FAQ[FAQ]
+
+== 🛠️ Developer Guide
+
+* link:Building-from-Source[Building from Source]
+* link:Architecture[Architecture]
+* link:SPARK-Verification[SPARK Verification]
+* link:Testing[Testing]
+* link:Contributing[Contributing]
+
+== 📋 Project
+
+* https://github.com/hyperpolymath/bitfuckit[GitHub Repository]
+* https://github.com/hyperpolymath/bitfuckit/releases[Releases]
+* https://github.com/hyperpolymath/bitfuckit/issues[Issues]
+
+---
+
+v0.1.0 | PMPL-1.0-or-later

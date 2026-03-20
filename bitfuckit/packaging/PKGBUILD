@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: PMPL-1.0
+# Maintainer: hyperpolymath <hyperpolymath@users.noreply.github.com>
+pkgname=bitfuckit
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Bitbucket CLI tool written in Ada"
+arch=('x86_64')
+url="https://github.com/hyperpolymath/bitfuckit"
+license=('PMPL-1.0-or-later')
+depends=('curl')
+makedepends=('gcc-ada' 'gprbuild')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/hyperpolymath/$pkgname/archive/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+    cd "$pkgname-$pkgver"
+    gprbuild -P bitfuckit.gpr -XBUILD_MODE=release
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+    install -Dm755 bin/bitfuckit "$pkgdir/usr/bin/bitfuckit"
+    install -Dm644 doc/bitfuckit.1 "$pkgdir/usr/share/man/man1/bitfuckit.1"
+    install -Dm644 completions/bitfuckit.bash "$pkgdir/usr/share/bash-completion/completions/bitfuckit"
+    install -Dm644 completions/bitfuckit.zsh "$pkgdir/usr/share/zsh/site-functions/_bitfuckit"
+    install -Dm644 completions/bitfuckit.fish "$pkgdir/usr/share/fish/vendor_completions.d/bitfuckit.fish"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    install -Dm644 README.adoc "$pkgdir/usr/share/doc/$pkgname/README.adoc"
+}

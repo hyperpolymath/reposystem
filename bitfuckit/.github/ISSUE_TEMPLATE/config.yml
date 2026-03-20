@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discussions
+    url: https://github.com/hyperpolymath/bitfuckit/discussions
+    about: Ask questions and discuss features
+  - name: Documentation
+    url: https://github.com/hyperpolymath/bitfuckit/wiki
+    about: Check the wiki for documentation

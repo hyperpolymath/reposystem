@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: PMPL-1.0
+* text=auto eol=lf
+
+*.md text
+*.adoc text
+*.txt text
+*.json text
+*.yaml text
+*.yml text
+*.toml text
+*.scm text
+*.res text
+*.resi text
+*.js text
+*.ts text
+*.rs text
+*.ex text
+*.exs text
+*.erl text
+*.hrl text
+*.gleam text
+*.ada text
+*.ads text
+*.adb text
+*.zig text
+*.jl text
+*.sh text
+*.bash text
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+
+*.md diff=markdown
+*.adoc diff=asciidoc
+*.rs diff=rust
+
+*.res linguist-language=ReScript
+*.resi linguist-language=ReScript
+justfile linguist-language=Just
+Mustfile linguist-language=Just
+*.lgt linguist-language=Logtalk
+*.scm linguist-language=Scheme

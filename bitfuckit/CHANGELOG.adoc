@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Changelog
+:toc:
+
+All notable changes to this project will be documented in this file.
+
+The format is based on https://keepachangelog.com/[Keep a Changelog],
+and this project adheres to https://semver.org/[Semantic Versioning].
+
+== [Unreleased]
+
+=== Added
+* `pr list` - List pull requests for a repository with state filtering
+
+== [0.1.0] - 2025-12-25
+
+=== Added
+* Initial release
+* `auth login` - Authenticate with Bitbucket app password
+* `auth status` - Show authentication status
+* `repo create` - Create repositories (public/private, with description)
+* `repo list` - List all repositories in workspace
+* `repo delete` - Delete repositories (with confirmation)
+* `repo exists` - Check if repository exists
+* `mirror` - Mirror from GitHub to Bitbucket
+* Interactive TUI mode with vim-style navigation
+* SPARK-verified TUI specification
+* Man page (`doc/bitfuckit.1`)
+* Shell completions (bash, zsh, fish)
+* Packaging files (RPM spec, Arch PKGBUILD, Nix flake)
+* Justfile for common tasks
+* SCM checkpoint files (META, ECOSYSTEM, STATE, AGENTIC, NEUROSYM, PLAYBOOK)

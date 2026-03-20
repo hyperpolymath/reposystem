@@ -1,0 +1,162 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Frequently Asked Questions
+:toc: left
+:toclevels: 2
+:icons: font
+
+== General
+
+=== Why is it called "bitfuckit"?
+
+The name reflects the frustration of needing to build a tool that should already exist. Atlassian has had over a decade to provide a Bitbucket CLI and hasn't. At some point, you just say "bit-fuck-it" and build it yourself.
+
+=== Is this an official Atlassian product?
+
+**No.** This is an unofficial, community-built tool. It is not affiliated with, endorsed by, or supported by Atlassian Pty Ltd.
+
+See the link:../README.adoc#disclaimer[Disclaimer] for full legal notice.
+
+=== Why Ada? Why not Python/Go/Rust?
+
+Several reasons:
+
+. **Reliability** — Ada's strong typing catches errors at compile time
+. **SPARK** — Formal verification proves correctness of critical code
+. **Differentiator** — Every other CLI tool is in Go or Rust
+. **Learning** — The author wanted to use Ada for a real project
+. **Statement** — To show that "boring" languages produce working software
+
+=== Is the TUI really formally verified?
+
+The TUI **specification** (`tui.ads`) uses SPARK Mode, which allows formal verification of the interface contract. The implementation has SPARK annotations for key invariants.
+
+This doesn't mean the entire TUI is bug-free, but it demonstrates that formal methods can be applied to CLI tools.
+
+== Installation
+
+=== Why do I need GNAT to build?
+
+GNAT is the Ada compiler. It's available in most Linux distributions:
+
+* Fedora: `sudo dnf install gcc-gnat gprbuild`
+* Ubuntu: `sudo apt install gnat gprbuild`
+* Arch: `yay -S gcc-ada`
+
+=== Can I use it on macOS?
+
+Yes, but it's untested. You'll need:
+
+* GNAT from Homebrew: `brew install gprbuild`
+* Or AdaCore's GNAT Community Edition
+
+=== What about Windows?
+
+Windows support is planned for v1.0. You'd need GNAT for Windows from AdaCore.
+
+== Authentication
+
+=== What's an app password?
+
+An app password is a Bitbucket-specific authentication token. It's different from your account password and can have limited permissions.
+
+Create one at: https://bitbucket.org/account/settings/app-passwords/
+
+=== Is my password stored securely?
+
+Currently, credentials are stored in **plain text** in `~/.config/bitfuckit/config`. This is a known security issue (SEC-002) that will be addressed with system keyring integration.
+
+In the meantime:
+
+* Set appropriate file permissions: `chmod 600 ~/.config/bitfuckit/config`
+* Use an app password with minimal permissions
+* Revoke and regenerate if compromised
+
+=== Can I use SSH instead?
+
+Not currently. The tool uses the REST API which requires HTTP authentication. SSH is used for git operations (push/pull) but not API calls.
+
+== Features
+
+=== Can I create pull requests?
+
+Not yet. PR creation is planned for v0.2.0. Currently you can only list PRs.
+
+=== Does it support Bitbucket Server/Data Center?
+
+No. Only Bitbucket Cloud (bitbucket.org) is supported. Server/Data Center have different APIs.
+
+=== Can I use it for CI/CD?
+
+Yes! The CLI and GraphQL API work well in automated environments:
+
+[source,bash]
+----
+# In CI script
+export BITFUCKIT_WORKSPACE=myworkspace
+bitfuckit repo exists my-repo || bitfuckit repo create my-repo
+bitfuckit mirror my-repo
+----
+
+== Troubleshooting
+
+=== "curl: command not found"
+
+Install curl:
+
+* Fedora: `sudo dnf install curl`
+* Ubuntu: `sudo apt install curl`
+* macOS: Usually pre-installed
+
+=== "gprbuild: command not found"
+
+You need to install the Ada build tools:
+
+* Fedora: `sudo dnf install gprbuild`
+* Ubuntu: `sudo apt install gprbuild`
+
+=== "Authentication failed"
+
+. Verify your **username** (not email address)
+. Regenerate your app password
+. Ensure app password has required permissions
+. Check workspace slug is correct
+
+=== "Repository not found"
+
+. Repository names are case-sensitive
+. Verify you have access to the repository
+. Check the workspace is correct
+
+=== The TUI looks broken
+
+. Ensure your terminal supports ANSI colors
+. Try: `export TERM=xterm-256color`
+. If using SSH, ensure your connection supports colors
+
+== Development
+
+=== How do I contribute?
+
+See link:Contributing[Contributing Guide].
+
+Priority areas:
+
+. PR workflows (create/merge/decline)
+. Input validation/sanitization
+. Additional test coverage
+. Documentation improvements
+
+=== Why AGPL instead of PMPL-1.0/Apache?
+
+The AGPL ensures that if Atlassian (or any company) uses this code in their products, they must contribute improvements back to the community.
+
+Given that this tool exists because Atlassian hasn't provided one, it's only fair that they can't take without giving back.
+
+=== Can I use this code in my proprietary product?
+
+If you're building a proprietary product, you'd need to:
+
+. Open-source your modifications under AGPL
+. Or contact the author about licensing
+
+See https://github.com/hyperpolymath/palimpsest-license[PMPL-1.0] for full terms.

@@ -1,0 +1,9 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+
+---
+
+*bitfuckit* — The Bitbucket CLI that Atlassian didn't make.
+
+https://github.com/hyperpolymath/bitfuckit[GitHub] | https://github.com/hyperpolymath/bitfuckit/issues[Issues] | PMPL-1.0-or-later
+
+_This is an unofficial community project. Not affiliated with Atlassian._

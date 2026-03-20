@@ -1,0 +1,336 @@
+# SPDX-License-Identifier: PMPL-1.0
+# bitfuckit GraphQL Schema
+# Fire-and-Fuck-GET (and more) with Bitbucket
+#
+# This schema exposes ALL CLI functionality via GraphQL.
+# Everything you can do offline, you can do via this API.
+
+"""
+Root query type - read operations
+"""
+type Query {
+  """Current authentication status"""
+  authStatus: AuthStatus!
+
+  """List all repositories in workspace"""
+  repositories(
+    workspace: String
+    page: Int
+    pageSize: Int
+  ): RepositoryConnection!
+
+  """Get a specific repository"""
+  repository(workspace: String!, slug: String!): Repository
+
+  """Check if a repository exists"""
+  repositoryExists(workspace: String!, slug: String!): Boolean!
+
+  """List branches in a repository"""
+  branches(workspace: String!, slug: String!): [Branch!]!
+
+  """List pull requests"""
+  pullRequests(
+    workspace: String!
+    slug: String!
+    state: PullRequestState
+  ): [PullRequest!]!
+
+  """Get pipeline status"""
+  pipelines(workspace: String!, slug: String!, limit: Int): [Pipeline!]!
+}
+
+"""
+Root mutation type - write operations
+"""
+type Mutation {
+  """Authenticate with Bitbucket"""
+  login(username: String!, appPassword: String!, workspace: String): AuthResult!
+
+  """Clear stored credentials"""
+  logout: Boolean!
+
+  """Create a new repository"""
+  createRepository(input: CreateRepositoryInput!): RepositoryResult!
+
+  """Delete a repository (requires confirmation token)"""
+  deleteRepository(
+    workspace: String!
+    slug: String!
+    confirmationToken: String!
+  ): DeleteResult!
+
+  """Mirror a repository from another forge"""
+  mirror(input: MirrorInput!): MirrorResult!
+
+  """Create a pull request"""
+  createPullRequest(input: CreatePullRequestInput!): PullRequestResult!
+
+  """Merge a pull request"""
+  mergePullRequest(
+    workspace: String!
+    slug: String!
+    pullRequestId: Int!
+    mergeStrategy: MergeStrategy
+  ): MergeResult!
+
+  """Fork a repository"""
+  forkRepository(
+    workspace: String!
+    slug: String!
+    newName: String
+    newWorkspace: String
+  ): RepositoryResult!
+}
+
+"""
+Subscription type - real-time updates
+"""
+type Subscription {
+  """Watch for pipeline status changes"""
+  pipelineStatus(workspace: String!, slug: String!): Pipeline!
+
+  """Watch for new pull requests"""
+  pullRequestOpened(workspace: String!, slug: String!): PullRequest!
+}
+
+# ============================================================================
+# Types
+# ============================================================================
+
+type AuthStatus {
+  authenticated: Boolean!
+  username: String
+  workspace: String
+  configPath: String
+}
+
+type AuthResult {
+  success: Boolean!
+  message: String
+  username: String
+  workspace: String
+}
+
+type Repository {
+  uuid: ID!
+  slug: String!
+  name: String!
+  fullName: String!
+  description: String
+  isPrivate: Boolean!
+  workspace: Workspace!
+  mainBranch: String
+  createdOn: DateTime
+  updatedOn: DateTime
+  size: Int
+  language: String
+  forkPolicy: String
+  links: RepositoryLinks!
+}
+
+type RepositoryConnection {
+  nodes: [Repository!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  page: Int!
+  pageSize: Int!
+}
+
+type Workspace {
+  uuid: ID!
+  slug: String!
+  name: String!
+}
+
+type RepositoryLinks {
+  html: String!
+  clone: [CloneLink!]!
+  avatar: String
+}
+
+type CloneLink {
+  name: String!
+  href: String!
+}
+
+type Branch {
+  name: String!
+  target: Commit
+  default: Boolean!
+}
+
+type Commit {
+  hash: String!
+  message: String
+  author: Author
+  date: DateTime
+}
+
+type Author {
+  raw: String!
+  user: User
+}
+
+type User {
+  uuid: ID!
+  username: String!
+  displayName: String
+  avatarUrl: String
+}
+
+type PullRequest {
+  id: Int!
+  title: String!
+  description: String
+  state: PullRequestState!
+  source: BranchRef!
+  destination: BranchRef!
+  author: User!
+  createdOn: DateTime!
+  updatedOn: DateTime
+  mergeCommit: Commit
+  closeSourceBranch: Boolean!
+  commentCount: Int!
+}
+
+type BranchRef {
+  branch: Branch!
+  repository: Repository!
+}
+
+type Pipeline {
+  uuid: ID!
+  buildNumber: Int!
+  state: PipelineState!
+  trigger: String
+  createdOn: DateTime!
+  completedOn: DateTime
+  durationInSeconds: Int
+  target: PipelineTarget
+}
+
+type PipelineTarget {
+  refType: String!
+  refName: String!
+  commit: Commit
+}
+
+# ============================================================================
+# Inputs
+# ============================================================================
+
+input CreateRepositoryInput {
+  name: String!
+  workspace: String
+  description: String
+  isPrivate: Boolean = false
+  forkPolicy: ForkPolicy = ALLOW_FORKS
+  language: String
+  mainBranch: String = "main"
+}
+
+input MirrorInput {
+  """Source repository (can be URL or local path)"""
+  source: String!
+  """Target repository name on Bitbucket"""
+  targetName: String!
+  """Target workspace (defaults to authenticated workspace)"""
+  targetWorkspace: String
+  """Create target repo if it doesn't exist"""
+  createIfNotExists: Boolean = true
+  """Include all branches"""
+  allBranches: Boolean = true
+  """Include tags"""
+  includeTags: Boolean = true
+}
+
+input CreatePullRequestInput {
+  workspace: String!
+  slug: String!
+  title: String!
+  description: String
+  sourceBranch: String!
+  destinationBranch: String = "main"
+  closeSourceBranch: Boolean = true
+  reviewers: [String!]
+}
+
+# ============================================================================
+# Enums
+# ============================================================================
+
+enum PullRequestState {
+  OPEN
+  MERGED
+  DECLINED
+  SUPERSEDED
+}
+
+enum PipelineState {
+  PENDING
+  IN_PROGRESS
+  SUCCESSFUL
+  FAILED
+  STOPPED
+  PAUSED
+}
+
+enum MergeStrategy {
+  MERGE_COMMIT
+  SQUASH
+  FAST_FORWARD
+}
+
+enum ForkPolicy {
+  ALLOW_FORKS
+  NO_PUBLIC_FORKS
+  NO_FORKS
+}
+
+# ============================================================================
+# Results
+# ============================================================================
+
+type RepositoryResult {
+  success: Boolean!
+  message: String
+  repository: Repository
+}
+
+type DeleteResult {
+  success: Boolean!
+  message: String
+  """Token to use for confirmation (valid for 60 seconds)"""
+  confirmationToken: String
+}
+
+type MirrorResult {
+  success: Boolean!
+  message: String
+  repository: Repository
+  branchesPushed: [String!]
+  tagsPushed: [String!]
+}
+
+type PullRequestResult {
+  success: Boolean!
+  message: String
+  pullRequest: PullRequest
+}
+
+type MergeResult {
+  success: Boolean!
+  message: String
+  mergeCommit: Commit
+}
+
+# ============================================================================
+# Scalars
+# ============================================================================
+
+scalar DateTime

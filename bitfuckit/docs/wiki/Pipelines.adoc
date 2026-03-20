@@ -1,0 +1,474 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Bitbucket Pipelines
+:toc:
+
+This guide covers Bitbucket Pipelines integration with bitfuckit.
+
+== Overview
+
+bitfuckit provides full integration with Bitbucket Pipelines for:
+
+* Viewing pipeline status
+* Triggering builds
+* Managing variables
+* Accessing logs
+* Managing schedules
+
+== Pipeline Status
+
+=== List Recent Pipelines
+
+[source,bash]
+----
+bitfuckit pipeline list my-repo
+----
+
+Output:
+[source]
+----
+Pipelines in my-repo:
+
+#42 [SUCCESSFUL] main (2m 34s) - 10 minutes ago
+#41 [FAILED] feature/auth (1m 12s) - 2 hours ago
+#40 [SUCCESSFUL] main (2m 45s) - yesterday
+
+Total: 25 pipeline(s)
+----
+
+=== Filter by State
+
+[source,bash]
+----
+# Only failed pipelines
+bitfuckit pipeline list my-repo --state FAILED
+
+# Only successful
+bitfuckit pipeline list my-repo --state SUCCESSFUL
+
+# In progress
+bitfuckit pipeline list my-repo --state IN_PROGRESS
+----
+
+=== Filter by Branch
+
+[source,bash]
+----
+bitfuckit pipeline list my-repo --branch main
+bitfuckit pipeline list my-repo --branch feature/auth
+----
+
+=== View Pipeline Details
+
+[source,bash]
+----
+bitfuckit pipeline view my-repo {uuid}
+----
+
+Shows:
+* Build number and state
+* Trigger type and branch
+* Duration
+* Individual step status
+
+== Triggering Pipelines
+
+=== Trigger on Branch
+
+[source,bash]
+----
+bitfuckit pipeline trigger my-repo main
+----
+
+=== Trigger with Variables
+
+[source,bash]
+----
+bitfuckit pipeline trigger my-repo main \
+  --var DEPLOY_ENV=staging \
+  --var DEBUG=true
+----
+
+=== Trigger Custom Pipeline
+
+[source,bash]
+----
+bitfuckit pipeline trigger my-repo main --custom deploy-production
+----
+
+=== Trigger on Pull Request
+
+[source,bash]
+----
+bitfuckit pipeline trigger-pr my-repo 42
+----
+
+== Pipeline Control
+
+=== Stop a Pipeline
+
+[source,bash]
+----
+bitfuckit pipeline stop my-repo {uuid}
+----
+
+=== Rerun a Pipeline
+
+[source,bash]
+----
+bitfuckit pipeline rerun my-repo {uuid}
+----
+
+== Pipeline Steps
+
+=== List Steps
+
+[source,bash]
+----
+bitfuckit pipeline steps my-repo {uuid}
+----
+
+Output:
+[source]
+----
+Steps in pipeline #42:
+
+1. [SUCCESSFUL] Build (45s)
+2. [SUCCESSFUL] Test (1m 23s)
+3. [SUCCESSFUL] Deploy (26s)
+
+Total duration: 2m 34s
+----
+
+=== View Step Details
+
+[source,bash]
+----
+bitfuckit pipeline step my-repo {pipeline-uuid} {step-uuid}
+----
+
+=== View Step Logs
+
+[source,bash]
+----
+bitfuckit pipeline logs my-repo {pipeline-uuid} {step-uuid}
+----
+
+Or view all logs:
+
+[source,bash]
+----
+bitfuckit pipeline logs my-repo {pipeline-uuid} --all
+----
+
+== Pipeline Variables
+
+=== List Variables
+
+[source,bash]
+----
+bitfuckit pipeline vars my-repo
+----
+
+Output:
+[source]
+----
+Pipeline Variables in my-repo:
+
+  AWS_ACCESS_KEY_ID: ****** (secured)
+  AWS_SECRET_ACCESS_KEY: ****** (secured)
+  DEPLOY_ENV: production
+  DEBUG: false
+
+Total: 4 variable(s)
+----
+
+=== Create Variable
+
+[source,bash]
+----
+# Plain variable
+bitfuckit pipeline var create my-repo DEPLOY_ENV production
+
+# Secured variable (hidden in logs)
+bitfuckit pipeline var create my-repo AWS_SECRET_KEY abc123 --secured
+----
+
+=== Update Variable
+
+[source,bash]
+----
+bitfuckit pipeline var update my-repo {uuid} --value new-value
+----
+
+=== Delete Variable
+
+[source,bash]
+----
+bitfuckit pipeline var delete my-repo {uuid}
+----
+
+== Deployment Environments
+
+=== List Environments
+
+[source,bash]
+----
+bitfuckit pipeline env list my-repo
+----
+
+=== Create Environment
+
+[source,bash]
+----
+# Test environment
+bitfuckit pipeline env create my-repo staging --type Test
+
+# Production environment
+bitfuckit pipeline env create my-repo production --type Production
+----
+
+=== Environment Variables
+
+[source,bash]
+----
+# List environment variables
+bitfuckit pipeline env vars my-repo {env-uuid}
+
+# Create environment variable
+bitfuckit pipeline env var create my-repo {env-uuid} DB_HOST localhost
+----
+
+=== Delete Environment
+
+[source,bash]
+----
+bitfuckit pipeline env delete my-repo {env-uuid}
+----
+
+== Pipeline Caches
+
+=== List Caches
+
+[source,bash]
+----
+bitfuckit pipeline cache list my-repo
+----
+
+=== Delete Cache
+
+[source,bash]
+----
+# Delete specific cache
+bitfuckit pipeline cache delete my-repo {cache-uuid}
+
+# Delete all caches
+bitfuckit pipeline cache clear my-repo
+----
+
+== Scheduled Pipelines
+
+=== List Schedules
+
+[source,bash]
+----
+bitfuckit pipeline schedule list my-repo
+----
+
+=== Create Schedule
+
+[source,bash]
+----
+# Daily at midnight UTC
+bitfuckit pipeline schedule create my-repo "0 0 * * *" main
+
+# Weekly on Monday at 9am
+bitfuckit pipeline schedule create my-repo "0 9 * * 1" main
+
+# Every 6 hours
+bitfuckit pipeline schedule create my-repo "0 */6 * * *" develop
+----
+
+=== Update Schedule
+
+[source,bash]
+----
+# Change cron pattern
+bitfuckit pipeline schedule update my-repo {uuid} --cron "0 6 * * *"
+
+# Disable schedule
+bitfuckit pipeline schedule update my-repo {uuid} --enabled false
+----
+
+=== Delete Schedule
+
+[source,bash]
+----
+bitfuckit pipeline schedule delete my-repo {uuid}
+----
+
+== Configuration
+
+=== Check if Pipelines Enabled
+
+[source,bash]
+----
+bitfuckit pipeline status my-repo
+----
+
+=== Enable Pipelines
+
+[source,bash]
+----
+bitfuckit pipeline enable my-repo
+----
+
+=== Disable Pipelines
+
+[source,bash]
+----
+bitfuckit pipeline disable my-repo
+----
+
+=== View Pipeline Configuration
+
+[source,bash]
+----
+bitfuckit pipeline config my-repo
+----
+
+This shows the contents of `bitbucket-pipelines.yml`.
+
+== Workflow Examples
+
+=== CI/CD Workflow
+
+[source,bash]
+----
+# 1. Push code
+git push origin feature/auth
+
+# 2. Check pipeline status
+bitfuckit pipeline list my-repo --branch feature/auth
+
+# 3. If failed, view logs
+bitfuckit pipeline logs my-repo {uuid} --all
+
+# 4. After fix, rerun
+bitfuckit pipeline rerun my-repo {uuid}
+
+# 5. Once passing, create PR
+bitfuckit pr create my-repo \
+  --source feature/auth \
+  --dest main
+----
+
+=== Deployment Workflow
+
+[source,bash]
+----
+# 1. Trigger staging deployment
+bitfuckit pipeline trigger my-repo main --custom deploy-staging
+
+# 2. Monitor progress
+watch bitfuckit pipeline list my-repo --branch main
+
+# 3. Check logs if needed
+bitfuckit pipeline logs my-repo {uuid} --all
+
+# 4. Trigger production deployment
+bitfuckit pipeline trigger my-repo main --custom deploy-production
+----
+
+=== Scheduled Maintenance
+
+[source,bash]
+----
+# Create nightly cleanup schedule
+bitfuckit pipeline schedule create my-repo "0 2 * * *" main
+
+# Check schedule is working
+bitfuckit pipeline schedule list my-repo
+----
+
+== Scripting Examples
+
+=== Wait for Pipeline
+
+[source,bash]
+----
+#!/bin/bash
+repo=$1
+uuid=$2
+
+while true; do
+    state=$(bitfuckit pipeline view "$repo" "$uuid" --format json | jq -r '.state.name')
+
+    case "$state" in
+        SUCCESSFUL)
+            echo "Pipeline succeeded!"
+            exit 0
+            ;;
+        FAILED|ERROR|STOPPED)
+            echo "Pipeline failed with state: $state"
+            exit 1
+            ;;
+        *)
+            echo "Pipeline status: $state"
+            sleep 30
+            ;;
+    esac
+done
+----
+
+=== Trigger and Wait
+
+[source,bash]
+----
+#!/bin/bash
+repo=$1
+branch=$2
+
+# Trigger pipeline
+uuid=$(bitfuckit pipeline trigger "$repo" "$branch" --format json | jq -r '.uuid')
+
+# Wait for completion
+bitfuckit pipeline wait "$repo" "$uuid" --timeout 1800
+----
+
+=== Get Failed Pipelines
+
+[source,bash]
+----
+#!/bin/bash
+for repo in api-server web-client; do
+    echo "=== $repo ==="
+    bitfuckit pipeline list "$repo" --state FAILED
+done
+----
+
+== Best Practices
+
+=== Pipeline Variables
+
+* Use secured variables for secrets
+* Don't commit secrets to `bitbucket-pipelines.yml`
+* Use environment-specific variables for deployments
+* Document required variables in README
+
+=== Caching
+
+* Cache dependencies to speed up builds
+* Clear caches when dependencies change significantly
+* Use cache keys for version isolation
+
+=== Schedules
+
+* Use UTC times for consistency
+* Schedule heavy jobs during off-hours
+* Monitor scheduled pipeline results
+
+=== Monitoring
+
+* Set up notifications for failed pipelines
+* Review pipeline duration trends
+* Clean up old caches periodically

@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: MPL-2.0-or-later
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions: read-all
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v4
+
+      - name: Install GNAT and GPRbuild
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnat gprbuild
+
+      - name: Build
+        run: gprbuild -P bitfuckit.gpr
+
+      - name: Smoke test
+        run: bin/bitfuckit --help
+
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v4
+
+      - name: Install GNAT, GPRbuild, and GNATprove
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnat gprbuild gnatprove || true
+
+      - name: SPARK verification (best effort)
+        run: gnatprove -P bitfuckit.gpr --mode=check || echo "SPARK verification requires full toolchain"
+        continue-on-error: true

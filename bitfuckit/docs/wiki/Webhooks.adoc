@@ -1,0 +1,415 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Webhooks
+:toc:
+
+This guide covers webhook management with bitfuckit.
+
+== Overview
+
+bitfuckit provides full webhook management for:
+
+* Repository webhooks
+* Workspace webhooks
+* Event subscriptions
+* Webhook testing
+
+== Creating Webhooks
+
+=== Basic Webhook
+
+[source,bash]
+----
+bitfuckit webhook create my-repo https://example.com/webhook
+----
+
+=== With Description
+
+[source,bash]
+----
+bitfuckit webhook create my-repo https://example.com/webhook \
+  --description "CI trigger webhook"
+----
+
+=== With Secret (HMAC Validation)
+
+[source,bash]
+----
+bitfuckit webhook create my-repo https://example.com/webhook \
+  --secret "my-webhook-secret"
+----
+
+=== With Specific Events
+
+[source,bash]
+----
+bitfuckit webhook create my-repo https://example.com/webhook \
+  --events "repo:push,pullrequest:created,pullrequest:fulfilled"
+----
+
+== Webhook Events
+
+=== Repository Events
+
+[cols="1,2"]
+|===
+|Event |Description
+
+|`repo:push`
+|Code pushed to repository
+
+|`repo:fork`
+|Repository was forked
+
+|`repo:updated`
+|Repository settings changed
+
+|`repo:commit_comment_created`
+|Comment added to commit
+
+|`repo:commit_status_created`
+|Build status created
+
+|`repo:commit_status_updated`
+|Build status updated
+|===
+
+=== Pull Request Events
+
+[cols="1,2"]
+|===
+|Event |Description
+
+|`pullrequest:created`
+|New pull request opened
+
+|`pullrequest:updated`
+|Pull request updated (commits, description)
+
+|`pullrequest:approved`
+|Pull request approved
+
+|`pullrequest:unapproved`
+|Approval removed
+
+|`pullrequest:fulfilled`
+|Pull request merged
+
+|`pullrequest:rejected`
+|Pull request declined
+
+|`pullrequest:comment_created`
+|Comment added to PR
+
+|`pullrequest:comment_updated`
+|PR comment edited
+
+|`pullrequest:comment_deleted`
+|PR comment deleted
+|===
+
+=== Issue Events
+
+[cols="1,2"]
+|===
+|Event |Description
+
+|`issue:created`
+|New issue created
+
+|`issue:updated`
+|Issue updated
+
+|`issue:comment_created`
+|Comment added to issue
+|===
+
+== Event Groups
+
+For convenience, you can use event group shortcuts:
+
+[source,bash]
+----
+# All push events
+bitfuckit webhook create my-repo https://example.com/webhook \
+  --events push
+
+# All PR events
+bitfuckit webhook create my-repo https://example.com/webhook \
+  --events pr
+
+# All issue events
+bitfuckit webhook create my-repo https://example.com/webhook \
+  --events issue
+
+# Multiple groups
+bitfuckit webhook create my-repo https://example.com/webhook \
+  --events "push,pr"
+----
+
+== Listing Webhooks
+
+=== List Repository Webhooks
+
+[source,bash]
+----
+bitfuckit webhook list my-repo
+----
+
+Output:
+[source]
+----
+Webhooks in my-repo:
+
+{abc-123-def} CI Webhook (active)
+  URL: https://ci.example.com/webhook
+  Events: repo:push, pullrequest:created
+  Created: 2024-01-15
+
+{xyz-456-uvw} Deploy Notification (active)
+  URL: https://deploy.example.com/hook
+  Events: pullrequest:fulfilled
+  Created: 2024-02-20
+
+Total: 2 webhook(s)
+----
+
+== Viewing Webhook Details
+
+[source,bash]
+----
+bitfuckit webhook view my-repo {uuid}
+----
+
+Shows:
+* URL and description
+* Active status
+* Subscribed events
+* Secret (masked)
+* Creation date
+
+== Updating Webhooks
+
+=== Update URL
+
+[source,bash]
+----
+bitfuckit webhook update my-repo {uuid} --url https://new-endpoint.com/hook
+----
+
+=== Update Events
+
+[source,bash]
+----
+bitfuckit webhook update my-repo {uuid} \
+  --events "repo:push,pullrequest:created,pullrequest:fulfilled"
+----
+
+=== Update Description
+
+[source,bash]
+----
+bitfuckit webhook update my-repo {uuid} --description "Updated webhook"
+----
+
+=== Update Secret
+
+[source,bash]
+----
+bitfuckit webhook update my-repo {uuid} --secret "new-secret"
+----
+
+== Webhook Control
+
+=== Enable Webhook
+
+[source,bash]
+----
+bitfuckit webhook enable my-repo {uuid}
+----
+
+=== Disable Webhook
+
+[source,bash]
+----
+bitfuckit webhook disable my-repo {uuid}
+----
+
+=== Test Webhook
+
+[source,bash]
+----
+bitfuckit webhook test my-repo {uuid}
+----
+
+This verifies the webhook exists and is active.
+
+=== Delete Webhook
+
+[source,bash]
+----
+bitfuckit webhook delete my-repo {uuid}
+----
+
+== Workspace Webhooks
+
+Workspace webhooks receive events from all repositories in the workspace.
+
+=== Create Workspace Webhook
+
+[source,bash]
+----
+bitfuckit webhook create-workspace https://example.com/workspace-hook \
+  --events "repo:push,pullrequest:created"
+----
+
+=== List Workspace Webhooks
+
+[source,bash]
+----
+bitfuckit webhook list-workspace
+----
+
+=== Delete Workspace Webhook
+
+[source,bash]
+----
+bitfuckit webhook delete-workspace {uuid}
+----
+
+== HMAC Signature Validation
+
+When you create a webhook with a secret, Bitbucket signs payloads using HMAC-SHA256.
+
+=== Verify Signature in Your Server
+
+[source,python]
+----
+import hmac
+import hashlib
+
+def verify_signature(payload, signature, secret):
+    expected = hmac.new(
+        secret.encode('utf-8'),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(f"sha256={expected}", signature)
+
+# In your webhook handler:
+signature = request.headers.get('X-Hub-Signature')
+if not verify_signature(request.body, signature, WEBHOOK_SECRET):
+    return 401, "Invalid signature"
+----
+
+== Workflow Examples
+
+=== CI/CD Integration
+
+[source,bash]
+----
+# 1. Create webhook for CI
+bitfuckit webhook create my-repo https://ci.example.com/bitbucket \
+  --description "Jenkins CI trigger" \
+  --events "repo:push,pullrequest:created" \
+  --secret "jenkins-secret-token"
+
+# 2. Verify it's working
+bitfuckit webhook test my-repo {uuid}
+
+# 3. Monitor webhook deliveries in Bitbucket UI
+----
+
+=== Deployment Notifications
+
+[source,bash]
+----
+# Create webhook for production deploy notifications
+bitfuckit webhook create my-repo https://slack.example.com/webhook \
+  --description "Slack deployment notifications" \
+  --events "pullrequest:fulfilled" \
+  --secret "slack-webhook-secret"
+----
+
+=== Issue Tracking Integration
+
+[source,bash]
+----
+# Sync issues to external tracker
+bitfuckit webhook create my-repo https://tracker.example.com/bitbucket \
+  --description "Issue tracker sync" \
+  --events "issue:created,issue:updated,issue:comment_created"
+----
+
+== Scripting Examples
+
+=== List All Webhooks Across Repos
+
+[source,bash]
+----
+#!/bin/bash
+for repo in api-server web-client; do
+    echo "=== $repo ==="
+    bitfuckit webhook list "$repo"
+done
+----
+
+=== Create Standard Webhooks
+
+[source,bash]
+----
+#!/bin/bash
+repo=$1
+ci_url=$2
+secret=$3
+
+# CI webhook
+bitfuckit webhook create "$repo" "$ci_url" \
+  --description "CI Build Trigger" \
+  --events "repo:push,pullrequest:created,pullrequest:updated" \
+  --secret "$secret"
+----
+
+=== Disable All Webhooks
+
+[source,bash]
+----
+#!/bin/bash
+repo=$1
+
+# Get webhook UUIDs
+uuids=$(bitfuckit webhook list "$repo" --format json | jq -r '.values[].uuid')
+
+for uuid in $uuids; do
+    bitfuckit webhook disable "$repo" "$uuid"
+done
+----
+
+== Best Practices
+
+=== Security
+
+* Always use HTTPS endpoints
+* Use secrets for HMAC validation
+* Validate signatures in your webhook handler
+* Use dedicated webhook credentials with minimal permissions
+
+=== Reliability
+
+* Design webhook handlers to be idempotent
+* Return 2xx quickly, process asynchronously
+* Implement retry logic for failed deliveries
+* Log all webhook events for debugging
+
+=== Performance
+
+* Keep webhook handler response times under 10 seconds
+* Queue heavy processing for background workers
+* Use workspace webhooks instead of per-repo when appropriate
+
+=== Maintenance
+
+* Document all webhooks and their purposes
+* Review and clean up unused webhooks periodically
+* Monitor webhook delivery success rates
+* Test webhooks after endpoint changes
+

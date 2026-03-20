@@ -1,0 +1,41 @@
+{
+  "_comment": "SPDX-License-Identifier: PMPL-1.0
+  "_description": "Gittyup custom tools for bitfuckit integration",
+  "tools": [
+    {
+      "name": "Bitbucket: Create PR",
+      "command": "bitfuckit",
+      "arguments": ["pr", "create", "--branch", "$BRANCH"],
+      "workdir": "$REPO_PATH",
+      "icon": "pull-request"
+    },
+    {
+      "name": "Bitbucket: List PRs",
+      "command": "bitfuckit",
+      "arguments": ["pr", "list"],
+      "workdir": "$REPO_PATH",
+      "icon": "list"
+    },
+    {
+      "name": "Bitbucket: Mirror",
+      "command": "bitfuckit",
+      "arguments": ["mirror"],
+      "workdir": "$REPO_PATH",
+      "icon": "cloud-upload"
+    },
+    {
+      "name": "Bitbucket: Pipeline Status",
+      "command": "bitfuckit",
+      "arguments": ["pipeline", "status"],
+      "workdir": "$REPO_PATH",
+      "icon": "activity"
+    },
+    {
+      "name": "Bitbucket: TUI",
+      "command": "bitfuckit",
+      "arguments": ["tui"],
+      "workdir": "$REPO_PATH",
+      "icon": "terminal"
+    }
+  ]
+}

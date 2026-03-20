@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: MPL-2.0-or-later
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions: read-all
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v4
+
+      - name: Install GNAT and GPRbuild
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnat gprbuild
+
+      - name: Build
+        run: gprbuild -P bitfuckit.gpr -XBUILD_MODE=release
+
+      - name: Create tarball
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          mkdir -p dist
+          tar -czvf dist/bitfuckit-${VERSION}-linux-x86_64.tar.gz \
+            bin/bitfuckit \
+            doc/bitfuckit.1 \
+            completions/ \
+            README.adoc \
+            LICENSE
+
+      - name: Create Release
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
+        with:
+          files: dist/*
+          generate_release_notes: true

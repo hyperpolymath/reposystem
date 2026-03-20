@@ -1,0 +1,374 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= bitfuckit Roadmap
+:toc:
+:toclevels: 3
+
+This document outlines the development roadmap for bitfuckit, the community-built Bitbucket CLI.
+
+== Philosophy
+
+We build what Atlassian won't. Every feature prioritized here represents functionality that should exist in an official tool but doesn't.
+
+== Current Status: v0.5.0
+
+All v0.5.0 modules complete. Now focusing on GraphQL server completion and container packaging.
+
+== What's in v0.2.0 (Current Release)
+
+[cols="1,3,1"]
+|===
+|Component |Description |Status
+
+|*Core CLI*
+|Auth, repo CRUD, PR list, GitHub mirror, TUI
+|✓ Complete
+
+|*Fault Tolerance*
+|Retry logic, circuit breaker, rate limiting, health checks
+|✓ Complete
+
+|*Network Awareness*
+|Metered connection detection, scheduling, offline queueing
+|✓ Complete
+
+|*Security Scanning*
+|ClamAV integration, VirusTotal API (optional)
+|✓ Complete
+
+|*Storage Layer*
+|CubsDB backend, OpenTimestamp blockchain proofs
+|✓ Complete
+
+|*Syncthing Sync*
+|Distributed config sync across devices
+|✓ Complete
+
+|*System Security*
+|SELinux contexts, firewalld rules, container isolation
+|✓ Complete
+
+|*Multi-Shell Setup*
+|One-click setup for sh/bash/fish/nushell
+|✓ Complete
+|===
+
+== What's in v0.5.0 (Current)
+
+v0.5.0 = Full PR Workflows + Issue Tracking + DevOps Integration
+
+[cols="1,3,1"]
+|===
+|Feature |Description |Status
+
+|*PR Create/Merge*
+|Create and merge PRs from CLI
+|✓ Complete
+
+|*PR Comments/Approve*
+|Review workflow in CLI
+|✓ Complete
+
+|*Issue Tracking*
+|Full CRUD for issues
+|✓ Complete
+
+|*Pipeline Integration*
+|Status, trigger, logs, variables
+|✓ Complete
+
+|*Team Management*
+|List members, permissions
+|✓ Complete
+
+|*Branch Permissions*
+|View/set branch protections
+|✓ Complete
+
+|*SSH/Deploy Keys*
+|Key management
+|✓ Complete
+
+|*Webhooks*
+|Create/list/delete hooks
+|✓ Complete
+
+|*Access Tokens*
+|Repository access token management
+|✓ Complete
+
+|*Default Reviewers*
+|Configure automatic PR reviewers
+|✓ Complete
+|===
+
+=== Completed Code for v0.5.0
+
+* PR workflows (pull_requests.ads/adb): ~750 lines Ada
+* Issue tracking (issues.ads/adb): ~550 lines Ada
+* Pipeline integration (pipelines.ads/adb): ~700 lines Ada
+* Team/permissions (teams.ads/adb): ~600 lines Ada
+* Webhook management (webhooks.ads/adb): ~500 lines Ada
+* Wiki documentation: ~2400 lines AsciiDoc
+
+*Total new code: ~5500 lines*
+
+== Gap to v0.6.0
+
+v0.6.0 = GraphQL Server + Container + OAuth2
+
+=== Must Complete for v0.6.0
+
+[cols="1,3,1"]
+|===
+|Feature |Description |Gap
+
+|*GraphQL Server*
+|Full API for integrations
+|Complete server.adb
+
+|*Wolfi Container*
+|Minimal secure container image
+|Containerfile + nerdctl
+
+|*OAuth2 Flows*
+|Web-based auth for enterprise
+|New module
+
+|*Cookbook Generation*
+|Auto-generate just/must/nickel recipes
+|New module
+
+|*Cicada Integration*
+|Air-gapped quantum-resistant credential storage
+|Integration work
+
+|*SPARK Expansion*
+|Formal verification beyond TUI
+|Proof work
+|===
+
+== Gap to v1.0.0
+
+v1.0.0 = Feature parity with gh/glab + Production-ready
+
+=== Must Complete for v1.0.0 (beyond v0.5.0)
+
+[cols="1,3,1"]
+|===
+|Feature |Description |Complexity
+
+|*Windows Support*
+|GNAT for Windows, path handling
+|High
+
+|*macOS Support*
+|Apple Silicon GNAT, keychain integration
+|Medium
+
+|*OAuth2 Flows*
+|Web-based auth for enterprise
+|High
+
+|*Offline Mode*
+|Full functionality with local cache
+|Medium
+
+|*Plugin System*
+|Extensibility for custom commands
+|High
+
+|*Fuzzy Search*
+|agrep integration for repos/PRs/issues
+|Low
+
+|*Translation*
+|translate-shell integration, i18n
+|Medium
+
+|*Spell Check*
+|hunspell for commit messages/comments
+|Low
+
+|*Parallel Ops*
+|pssh integration for multi-repo operations
+|Medium
+
+|*Download Manager*
+|aria2 integration for large artifacts
+|Low
+
+|*Complete Test Suite*
+|AUnit framework, 80%+ coverage
+|High
+
+|*Full Documentation*
+|Wiki, man pages, --help for all commands
+|Medium
+|===
+
+=== Version Summary
+
+[cols="1,2,1,1"]
+|===
+|Version |Focus |Lines |Status
+
+|v0.2.0
+|Resilience infrastructure
+|~3000
+|✓ Done
+
+|v0.5.0
+|PR, Issues, Pipelines, Teams, Webhooks
+|~5500
+|✓ Done
+
+|v0.6.0
+|GraphQL Server + Container + OAuth2
+|~1500
+|In Progress
+
+|v1.0.0
+|Cross-platform + Plugin System
+|~3000
+|Q4 2025
+|===
+
+== Platform Support Matrix
+
+[cols="1,1,1,2"]
+|===
+|Platform |v0.2.0 |v1.0.0 |Notes
+
+|Linux x86_64
+|✓
+|✓
+|Primary
+
+|Linux aarch64
+|☐
+|✓
+|CI needed
+
+|macOS Intel
+|⚠
+|✓
+|Homebrew GNAT
+
+|macOS ARM
+|☐
+|✓
+|GNAT support improving
+
+|Windows
+|☐
+|✓
+|GNAT for Windows
+
+|FreeBSD
+|☐
+|⚠
+|Community interest
+
+|Container (Wolfi)
+|☐
+|✓
+|Chainguard base
+|===
+
+== Package Distribution
+
+[cols="1,1,1"]
+|===
+|Format |v0.5.0 |v1.0.0
+
+|GitHub Releases
+|✓
+|✓
+
+|AUR
+|✓
+|✓
+
+|Fedora COPR
+|✓
+|✓
+
+|Homebrew
+|☐
+|✓
+
+|Nix/NixOS
+|☐
+|✓
+
+|Debian PPA
+|☐
+|✓
+
+|winget
+|☐
+|✓
+
+|Container Registry
+|✓
+|✓
+|===
+
+== Integration Points
+
+=== Required for v0.5.0
+* cicada - Quantum-resistant credential storage
+* syncthing - Distributed sync
+* CubsDB - Robust storage
+* OpenTimestamp - Blockchain provenance
+* ClamAV/VirusTotal - Security scanning
+
+=== Optional Enhancements
+* rhodibot - RSR compliance automation
+* complete-linux-internet-repair - Network self-healing
+* hunspell - Spell checking
+* translate-shell - Translation
+* agrep - Fuzzy search
+* pssh - Parallel operations
+* aria2 - Download acceleration
+
+== Technical Debt for v1.0.0
+
+=== Security (Critical)
+* [ ] Replace curl subprocess with native HTTP
+* [ ] Integrate with system keyring (libsecret)
+* [ ] Remove credentials from process argv
+* [ ] Add SBOM generation
+
+=== Code Quality (High)
+* [ ] Expand SPARK proofs to all modules
+* [ ] AUnit test framework integration
+* [ ] Structured logging (JSON)
+* [ ] Crash telemetry (opt-in)
+
+=== Performance (Medium)
+* [ ] Connection pooling
+* [ ] Response caching
+* [ ] Lazy loading in TUI
+
+== Contributing
+
+See link:CONTRIBUTING.adoc[CONTRIBUTING.adoc].
+
+Priority areas:
+1. GraphQL server completion
+2. Windows testing
+3. Package formats (Homebrew, Nix)
+4. SPARK expansion
+5. OAuth2 implementation
+
+== Non-Goals
+
+Out of scope:
+* Bitbucket Server/Data Center (Cloud only)
+* Admin workspace settings
+* Jira integration config
+* Billing management
+* GUI applications
+
+If Atlassian wants these, they can build their own CLI.

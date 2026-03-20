@@ -1,0 +1,339 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= TUI Guide
+:toc:
+
+This guide covers the Terminal User Interface (TUI) for bitfuckit.
+
+== Launching the TUI
+
+[source,bash]
+----
+# Launch TUI directly
+bitfuckit
+
+# Or explicitly
+bitfuckit tui
+----
+
+== Main Menu
+
+The main menu provides access to all features:
+
+[source]
+----
++============================================================+
+|  [*] BITFUCKIT - Bitbucket CLI                             |
++============================================================+
++------------------------ Main Menu ------------------------+
+|                                                            |
+|  > [l] Login        - Authenticate with Bitbucket          |
+|    [s] Status       - Show auth status                     |
+|    [c] Create       - Create a new repository              |
+|    [r] Repos        - List all repositories                |
+|    [m] Mirror       - Mirror from GitHub                   |
+|    [d] Delete       - Delete a repository                  |
+|    [t] Troubleshoot - Diagnose common issues               |
+|    [q] Quit         - Exit bitfuckit                       |
+|                                                            |
++------------------------------------------------------------+
+j/k Navigate | Enter Select | h Help | q Quit
+----
+
+== Keyboard Controls
+
+=== Navigation
+
+[cols="1,2"]
+|===
+|Key |Action
+
+|`j` or `Down`
+|Move selection down
+
+|`k` or `Up`
+|Move selection up
+
+|`Enter`
+|Select current item
+
+|`q` or `Esc`
+|Go back / Quit
+
+|`h` or `?`
+|Show help
+|===
+
+=== Quick Keys
+
+[cols="1,2"]
+|===
+|Key |Action
+
+|`l`
+|Login
+
+|`s`
+|Status
+
+|`c`
+|Create repository
+
+|`r`
+|List repositories
+
+|`m`
+|Mirror
+
+|`d`
+|Delete repository
+
+|`t`
+|Open troubleshooter
+|===
+
+== Troubleshooter
+
+Access via main menu or press `t`:
+
+[source]
+----
++============================================================+
+|  [*] TROUBLESHOOTER                                        |
++============================================================+
++-------------------- Select Issue Type --------------------+
+|                                                            |
+|  > [1] Auth Issues   - Login and credential problems       |
+|    [2] Network       - Connection and API issues           |
+|    [3] Git LFS       - Large file storage problems         |
+|    [4] SSH Keys      - SSH authentication issues           |
+|    [5] Rate Limits   - API throttling and limits           |
+|    [b] Back          - Return to main menu                 |
+|                                                            |
++------------------------------------------------------------+
+Tip: Press ? to open docs in browser
+----
+
+Each category shows:
+
+* Problem description
+* Solution steps
+* Relevant commands
+* Documentation links
+
+== Help Screen
+
+Press `h` or `?` from any screen:
+
+[source]
+----
++============================================================+
+|  [*] HELP                                                  |
++============================================================+
+
+bitfuckit - The Bitbucket CLI Atlassian never made
+
+TUI Controls:
+  j / Down   - Move down
+  k / Up     - Move up
+  Enter      - Select item
+  t          - Open troubleshooter
+  h / ?      - Show help
+  q / Esc    - Quit / Back
+
+Documentation:
+  man bitfuckit
+  https://github.com/hyperpolymath/bitfuckit/wiki
+
+Press any key to continue...
+----
+
+== Visual Elements
+
+=== Progress Bars
+
+During operations, progress bars show status:
+
+[source]
+----
+Cloning repository: [################............] 42%
+----
+
+Available styles:
+
+* **Classic:** `[####....]`
+* **Block:** `[████░░░░]`
+* **Arrow:** `[====>   ]`
+* **Dots:** `[●●●○○○○○]`
+* **Minimal:** `━━━━━━━━`
+
+=== Status Indicators
+
+[cols="1,2"]
+|===
+|Symbol |Meaning
+
+|`[*]`
+|Current/Active
+
+|`>`
+|Selected item
+
+|`[✓]`
+|Success/Complete
+
+|`[!]`
+|Warning
+
+|`[✗]`
+|Error/Failed
+|===
+
+=== Colors
+
+[cols="1,2"]
+|===
+|Color |Usage
+
+|Cyan
+|Headers, borders
+
+|Yellow
+|Highlights, labels
+
+|Green
+|Success, selected items
+
+|Red
+|Errors
+
+|Blue
+|Info, links
+
+|White
+|Normal text
+|===
+
+== Terminal Requirements
+
+=== Supported Terminals
+
+* Any terminal supporting ANSI escape codes
+* xterm, rxvt, gnome-terminal, konsole
+* iTerm2, Terminal.app (macOS)
+* Windows Terminal, ConEmu
+
+=== Minimum Size
+
+* Width: 60 columns
+* Height: 24 lines
+
+=== Troubleshooting Display
+
+If display is corrupted:
+
+[source,bash]
+----
+# Reset terminal
+reset
+
+# Set correct TERM
+export TERM=xterm-256color
+
+# Disable colors
+BITFUCKIT_NO_COLOR=1 bitfuckit tui
+----
+
+== Accessibility
+
+=== Screen Readers
+
+The TUI uses semantic structure that screen readers can follow:
+
+* Headers are clearly marked
+* Menu items are numbered
+* Status messages are announced
+
+=== Keyboard-Only Navigation
+
+All features are accessible via keyboard:
+
+* No mouse required
+* Tab order follows visual layout
+* Shortcuts for common actions
+
+=== High Contrast
+
+For visibility issues, disable colors:
+
+[source,bash]
+----
+export BITFUCKIT_NO_COLOR=1
+bitfuckit tui
+----
+
+== Customization
+
+=== In Config File
+
+[source]
+----
+# TUI settings
+color_enabled=true
+color_theme=default
+progress_style=classic
+progress_width=40
+----
+
+=== Available Themes
+
+* `default` - Standard colors
+* `solarized` - Solarized color scheme
+* `nord` - Nord color scheme
+
+== Tips
+
+=== Vim Users
+
+Navigation uses vim-style keys (`j`/`k`) by default.
+
+=== Quick Actions
+
+Most menu items have single-key shortcuts - no need to navigate.
+
+=== Back Navigation
+
+Press `q` or `Esc` to go back one level. From main menu, this quits.
+
+=== Getting Help
+
+Press `?` at any time to see context-sensitive help.
+
+== Example Session
+
+[source]
+----
+$ bitfuckit
+# Main menu appears
+
+# Press 's' to check status
+Logged in as: myusername
+Workspace: myworkspace
+Config: /home/user/.config/bitfuckit/config
+
+# Press 'q' to return to menu
+# Press 'r' to list repos
+
+Repositories in myworkspace:
+  my-project
+  another-repo
+  bitfuckit-test
+
+# Press 'q' to return
+# Press 't' for troubleshooter
+# Press '1' for auth help
+# Press 'b' to go back
+# Press 'q' to quit
+
+Goodbye!
+$
+----

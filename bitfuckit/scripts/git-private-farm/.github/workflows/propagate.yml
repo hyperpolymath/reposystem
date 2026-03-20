@@ -1,0 +1,150 @@
+# SPDX-License-Identifier: MPL-2.0-or-later
+# Rapid Propagation Workflow
+# Pushes changes from GitHub to all configured forges in parallel
+
+name: Rapid Propagate
+
+on:
+  # Triggered by repository_dispatch from source repos
+  repository_dispatch:
+    types: [propagate]
+
+  # Manual trigger with options
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: 'Repository to propagate'
+        required: true
+        type: string
+      forges:
+        description: 'Comma-separated forges (leave empty for all)'
+        required: false
+        type: string
+        default: ''
+      force:
+        description: 'Force push (use with caution)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  OWNER: hyperpolymath
+
+jobs:
+  # Parse inputs and prepare matrix
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      repo: ${{ steps.set-matrix.outputs.repo }}
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+
+      - name: Parse inputs
+        id: set-matrix
+        run: |
+          # Get repo name
+          if [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            REPO="${{ github.event.client_payload.repo }}"
+            FORGES="${{ github.event.client_payload.forges }}"
+          else
+            REPO="${{ inputs.repo }}"
+            FORGES="${{ inputs.forges }}"
+          fi
+
+          echo "repo=$REPO" >> $GITHUB_OUTPUT
+
+          # Build forge matrix
+          if [ -z "$FORGES" ]; then
+            # All forges from manifest
+            FORGES="gitlab,sourcehut,codeberg,bitbucket"
+          fi
+
+          # Convert to JSON array
+          MATRIX=$(echo "$FORGES" | tr ',' '\n' | jq -R . | jq -s '{forge: .}')
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+  # Parallel propagation to each forge
+  propagate:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false  # Don't stop if one forge fails
+      max-parallel: 5
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
+        with:
+          ssh-private-key: |
+            ${{ matrix.forge == 'gitlab' && secrets.GITLAB_SSH_KEY || '' }}
+            ${{ matrix.forge == 'sourcehut' && secrets.SOURCEHUT_SSH_KEY || '' }}
+            ${{ matrix.forge == 'codeberg' && secrets.CODEBERG_SSH_KEY || '' }}
+            ${{ matrix.forge == 'bitbucket' && secrets.BITBUCKET_SSH_KEY || '' }}
+
+      - name: Add known hosts
+        run: |
+          mkdir -p ~/.ssh
+          case "${{ matrix.forge }}" in
+            gitlab)     ssh-keyscan gitlab.com >> ~/.ssh/known_hosts ;;
+            sourcehut)  ssh-keyscan git.sr.ht >> ~/.ssh/known_hosts ;;
+            codeberg)   ssh-keyscan codeberg.org >> ~/.ssh/known_hosts ;;
+            bitbucket)  ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts ;;
+          esac
+
+      - name: Clone from GitHub
+        run: |
+          REPO="${{ needs.prepare.outputs.repo }}"
+          git clone --mirror "https://github.com/${{ env.OWNER }}/$REPO.git" repo.git
+
+      - name: Push to ${{ matrix.forge }}
+        run: |
+          REPO="${{ needs.prepare.outputs.repo }}"
+          cd repo.git
+
+          case "${{ matrix.forge }}" in
+            gitlab)
+              REMOTE="git@gitlab.com:${{ env.OWNER }}/$REPO.git"
+              ;;
+            sourcehut)
+              REMOTE="git@git.sr.ht:~${{ env.OWNER }}/$REPO"
+              ;;
+            codeberg)
+              REMOTE="git@codeberg.org:${{ env.OWNER }}/$REPO.git"
+              ;;
+            bitbucket)
+              REMOTE="git@bitbucket.org:${{ env.OWNER }}/$REPO.git"
+              ;;
+          esac
+
+          echo "Pushing to $REMOTE"
+
+          if [ "${{ inputs.force }}" == "true" ]; then
+            git push --mirror --force "$REMOTE"
+          else
+            git push --mirror "$REMOTE"
+          fi
+
+      - name: Report status
+        if: always()
+        run: |
+          echo "::notice title=${{ matrix.forge }}::Propagation ${{ job.status }}"
+
+  # Summary job
+  summary:
+    needs: [prepare, propagate]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Propagation Summary
+        run: |
+          echo "## Propagation Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Repository:** ${{ needs.prepare.outputs.repo }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -Iseconds)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check individual job logs for per-forge status." >> $GITHUB_STEP_SUMMARY

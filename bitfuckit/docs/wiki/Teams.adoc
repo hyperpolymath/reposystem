@@ -1,0 +1,586 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Team Management
+:toc:
+
+This guide covers team and permission management with bitfuckit.
+
+== Overview
+
+bitfuckit provides comprehensive team management for:
+
+* Workspace members
+* User groups
+* Repository permissions
+* Branch restrictions
+* Default reviewers
+* Deploy keys
+* Access tokens
+
+== Workspace Members
+
+=== List Members
+
+[source,bash]
+----
+bitfuckit member list
+----
+
+Output:
+[source]
+----
+Workspace Members:
+
+alice (Alice Smith) - Owner
+  Email: alice@example.com
+  Joined: 2023-01-15
+
+bob (Bob Jones) - Member
+  Email: bob@example.com
+  Joined: 2023-06-20
+
+Total: 2 member(s)
+----
+
+=== Get Member Details
+
+[source,bash]
+----
+bitfuckit member view alice
+----
+
+=== Invite Member
+
+[source,bash]
+----
+# Invite by email
+bitfuckit member invite charlie@example.com
+
+# Invite and add to groups
+bitfuckit member invite charlie@example.com --groups "developers,qa"
+----
+
+=== Remove Member
+
+[source,bash]
+----
+bitfuckit member remove charlie
+----
+
+== User Groups
+
+Groups organize members and simplify permission management.
+
+=== List Groups
+
+[source,bash]
+----
+bitfuckit group list
+----
+
+Output:
+[source]
+----
+Groups:
+
+developers (5 members)
+  Permission: write
+  Auto-add: true
+
+qa-team (3 members)
+  Permission: read
+  Auto-add: false
+
+admins (2 members)
+  Permission: admin
+  Auto-add: false
+
+Total: 3 group(s)
+----
+
+=== Create Group
+
+[source,bash]
+----
+# Basic group with read permission
+bitfuckit group create frontend-team
+
+# Group with write permission
+bitfuckit group create backend-team --permission write
+
+# Group with admin permission and auto-add
+bitfuckit group create core-team --permission admin --auto-add
+----
+
+=== View Group
+
+[source,bash]
+----
+bitfuckit group view developers
+----
+
+=== Update Group
+
+[source,bash]
+----
+# Change permission level
+bitfuckit group update developers --permission admin
+
+# Enable auto-add
+bitfuckit group update developers --auto-add true
+
+# Rename group
+bitfuckit group update developers --name "senior-developers"
+----
+
+=== Delete Group
+
+[source,bash]
+----
+bitfuckit group delete old-team
+----
+
+=== Manage Group Members
+
+[source,bash]
+----
+# List group members
+bitfuckit group members developers
+
+# Add member to group
+bitfuckit group add developers charlie
+
+# Remove member from group
+bitfuckit group remove developers charlie
+----
+
+== Permission Levels
+
+[cols="1,2"]
+|===
+|Level |Description
+
+|`read`
+|View repository, clone, pull
+
+|`write`
+|Push commits, create branches, create PRs
+
+|`admin`
+|Manage settings, permissions, delete repo
+|===
+
+== Repository Permissions
+
+=== List Repository Permissions
+
+[source,bash]
+----
+bitfuckit permission list my-repo
+----
+
+Output:
+[source]
+----
+Permissions for my-repo:
+
+Users:
+  alice: admin
+  bob: write
+
+Groups:
+  developers: write
+  qa-team: read
+----
+
+=== Grant User Permission
+
+[source,bash]
+----
+# Grant read access
+bitfuckit permission grant my-repo charlie read
+
+# Grant write access
+bitfuckit permission grant my-repo charlie write
+
+# Grant admin access
+bitfuckit permission grant my-repo charlie admin
+----
+
+=== Revoke User Permission
+
+[source,bash]
+----
+bitfuckit permission revoke my-repo charlie
+----
+
+=== Grant Group Permission
+
+[source,bash]
+----
+bitfuckit permission grant-group my-repo frontend-team write
+----
+
+=== Revoke Group Permission
+
+[source,bash]
+----
+bitfuckit permission revoke-group my-repo frontend-team
+----
+
+== Branch Restrictions
+
+Branch restrictions protect important branches from unauthorized changes.
+
+=== List Restrictions
+
+[source,bash]
+----
+bitfuckit branch-restriction list my-repo
+----
+
+Output:
+[source]
+----
+Branch Restrictions for my-repo:
+
+#1 push on main
+  Users: alice, bob
+  Groups: core-team
+
+#2 force on main
+  Users: (none)
+  Groups: (none)
+
+#3 delete on release/*
+  Users: alice
+  Groups: admins
+----
+
+=== Create Push Restriction
+
+[source,bash]
+----
+# Only specific users can push to main
+bitfuckit branch-restriction create my-repo push \
+  --pattern main \
+  --users "alice,bob"
+
+# Only a group can push
+bitfuckit branch-restriction create my-repo push \
+  --pattern main \
+  --groups "core-team"
+----
+
+=== Create Force Push Restriction
+
+[source,bash]
+----
+# Prevent all force pushes to main
+bitfuckit branch-restriction create my-repo force \
+  --pattern main
+----
+
+=== Create Delete Restriction
+
+[source,bash]
+----
+# Prevent branch deletion on release branches
+bitfuckit branch-restriction create my-repo delete \
+  --pattern "release/*" \
+  --users alice \
+  --groups admins
+----
+
+=== Restriction Types
+
+[cols="1,2"]
+|===
+|Type |Description
+
+|`push`
+|Restrict who can push commits
+
+|`force`
+|Restrict who can force push
+
+|`delete`
+|Restrict who can delete branches
+
+|`restrict_merges`
+|Restrict who can merge PRs
+
+|`require_approvals`
+|Require approvals before merge
+
+|`require_passing_builds`
+|Require passing builds before merge
+
+|`require_tasks_complete`
+|Require all PR tasks complete
+
+|`require_no_changes_requested`
+|Require no requested changes pending
+|===
+
+=== Delete Restriction
+
+[source,bash]
+----
+bitfuckit branch-restriction delete my-repo {id}
+----
+
+== Default Reviewers
+
+Default reviewers are automatically added to pull requests.
+
+=== List Default Reviewers
+
+[source,bash]
+----
+bitfuckit default-reviewer list my-repo
+----
+
+=== Add Default Reviewer
+
+[source,bash]
+----
+bitfuckit default-reviewer add my-repo alice
+bitfuckit default-reviewer add my-repo bob
+----
+
+=== Remove Default Reviewer
+
+[source,bash]
+----
+bitfuckit default-reviewer remove my-repo alice
+----
+
+== Deploy Keys
+
+Deploy keys provide read-only or read-write SSH access to specific repositories.
+
+=== List Deploy Keys
+
+[source,bash]
+----
+bitfuckit deploy-key list my-repo
+----
+
+=== Add Deploy Key
+
+[source,bash]
+----
+# From file
+bitfuckit deploy-key add my-repo --key-file ~/.ssh/deploy_key.pub \
+  --label "CI Server"
+
+# From string
+bitfuckit deploy-key add my-repo \
+  --key "ssh-rsa AAAA... ci@server" \
+  --label "CI Server"
+----
+
+=== Delete Deploy Key
+
+[source,bash]
+----
+bitfuckit deploy-key delete my-repo {key-id}
+----
+
+== Repository Access Tokens
+
+Access tokens provide API access to specific repositories.
+
+=== List Access Tokens
+
+[source,bash]
+----
+bitfuckit access-token list my-repo
+----
+
+=== Create Access Token
+
+[source,bash]
+----
+# Read-only token
+bitfuckit access-token create my-repo "CI Read Token" \
+  --scopes "repository"
+
+# Read-write token
+bitfuckit access-token create my-repo "Deploy Token" \
+  --scopes "repository,repository:write"
+
+# Token with expiration
+bitfuckit access-token create my-repo "Temp Token" \
+  --scopes "repository" \
+  --expires "2025-12-31"
+----
+
+=== Available Scopes
+
+[cols="1,2"]
+|===
+|Scope |Description
+
+|`repository`
+|Read access to repository
+
+|`repository:write`
+|Write access to repository
+
+|`repository:admin`
+|Admin access to repository
+
+|`pullrequest`
+|Read pull requests
+
+|`pullrequest:write`
+|Create/update pull requests
+
+|`issue`
+|Read issues
+
+|`issue:write`
+|Create/update issues
+
+|`pipeline`
+|Read pipelines
+
+|`pipeline:write`
+|Trigger pipelines
+
+|`webhook`
+|Manage webhooks
+|===
+
+=== Revoke Access Token
+
+[source,bash]
+----
+bitfuckit access-token revoke my-repo {token-id}
+----
+
+== Workflow Examples
+
+=== Onboarding New Developer
+
+[source,bash]
+----
+# 1. Invite to workspace
+bitfuckit member invite newdev@example.com --groups "developers"
+
+# 2. Grant repo access (optional, if not via group)
+bitfuckit permission grant api-server newdev write
+
+# 3. Add as default reviewer (optional)
+bitfuckit default-reviewer add api-server newdev
+----
+
+=== Setting Up Protected Branches
+
+[source,bash]
+----
+# 1. Protect main from direct pushes
+bitfuckit branch-restriction create my-repo push \
+  --pattern main \
+  --groups "core-team"
+
+# 2. Prevent force pushes
+bitfuckit branch-restriction create my-repo force \
+  --pattern main
+
+# 3. Require approvals
+bitfuckit branch-restriction create my-repo require_approvals \
+  --pattern main
+
+# 4. Set default reviewers
+bitfuckit default-reviewer add my-repo alice
+bitfuckit default-reviewer add my-repo bob
+----
+
+=== CI/CD Access Setup
+
+[source,bash]
+----
+# 1. Create deploy key for CI
+bitfuckit deploy-key add my-repo \
+  --key-file ~/.ssh/ci_deploy.pub \
+  --label "Jenkins CI"
+
+# 2. Create access token for API operations
+bitfuckit access-token create my-repo "Jenkins Token" \
+  --scopes "repository,pipeline:write" \
+  --expires "2025-12-31"
+----
+
+== Scripting Examples
+
+=== Audit Permissions Across Repos
+
+[source,bash]
+----
+#!/bin/bash
+for repo in api-server web-client admin-panel; do
+    echo "=== $repo ==="
+    bitfuckit permission list "$repo"
+done
+----
+
+=== Bulk Add Users to Group
+
+[source,bash]
+----
+#!/bin/bash
+group=$1
+shift
+users=$@
+
+for user in $users; do
+    bitfuckit group add "$group" "$user"
+done
+----
+
+=== Export Team Structure
+
+[source,bash]
+----
+#!/bin/bash
+echo "=== Members ==="
+bitfuckit member list --format json > members.json
+
+echo "=== Groups ==="
+bitfuckit group list --format json > groups.json
+
+echo "=== Exported to members.json and groups.json ==="
+----
+
+== Best Practices
+
+=== Permission Management
+
+* Use groups instead of individual permissions
+* Follow principle of least privilege
+* Review permissions regularly
+* Document permission rationale
+
+=== Branch Protection
+
+* Always protect main/master branch
+* Require code reviews for critical repos
+* Enable status checks for CI/CD
+* Consider requiring signed commits
+
+=== Access Tokens
+
+* Use short expiration times
+* Scope tokens minimally
+* Rotate tokens regularly
+* Audit token usage
+
+=== Groups
+
+* Create groups based on roles, not projects
+* Use auto-add for common groups
+* Keep group membership current
+* Document group purposes
+

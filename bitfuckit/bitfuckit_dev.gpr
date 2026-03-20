@@ -1,0 +1,31 @@
+-- SPDX-License-Identifier: PMPL-1.0
+-- Development build configuration (relaxed style checks)
+
+project Bitfuckit_Dev is
+   for Source_Dirs use ("src");
+   for Object_Dir use "obj";
+   for Exec_Dir use "bin";
+   for Main use ("bitfuckit.adb");
+   for Create_Missing_Dirs use "True";
+
+   package Compiler is
+      for Default_Switches ("Ada") use (
+         "-gnat2012",      -- Ada 2012 standard
+         "-gnata",         -- Enable assertions
+         "-gnatwa",        -- All warnings
+         "-gnatwu",        -- Warn on unused entities
+         "-gnatVa",        -- Validity checks
+         "-O2",            -- Optimization
+         "-gnatyM120"      -- Allow lines up to 120 chars
+      );
+   end Compiler;
+
+   package Binder is
+      for Default_Switches ("Ada") use ("-Es"); -- Symbolic traceback
+   end Binder;
+
+   package Linker is
+      for Default_Switches ("Ada") use ("-lcurl"); -- Link with libcurl
+   end Linker;
+
+end Bitfuckit_Dev;

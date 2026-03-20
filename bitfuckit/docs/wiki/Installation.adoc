@@ -1,0 +1,315 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Installation
+:toc:
+
+This guide covers installing bitfuckit on various systems.
+
+== Quick Install
+
+=== From Binary Release
+
+Download the latest release from:
+https://github.com/hyperpolymath/bitfuckit/releases
+
+[source,bash]
+----
+# Download (replace VERSION with actual version)
+curl -LO https://github.com/hyperpolymath/bitfuckit/releases/download/v0.2.0/bitfuckit-linux-amd64
+
+# Make executable
+chmod +x bitfuckit-linux-amd64
+
+# Move to PATH
+sudo mv bitfuckit-linux-amd64 /usr/local/bin/bitfuckit
+
+# Verify
+bitfuckit --version
+----
+
+== Container Installation
+
+=== Using nerdctl (Recommended)
+
+[source,bash]
+----
+# Wolfi-based image (smallest, most secure)
+nerdctl run --rm -it ghcr.io/hyperpolymath/bitfuckit:latest --help
+
+# With persistent config
+nerdctl run --rm -it \
+  -v ~/.config/bitfuckit:/home/bitfuckit/.config/bitfuckit \
+  ghcr.io/hyperpolymath/bitfuckit:latest auth status
+----
+
+=== Using Podman
+
+[source,bash]
+----
+podman run --rm -it ghcr.io/hyperpolymath/bitfuckit:latest --help
+----
+
+=== Using Docker
+
+[source,bash]
+----
+docker run --rm -it ghcr.io/hyperpolymath/bitfuckit:latest --help
+----
+
+=== Shell Alias
+
+Add to your shell config:
+
+[source,bash]
+----
+alias bitfuckit='nerdctl run --rm -it -v ~/.config/bitfuckit:/home/bitfuckit/.config/bitfuckit ghcr.io/hyperpolymath/bitfuckit:latest'
+----
+
+== Building from Source
+
+=== Prerequisites
+
+* GNAT (Ada compiler) - GCC 12+ or GNAT Community
+* GPRbuild
+* libcurl development headers
+
+=== Fedora/RHEL
+
+[source,bash]
+----
+# Install Ada toolchain (from testing repos or build yourself)
+# Or use the container method
+
+# Install dependencies
+sudo dnf install curl-devel git
+----
+
+=== Ubuntu/Debian
+
+[source,bash]
+----
+sudo apt install gnat gprbuild libcurl4-openssl-dev git
+----
+
+=== macOS
+
+[source,bash]
+----
+# Install GNAT via Alire or GNAT Community Edition
+# Download from https://www.adacore.com/download
+
+brew install curl
+----
+
+=== Build
+
+[source,bash]
+----
+git clone https://github.com/hyperpolymath/bitfuckit.git
+cd bitfuckit
+gprbuild -P bitfuckit.gpr -j0
+----
+
+Binary will be in `bin/bitfuckit`.
+
+=== Install
+
+[source,bash]
+----
+sudo cp bin/bitfuckit /usr/local/bin/
+sudo cp doc/bitfuckit.1 /usr/local/share/man/man1/
+----
+
+== Nix Installation
+
+=== With Flakes
+
+[source,bash]
+----
+# Run directly
+nix run github:hyperpolymath/bitfuckit
+
+# Install to profile
+nix profile install github:hyperpolymath/bitfuckit
+
+# Development shell
+nix develop github:hyperpolymath/bitfuckit
+----
+
+=== In flake.nix
+
+[source,nix]
+----
+{
+  inputs.bitfuckit.url = "github:hyperpolymath/bitfuckit";
+
+  outputs = { self, nixpkgs, bitfuckit }: {
+    # Add to your packages
+  };
+}
+----
+
+== Guix Installation
+
+=== From Channel
+
+Add the channel to `~/.config/guix/channels.scm`:
+
+[source,scheme]
+----
+(cons (channel
+        (name 'hyperpolymath)
+        (url "https://github.com/hyperpolymath/guix-channel")
+        (branch "main"))
+      %default-channels)
+----
+
+Then:
+
+[source,bash]
+----
+guix pull
+guix install bitfuckit
+----
+
+=== Direct Install
+
+[source,bash]
+----
+guix install -f guix.scm
+----
+
+== Shell Completions
+
+=== Bash
+
+[source,bash]
+----
+sudo cp completions/bitfuckit.bash /etc/bash_completion.d/bitfuckit
+----
+
+Or add to ~/.bashrc:
+
+[source,bash]
+----
+source /path/to/bitfuckit/completions/bitfuckit.bash
+----
+
+=== Fish
+
+[source,bash]
+----
+cp completions/bitfuckit.fish ~/.config/fish/completions/
+----
+
+=== Zsh
+
+[source,bash]
+----
+cp completions/_bitfuckit ~/.local/share/zsh/site-functions/
+----
+
+== Man Page
+
+[source,bash]
+----
+# Install
+sudo cp doc/bitfuckit.1 /usr/local/share/man/man1/
+
+# Update database
+sudo mandb
+
+# View
+man bitfuckit
+----
+
+== Verification
+
+After installation:
+
+[source,bash]
+----
+# Check version
+bitfuckit --version
+
+# Check help
+bitfuckit --help
+
+# Test TUI
+bitfuckit tui
+----
+
+== Updating
+
+=== Binary
+
+Download and replace with new version.
+
+=== Container
+
+[source,bash]
+----
+nerdctl pull ghcr.io/hyperpolymath/bitfuckit:latest
+----
+
+=== From Source
+
+[source,bash]
+----
+cd bitfuckit
+git pull
+gprbuild -P bitfuckit.gpr -j0
+sudo cp bin/bitfuckit /usr/local/bin/
+----
+
+=== Nix
+
+[source,bash]
+----
+nix profile upgrade bitfuckit
+----
+
+=== Guix
+
+[source,bash]
+----
+guix pull
+guix upgrade bitfuckit
+----
+
+== Uninstalling
+
+=== Binary
+
+[source,bash]
+----
+sudo rm /usr/local/bin/bitfuckit
+sudo rm /usr/local/share/man/man1/bitfuckit.1
+rm -rf ~/.config/bitfuckit
+----
+
+=== Container
+
+[source,bash]
+----
+nerdctl rmi ghcr.io/hyperpolymath/bitfuckit:latest
+----
+
+=== Nix
+
+[source,bash]
+----
+nix profile remove bitfuckit
+----
+
+=== Guix
+
+[source,bash]
+----
+guix remove bitfuckit
+----
+
+== Next Steps
+
+1. link:Authentication[Set up authentication]
+2. link:Getting-Started[Getting started guide]
+3. link:CLI-Reference[CLI reference]

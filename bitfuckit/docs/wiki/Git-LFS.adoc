@@ -1,0 +1,306 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Git LFS
+:toc:
+
+This guide covers Git Large File Storage (LFS) support in bitfuckit.
+
+== Overview
+
+Git LFS replaces large files with text pointers in Git, storing the actual file contents on a remote server. bitfuckit provides full LFS integration optimized for Bitbucket.
+
+== Prerequisites
+
+=== Installing Git LFS
+
+[source,bash]
+----
+# Fedora/RHEL
+sudo dnf install git-lfs
+
+# Ubuntu/Debian
+sudo apt install git-lfs
+
+# macOS
+brew install git-lfs
+
+# Windows
+# Download from https://git-lfs.github.com/
+----
+
+=== Initialize Git LFS
+
+Run once per user account:
+
+[source,bash]
+----
+git lfs install
+----
+
+This adds LFS hooks to your global Git config.
+
+== Checking LFS Status
+
+[source,bash]
+----
+bitfuckit lfs status
+----
+
+Shows:
+
+* Git LFS version
+* Whether LFS is installed
+* Whether current repo uses LFS
+* Tracked patterns
+* LFS endpoint URL
+
+Example output:
+
+[source]
+----
+Git LFS Status
+==============
+Installed: Yes
+Version: git-lfs/3.4.0
+
+Repository: /path/to/repo
+LFS Enabled: Yes
+Endpoint: https://bitbucket.org/workspace/repo.git/info/lfs
+
+Tracked Patterns:
+  *.psd filter=lfs diff=lfs merge=lfs -text
+  *.ai filter=lfs diff=lfs merge=lfs -text
+  *.zip filter=lfs diff=lfs merge=lfs -text
+----
+
+== Tracking Files
+
+=== Track File Patterns
+
+[source,bash]
+----
+# Track Photoshop files
+bitfuckit lfs track "*.psd"
+
+# Track multiple patterns
+bitfuckit lfs track "*.ai" "*.sketch" "*.fig"
+
+# Track by directory
+bitfuckit lfs track "assets/**"
+
+# Track specific large files
+bitfuckit lfs track "data/large-dataset.csv"
+----
+
+=== View Tracked Patterns
+
+[source,bash]
+----
+bitfuckit lfs track
+----
+
+=== Untrack Patterns
+
+[source,bash]
+----
+bitfuckit lfs untrack "*.psd"
+----
+
+NOTE: Untracking doesn't remove existing LFS objects, just stops tracking new files.
+
+== Working with LFS Files
+
+=== Fetch LFS Objects
+
+Download LFS objects without checking out:
+
+[source,bash]
+----
+bitfuckit lfs fetch
+----
+
+=== Pull LFS Objects
+
+Fetch and checkout LFS files:
+
+[source,bash]
+----
+bitfuckit lfs pull
+----
+
+=== Push LFS Objects
+
+Upload LFS objects to Bitbucket:
+
+[source,bash]
+----
+bitfuckit lfs push
+----
+
+== File Locking
+
+Prevent concurrent edits of binary files:
+
+=== Lock a File
+
+[source,bash]
+----
+bitfuckit lfs lock design/mockup.psd
+----
+
+=== View Locks
+
+[source,bash]
+----
+bitfuckit lfs locks
+----
+
+=== Unlock a File
+
+[source,bash]
+----
+# Unlock your own lock
+bitfuckit lfs unlock design/mockup.psd
+
+# Force unlock (admin)
+bitfuckit lfs unlock design/mockup.psd --force
+----
+
+== Migration
+
+=== Convert Existing Files to LFS
+
+Import files into LFS:
+
+[source,bash]
+----
+# Migrate current files
+bitfuckit lfs migrate import --include="*.psd,*.ai"
+
+# Migrate entire history
+bitfuckit lfs migrate import --include="*.psd" --everything
+----
+
+WARNING: Migrating history rewrites commits. Coordinate with your team!
+
+=== Convert LFS Files Back to Regular
+
+Export from LFS:
+
+[source,bash]
+----
+bitfuckit lfs migrate export --include="*.zip"
+----
+
+== Bitbucket Configuration
+
+=== Automatic Endpoint
+
+bitfuckit automatically configures the LFS endpoint for Bitbucket:
+
+[source]
+----
+https://bitbucket.org/WORKSPACE/REPO.git/info/lfs
+----
+
+=== Manual Configuration
+
+If needed, configure manually:
+
+[source,bash]
+----
+git config lfs.url https://bitbucket.org/myworkspace/myrepo.git/info/lfs
+----
+
+=== Verify Endpoint
+
+[source,bash]
+----
+git lfs env | grep Endpoint
+----
+
+== Storage Quotas
+
+Bitbucket has LFS storage quotas:
+
+[cols="1,1,1"]
+|===
+|Plan |Storage |Bandwidth
+
+|Free
+|1 GB
+|1 GB/month
+
+|Standard
+|5 GB
+|10 GB/month
+
+|Premium
+|10 GB
+|20 GB/month
+|===
+
+Check usage at: Repository Settings → Git LFS
+
+== Best Practices
+
+=== What to Track
+
+Good candidates for LFS:
+
+* Images (PSD, AI, PNG, JPG over 500KB)
+* Videos (MP4, MOV, AVI)
+* Audio (WAV, MP3, FLAC)
+* Archives (ZIP, TAR, 7Z)
+* Binary data (databases, datasets)
+* Build artifacts (if stored in repo)
+
+=== What NOT to Track
+
+* Text files (even large ones)
+* Code files
+* Configuration files
+* Files under 100KB
+
+=== .gitattributes Example
+
+[source]
+----
+# Images
+*.png filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.gif filter=lfs diff=lfs merge=lfs -text
+*.psd filter=lfs diff=lfs merge=lfs -text
+*.ai filter=lfs diff=lfs merge=lfs -text
+*.sketch filter=lfs diff=lfs merge=lfs -text
+*.fig filter=lfs diff=lfs merge=lfs -text
+
+# Video
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text
+*.avi filter=lfs diff=lfs merge=lfs -text
+
+# Audio
+*.mp3 filter=lfs diff=lfs merge=lfs -text
+*.wav filter=lfs diff=lfs merge=lfs -text
+*.flac filter=lfs diff=lfs merge=lfs -text
+
+# Archives
+*.zip filter=lfs diff=lfs merge=lfs -text
+*.tar.gz filter=lfs diff=lfs merge=lfs -text
+*.7z filter=lfs diff=lfs merge=lfs -text
+
+# Data
+*.sqlite filter=lfs diff=lfs merge=lfs -text
+*.csv filter=lfs diff=lfs merge=lfs -text
+----
+
+== Troubleshooting
+
+See link:Troubleshooting#git-lfs-issues[Troubleshooting - Git LFS Issues]
+
+Common issues:
+
+* LFS not installed - Run `dnf install git-lfs`
+* LFS not initialized - Run `git lfs install`
+* Wrong endpoint - Check `git lfs env`
+* Auth failures - Verify app password has repo write access

@@ -1,0 +1,188 @@
+# SPDX-License-Identifier: PMPL-1.0
+# mustfile for bitfuckit - declarative build requirements
+#
+# Mustfile defines WHAT must be done, justfile defines HOW
+# This is the declarative specification; justfile is the imperative implementation
+
+[project]
+name = "bitfuckit"
+version = "0.1.0"
+license = "PMPL-1.0"
+description = "Bitbucket CLI tool written in Ada"
+
+[build]
+system = "gprbuild"
+file = "bitfuckit.gpr"
+output = "bin/bitfuckit"
+
+[build.commands]
+default = "gprbuild -P bitfuckit.gpr"
+release = "gprbuild -P bitfuckit.gpr -XBUILD_MODE=release"
+clean = "gprclean -P bitfuckit.gpr"
+verify = "gnatprove -P bitfuckit.gpr --mode=check"
+prove = "gnatprove -P bitfuckit.gpr --mode=prove --level=2"
+
+[install]
+binary = { src = "bin/bitfuckit", dest = "~/.local/bin/bitfuckit" }
+man = { src = "doc/bitfuckit.1", dest = "/usr/share/man/man1/bitfuckit.1" }
+
+[install.completions]
+bash = { src = "completions/bitfuckit.bash", dest = "/usr/share/bash-completion/completions/bitfuckit" }
+zsh = { src = "completions/bitfuckit.zsh", dest = "/usr/share/zsh/site-functions/_bitfuckit" }
+fish = { src = "completions/bitfuckit.fish", dest = "/usr/share/fish/vendor_completions.d/bitfuckit.fish" }
+
+[dependencies.build]
+gnat = ">= 12"
+gprbuild = ">= 22"
+
+[dependencies.runtime]
+curl = ">= 7"
+
+[dependencies.optional]
+gnatprove = ">= 24"
+
+[test]
+smoke = "bin/bitfuckit --help"
+auth = "bin/bitfuckit auth status || true"
+
+[test.integration]
+repo_list = "bin/bitfuckit repo list"
+requires_auth = true
+
+# ============================================================================
+# Concatenative Check Chains
+# ============================================================================
+
+[checks]
+# Minimal checks (fast feedback)
+minimal = ["build", "test.smoke"]
+
+# Standard pre-commit checks
+pre-commit = ["build", "test.smoke", "files.required"]
+
+# Full CI pipeline
+ci = ["clean", "verify", "build", "test.smoke", "security", "files.required"]
+
+# Release checks
+release = ["ci", "test.integration", "package.validate"]
+
+# Security-focused checks
+security = ["verify", "lint.secrets"]
+
+# ============================================================================
+# File Requirements
+# ============================================================================
+
+[files.required]
+README = "README.adoc"
+LICENSE = "LICENSE"
+SECURITY = "SECURITY.md"
+CONTRIBUTING = "CONTRIBUTING.adoc"
+CHANGELOG = "CHANGELOG.adoc"
+ROADMAP = "ROADMAP.adoc"
+
+[files.optional]
+STATE = "STATE.scm"
+META = "META.scm"
+ECOSYSTEM = "ECOSYSTEM.scm"
+
+# ============================================================================
+# Package Specifications
+# ============================================================================
+
+[package]
+formats = ["aur", "rpm", "deb", "flatpak", "nix", "homebrew", "macports", "winget"]
+
+[package.aur]
+name = "bitfuckit"
+pkgver = "0.1.0"
+pkgrel = 1
+arch = ["x86_64", "aarch64"]
+license = "PMPL-1.0"
+depends = ["curl"]
+makedepends = ["gcc-ada", "gprbuild"]
+source = "https://github.com/hyperpolymath/bitfuckit/archive/v${pkgver}.tar.gz"
+
+[package.rpm]
+name = "bitfuckit"
+release = "1"
+requires = ["curl"]
+build_requires = ["gcc-gnat", "gprbuild"]
+spec_file = "packaging/bitfuckit.spec"
+
+[package.deb]
+name = "bitfuckit"
+section = "devel"
+priority = "optional"
+depends = ["curl"]
+build-depends = ["gnat", "gprbuild"]
+control_file = "packaging/debian/control"
+
+[package.homebrew]
+name = "bitfuckit"
+formula = "packaging/homebrew/bitfuckit.rb"
+tap = "hyperpolymath/tap"
+
+[package.macports]
+name = "bitfuckit"
+portfile = "packaging/macports/Portfile"
+categories = ["devel", "vcs"]
+
+[package.winget]
+id = "hyperpolymath.bitfuckit"
+manifest = "packaging/winget/hyperpolymath.bitfuckit.yaml"
+
+# ============================================================================
+# Lint Configuration
+# ============================================================================
+
+[lint]
+ada_style = { command = "gcc -c -gnatyw -gnatyM79", files = "src/*.ads" }
+secrets = { command = "grep -rn 'password\\s*=' src/", expect_failure = true }
+
+# ============================================================================
+# Forge Targets
+# ============================================================================
+
+[forges]
+primary = "github"
+mirrors = ["gitlab", "bitbucket", "codeberg", "sourcehut", "gitea", "disroot", "radicle"]
+
+[forges.github]
+url = "github.com"
+owner = "hyperpolymath"
+repo = "bitfuckit"
+
+[forges.gitlab]
+url = "gitlab.com"
+owner = "hyperpolymath"
+repo = "bitfuckit"
+
+[forges.bitbucket]
+url = "bitbucket.org"
+owner = "hyperpolymath"
+repo = "bitfuckit"
+
+[forges.codeberg]
+url = "codeberg.org"
+owner = "hyperpolymath"
+repo = "bitfuckit"
+
+[forges.sourcehut]
+url = "git.sr.ht"
+owner = "~hyperpolymath"
+repo = "bitfuckit"
+
+[forges.gitea]
+url = "gitea.com"
+owner = "hyperpolymath"
+repo = "bitfuckit"
+
+[forges.disroot]
+url = "git.disroot.org"
+owner = "hyperpolymath"
+repo = "bitfuckit"
+
+[forges.radicle]
+enabled = true
+urn = "rad:..."

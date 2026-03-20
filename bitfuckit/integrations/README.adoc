@@ -1,0 +1,91 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= bitfuckit Git GUI Integrations
+image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[MPL-2.0-or-later,link="https://opensource.org/licenses/MPL-2.0"]
+
+
+:toc:
+
+This directory contains integration configs for popular FOSS Git GUI tools.
+
+== Supported Tools
+
+=== lazygit (Recommended)
+
+lazygit is a terminal UI for git that supports custom commands.
+
+*Install integration:*
+[source,bash]
+----
+mkdir -p ~/.config/lazygit
+cp integrations/lazygit/config.yml ~/.config/lazygit/
+----
+
+Or merge into existing config.
+
+=== TortoiseGit (Windows)
+
+TortoiseGit supports custom menu actions via Windows Registry.
+
+*Install integration:*
+[source,powershell]
+----
+# Import registry entries
+regedit /s integrations/tortoisegit/bitfuckit-context-menu.reg
+----
+
+=== git-cola
+
+git-cola supports custom actions in its config.
+
+*Install integration:*
+[source,bash]
+----
+mkdir -p ~/.config/git-cola
+cp integrations/git-cola/actions.py ~/.config/git-cola/
+----
+
+=== Gittyup
+
+Gittyup can be extended with custom plugins.
+
+See `integrations/gittyup/README.md` for build instructions.
+
+== Quick Setup
+
+One-liner to install all integrations for your detected GUIs:
+
+[source,bash]
+----
+bitfuckit integrations install --auto
+----
+
+Or install specific:
+
+[source,bash]
+----
+bitfuckit integrations install lazygit
+bitfuckit integrations install tortoisegit
+----
+
+== What Gets Integrated
+
+Each integration adds:
+
+* *Bitbucket PR* context menu - Create/view PRs for current branch
+* *Bitbucket Issues* - Quick issue lookup
+* *Mirror to Bitbucket* - One-click mirror
+* *Pipeline Status* - View CI status
+
+== Contributing
+
+To add support for another Git GUI:
+
+1. Create directory: `integrations/<tool-name>/`
+2. Add config files for that tool
+3. Document installation in this README
+4. Submit PR!
+
+Priority tools:
+- GitButler (Rust-based, gaining popularity)
+- SourceGit (cross-platform)
+- GitHub Desktop (if Bitbucket support possible)

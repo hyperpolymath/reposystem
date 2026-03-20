@@ -1,0 +1,263 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Network
+:toc:
+
+This guide covers bitfuckit's network features and troubleshooting.
+
+== Network Awareness
+
+bitfuckit is network-aware and adapts to different connectivity situations:
+
+* Detects online/offline status
+* Identifies metered connections (mobile data)
+* Queues operations when offline
+* Retries with exponential backoff
+
+== Checking Network Status
+
+[source,bash]
+----
+bitfuckit network status
+----
+
+Possible states:
+
+[cols="1,2"]
+|===
+|State |Description
+
+|`Online`
+|Full connectivity, all operations available
+
+|`Metered`
+|Connected but on metered connection (mobile data)
+
+|`Partial`
+|Some network issues detected
+
+|`Offline`
+|No network connectivity
+
+|`Unknown`
+|Could not determine status
+|===
+
+== Testing Connectivity
+
+[source,bash]
+----
+bitfuckit network check
+----
+
+This tests:
+
+1. DNS resolution for api.bitbucket.org
+2. HTTPS connectivity to Bitbucket API
+3. Authentication with stored credentials
+
+== Offline Mode
+
+Work with cached data when offline:
+
+[source,bash]
+----
+# List repos from cache
+bitfuckit --offline repo list
+
+# Check PR status from cache
+bitfuckit --offline pr list my-repo
+----
+
+Offline mode uses data cached from previous API calls.
+
+== Metered Connection Handling
+
+When on a metered connection, bitfuckit:
+
+* Warns before large operations
+* Delays non-urgent sync operations
+* Compresses data where possible
+
+Override metered detection:
+
+[source,bash]
+----
+# Force operation even on metered
+bitfuckit --force-network mirror my-repo
+----
+
+== Proxy Configuration
+
+=== Environment Variables
+
+[source,bash]
+----
+export HTTPS_PROXY=http://proxy.example.com:8080
+export HTTP_PROXY=http://proxy.example.com:8080
+export NO_PROXY=localhost,127.0.0.1,.internal.company.com
+----
+
+=== Authenticated Proxy
+
+[source,bash]
+----
+export HTTPS_PROXY=http://user:password@proxy.example.com:8080
+----
+
+== Resilience Features
+
+=== Circuit Breaker
+
+Prevents cascading failures:
+
+* Opens after 5 consecutive failures
+* Rejects requests while open
+* Auto-resets after 30 seconds
+* Allows through one test request to check recovery
+
+[source]
+----
+[Normal] → 5 failures → [Open] → 30s → [Half-Open] → success → [Normal]
+                                            ↓
+                                         failure
+                                            ↓
+                                        [Open]
+----
+
+=== Rate Limiting
+
+Token bucket algorithm:
+
+* Respects Bitbucket API rate limits
+* Smooths request bursts
+* Returns 429 info when limited
+
+=== Retry Logic
+
+Exponential backoff with jitter:
+
+* Initial delay: 1 second
+* Maximum delay: 60 seconds
+* Jitter: ±25% randomization
+* Maximum attempts: 5
+
+Example retry sequence:
+
+[source]
+----
+Attempt 1: immediate
+Attempt 2: ~1s delay
+Attempt 3: ~2s delay
+Attempt 4: ~4s delay
+Attempt 5: ~8s delay
+----
+
+== Firewall Configuration
+
+=== Required Endpoints
+
+bitfuckit needs access to:
+
+[cols="1,1,2"]
+|===
+|Endpoint |Port |Purpose
+
+|api.bitbucket.org
+|443
+|REST API
+
+|bitbucket.org
+|443
+|Web interface, Git HTTPS
+
+|bitbucket.org
+|22
+|Git SSH
+
+|*.bb-inf.net
+|443
+|LFS storage
+|===
+
+=== firewalld Rules
+
+[source,bash]
+----
+# Allow HTTPS outbound
+sudo firewall-cmd --add-service=https --permanent
+
+# Allow SSH outbound (for git)
+sudo firewall-cmd --add-port=22/tcp --permanent
+
+sudo firewall-cmd --reload
+----
+
+=== SELinux
+
+If SELinux blocks connections:
+
+[source,bash]
+----
+# Check for denials
+sudo ausearch -m avc -ts recent | grep bitfuckit
+
+# Allow network access (if needed)
+sudo setsebool -P httpd_can_network_connect 1
+----
+
+== Syncthing Integration
+
+bitfuckit can sync configuration via Syncthing:
+
+[source,bash]
+----
+# Check Syncthing status
+bitfuckit sync status
+
+# Force sync
+bitfuckit sync now
+----
+
+Configure in `~/.config/bitfuckit/config`:
+
+[source]
+----
+syncthing_enabled=true
+syncthing_api=http://localhost:8384
+syncthing_folder=bitfuckit-config
+----
+
+== Troubleshooting
+
+=== DNS Issues
+
+[source,bash]
+----
+# Test DNS resolution
+dig api.bitbucket.org
+
+# Use specific DNS server
+dig @8.8.8.8 api.bitbucket.org
+----
+
+=== SSL/TLS Issues
+
+[source,bash]
+----
+# Test SSL connection
+openssl s_client -connect api.bitbucket.org:443
+
+# Check certificate
+curl -vI https://api.bitbucket.org 2>&1 | grep -A5 "Server certificate"
+----
+
+=== Manual API Test
+
+[source,bash]
+----
+# Test API without bitfuckit
+curl -u "username:app_password" \
+  https://api.bitbucket.org/2.0/user
+----
+
+See link:Troubleshooting#network-issues[Troubleshooting - Network Issues] for more.

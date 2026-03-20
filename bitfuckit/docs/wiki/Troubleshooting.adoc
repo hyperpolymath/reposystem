@@ -1,0 +1,400 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Troubleshooting
+:toc:
+:toclevels: 2
+
+This guide helps diagnose and fix common issues with bitfuckit.
+
+== Quick Diagnostics
+
+Run the built-in troubleshooter:
+
+[source,bash]
+----
+bitfuckit troubleshoot
+----
+
+Or access it from the TUI by pressing `t`.
+
+== Authentication Issues
+
+=== "Not logged in" Error
+
+*Problem:* Commands fail with "Not logged in. Run: bitfuckit auth login"
+
+*Solution:*
+
+1. Run the login command:
++
+[source,bash]
+----
+bitfuckit auth login
+----
+
+2. Enter your Bitbucket username
+3. Enter your app password (not your account password)
+4. Enter your workspace name (usually same as username)
+
+=== 401 Unauthorized
+
+*Problem:* API calls return 401 Unauthorized
+
+*Causes:*
+
+* App password expired or revoked
+* Insufficient permissions on app password
+* Wrong username/workspace combination
+
+*Solution:*
+
+1. Create a new app password at https://bitbucket.org/account/settings/app-passwords/
+2. Required scopes:
+** `repository:read` - List and view repos
+** `repository:write` - Create, delete repos
+** `repository:admin` - Admin operations
+** `pullrequest:read` - List PRs
+** `pullrequest:write` - Create/merge PRs
+3. Re-authenticate:
++
+[source,bash]
+----
+bitfuckit auth login
+----
+
+=== Verify Credentials
+
+Check current auth status:
+
+[source,bash]
+----
+bitfuckit auth status
+----
+
+View stored config location:
+
+[source,bash]
+----
+cat ~/.config/bitfuckit/config
+----
+
+== Network Issues
+
+=== Connection Refused / Timeout
+
+*Problem:* Cannot connect to Bitbucket API
+
+*Diagnostics:*
+
+[source,bash]
+----
+# Check network status
+bitfuckit network status
+
+# Test API connectivity
+bitfuckit network check
+
+# Manual DNS test
+ping api.bitbucket.org
+
+# Manual HTTPS test
+curl -I https://api.bitbucket.org/2.0/
+----
+
+*Common Fixes:*
+
+1. **Proxy configuration:**
++
+[source,bash]
+----
+export HTTPS_PROXY=http://proxy.example.com:8080
+export HTTP_PROXY=http://proxy.example.com:8080
+----
+
+2. **Firewall rules:**
++
+[source,bash]
+----
+# Check firewall status
+sudo firewall-cmd --list-all
+
+# Allow HTTPS outbound (if blocked)
+sudo firewall-cmd --add-service=https --permanent
+sudo firewall-cmd --reload
+----
+
+3. **DNS issues:**
++
+[source,bash]
+----
+# Try with IP directly
+curl -I https://104.192.141.1/2.0/ -H "Host: api.bitbucket.org"
+----
+
+=== Metered Connection Detected
+
+bitfuckit detects metered connections (mobile data) and may delay operations.
+
+*Override:*
+
+[source,bash]
+----
+# Force operation even on metered
+bitfuckit --force-network mirror my-repo
+----
+
+=== Offline Mode
+
+Work with cached data when offline:
+
+[source,bash]
+----
+bitfuckit --offline repo list
+----
+
+== Git LFS Issues
+
+=== LFS Not Installed
+
+*Problem:* "git-lfs not found" or LFS commands fail
+
+*Solution:*
+
+[source,bash]
+----
+# Fedora/RHEL
+sudo dnf install git-lfs
+
+# Ubuntu/Debian
+sudo apt install git-lfs
+
+# macOS
+brew install git-lfs
+
+# Initialize (once per user)
+git lfs install
+----
+
+=== LFS Not Configured for Repo
+
+*Problem:* Files not being tracked by LFS
+
+*Solution:*
+
+1. Check LFS status:
++
+[source,bash]
+----
+bitfuckit lfs status
+----
+
+2. Track file patterns:
++
+[source,bash]
+----
+bitfuckit lfs track "*.psd"
+bitfuckit lfs track "*.ai"
+bitfuckit lfs track "*.zip"
+----
+
+3. Verify .gitattributes:
++
+[source,bash]
+----
+cat .gitattributes
+----
+
+=== LFS Fetch/Pull Failed
+
+*Problem:* Cannot download LFS objects
+
+*Causes:*
+
+* LFS endpoint not configured
+* Authentication issues with LFS server
+* Large file quota exceeded
+
+*Solution:*
+
+[source,bash]
+----
+# Check endpoint
+git lfs env
+
+# For Bitbucket, ensure correct URL
+git config lfs.url https://bitbucket.org/WORKSPACE/REPO.git/info/lfs
+
+# Retry fetch
+bitfuckit lfs fetch
+----
+
+== SSH Key Issues
+
+=== Permission Denied (publickey)
+
+*Problem:* Git operations fail with SSH authentication errors
+
+*Solution:*
+
+1. Generate SSH key (if needed):
++
+[source,bash]
+----
+ssh-keygen -t ed25519 -C "your_email@example.com"
+----
+
+2. Copy public key:
++
+[source,bash]
+----
+cat ~/.ssh/id_ed25519.pub
+----
+
+3. Add to Bitbucket: https://bitbucket.org/account/settings/ssh-keys/
+
+4. Test connection:
++
+[source,bash]
+----
+ssh -T git@bitbucket.org
+----
+
+Expected output: "logged in as USERNAME"
+
+=== Wrong Key Being Used
+
+*Problem:* SSH uses wrong key for Bitbucket
+
+*Solution:*
+
+Add to `~/.ssh/config`:
+
+[source]
+----
+Host bitbucket.org
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_bitbucket
+    IdentitiesOnly yes
+----
+
+== Rate Limiting
+
+=== 429 Too Many Requests
+
+*Problem:* API returns rate limit errors
+
+*How bitfuckit handles this:*
+
+* Circuit breaker opens after 5 consecutive failures
+* Auto-resets after 30 seconds
+* Retries with exponential backoff + jitter
+
+*Best Practices:*
+
+1. Use `--offline` for cached operations
+2. Batch operations when possible
+3. Wait if circuit breaker opens
+4. Check rate limit headers:
++
+[source,bash]
+----
+curl -I https://api.bitbucket.org/2.0/user \
+  -u "username:app_password" 2>&1 | grep -i rate
+----
+
+=== Circuit Breaker Open
+
+*Problem:* "Circuit breaker open" error
+
+*Explanation:* bitfuckit detected repeated failures and is preventing cascade failures.
+
+*Solution:*
+
+1. Wait 30 seconds for auto-reset
+2. Check if Bitbucket is experiencing issues: https://status.atlassian.com/
+3. Force retry (not recommended):
++
+[source,bash]
+----
+bitfuckit --force-retry <command>
+----
+
+== TUI Issues
+
+=== Display Corruption
+
+*Problem:* TUI shows garbled characters
+
+*Causes:*
+
+* Terminal doesn't support ANSI escape codes
+* Wrong TERM environment variable
+
+*Solution:*
+
+[source,bash]
+----
+# Set correct terminal type
+export TERM=xterm-256color
+
+# Or use basic mode
+TERM=dumb bitfuckit tui
+----
+
+=== Keys Not Working
+
+*Problem:* Arrow keys or other keys don't work in TUI
+
+*Solution:*
+
+Use vim-style navigation:
+
+* `j` - Down
+* `k` - Up
+* `Enter` - Select
+* `q` - Quit/Back
+* `t` - Troubleshooter
+* `h` or `?` - Help
+
+== Container Issues
+
+=== Volume Mount Permissions
+
+*Problem:* Config not persisting in container
+
+*Solution:*
+
+[source,bash]
+----
+# Ensure correct ownership
+nerdctl run -v ~/.config/bitfuckit:/home/bitfuckit/.config/bitfuckit:Z \
+  ghcr.io/hyperpolymath/bitfuckit auth status
+----
+
+=== SELinux Denials
+
+*Problem:* Container blocked by SELinux
+
+*Solution:*
+
+[source,bash]
+----
+# Check for denials
+sudo ausearch -m avc -ts recent
+
+# Add :Z flag for auto-labeling
+nerdctl run -v /path:/container/path:Z ...
+----
+
+== Getting Help
+
+If your issue isn't covered here:
+
+1. Check the link:FAQ[FAQ]
+2. Search existing issues: https://github.com/hyperpolymath/bitfuckit/issues
+3. Open a new issue with:
+   * bitfuckit version (`bitfuckit --version`)
+   * Operating system
+   * Command that failed
+   * Full error message
+   * Steps to reproduce

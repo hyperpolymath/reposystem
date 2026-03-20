@@ -1,0 +1,386 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Mirroring
+:toc:
+
+This guide covers repository mirroring with bitfuckit.
+
+== Overview
+
+bitfuckit can mirror repositories from other Git hosts (GitHub, GitLab, etc.) to Bitbucket. This is useful for:
+
+* Backup and redundancy
+* Migration to Bitbucket
+* Multi-platform presence
+* CI/CD on multiple platforms
+
+== Basic Mirroring
+
+=== Mirror Current Repository
+
+From within a Git repository:
+
+[source,bash]
+----
+bitfuckit mirror my-project
+----
+
+This will:
+
+1. Check if `my-project` exists on Bitbucket
+2. Create it if it doesn't exist
+3. Push all branches and tags
+
+=== Mirror from GitHub
+
+[source,bash]
+----
+bitfuckit mirror my-project --from github
+----
+
+=== Mirror from GitLab
+
+[source,bash]
+----
+bitfuckit mirror my-project --from gitlab
+----
+
+== Mirror Status
+
+Check status of all mirrors:
+
+[source,bash]
+----
+bitfuckit mirror status
+----
+
+Shows:
+
+* Source repository
+* Destination (Bitbucket)
+* Last sync time
+* Sync status
+
+== One-Time Mirror
+
+For a one-time copy without setting up sync:
+
+[source,bash]
+----
+# Clone from GitHub
+git clone --mirror https://github.com/user/repo.git
+cd repo.git
+
+# Push to Bitbucket
+git push --mirror git@bitbucket.org:workspace/repo.git
+----
+
+== Continuous Sync
+
+=== GitHub Actions
+
+Create `.github/workflows/mirror.yml`:
+
+[source,yaml]
+----
+name: Mirror to Bitbucket
+on:
+  push:
+    branches: ['*']
+    tags: ['*']
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Bitbucket
+        uses: hyperpolymath/mirror-action@v1
+        with:
+          target: git@bitbucket.org:${{ secrets.BB_WORKSPACE }}/${{ github.event.repository.name }}.git
+          ssh-key: ${{ secrets.BITBUCKET_SSH_KEY }}
+----
+
+=== GitLab CI
+
+Create `.gitlab-ci.yml`:
+
+[source,yaml]
+----
+mirror:
+  stage: deploy
+  script:
+    - git push --mirror git@bitbucket.org:$BB_WORKSPACE/$CI_PROJECT_NAME.git
+  only:
+    - branches
+    - tags
+----
+
+== Mirror with LFS
+
+When mirroring repositories with Git LFS:
+
+[source,bash]
+----
+bitfuckit mirror my-project --lfs
+----
+
+This ensures LFS objects are also transferred.
+
+=== Manual LFS Migration
+
+[source,bash]
+----
+# Clone with LFS
+git lfs clone https://github.com/user/repo.git
+cd repo
+
+# Fetch all LFS objects
+git lfs fetch --all
+
+# Add Bitbucket remote
+git remote add bitbucket git@bitbucket.org:workspace/repo.git
+
+# Configure LFS for Bitbucket
+git config lfs.url https://bitbucket.org/workspace/repo.git/info/lfs
+
+# Push everything
+git push --mirror bitbucket
+git lfs push --all bitbucket
+----
+
+== Selective Mirroring
+
+=== Mirror Specific Branches
+
+[source,bash]
+----
+bitfuckit mirror my-project --branches main,develop
+----
+
+=== Mirror Specific Tags
+
+[source,bash]
+----
+bitfuckit mirror my-project --tags "v*"
+----
+
+=== Exclude Branches
+
+[source,bash]
+----
+bitfuckit mirror my-project --exclude-branches "wip/*"
+----
+
+== Two-Way Sync
+
+WARNING: Two-way sync can cause conflicts. Use with caution!
+
+=== Setup
+
+[source,bash]
+----
+# Clone from primary (e.g., GitHub)
+git clone https://github.com/user/repo.git
+cd repo
+
+# Add Bitbucket as second remote
+git remote add bitbucket git@bitbucket.org:workspace/repo.git
+
+# Fetch from both
+git fetch --all
+----
+
+=== Sync Workflow
+
+[source,bash]
+----
+# Pull from GitHub
+git pull origin main
+
+# Push to both
+git push origin main
+git push bitbucket main
+----
+
+== Handling Conflicts
+
+=== Force Push (Overwrite)
+
+WARNING: This overwrites the destination!
+
+[source,bash]
+----
+bitfuckit mirror my-project --force
+----
+
+=== Resolve Manually
+
+[source,bash]
+----
+# Fetch from Bitbucket
+git fetch bitbucket
+
+# Check differences
+git log origin/main..bitbucket/main
+git log bitbucket/main..origin/main
+
+# Merge if needed
+git merge bitbucket/main
+
+# Push to both
+git push origin main
+git push bitbucket main
+----
+
+== Scheduling Mirrors
+
+=== Cron Job
+
+[source,bash]
+----
+# Add to crontab
+crontab -e
+
+# Mirror every hour
+0 * * * * cd /path/to/repo && bitfuckit mirror my-project >> /var/log/mirror.log 2>&1
+----
+
+=== Systemd Timer
+
+Create `/etc/systemd/system/bitfuckit-mirror.service`:
+
+[source,ini]
+----
+[Unit]
+Description=Mirror repository to Bitbucket
+
+[Service]
+Type=oneshot
+User=myuser
+WorkingDirectory=/path/to/repo
+ExecStart=/usr/local/bin/bitfuckit mirror my-project
+----
+
+Create `/etc/systemd/system/bitfuckit-mirror.timer`:
+
+[source,ini]
+----
+[Unit]
+Description=Run mirror hourly
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+----
+
+Enable:
+
+[source,bash]
+----
+sudo systemctl enable --now bitfuckit-mirror.timer
+----
+
+== Migration Guide
+
+=== Full Migration from GitHub
+
+1. **Create Bitbucket repo:**
++
+[source,bash]
+----
+bitfuckit repo create my-project --private
+----
+
+2. **Mirror everything:**
++
+[source,bash]
+----
+git clone --mirror https://github.com/user/repo.git
+cd repo.git
+git push --mirror git@bitbucket.org:workspace/repo.git
+----
+
+3. **Migrate LFS (if used):**
++
+[source,bash]
+----
+git lfs fetch --all
+git lfs push --all git@bitbucket.org:workspace/repo.git
+----
+
+4. **Update team remotes:**
++
+[source,bash]
+----
+git remote set-url origin git@bitbucket.org:workspace/repo.git
+----
+
+5. **Update CI/CD and webhooks**
+
+6. **Archive or redirect GitHub repo**
+
+=== Verify Migration
+
+[source,bash]
+----
+# Compare branch counts
+git branch -r | wc -l  # Both should match
+
+# Compare tag counts
+git tag | wc -l
+
+# Compare commit counts
+git rev-list --count HEAD
+----
+
+== Troubleshooting
+
+=== Authentication Failed
+
+Ensure SSH keys are configured for Bitbucket:
+
+[source,bash]
+----
+ssh -T git@bitbucket.org
+----
+
+See link:SSH-Keys[SSH Keys] guide.
+
+=== Push Rejected
+
+If push is rejected due to branch protections:
+
+[source,bash]
+----
+# Temporary disable protection, or
+# Push to different branch
+git push bitbucket main:mirror/main
+----
+
+=== Large Files Blocked
+
+If Bitbucket blocks large files:
+
+[source,bash]
+----
+# Set up LFS for large files
+git lfs track "*.bin"
+git lfs migrate import --include="*.bin" --everything
+----
+
+=== Network Timeout
+
+For large repos, increase timeout:
+
+[source,bash]
+----
+git config --global http.postBuffer 524288000
+----
+
+See link:Troubleshooting#network-issues[Network Troubleshooting] for more.

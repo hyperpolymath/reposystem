@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: MPL-2.0-or-later
+# lazygit custom commands for bitfuckit integration
+# Copy to ~/.config/lazygit/config.yml or merge with existing
+
+customCommands:
+  # Bitbucket PR operations
+  - key: "B"
+    context: "localBranches"
+    description: "Create Bitbucket PR for branch"
+    command: "bitfuckit pr create --branch {{.SelectedLocalBranch.Name}}"
+    stream: true
+    showOutput: true
+
+  - key: "P"
+    context: "localBranches"
+    description: "List Bitbucket PRs"
+    command: "bitfuckit pr list | less"
+    subprocess: true
+
+  - key: "M"
+    context: "localBranches"
+    description: "Mirror to Bitbucket"
+    command: "bitfuckit mirror {{.Name}}"
+    stream: true
+    showOutput: true
+
+  # Repository operations
+  - key: "<c-b>"
+    context: "files"
+    description: "Open in Bitbucket web"
+    command: "xdg-open $(git remote get-url origin | sed 's/git@bitbucket.org:/https:\\/\\/bitbucket.org\\//' | sed 's/.git$//')"
+
+  - key: "I"
+    context: "global"
+    description: "Bitbucket issues"
+    command: "bitfuckit issue list | less"
+    subprocess: true
+
+  # Pipeline status
+  - key: "S"
+    context: "localBranches"
+    description: "Bitbucket pipeline status"
+    command: "bitfuckit pipeline status --branch {{.SelectedLocalBranch.Name}}"
+    stream: true
+    showOutput: true
+
+  # Auth status
+  - key: "?"
+    context: "global"
+    description: "Bitbucket auth status"
+    command: "bitfuckit auth status"
+    showOutput: true

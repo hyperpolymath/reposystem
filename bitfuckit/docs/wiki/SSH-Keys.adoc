@@ -1,0 +1,309 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= SSH Keys
+:toc:
+
+This guide covers SSH key setup for Bitbucket with bitfuckit.
+
+== Overview
+
+SSH keys provide secure, password-less authentication for Git operations. While bitfuckit uses app passwords for API calls, Git push/pull operations use SSH.
+
+== Generating SSH Keys
+
+=== Ed25519 (Recommended)
+
+[source,bash]
+----
+ssh-keygen -t ed25519 -C "your_email@example.com"
+----
+
+=== RSA (Legacy)
+
+[source,bash]
+----
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+----
+
+=== Key File Locations
+
+Default locations:
+
+[cols="1,1,1"]
+|===
+|Type |Private Key |Public Key
+
+|Ed25519
+|~/.ssh/id_ed25519
+|~/.ssh/id_ed25519.pub
+
+|RSA
+|~/.ssh/id_rsa
+|~/.ssh/id_rsa.pub
+|===
+
+== Adding Key to Bitbucket
+
+=== Get Your Public Key
+
+[source,bash]
+----
+cat ~/.ssh/id_ed25519.pub
+----
+
+Output looks like:
+
+[source]
+----
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... your_email@example.com
+----
+
+=== Add to Bitbucket
+
+1. Go to https://bitbucket.org/account/settings/ssh-keys/
+2. Click **Add key**
+3. Paste your public key
+4. Give it a label (e.g., "Work Laptop")
+5. Click **Add key**
+
+== Testing Connection
+
+[source,bash]
+----
+ssh -T git@bitbucket.org
+----
+
+Expected output:
+
+[source]
+----
+logged in as yourusername.
+
+You can use git to connect to Bitbucket. Shell access is disabled
+----
+
+== SSH Config
+
+=== Basic Config
+
+Create or edit `~/.ssh/config`:
+
+[source]
+----
+Host bitbucket.org
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519
+    IdentitiesOnly yes
+----
+
+=== Multiple Keys
+
+If you have different keys for different accounts:
+
+[source]
+----
+# Personal Bitbucket
+Host bitbucket-personal
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_personal
+    IdentitiesOnly yes
+
+# Work Bitbucket
+Host bitbucket-work
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+    IdentitiesOnly yes
+----
+
+Then use the alias in Git URLs:
+
+[source,bash]
+----
+git clone git@bitbucket-work:workspace/repo.git
+----
+
+== SSH Agent
+
+=== Start SSH Agent
+
+[source,bash]
+----
+eval "$(ssh-agent -s)"
+----
+
+=== Add Key to Agent
+
+[source,bash]
+----
+ssh-add ~/.ssh/id_ed25519
+----
+
+=== Verify Keys in Agent
+
+[source,bash]
+----
+ssh-add -l
+----
+
+=== Persistent Agent (systemd)
+
+Create `~/.config/systemd/user/ssh-agent.service`:
+
+[source,ini]
+----
+[Unit]
+Description=SSH Agent
+
+[Service]
+Type=simple
+Environment=SSH_AUTH_SOCK=%t/ssh-agent.socket
+ExecStart=/usr/bin/ssh-agent -D -a $SSH_AUTH_SOCK
+
+[Install]
+WantedBy=default.target
+----
+
+Enable:
+
+[source,bash]
+----
+systemctl --user enable --now ssh-agent
+echo 'export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"' >> ~/.bashrc
+----
+
+== Git Configuration
+
+=== Use SSH for Bitbucket
+
+Configure Git to always use SSH for Bitbucket:
+
+[source,bash]
+----
+git config --global url."git@bitbucket.org:".insteadOf "https://bitbucket.org/"
+----
+
+=== Per-Repository
+
+Set remote to use SSH:
+
+[source,bash]
+----
+# Check current remote
+git remote -v
+
+# Change to SSH
+git remote set-url origin git@bitbucket.org:workspace/repo.git
+----
+
+== Security Best Practices
+
+=== Passphrase Protection
+
+Always use a passphrase when generating keys:
+
+[source]
+----
+Enter passphrase (empty for no passphrase): ********
+Enter same passphrase again: ********
+----
+
+=== Key Permissions
+
+Ensure correct permissions:
+
+[source,bash]
+----
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_ed25519
+chmod 644 ~/.ssh/id_ed25519.pub
+chmod 600 ~/.ssh/config
+----
+
+=== Rotate Keys
+
+Periodically rotate SSH keys:
+
+1. Generate new key
+2. Add new key to Bitbucket
+3. Test new key works
+4. Remove old key from Bitbucket
+5. Delete old key files
+
+=== Audit Keys
+
+Regularly review keys at:
+https://bitbucket.org/account/settings/ssh-keys/
+
+Remove any you don't recognize or no longer use.
+
+== Deploy Keys
+
+For CI/CD or read-only access, use deploy keys:
+
+1. Go to Repository → Settings → Access keys
+2. Add a new key
+3. Choose read-only or read/write access
+
+Deploy keys:
+
+* Are repository-specific
+* Can be read-only
+* Don't require a user account
+* Ideal for CI/CD systems
+
+== Troubleshooting
+
+=== Permission Denied (publickey)
+
+[source,bash]
+----
+# Verify key is loaded
+ssh-add -l
+
+# Test with verbose output
+ssh -vT git@bitbucket.org
+
+# Check key is on Bitbucket
+# Go to https://bitbucket.org/account/settings/ssh-keys/
+----
+
+=== Wrong Key Being Used
+
+[source,bash]
+----
+# Force specific key
+ssh -i ~/.ssh/id_ed25519_bitbucket -T git@bitbucket.org
+
+# Add to SSH config (see above)
+----
+
+=== Agent Has Too Many Keys
+
+If you have many keys, SSH might try wrong ones first:
+
+[source,bash]
+----
+# List keys in agent
+ssh-add -l
+
+# Remove all keys
+ssh-add -D
+
+# Add only the one you need
+ssh-add ~/.ssh/id_ed25519_bitbucket
+----
+
+=== Known Hosts Issues
+
+[source,bash]
+----
+# Remove old host key
+ssh-keygen -R bitbucket.org
+
+# Add new host key
+ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
+----
+
+See link:Troubleshooting#ssh-key-issues[Troubleshooting - SSH Key Issues] for more.

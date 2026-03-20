@@ -1,0 +1,68 @@
+{
+  "$schema": "./farm-manifest.schema.json",
+  "version": "1.0.0",
+  "owner": "hyperpolymath",
+  "forges": {
+    "github": {
+      "type": "github",
+      "host": "github.com",
+      "ssh": "git@github.com",
+      "api": "https://api.github.com",
+      "primary": true
+    },
+    "gitlab": {
+      "type": "gitlab",
+      "host": "gitlab.com",
+      "ssh": "git@gitlab.com",
+      "api": "https://gitlab.com/api/v4",
+      "secret": "GITLAB_SSH_KEY"
+    },
+    "sourcehut": {
+      "type": "sourcehut",
+      "host": "git.sr.ht",
+      "ssh": "git@git.sr.ht:~hyperpolymath",
+      "api": "https://git.sr.ht/api",
+      "secret": "SOURCEHUT_SSH_KEY"
+    },
+    "codeberg": {
+      "type": "gitea",
+      "host": "codeberg.org",
+      "ssh": "git@codeberg.org",
+      "api": "https://codeberg.org/api/v1",
+      "secret": "CODEBERG_SSH_KEY"
+    },
+    "bitbucket": {
+      "type": "bitbucket",
+      "host": "bitbucket.org",
+      "ssh": "git@bitbucket.org",
+      "api": "https://api.bitbucket.org/2.0",
+      "secret": "BITBUCKET_APP_PASSWORD"
+    },
+    "radicle": {
+      "type": "radicle",
+      "protocol": "rad",
+      "local": true
+    }
+  },
+  "repos": {
+    "bitfuckit": {
+      "description": "Bitbucket CLI tool - Fire-and-Fuck-GET",
+      "forges": ["github", "gitlab", "sourcehut", "codeberg", "bitbucket", "radicle"],
+      "priority": "high",
+      "auto_propagate": true
+    },
+    "forge-mirror": {
+      "description": "Universal git forge mirror script",
+      "forges": ["github", "gitlab", "sourcehut", "codeberg"],
+      "priority": "high",
+      "auto_propagate": true
+    }
+  },
+  "propagation": {
+    "default_forges": ["gitlab", "sourcehut", "codeberg", "bitbucket"],
+    "parallel_jobs": 5,
+    "timeout_seconds": 120,
+    "retry_count": 2,
+    "on_failure": "continue"
+  }
+}

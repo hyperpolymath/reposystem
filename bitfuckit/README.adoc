@@ -1,0 +1,654 @@
+image:https://img.shields.io/badge/license-PMPL--1.0-blue.svg[License,link="https://github.com/hyperpolymath/palimpsest-license"]
+
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= bitfuckit
+
+
+
+:toc: macro
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+
+*Fire-and-Fuck-GET (and more)* with Bitbucket.
+
+Bitbucket CLI tool written in Ada. They didn't make one. I had to.
+
+image:https://img.shields.io/badge/language-Ada-blue[Ada]
+image:https://img.shields.io/badge/SPARK-verified-green[SPARK]
+image:https://img.shields.io/badge/GraphQL-API-e10098[GraphQL]
+
+toc::[]
+
+== Why This Exists
+
+GitHub has `gh`. GitLab has `glab`. Codeberg has `tea`. SourceHut has `hut`.
+
+Bitbucket has... nothing. Atlassian, a company worth billions, couldn't be bothered to make a CLI for their own product. So here we are.
+
+This isn't a passion project. This is a tool that should have existed a decade ago, built out of necessity by someone who got tired of clicking through a web UI like it's 2005.
+
+== What This Is
+
+* A command-line interface for Bitbucket Cloud
+* Written in Ada/SPARK for reliability (not because it's trendy—because it works)
+* A drop-in equivalent to `gh`/`glab`/`tea` for Bitbucket workflows
+* AGPL-licensed, because if Atlassian wants to use it, they can open-source their improvements
+
+== What This Is NOT
+
+* An official Atlassian product (obviously)
+* A Bitbucket Server/Data Center client (Cloud only, for now)
+* A full reimplementation of the Bitbucket web UI
+* A replacement for `git` itself
+* Enterprise-grade™ with paid support tiers and a sales team
+
+== Scope Limits
+
+**In scope:**
+
+* Repository management (create, list, delete, clone URLs)
+* Pull request workflows (list, create, merge, review)
+* Authentication and credential management
+* Mirroring between forges
+* Pipelines status and basic management
+* Interactive TUI for common operations
+
+**Out of scope (use the web UI):**
+
+* Bitbucket admin/workspace settings
+* Complex permission matrices
+* Jira integration configuration
+* Billing and subscription management
+* Anything that requires OAuth2 web flows
+
+== Features
+
+=== Authentication
+* `auth login` - Authenticate with Bitbucket app password
+* `auth status` - Show authentication status
+
+=== Repository Operations
+* `repo create` - Create a new repository (public or private)
+* `repo list` - List all repositories in workspace
+* `repo delete` - Delete a repository (with confirmation)
+* `repo exists` - Check if repository exists
+
+=== Pull Requests
+* `pr list` - List pull requests with state filtering (OPEN/MERGED/DECLINED)
+
+=== Mirroring
+* `mirror` - Mirror a repository from GitHub to Bitbucket
+
+=== Interactive TUI
+* Launch with no arguments or `bitfuckit tui`
+* Vim-style navigation (j/k or arrows)
+* Color-coded interface with box drawing
+
+== Installation
+
+=== Prerequisites
+
+[cols="1,3"]
+|===
+|Component |Installation
+
+|GNAT (Ada compiler)
+|`sudo dnf install gcc-gnat` (Fedora) +
+`sudo apt install gnat` (Debian/Ubuntu)
+
+|GPRbuild
+|`sudo dnf install gprbuild` (Fedora) +
+`sudo apt install gprbuild` (Debian/Ubuntu)
+
+|curl
+|Usually pre-installed
+|===
+
+=== Build from Source
+
+[source,bash]
+----
+git clone https://github.com/hyperpolymath/bitfuckit.git
+cd bitfuckit
+gprbuild -P bitfuckit.gpr
+----
+
+The binary will be in `bin/bitfuckit`.
+
+=== Install
+
+[source,bash]
+----
+# User install
+cp bin/bitfuckit ~/.local/bin/
+
+# System install
+sudo cp bin/bitfuckit /usr/local/bin/
+----
+
+=== Packages
+
+[cols="1,2,1"]
+|===
+|Format |Command |Status
+
+|Fedora/RHEL
+|`sudo dnf install bitfuckit`
+|Planned
+
+|Debian/Ubuntu
+|`sudo apt install bitfuckit`
+|Planned
+
+|Arch
+|`yay -S bitfuckit`
+|Planned
+
+|Nix
+|`nix-env -iA nixpkgs.bitfuckit`
+|Planned
+
+|Homebrew
+|`brew install bitfuckit`
+|Planned
+|===
+
+== Usage
+
+=== Authentication
+
+bitfuckit supports multiple credential sources, checked in priority order:
+
+[cols="1,2,2"]
+|===
+|Priority |Source |Notes
+
+|1. RGTV (Svalinn vault)
+|Post-quantum encrypted identity vault
+|Recommended for security
+
+|2. Environment variables
+|`BITBUCKET_USERNAME`, `BITBUCKET_API_TOKEN`, `BITBUCKET_WORKSPACE`
+|Good for CI/CD
+
+|3. Config file
+|`~/.config/bitfuckit/config`
+|Interactive login
+
+|4. `.netrc`
+|`~/.netrc` (machine bitbucket.org)
+|Standard netrc format
+|===
+
+==== Option 1: RGTV (Recommended)
+
+Store your Bitbucket credentials in the https://github.com/hyperpolymath/reasonably-good-token-vault[Reasonably Good Token Vault] for post-quantum encrypted storage.
+
+[source,bash]
+----
+# Install svalinn-cli (if not already installed)
+nix profile install github:hyperpolymath/reasonably-good-token-vault
+
+# Initialize and unlock the vault
+svalinn-cli init
+svalinn-cli unlock
+
+# Add your Bitbucket credentials
+svalinn-cli add rest-api --name "bitbucket" --host bitbucket.org
+# Enter your username and Atlassian API token when prompted
+
+# Verify bitfuckit can see the credentials
+bitfuckit auth status
+----
+
+IMPORTANT: Bitbucket uses *Atlassian API Tokens with Scopes*, not app passwords.
+Generate a token at https://id.atlassian.com/manage-profile/security/api-tokens
+
+==== Option 2: Environment Variables
+
+[source,bash]
+----
+export BITBUCKET_USERNAME=your-username
+export BITBUCKET_API_TOKEN=your-api-token
+export BITBUCKET_WORKSPACE=your-workspace  # optional, defaults to username
+----
+
+==== Option 3: Interactive Login
+
+. Get an Atlassian API token from https://id.atlassian.com/manage-profile/security/api-tokens
+. Required scopes:
+** `repository:read`
+** `repository:write`
+** `repository:delete`
+. Authenticate:
+
+[source,bash]
+----
+bitfuckit auth login
+# Enter username, API token, and workspace
+----
+
+==== Option 4: .netrc
+
+Add a Bitbucket entry to `~/.netrc`:
+
+[source]
+----
+machine bitbucket.org
+  login your-username
+  password your-api-token
+----
+
+NOTE: The workspace defaults to the login (username) when using `.netrc`.
+Ensure `~/.netrc` has restrictive permissions: `chmod 600 ~/.netrc`.
+
+=== Repository Operations
+
+[source,bash]
+----
+# Create repositories
+bitfuckit repo create my-new-repo
+bitfuckit repo create my-private-repo --private
+bitfuckit repo create my-repo --description "My awesome project"
+
+# List repositories
+bitfuckit repo list
+
+# Check if repository exists
+bitfuckit repo exists my-repo
+
+# Delete repository (requires confirmation)
+bitfuckit repo delete my-repo
+----
+
+=== Pull Requests
+
+[source,bash]
+----
+# List open pull requests
+bitfuckit pr list my-repo
+
+# List merged PRs
+bitfuckit pr list my-repo --state MERGED
+
+# List all PRs regardless of state
+bitfuckit pr list my-repo --all
+----
+
+Output:
+[source]
+----
+Pull Requests in my-repo:
+
+#42 [OPEN] Fix authentication bug (John Doe)
+#41 [OPEN] Add dark mode support (Jane Smith)
+
+Total: 2 pull request(s)
+----
+
+=== Mirroring from GitHub
+
+[source,bash]
+----
+# From within a git repository
+cd my-github-repo
+bitfuckit mirror my-repo
+# Creates repo on Bitbucket if needed, pushes all branches
+----
+
+=== Interactive TUI
+
+[source,bash]
+----
+# Launch TUI
+bitfuckit
+# or
+bitfuckit tui
+----
+
+TUI Controls:
+
+* `j` / `↓` - Move down
+* `k` / `↑` - Move up
+* `Enter` - Select
+* `q` / `Esc` - Quit
+* Single-letter shortcuts (shown in brackets)
+
+== Configuration
+
+=== Credential Sources
+
+Credentials are resolved in cascade order. The first complete set wins:
+
+1. **RGTV (Svalinn vault)** -- Queries `svalinn-cli get-by-host bitbucket.org`. Requires `svalinn-cli` on PATH and an unlocked vault.
+2. **Environment variables** -- `BITBUCKET_USERNAME`, `BITBUCKET_API_TOKEN` (or legacy `BITBUCKET_APP_PASSWORD`), `BITBUCKET_WORKSPACE`.
+3. **Config file** -- `~/.config/bitfuckit/config` (created by `bitfuckit auth login`).
+4. **~/.netrc** -- Standard `machine bitbucket.org` / `login` / `password` triple.
+
+Use `bitfuckit auth status` to see which source is active.
+
+=== Config File Format
+
+The config file at `~/.config/bitfuckit/config` stores credentials in plain text (one field per line):
+
+[source]
+----
+your-username
+your-api-token
+your-workspace
+----
+
+For better security, use RGTV instead of the config file.
+
+== Architecture
+
+[source]
+----
+bitfuckit/
+├── src/
+│   ├── bitfuckit.adb          # Main CLI entry point
+│   ├── config.ads/adb         # Configuration & credential storage
+│   ├── rgtv.ads/adb           # RGTV integration & credential cascade
+│   ├── bitbucket_api.ads/adb  # REST API client
+│   ├── tui.ads/adb            # Terminal UI (SPARK verified spec)
+│   └── graphql_server.ads/adb # GraphQL API server
+├── graphql/
+│   └── schema.graphql         # Full GraphQL schema
+├── bitfuckit.gpr              # GPRbuild project file
+└── bin/                       # Build output
+----
+
+=== SPARK Verification
+
+The TUI specification (`tui.ads`) uses SPARK Mode for formal verification:
+
+[source,ada]
+----
+package TUI
+   with SPARK_Mode => On
+is
+   -- Formally verified interface
+end TUI;
+----
+
+== GraphQL API
+
+*Fire-and-Fuck-GET (and more)* - everything the CLI can do, the GraphQL API can do too.
+
+=== Starting the GraphQL Server
+
+[source,bash]
+----
+# Start GraphQL server on default port 4000
+bitfuckit graphql serve
+
+# Custom port
+bitfuckit graphql serve --port 8080
+
+# With playground enabled
+bitfuckit graphql serve --playground
+----
+
+=== Example Queries
+
+[source,graphql]
+----
+# List repositories
+query {
+  repositories {
+    nodes {
+      slug
+      name
+      isPrivate
+      links { html }
+    }
+  }
+}
+
+# Create a repository
+mutation {
+  createRepository(input: {
+    name: "my-new-repo"
+    isPrivate: true
+    description: "Created via GraphQL"
+  }) {
+    success
+    repository {
+      slug
+      links { html }
+    }
+  }
+}
+
+# Mirror from GitHub
+mutation {
+  mirror(input: {
+    source: "https://github.com/user/repo"
+    targetName: "repo-mirror"
+    allBranches: true
+  }) {
+    success
+    branchesPushed
+  }
+}
+----
+
+=== CLI ↔ GraphQL Parity
+
+Every CLI command has a GraphQL equivalent:
+
+[cols="1,2"]
+|===
+|CLI Command |GraphQL Operation
+
+|`auth login`
+|`mutation { login(...) }`
+
+|`auth status`
+|`query { authStatus }`
+
+|`repo create`
+|`mutation { createRepository(...) }`
+
+|`repo list`
+|`query { repositories }`
+
+|`repo delete`
+|`mutation { deleteRepository(...) }`
+
+|`repo exists`
+|`query { repositoryExists(...) }`
+
+|`pr list`
+|`query { pullRequests(...) }`
+
+|`mirror`
+|`mutation { mirror(...) }`
+|===
+
+The full schema is in `graphql/schema.graphql`.
+
+== Forge Mesh Architecture
+
+`bitfuckit` includes a resilient multi-forge mirroring system with automatic fallback.
+
+=== Architecture
+
+[source]
+----
+                    ┌─────────────┐
+                    │   GitHub    │  ← Primary (single source of truth)
+                    │   (hub)     │
+                    └──────┬──────┘
+                           │
+         ┌─────────────────┼─────────────────┐
+         │                 │                 │
+         ▼                 ▼                 ▼
+    ┌─────────┐       ┌─────────┐       ┌─────────┐
+    │ GitLab  │◄─────►│SourceHut│◄─────►│Codeberg │
+    └────┬────┘       └────┬────┘       └────┬────┘
+         │                 │                 │
+         └─────────────────┴─────────────────┘
+                    Fallback mesh
+----
+
+*Normal Mode*: All pushes come from GitHub (single source of truth).
+
+*Degraded Mode*: If GitHub becomes unreachable, the most recently synced spoke becomes a temporary source. Clear warnings are displayed when operating in degraded mode.
+
+*Recovery*: When GitHub comes back online, run `forge-recover` to re-establish it as the source and sync all spokes.
+
+=== Forge Mesh Commands
+
+[source,bash]
+----
+# Check health of all forges
+just forge-health
+
+# Mirror repository to all healthy forges (with automatic fallback)
+just forge-mirror my-repo
+
+# Sync to a specific forge
+just forge-sync my-repo codeberg
+
+# Recover from degraded mode (re-sync all from GitHub)
+just forge-recover my-repo
+
+# Mirror bitfuckit itself
+just mirror-self
+----
+
+=== Degraded Mode Behavior
+
+When GitHub is unreachable:
+
+. System automatically detects the most recently synced spoke
+. Uses that spoke as temporary source
+. Displays clear WARNING banner about degraded operation
+. Tracks sync timestamps for recovery
+
+[source]
+----
+╔════════════════════════════════════════════════════════════════╗
+║  WARNING: OPERATING IN DEGRADED MODE                           ║
+║                                                                ║
+║  Primary source (GitHub) is unreachable.                       ║
+║  Using fallback: gitlab                                        ║
+║                                                                ║
+║  Data may be stale. Will auto-recover when GitHub is back.    ║
+╚════════════════════════════════════════════════════════════════╝
+----
+
+=== Spoke-to-Spoke Sync
+
+If one forge can't reach GitHub but another recently synced forge can:
+
+[source,bash]
+----
+# Codeberg can't reach GitHub, but GitLab was just synced
+just forge-sync my-repo codeberg
+# Will pull from GitLab instead of GitHub
+----
+
+== Integration with forge-mirror
+
+`bitfuckit` also works with the simpler `forge-mirror` script for basic multi-forge workflows:
+
+[source,bash]
+----
+# Check status of all forges
+forge-mirror status
+
+# Push to all forges including Bitbucket
+forge-mirror push my-repo --forges github,gitlab,bitbucket,codeberg,radicle
+----
+
+== API Reference
+
+=== Bitbucket API v2.0
+
+`bitfuckit` uses the Bitbucket REST API v2.0:
+
+* Base URL: `https://api.bitbucket.org/2.0`
+* Authentication: Basic Auth with Atlassian API token
+* Endpoints:
+** `GET /repositories/{workspace}` - List repos
+** `POST /repositories/{workspace}/{repo}` - Create repo
+** `DELETE /repositories/{workspace}/{repo}` - Delete repo
+** `GET /repositories/{workspace}/{repo}` - Get repo details
+** `GET /repositories/{workspace}/{repo}/pullrequests` - List pull requests
+
+== Roadmap
+
+=== v0.1.x (Current)
+* [x] Authentication (login/status)
+* [x] Repository CRUD operations
+* [x] GitHub mirror
+* [x] Interactive TUI
+* [x] Pull request listing (`pr list`)
+
+=== v0.2.0 (Planned)
+* [ ] Pull request create/merge/decline
+* [ ] Issue tracking
+* [ ] Pipeline status
+* [ ] Webhook management
+
+=== v0.3.0 (Planned)
+* [ ] Team management
+* [ ] Branch permissions
+* [ ] Deploy keys
+* [ ] SSH key management
+
+== Contributing
+
+Contributions welcome! Please:
+
+. Fork the repository
+. Create a feature branch
+. Ensure code compiles with GNAT
+. Submit a pull request
+
+== License
+
+SPDX-License-Identifier: PMPL-1.0-or-later
+
+Copyright (C) 2025-2026 Jonathan D.A. Jewell (hyperpolymath)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the Palimpsest-MPL License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+== See Also
+
+* https://id.atlassian.com/manage-profile/security/api-tokens[Atlassian API Tokens]
+* https://developer.atlassian.com/cloud/bitbucket/rest/intro/[Bitbucket REST API]
+* https://github.com/hyperpolymath/reasonably-good-token-vault[Reasonably Good Token Vault (RGTV)] - Secure credential storage
+* https://github.com/hyperpolymath/forge-mirror[forge-mirror] - Universal git forge mirror script
+
+'''
+
+== Disclaimer
+
+[NOTE]
+====
+*This is an unofficial community tool.* It is not affiliated with, endorsed by, or supported by Atlassian Pty Ltd.
+
+Bitbucket® is a registered trademark of Atlassian Pty Ltd. All product and company names are trademarks™ or registered® trademarks of their respective holders. Use of them does not imply any affiliation with or endorsement by them.
+====
+
+[IMPORTANT]
+====
+*A note on corporate priorities*
+
+GitHub has https://cli.github.com/[`gh`]. GitLab has https://gitlab.com/gitlab-org/cli[`glab`]. Codeberg has https://codeberg.org/forgejo/forgejo-cli[`tea`]. SourceHut has https://git.sr.ht/~emersion/hut[`hut`]. Even Gitea has https://gitea.com/gitea/tea[`tea`].
+
+Atlassian—a company valued at over $50 billion USD—has provided no official command-line interface for Bitbucket. Not in 2015. Not in 2020. Not now.
+
+Every other major git forge recognized that developers live in the terminal and provided first-class CLI tooling. Atlassian apparently disagrees, or simply doesn't care enough to allocate engineering resources to what has become a basic expectation for modern developer tooling.
+
+This tool exists because the gap in functionality was too large to ignore. It was built out of necessity, not passion. The PMPL license ensures that if Atlassian ever decides to incorporate any of this work, they must contribute back to the community they have thus far neglected to serve.
+
+We remain hopeful that Atlassian will eventually prioritize developer experience over enterprise feature bloat and provide an official CLI. Until then, `bitfuckit` will continue to fill the void.
+====

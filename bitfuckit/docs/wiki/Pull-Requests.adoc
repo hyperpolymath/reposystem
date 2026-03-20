@@ -1,0 +1,415 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Pull Requests
+:toc:
+
+This guide covers pull request operations with bitfuckit.
+
+== Listing Pull Requests
+
+=== Open PRs (Default)
+
+[source,bash]
+----
+bitfuckit pr list my-repo
+----
+
+Output:
+
+[source]
+----
+Pull Requests in my-repo:
+
+#42 [OPEN] Add new feature (alice)
+#41 [OPEN] Fix login bug (bob)
+#40 [OPEN] Update docs (charlie)
+
+Total: 3 pull request(s)
+----
+
+=== All PRs
+
+[source,bash]
+----
+bitfuckit pr list my-repo --all
+----
+
+=== Filter by State
+
+[source,bash]
+----
+# Open PRs
+bitfuckit pr list my-repo --state OPEN
+
+# Merged PRs
+bitfuckit pr list my-repo --state MERGED
+
+# Declined PRs
+bitfuckit pr list my-repo --state DECLINED
+
+# Superseded PRs
+bitfuckit pr list my-repo --state SUPERSEDED
+----
+
+== Viewing PR Details
+
+[source,bash]
+----
+bitfuckit pr view my-repo 42
+----
+
+Shows:
+
+* Title and description
+* Source and destination branches
+* Author
+* Reviewers and approvals
+* Build status
+* Merge status
+* Comments count
+
+== Creating Pull Requests
+
+=== Basic Create
+
+[source,bash]
+----
+bitfuckit pr create my-repo \
+  --title "Add new feature" \
+  --source feature/new-thing \
+  --dest main
+----
+
+=== With Description
+
+[source,bash]
+----
+bitfuckit pr create my-repo \
+  --title "Add user authentication" \
+  --source feature/auth \
+  --dest main \
+  --description "Implements OAuth2 login flow
+
+## Changes
+- Add login endpoint
+- Add logout endpoint
+- Add session management
+
+## Testing
+- Unit tests added
+- Manual testing completed"
+----
+
+=== Add Reviewers
+
+[source,bash]
+----
+bitfuckit pr create my-repo \
+  --title "Fix critical bug" \
+  --source bugfix/critical \
+  --dest main \
+  --reviewers alice,bob
+----
+
+=== Close Source Branch
+
+[source,bash]
+----
+bitfuckit pr create my-repo \
+  --title "Feature complete" \
+  --source feature/done \
+  --dest main \
+  --close-source
+----
+
+== Updating Pull Requests
+
+=== Update Title
+
+[source,bash]
+----
+bitfuckit pr update my-repo 42 --title "New title"
+----
+
+=== Update Description
+
+[source,bash]
+----
+bitfuckit pr update my-repo 42 --description "Updated description"
+----
+
+=== Add Reviewers
+
+[source,bash]
+----
+bitfuckit pr update my-repo 42 --add-reviewers charlie
+----
+
+== Merging Pull Requests
+
+=== Basic Merge
+
+[source,bash]
+----
+bitfuckit pr merge my-repo 42
+----
+
+=== Merge Strategies
+
+[source,bash]
+----
+# Merge commit (default)
+bitfuckit pr merge my-repo 42 --strategy merge
+
+# Squash
+bitfuckit pr merge my-repo 42 --strategy squash
+
+# Fast-forward (if possible)
+bitfuckit pr merge my-repo 42 --strategy fast-forward
+----
+
+=== Custom Commit Message
+
+[source,bash]
+----
+bitfuckit pr merge my-repo 42 \
+  --strategy squash \
+  --message "feat: add user authentication (#42)"
+----
+
+=== Close Source Branch on Merge
+
+[source,bash]
+----
+bitfuckit pr merge my-repo 42 --close-source
+----
+
+== Declining Pull Requests
+
+[source,bash]
+----
+bitfuckit pr decline my-repo 42
+----
+
+With reason:
+
+[source,bash]
+----
+bitfuckit pr decline my-repo 42 --reason "Superseded by #45"
+----
+
+== Approving Pull Requests
+
+[source,bash]
+----
+bitfuckit pr approve my-repo 42
+----
+
+== Requesting Changes
+
+[source,bash]
+----
+bitfuckit pr request-changes my-repo 42 --comment "Please fix the typo on line 42"
+----
+
+== Comments
+
+=== Add Comment
+
+[source,bash]
+----
+bitfuckit pr comment my-repo 42 --message "Looks good to me!"
+----
+
+=== View Comments
+
+[source,bash]
+----
+bitfuckit pr comments my-repo 42
+----
+
+=== Inline Comment
+
+[source,bash]
+----
+bitfuckit pr comment my-repo 42 \
+  --file src/main.c \
+  --line 42 \
+  --message "Consider using a constant here"
+----
+
+== Build Status
+
+=== View Status
+
+[source,bash]
+----
+bitfuckit pr status my-repo 42
+----
+
+Shows:
+
+* Pipeline status
+* Individual check results
+* Required checks status
+
+=== Wait for Builds
+
+[source,bash]
+----
+# Wait for all builds to complete
+bitfuckit pr wait my-repo 42
+
+# Wait with timeout
+bitfuckit pr wait my-repo 42 --timeout 600
+----
+
+== Diff and Changes
+
+=== View Diff
+
+[source,bash]
+----
+bitfuckit pr diff my-repo 42
+----
+
+=== List Changed Files
+
+[source,bash]
+----
+bitfuckit pr files my-repo 42
+----
+
+=== View Specific File
+
+[source,bash]
+----
+bitfuckit pr diff my-repo 42 --file src/main.c
+----
+
+== Workflow Examples
+
+=== Feature Branch Workflow
+
+[source,bash]
+----
+# Create feature branch
+git checkout -b feature/new-thing
+
+# Make changes, commit
+git add .
+git commit -m "Add new feature"
+
+# Push to Bitbucket
+git push -u origin feature/new-thing
+
+# Create PR
+bitfuckit pr create my-repo \
+  --title "Add new feature" \
+  --source feature/new-thing \
+  --dest develop \
+  --reviewers teammate
+----
+
+=== Code Review Workflow
+
+[source,bash]
+----
+# View PR details
+bitfuckit pr view my-repo 42
+
+# View changes
+bitfuckit pr diff my-repo 42
+
+# Approve or request changes
+bitfuckit pr approve my-repo 42
+# or
+bitfuckit pr request-changes my-repo 42 --comment "See inline comments"
+----
+
+=== Merge Workflow
+
+[source,bash]
+----
+# Check PR is ready
+bitfuckit pr status my-repo 42
+
+# Wait for builds if needed
+bitfuckit pr wait my-repo 42
+
+# Merge
+bitfuckit pr merge my-repo 42 --strategy squash --close-source
+----
+
+== Scripting Examples
+
+=== List All Open PRs Across Repos
+
+[source,bash]
+----
+#!/bin/bash
+for repo in api-server web-client shared-lib; do
+    echo "=== $repo ==="
+    bitfuckit pr list "$repo"
+done
+----
+
+=== Auto-merge When Ready
+
+[source,bash]
+----
+#!/bin/bash
+repo=$1
+pr=$2
+
+# Wait for builds
+if bitfuckit pr wait "$repo" "$pr" --timeout 1800; then
+    # Check all approvals
+    status=$(bitfuckit pr view "$repo" "$pr" --format json | jq -r '.approved')
+    if [ "$status" = "true" ]; then
+        bitfuckit pr merge "$repo" "$pr" --strategy squash
+    else
+        echo "PR needs approval"
+    fi
+else
+    echo "Builds failed or timed out"
+fi
+----
+
+=== PR Statistics
+
+[source,bash]
+----
+#!/bin/bash
+repo=$1
+
+echo "Open PRs: $(bitfuckit pr list "$repo" --state OPEN --count)"
+echo "Merged PRs: $(bitfuckit pr list "$repo" --state MERGED --count)"
+echo "Declined PRs: $(bitfuckit pr list "$repo" --state DECLINED --count)"
+----
+
+== Best Practices
+
+=== PR Titles
+
+* Use conventional commits: `feat:`, `fix:`, `docs:`, etc.
+* Be descriptive but concise
+* Include ticket number if applicable: `[PROJ-123] Fix login bug`
+
+=== PR Descriptions
+
+* Explain what and why
+* List major changes
+* Include testing notes
+* Link to related issues
+
+=== Reviewers
+
+* Add relevant reviewers
+* Don't add too many (2-3 is usually enough)
+* Include code owners
+
+=== Branch Management
+
+* Delete source branches after merge
+* Keep branches short-lived
+* Rebase or merge main regularly

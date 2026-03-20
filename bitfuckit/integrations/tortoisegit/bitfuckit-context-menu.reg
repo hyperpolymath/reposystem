@@ -1,0 +1,34 @@
+; SPDX-License-Identifier: PMPL-1.0
+; TortoiseGit context menu integration for bitfuckit
+; Import: regedit /s bitfuckit-context-menu.reg
+
+Windows Registry Editor Version 5.00
+
+; Create Bitbucket PR
+[HKEY_CURRENT_USER\Software\TortoiseGit\ContextMenuEntries]
+"bitfuckit-pr-create"="bitfuckit pr create --branch %BRANCH%"
+
+[HKEY_CURRENT_USER\Software\TortoiseGit\ContextMenuEntries\bitfuckit-pr-create]
+"MenuText"="Bitbucket: Create PR"
+"Icon"="%LOCALAPPDATA%\\bitfuckit\\bitfuckit.ico"
+"Command"="cmd /c bitfuckit pr create --interactive"
+
+; List PRs
+[HKEY_CURRENT_USER\Software\TortoiseGit\ContextMenuEntries\bitfuckit-pr-list]
+"MenuText"="Bitbucket: List PRs"
+"Command"="cmd /c bitfuckit pr list && pause"
+
+; Mirror to Bitbucket
+[HKEY_CURRENT_USER\Software\TortoiseGit\ContextMenuEntries\bitfuckit-mirror]
+"MenuText"="Bitbucket: Mirror Repository"
+"Command"="cmd /c bitfuckit mirror && pause"
+
+; Pipeline Status
+[HKEY_CURRENT_USER\Software\TortoiseGit\ContextMenuEntries\bitfuckit-pipeline]
+"MenuText"="Bitbucket: Pipeline Status"
+"Command"="cmd /c bitfuckit pipeline status && pause"
+
+; Open in Bitbucket
+[HKEY_CURRENT_USER\Software\TortoiseGit\ContextMenuEntries\bitfuckit-open-web]
+"MenuText"="Open in Bitbucket"
+"Command"="cmd /c start https://bitbucket.org/%WORKSPACE%/%REPO%"

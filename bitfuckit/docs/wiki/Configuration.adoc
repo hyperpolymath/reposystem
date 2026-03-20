@@ -1,0 +1,468 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Configuration
+:toc:
+
+This guide covers all configuration options for bitfuckit.
+
+== Configuration Files
+
+=== Locations
+
+[cols="1,2"]
+|===
+|File |Purpose
+
+|`~/.config/bitfuckit/config`
+|Main configuration (credentials, settings)
+
+|`~/.local/share/bitfuckit/cache/`
+|API response cache
+
+|`~/.local/share/bitfuckit/storage.db`
+|CubsDB persistent storage
+
+|`~/.local/share/bitfuckit/queue/`
+|Offline operation queue
+|===
+
+With XDG environment variables:
+
+* `$XDG_CONFIG_HOME/bitfuckit/config`
+* `$XDG_DATA_HOME/bitfuckit/`
+
+=== Config File Format
+
+Simple key-value pairs:
+
+[source]
+----
+# Authentication
+username=myusername
+app_password=xxxx-xxxx-xxxx-xxxx
+workspace=myworkspace
+
+# Network
+offline_mode=false
+metered_warning=true
+proxy_url=
+
+# Cache
+cache_enabled=true
+cache_ttl_seconds=300
+
+# Syncthing
+syncthing_enabled=false
+syncthing_api=http://localhost:8384
+syncthing_api_key=
+syncthing_folder=bitfuckit-config
+
+# Security
+scan_uploads=false
+clamav_socket=/var/run/clamav/clamd.sock
+virustotal_api_key=
+
+# UI
+color_enabled=true
+progress_style=classic
+----
+
+== Environment Variables
+
+=== Override Configuration
+
+[cols="1,2,1"]
+|===
+|Variable |Description |Default
+
+|`BITFUCKIT_CONFIG`
+|Config file path
+|~/.config/bitfuckit/config
+
+|`BITFUCKIT_NO_COLOR`
+|Disable colored output
+|false
+
+|`BITFUCKIT_OFFLINE`
+|Force offline mode
+|false
+
+|`BITFUCKIT_DEBUG`
+|Enable debug logging
+|false
+|===
+
+=== Proxy Settings
+
+[cols="1,2"]
+|===
+|Variable |Description
+
+|`HTTPS_PROXY`
+|HTTPS proxy URL
+
+|`HTTP_PROXY`
+|HTTP proxy URL
+
+|`NO_PROXY`
+|Comma-separated hosts to bypass proxy
+
+|`ALL_PROXY`
+|Fallback proxy for all protocols
+|===
+
+=== Integration Keys
+
+[cols="1,2"]
+|===
+|Variable |Description
+
+|`VIRUSTOTAL_API_KEY`
+|VirusTotal API key for malware scanning
+
+|`SYNCTHING_API_KEY`
+|Syncthing REST API key
+|===
+
+== Caching
+
+=== How Caching Works
+
+bitfuckit caches API responses to:
+
+* Reduce API calls (respect rate limits)
+* Enable offline mode
+* Improve responsiveness
+
+=== Cache Storage
+
+Cache is stored in `~/.local/share/bitfuckit/cache/`:
+
+[source]
+----
+cache/
+├── repos/           # Repository list cache
+├── prs/             # Pull request cache
+├── user/            # User info cache
+└── metadata.db      # Cache metadata
+----
+
+=== Cache Configuration
+
+[source]
+----
+# Enable/disable cache
+cache_enabled=true
+
+# Cache TTL in seconds (5 minutes default)
+cache_ttl_seconds=300
+
+# Maximum cache size in MB
+cache_max_size_mb=100
+----
+
+=== Cache Commands
+
+[source,bash]
+----
+# View cache status
+bitfuckit cache status
+
+# Clear all cache
+bitfuckit cache clear
+
+# Clear specific cache
+bitfuckit cache clear repos
+----
+
+=== Using Cached Data
+
+Force use of cached data (offline mode):
+
+[source,bash]
+----
+bitfuckit --offline repo list
+----
+
+== Offline Queue
+
+=== How Queuing Works
+
+When offline, write operations are queued:
+
+1. Operation is validated locally
+2. Added to queue with timestamp
+3. Queue is processed when online
+4. Failed operations can be retried or discarded
+
+=== Queue Storage
+
+Queue is stored in `~/.local/share/bitfuckit/queue/`:
+
+[source]
+----
+queue/
+├── pending/         # Operations waiting to execute
+├── failed/          # Failed operations for review
+└── completed/       # Recently completed (for audit)
+----
+
+=== Queue Commands
+
+[source,bash]
+----
+# View queue status
+bitfuckit queue status
+
+# List pending operations
+bitfuckit queue list
+
+# Process queue manually
+bitfuckit queue process
+
+# Clear failed operations
+bitfuckit queue clear-failed
+
+# Retry failed operation
+bitfuckit queue retry <id>
+----
+
+=== Queue Configuration
+
+[source]
+----
+# Auto-process queue when online
+queue_auto_process=true
+
+# Keep completed operations for N hours
+queue_completed_retention_hours=24
+
+# Maximum queue size
+queue_max_pending=100
+----
+
+== Resilience Settings
+
+=== Circuit Breaker
+
+[source]
+----
+# Failures before circuit opens
+circuit_breaker_threshold=5
+
+# Seconds before circuit resets
+circuit_breaker_reset_seconds=30
+----
+
+=== Retry Logic
+
+[source]
+----
+# Maximum retry attempts
+retry_max_attempts=5
+
+# Initial retry delay in milliseconds
+retry_initial_delay_ms=1000
+
+# Maximum retry delay in milliseconds
+retry_max_delay_ms=60000
+
+# Exponential backoff multiplier
+retry_backoff_multiplier=2.0
+
+# Jitter percentage (0.0 to 1.0)
+retry_jitter=0.25
+----
+
+=== Rate Limiting
+
+[source]
+----
+# Token bucket capacity
+rate_limit_bucket_size=100
+
+# Tokens per second refill rate
+rate_limit_refill_rate=10
+----
+
+== Network Settings
+
+=== Metered Connection
+
+[source]
+----
+# Warn on metered connections
+metered_warning=true
+
+# Block large operations on metered
+metered_block_large_ops=false
+
+# Size threshold for "large" operations (bytes)
+metered_large_threshold=10485760
+----
+
+=== Timeout Settings
+
+[source]
+----
+# Connection timeout (seconds)
+connect_timeout_seconds=30
+
+# Read timeout (seconds)
+read_timeout_seconds=60
+
+# Total request timeout (seconds)
+request_timeout_seconds=120
+----
+
+== Storage Backend
+
+=== CubsDB
+
+bitfuckit uses CubsDB for persistent storage:
+
+[source]
+----
+# Storage backend: file, cubsdb, sqlite
+storage_backend=cubsdb
+
+# Database file location
+storage_db_path=~/.local/share/bitfuckit/storage.db
+----
+
+=== OpenTimestamp
+
+For blockchain timestamping of important operations:
+
+[source]
+----
+# Enable timestamping
+timestamp_enabled=false
+
+# Calendar servers
+timestamp_calendars=https://alice.btc.calendar.opentimestamps.org,https://bob.btc.calendar.opentimestamps.org
+----
+
+== Security Settings
+
+=== ClamAV Integration
+
+[source]
+----
+# Scan files before upload
+scan_uploads=false
+
+# ClamAV socket path
+clamav_socket=/var/run/clamav/clamd.sock
+----
+
+=== VirusTotal Integration
+
+[source]
+----
+# Enable VirusTotal scanning
+virustotal_enabled=false
+
+# API key (or set VIRUSTOTAL_API_KEY env var)
+virustotal_api_key=
+----
+
+== Syncthing Integration
+
+=== Setup
+
+1. Install Syncthing on your devices
+2. Create a shared folder for bitfuckit config
+3. Configure bitfuckit:
+
+[source]
+----
+syncthing_enabled=true
+syncthing_api=http://localhost:8384
+syncthing_api_key=your-api-key
+syncthing_folder=bitfuckit-config
+----
+
+=== What Gets Synced
+
+* Credentials (encrypted)
+* User preferences
+* Cache metadata
+* Operation queue
+
+=== Sync Commands
+
+[source,bash]
+----
+# Check sync status
+bitfuckit sync status
+
+# Force sync now
+bitfuckit sync now
+
+# View sync conflicts
+bitfuckit sync conflicts
+----
+
+== UI Settings
+
+=== Colors
+
+[source]
+----
+# Enable colored output
+color_enabled=true
+
+# Color theme: default, solarized, nord
+color_theme=default
+----
+
+=== Progress Bars
+
+[source]
+----
+# Progress style: classic, block, arrow, dots, minimal
+progress_style=classic
+
+# Progress bar width
+progress_width=40
+----
+
+== Creating Config File
+
+Generate default config:
+
+[source,bash]
+----
+bitfuckit config init
+----
+
+Edit config:
+
+[source,bash]
+----
+bitfuckit config edit
+# Opens $EDITOR with config file
+----
+
+View current config:
+
+[source,bash]
+----
+bitfuckit config show
+----
+
+== Config Validation
+
+Validate configuration:
+
+[source,bash]
+----
+bitfuckit config validate
+----
+
+Checks:
+
+* File permissions (should be 600)
+* Required fields present
+* Valid values for all settings
+* Reachability of configured services

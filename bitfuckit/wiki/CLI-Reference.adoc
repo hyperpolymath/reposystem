@@ -1,0 +1,365 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= CLI Reference
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+
+Complete reference for all bitfuckit commands.
+
+== Global Options
+
+[cols="2,3"]
+|===
+|Option |Description
+
+|`--help`, `-h`
+|Show help message
+
+|`--version`, `-v`
+|Show version information
+
+|`--workspace <name>`
+|Override default workspace (from config)
+|===
+
+== Authentication Commands
+
+=== `auth login`
+
+Authenticate with Bitbucket using an app password.
+
+[source,bash]
+----
+bitfuckit auth login
+----
+
+Prompts for:
+
+* Username
+* App password
+* Default workspace
+
+Credentials are stored in `~/.config/bitfuckit/config`.
+
+=== `auth status`
+
+Check current authentication status.
+
+[source,bash]
+----
+bitfuckit auth status
+----
+
+*Output:*
+[source]
+----
+✓ Authenticated as: username
+  Workspace: workspace-slug
+----
+
+== Repository Commands
+
+=== `repo create`
+
+Create a new repository.
+
+[source,bash]
+----
+bitfuckit repo create <name> [options]
+----
+
+*Options:*
+[cols="2,1,3"]
+|===
+|Option |Default |Description
+
+|`--private`
+|false
+|Create as private repository
+
+|`--description <text>`
+|empty
+|Repository description
+
+|`--project <key>`
+|none
+|Bitbucket project key
+|===
+
+*Examples:*
+[source,bash]
+----
+# Public repository
+bitfuckit repo create my-project
+
+# Private with description
+bitfuckit repo create my-project --private --description "My project"
+
+# In a specific project
+bitfuckit repo create my-project --project MYPROJ
+----
+
+=== `repo list`
+
+List all repositories in the workspace.
+
+[source,bash]
+----
+bitfuckit repo list [options]
+----
+
+*Options:*
+[cols="2,1,3"]
+|===
+|Option |Default |Description
+
+|`--format <type>`
+|table
+|Output format: `table`, `json`, `simple`
+
+|`--limit <n>`
+|50
+|Maximum repositories to list
+|===
+
+*Output:*
+[source]
+----
+Repositories in hyperpolymath:
+
+  my-project (private)
+  another-repo (public)
+  test-repo (private)
+
+Total: 3 repository(s)
+----
+
+=== `repo delete`
+
+Delete a repository (with confirmation).
+
+[source,bash]
+----
+bitfuckit repo delete <name>
+----
+
+*Warning:* This is permanent and cannot be undone.
+
+*Example:*
+[source,bash]
+----
+$ bitfuckit repo delete old-repo
+⚠️  This will permanently delete 'old-repo'. Type the repository name to confirm: old-repo
+✓ Repository 'old-repo' deleted.
+----
+
+=== `repo exists`
+
+Check if a repository exists.
+
+[source,bash]
+----
+bitfuckit repo exists <name>
+----
+
+*Exit codes:*
+
+* `0` — Repository exists
+* `1` — Repository does not exist
+
+*Example:*
+[source,bash]
+----
+$ bitfuckit repo exists my-project
+✓ Repository 'my-project' exists
+----
+
+== Pull Request Commands
+
+=== `pr list`
+
+List pull requests for a repository.
+
+[source,bash]
+----
+bitfuckit pr list <repo> [options]
+----
+
+*Options:*
+[cols="2,1,3"]
+|===
+|Option |Default |Description
+
+|`--state <state>`
+|OPEN
+|Filter by state: `OPEN`, `MERGED`, `DECLINED`
+
+|`--all`
+|false
+|Show all PRs regardless of state
+
+|`--limit <n>`
+|25
+|Maximum PRs to list
+|===
+
+*Output:*
+[source]
+----
+Pull Requests in my-repo:
+
+#42 [OPEN] Fix authentication bug (John Doe)
+#41 [OPEN] Add dark mode support (Jane Smith)
+#40 [MERGED] Update dependencies (John Doe)
+
+Total: 3 pull request(s)
+----
+
+== Mirror Command
+
+=== `mirror`
+
+Mirror the current repository to Bitbucket.
+
+[source,bash]
+----
+bitfuckit mirror <target-name> [options]
+----
+
+*Options:*
+[cols="2,1,3"]
+|===
+|Option |Default |Description
+
+|`--all-branches`
+|true
+|Push all branches
+
+|`--tags`
+|true
+|Push all tags
+
+|`--force`
+|false
+|Force push (overwrites history)
+|===
+
+*Usage:*
+[source,bash]
+----
+# From within a git repository
+cd my-github-repo
+bitfuckit mirror my-repo
+----
+
+*What it does:*
+
+. Creates the target repository on Bitbucket (if not exists)
+. Adds Bitbucket as a remote
+. Pushes all branches
+. Pushes all tags
+
+== TUI Command
+
+=== `tui`
+
+Launch the interactive terminal interface.
+
+[source,bash]
+----
+bitfuckit tui
+# or simply
+bitfuckit
+----
+
+The TUI provides a menu-driven interface for all operations.
+
+See link:TUI-Guide[TUI Guide] for detailed usage.
+
+== GraphQL Commands
+
+=== `graphql serve`
+
+Start the GraphQL API server.
+
+[source,bash]
+----
+bitfuckit graphql serve [options]
+----
+
+*Options:*
+[cols="2,1,3"]
+|===
+|Option |Default |Description
+
+|`--port <n>`
+|4000
+|Server port
+
+|`--playground`
+|false
+|Enable GraphQL Playground
+|===
+
+See link:GraphQL-API[GraphQL API] for schema and queries.
+
+== Exit Codes
+
+[cols="1,3"]
+|===
+|Code |Meaning
+
+|0
+|Success
+
+|1
+|General error
+
+|2
+|Authentication error
+
+|3
+|Network error
+
+|4
+|Repository not found
+
+|5
+|Permission denied
+|===
+
+== Environment Variables
+
+[cols="2,3"]
+|===
+|Variable |Description
+
+|`BITFUCKIT_CONFIG`
+|Override config file location
+
+|`BITFUCKIT_WORKSPACE`
+|Override default workspace
+
+|`BITFUCKIT_DEBUG`
+|Enable debug output (set to `1`)
+
+|`NO_COLOR`
+|Disable colored output
+|===
+
+== Configuration File
+
+Default location: `~/.config/bitfuckit/config`
+
+[source,ini]
+----
+[credentials]
+username=your-username
+app_password=your-app-password
+workspace=your-workspace
+
+[preferences]
+default_visibility=private
+color=true
+----

@@ -1,0 +1,445 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Issue Tracking
+:toc:
+
+This guide covers issue tracking operations with bitfuckit.
+
+== Creating Issues
+
+=== Basic Create
+
+[source,bash]
+----
+bitfuckit issue create my-repo "Bug in login flow"
+----
+
+=== With Details
+
+[source,bash]
+----
+bitfuckit issue create my-repo "Login timeout error" \
+  --kind bug \
+  --priority critical \
+  --content "Users are experiencing timeouts on the login page.
+
+Steps to reproduce:
+1. Go to /login
+2. Enter credentials
+3. Click submit
+4. Wait 30 seconds
+
+Expected: Login completes
+Actual: Timeout error"
+----
+
+=== Full Options
+
+[source,bash]
+----
+bitfuckit issue create my-repo "Add dark mode" \
+  --kind enhancement \
+  --priority minor \
+  --assignee alice \
+  --component ui \
+  --milestone v2.0 \
+  --version 1.5.0 \
+  --content "Users have requested a dark mode option."
+----
+
+== Issue Types
+
+[cols="1,2"]
+|===
+|Kind |Description
+
+|`bug`
+|Something is broken
+
+|`enhancement`
+|Improvement to existing feature
+
+|`proposal`
+|New feature proposal
+
+|`task`
+|General task or todo item
+|===
+
+== Issue Priority
+
+[cols="1,2"]
+|===
+|Priority |Use When
+
+|`trivial`
+|Cosmetic issues, typos
+
+|`minor`
+|Non-blocking issues
+
+|`major`
+|Important but not urgent (default)
+
+|`critical`
+|Blocking work or major functionality
+
+|`blocker`
+|Release blocker, security issue
+|===
+
+== Listing Issues
+
+=== Open Issues (Default)
+
+[source,bash]
+----
+bitfuckit issue list my-repo
+----
+
+=== Filter by State
+
+[source,bash]
+----
+# All open issues
+bitfuckit issue list my-repo --state open
+
+# Resolved issues
+bitfuckit issue list my-repo --state resolved
+
+# All issues
+bitfuckit issue list my-repo --all
+----
+
+=== Filter by Type
+
+[source,bash]
+----
+# Only bugs
+bitfuckit issue list my-repo --kind bug
+
+# Only enhancements
+bitfuckit issue list my-repo --kind enhancement
+----
+
+=== Filter by Priority
+
+[source,bash]
+----
+# Critical and blocker issues
+bitfuckit issue list my-repo --priority critical
+bitfuckit issue list my-repo --priority blocker
+----
+
+=== Filter by Assignee
+
+[source,bash]
+----
+# Issues assigned to me
+bitfuckit issue list my-repo --assignee $(bitfuckit whoami)
+
+# Issues assigned to specific user
+bitfuckit issue list my-repo --assignee alice
+----
+
+=== Search Issues
+
+[source,bash]
+----
+bitfuckit issue list my-repo --search "login"
+----
+
+== Viewing Issues
+
+=== Get Issue Details
+
+[source,bash]
+----
+bitfuckit issue view my-repo 42
+----
+
+Shows:
+* Title and description
+* State, kind, priority
+* Assignee and reporter
+* Component, milestone, version
+* Created/updated dates
+* Vote and watch counts
+
+== Updating Issues
+
+=== Update Title
+
+[source,bash]
+----
+bitfuckit issue update my-repo 42 --title "New title"
+----
+
+=== Update State
+
+[source,bash]
+----
+# Mark as resolved
+bitfuckit issue update my-repo 42 --state resolved
+
+# Reopen issue
+bitfuckit issue update my-repo 42 --state open
+
+# Close as duplicate
+bitfuckit issue update my-repo 42 --state duplicate
+
+# Close as won't fix
+bitfuckit issue update my-repo 42 --state wontfix
+----
+
+=== Reassign Issue
+
+[source,bash]
+----
+bitfuckit issue update my-repo 42 --assignee bob
+----
+
+=== Change Priority
+
+[source,bash]
+----
+bitfuckit issue update my-repo 42 --priority critical
+----
+
+== Issue States
+
+[cols="1,2"]
+|===
+|State |Description
+
+|`new`
+|Just created, not triaged
+
+|`open`
+|Acknowledged, ready to work on
+
+|`on hold`
+|Blocked or waiting for input
+
+|`resolved`
+|Work completed, awaiting verification
+
+|`duplicate`
+|Already reported elsewhere
+
+|`invalid`
+|Not a valid issue
+
+|`wontfix`
+|Won't be addressed
+
+|`closed`
+|Issue is done
+|===
+
+== Comments
+
+=== Add Comment
+
+[source,bash]
+----
+bitfuckit issue comment my-repo 42 "I can reproduce this issue."
+----
+
+=== List Comments
+
+[source,bash]
+----
+bitfuckit issue comments my-repo 42
+----
+
+=== Update Comment
+
+[source,bash]
+----
+bitfuckit issue comment update my-repo 42 123 "Updated comment text"
+----
+
+=== Delete Comment
+
+[source,bash]
+----
+bitfuckit issue comment delete my-repo 42 123
+----
+
+== Attachments
+
+=== Add Attachment
+
+[source,bash]
+----
+bitfuckit issue attach my-repo 42 screenshot.png
+----
+
+=== List Attachments
+
+[source,bash]
+----
+bitfuckit issue attachments my-repo 42
+----
+
+=== Delete Attachment
+
+[source,bash]
+----
+bitfuckit issue attachment delete my-repo 42 456
+----
+
+== Watch and Vote
+
+=== Watch an Issue
+
+[source,bash]
+----
+# Start watching
+bitfuckit issue watch my-repo 42
+
+# Stop watching
+bitfuckit issue unwatch my-repo 42
+----
+
+=== Vote for an Issue
+
+[source,bash]
+----
+# Vote
+bitfuckit issue vote my-repo 42
+
+# Remove vote
+bitfuckit issue unvote my-repo 42
+----
+
+== Issue History
+
+View changes made to an issue:
+
+[source,bash]
+----
+bitfuckit issue changes my-repo 42
+----
+
+Shows:
+* Who made changes
+* What was changed
+* When changes occurred
+
+== Workflow Examples
+
+=== Bug Report Workflow
+
+[source,bash]
+----
+# 1. Create bug report
+bitfuckit issue create my-repo "Login broken on Safari" \
+  --kind bug \
+  --priority major \
+  --content "Safari users cannot log in..."
+
+# 2. Triage and assign
+bitfuckit issue update my-repo 42 \
+  --assignee alice \
+  --component auth
+
+# 3. Developer investigates
+bitfuckit issue comment my-repo 42 "Found the issue - Safari cookie handling"
+
+# 4. Mark resolved after fix
+bitfuckit issue update my-repo 42 --state resolved
+
+# 5. Close after verification
+bitfuckit issue update my-repo 42 --state closed
+----
+
+=== Feature Request Workflow
+
+[source,bash]
+----
+# 1. Create proposal
+bitfuckit issue create my-repo "Add dark mode support" \
+  --kind proposal \
+  --priority minor
+
+# 2. Team discusses
+bitfuckit issue comment my-repo 43 "Great idea! Let's add to v2.0"
+
+# 3. Accept and convert to task
+bitfuckit issue update my-repo 43 \
+  --kind enhancement \
+  --milestone v2.0 \
+  --assignee design-team
+----
+
+== Scripting Examples
+
+=== List All Critical Issues
+
+[source,bash]
+----
+#!/bin/bash
+for repo in api-server web-client; do
+    echo "=== $repo ==="
+    bitfuckit issue list "$repo" --priority critical
+done
+----
+
+=== Auto-assign by Component
+
+[source,bash]
+----
+#!/bin/bash
+repo=$1
+issue=$2
+component=$(bitfuckit issue view "$repo" "$issue" --format json | jq -r '.component.name')
+
+case "$component" in
+    auth)   assignee="alice" ;;
+    api)    assignee="bob" ;;
+    ui)     assignee="charlie" ;;
+    *)      assignee="" ;;
+esac
+
+if [ -n "$assignee" ]; then
+    bitfuckit issue update "$repo" "$issue" --assignee "$assignee"
+fi
+----
+
+=== Export Issues to CSV
+
+[source,bash]
+----
+bitfuckit issue list my-repo --all --format csv > issues.csv
+----
+
+== Best Practices
+
+=== Issue Titles
+
+* Be specific: "Login fails with OAuth" not "Login broken"
+* Include context: "[Safari] Login timeout on slow networks"
+* Use prefixes for categorization: "[API] Rate limit too low"
+
+=== Issue Descriptions
+
+* Include steps to reproduce
+* Expected vs actual behavior
+* Environment details (browser, OS, version)
+* Screenshots or logs when relevant
+
+=== Triage Process
+
+1. Review new issues daily
+2. Set appropriate kind and priority
+3. Assign to component/milestone
+4. Add labels for filtering
+5. Assign to team member
+
+=== Issue Hygiene
+
+* Close duplicate issues with reference
+* Archive resolved issues periodically
+* Keep milestones up to date
+* Use components for filtering

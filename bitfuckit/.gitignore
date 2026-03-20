@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: PMPL-1.0
+
+# Ada build artifacts
+obj/
+bin/
+*.ali
+*.o
+*.bexch
+b__*.ad[sb]
+
+# Alire
+alire/
+config/*.gpr
+
+# GPRbuild
+*.cswi
+gnatinspect.db
+
+# Editor
+*~
+*.swp
+.vscode/
+.idea/
+*.kate-swp
+\#*\#
+.\#*
+
+# Credentials (NEVER commit)
+.bitfuckit/
+*.credentials
+*.secret
+.env
+.env.*
+
+# Bug reports with sensitive data
+BITFUCKIT-BUG-REPORT.md
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+*.bak
+
+# Container build
+.container/
+*.tar.gz
+
+# Coverage/testing
+coverage/
+*.gcov
+*.lcov
+
+# Crash recovery artifacts
+ai-cli-crash-capture/

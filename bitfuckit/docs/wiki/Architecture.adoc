@@ -1,0 +1,305 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Architecture
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+
+This document describes the internal architecture of bitfuckit for developers and contributors.
+
+== Overview
+
+bitfuckit is written in **Ada 2022** with **SPARK 2014** formal verification for critical components.
+
+[source]
+----
+┌─────────────────────────────────────────────────────────────────┐
+│                          CLI Layer                               │
+│  ┌──────────────┬──────────────┬──────────────┬───────────────┐ │
+│  │   auth       │    repo      │     pr       │    mirror     │ │
+│  └──────────────┴──────────────┴──────────────┴───────────────┘ │
+├─────────────────────────────────────────────────────────────────┤
+│                         TUI Layer                                │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │              TUI (SPARK Verified)                          │ │
+│  └────────────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────────┤
+│                        API Layer                                 │
+│  ┌───────────────────────┬────────────────────────────────────┐ │
+│  │   Bitbucket_API       │        GraphQL_Server              │ │
+│  └───────────────────────┴────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────────┤
+│                      Foundation Layer                            │
+│  ┌───────────────────────┬────────────────────────────────────┐ │
+│  │      Config           │        GNAT.Expect (HTTP)          │ │
+│  └───────────────────────┴────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+----
+
+== Components
+
+=== bitfuckit.adb (CLI Entry Point)
+
+Main entry point handling command parsing and dispatching.
+
+[source,ada]
+----
+procedure Main is
+begin
+   if Argument_Count = 0 then
+      TUI.Run_TUI;
+   else
+      case Command is
+         when "auth"   => Handle_Auth;
+         when "repo"   => Handle_Repo;
+         when "pr"     => Handle_PR;
+         when "mirror" => Handle_Mirror;
+         when "tui"    => TUI.Run_TUI;
+         -- ...
+      end case;
+   end if;
+end Main;
+----
+
+*Location:* `src/bitfuckit.adb`
+
+=== config.ads/adb (Configuration)
+
+Manages credential storage and configuration.
+
+*Responsibilities:*
+
+* Load/save credentials from `~/.config/bitfuckit/config`
+* Provide credential access to API layer
+* Handle configuration defaults
+
+*Location:* `src/config.ads`, `src/config.adb`
+
+=== bitbucket_api.ads/adb (REST Client)
+
+REST API client for Bitbucket Cloud.
+
+*Key procedures:*
+[source,ada]
+----
+procedure Create_Repository (Name : String; Private_Repo : Boolean);
+procedure List_Repositories (Workspace : String);
+procedure Delete_Repository (Name : String);
+procedure List_Pull_Requests (Repo : String; State : String);
+----
+
+*Implementation Notes:*
+
+* Uses `GNAT.Expect` to spawn `curl` for HTTP requests
+* JSON parsing via custom lightweight parser
+* Error handling for common API failure modes
+
+*Location:* `src/bitbucket_api.ads`, `src/bitbucket_api.adb`
+
+=== tui.ads/adb (Terminal Interface)
+
+Interactive terminal user interface with SPARK verification.
+
+[source,ada]
+----
+package TUI
+   with SPARK_Mode => On
+is
+   procedure Run_TUI;
+
+   -- Internal types (verified)
+   type Menu_Item is record
+      Label    : String (1..50);
+      Shortcut : Character;
+   end record;
+end TUI;
+----
+
+*Features:*
+
+* ANSI color output
+* Box drawing characters
+* Vim-style j/k navigation
+* Arrow key support
+* Single-letter shortcuts
+
+*Location:* `src/tui.ads`, `src/tui.adb`
+
+=== graphql_server.ads/adb (GraphQL API)
+
+GraphQL server for programmatic access.
+
+*Schema:* `graphql/schema.graphql`
+
+*Status:* Partial implementation - basic queries work, mutations in progress.
+
+*Location:* `src/graphql_server.ads`, `src/graphql_server.adb`
+
+== Data Flow
+
+=== Authentication Flow
+
+[source]
+----
+User → auth login → Config.Save_Credentials
+                         ↓
+                    ~/.config/bitfuckit/config
+                         ↓
+Bitbucket_API ← Config.Load_Credentials
+----
+
+=== API Request Flow
+
+[source]
+----
+Command → Bitbucket_API.Make_Request
+               ↓
+         GNAT.Expect spawns curl
+               ↓
+         curl → api.bitbucket.org
+               ↓
+         JSON Response
+               ↓
+         Parse_JSON → Result
+----
+
+== File Structure
+
+[source]
+----
+bitfuckit/
+├── src/
+│   ├── bitfuckit.adb          # Main CLI entry point
+│   ├── config.ads             # Configuration spec
+│   ├── config.adb             # Configuration body
+│   ├── bitbucket_api.ads      # REST API spec
+│   ├── bitbucket_api.adb      # REST API body
+│   ├── tui.ads                # TUI spec (SPARK)
+│   ├── tui.adb                # TUI body
+│   ├── graphql_server.ads     # GraphQL spec
+│   └── graphql_server.adb     # GraphQL body
+├── graphql/
+│   └── schema.graphql         # GraphQL schema
+├── bitfuckit.gpr              # GPRbuild project file
+├── completions/
+│   ├── bitfuckit.bash         # Bash completions
+│   ├── bitfuckit.zsh          # Zsh completions
+│   └── bitfuckit.fish         # Fish completions
+└── doc/
+    └── bitfuckit.1            # Man page
+----
+
+== Build System
+
+=== GPRbuild Project
+
+[source,ada]
+----
+-- bitfuckit.gpr
+project Bitfuckit is
+   for Source_Dirs use ("src");
+   for Object_Dir use "obj";
+   for Exec_Dir use "bin";
+   for Main use ("bitfuckit.adb");
+
+   type Build_Mode_Type is ("development", "release");
+   Build_Mode : Build_Mode_Type := external ("BUILD_MODE", "development");
+
+   package Compiler is
+      case Build_Mode is
+         when "development" =>
+            for Switches ("Ada") use ("-g", "-gnata");
+         when "release" =>
+            for Switches ("Ada") use ("-O2", "-gnatn");
+      end case;
+   end Compiler;
+end Bitfuckit;
+----
+
+=== Build Commands
+
+[source,bash]
+----
+# Debug build
+gprbuild -P bitfuckit.gpr
+
+# Release build
+gprbuild -P bitfuckit.gpr -XBUILD_MODE=release
+
+# Clean
+gprclean -P bitfuckit.gpr
+
+# SPARK verification
+gnatprove -P bitfuckit.gpr --mode=check
+----
+
+== Security Considerations
+
+=== Current Implementation
+
+* Credentials stored in plain text (config file)
+* HTTP via curl subprocess
+* User input passed to shell commands
+
+=== Known Issues
+
+[cols="1,2,2"]
+|===
+|ID |Issue |Mitigation
+
+|SEC-001
+|Shell injection in API calls
+|Input sanitization (TODO)
+
+|SEC-002
+|Plain text credential storage
+|libsecret integration (TODO)
+
+|SEC-003
+|Credentials visible in process list
+|Use stdin for curl auth (TODO)
+|===
+
+=== Future Improvements
+
+* Native HTTP library (AWS, AdaCore HTTP)
+* System keyring integration
+* Input validation layer
+
+== Extension Points
+
+=== Adding New Commands
+
+. Add command handler in `bitfuckit.adb`
+. Add API functions in `bitbucket_api.adb`
+. Add TUI menu option if applicable
+. Add GraphQL resolver
+
+=== Adding New Forges
+
+The architecture could be extended to support other forges:
+
+[source,ada]
+----
+package Forge_API is
+   type Forge_Type is (Bitbucket, GitHub, GitLab);
+
+   procedure Make_Request (Forge : Forge_Type; Endpoint : String);
+end Forge_API;
+----
+
+== Testing
+
+=== Current State
+
+* Manual testing only
+* Smoke tests in justfile
+* No automated unit tests
+
+=== Planned
+
+* AUnit test framework
+* Integration tests with mock API
+* SPARK proofs for additional components
+
+See link:Testing[Testing] for test development guidelines.

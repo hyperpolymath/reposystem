@@ -1,0 +1,210 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Authentication
+:toc:
+
+This guide covers authenticating bitfuckit with Bitbucket Cloud.
+
+== Overview
+
+bitfuckit uses Bitbucket App Passwords for authentication. App passwords are:
+
+* Separate from your account password
+* Revocable without changing your main password
+* Scoped to specific permissions
+* Required for API access
+
+== Creating an App Password
+
+1. Log into Bitbucket Cloud
+2. Go to **Personal settings** (click your avatar → Personal settings)
+3. Select **App passwords** from the left menu
+4. Click **Create app password**
+5. Give it a label (e.g., "bitfuckit CLI")
+6. Select permissions:
+
+=== Recommended Permissions
+
+[cols="1,2,1"]
+|===
+|Permission |Purpose |Required?
+
+|`repository:read`
+|List and view repositories
+|Yes
+
+|`repository:write`
+|Create and delete repositories
+|Yes
+
+|`repository:admin`
+|Admin operations, settings
+|Recommended
+
+|`pullrequest:read`
+|List and view pull requests
+|Yes
+
+|`pullrequest:write`
+|Create, update, merge PRs
+|Recommended
+
+|`pipeline:read`
+|View pipeline status
+|Optional
+
+|`pipeline:write`
+|Trigger pipelines
+|Optional
+
+|`webhook:read`
+|List webhooks
+|Optional
+
+|`webhook:write`
+|Manage webhooks
+|Optional
+|===
+
+7. Click **Create**
+8. **Copy the password immediately** - you won't see it again!
+
+== Logging In
+
+Run the login command:
+
+[source,bash]
+----
+bitfuckit auth login
+----
+
+You'll be prompted for:
+
+1. **Bitbucket username** - Your Bitbucket account username
+2. **App password** - The app password you just created
+3. **Workspace** - Your workspace name (usually same as username for personal accounts)
+
+Example:
+
+[source]
+----
+$ bitfuckit auth login
+Bitbucket username: myusername
+App password: ****************************
+Workspace (usually same as username): myusername
+Credentials saved to /home/user/.config/bitfuckit/config
+Authentication successful!
+----
+
+== Checking Auth Status
+
+Verify your current authentication:
+
+[source,bash]
+----
+bitfuckit auth status
+----
+
+Output shows:
+
+[source]
+----
+Logged in as: myusername
+Workspace: myusername
+Config: /home/user/.config/bitfuckit/config
+----
+
+== Logging Out
+
+Remove stored credentials:
+
+[source,bash]
+----
+bitfuckit auth logout
+----
+
+This deletes your credentials from the config file.
+
+== Credential Storage
+
+=== Default Location
+
+Credentials are stored in:
+
+[source]
+----
+~/.config/bitfuckit/config
+----
+
+On systems with XDG_CONFIG_HOME set:
+
+[source]
+----
+$XDG_CONFIG_HOME/bitfuckit/config
+----
+
+=== File Format
+
+The config file is a simple key-value format:
+
+[source]
+----
+username=myusername
+app_password=xxxx-xxxx-xxxx-xxxx
+workspace=myusername
+----
+
+=== File Permissions
+
+bitfuckit sets restrictive permissions (600) on the config file:
+
+[source,bash]
+----
+$ ls -la ~/.config/bitfuckit/config
+-rw------- 1 user user 89 Dec 31 12:00 config
+----
+
+== Environment Variables
+
+You can override the config file location:
+
+[source,bash]
+----
+export BITFUCKIT_CONFIG=/path/to/custom/config
+----
+
+== Multiple Workspaces
+
+If you work with multiple Bitbucket workspaces:
+
+1. Create separate config files
+2. Use BITFUCKIT_CONFIG to switch:
+
+[source,bash]
+----
+# Personal workspace
+export BITFUCKIT_CONFIG=~/.config/bitfuckit/personal
+bitfuckit repo list
+
+# Work workspace
+export BITFUCKIT_CONFIG=~/.config/bitfuckit/work
+bitfuckit repo list
+----
+
+== Security Best Practices
+
+1. **Use app passwords, not account passwords**
+2. **Minimum permissions** - Only grant what you need
+3. **Rotate periodically** - Create new app passwords regularly
+4. **Revoke unused** - Delete app passwords you no longer use
+5. **Don't commit** - Add config to .gitignore
+6. **Use Syncthing** - Sync credentials securely across devices
+
+== Troubleshooting
+
+See link:Troubleshooting#authentication-issues[Troubleshooting - Authentication Issues]
+
+Common issues:
+
+* 401 Unauthorized - App password incorrect or expired
+* Wrong workspace - Check workspace name matches
+* Insufficient permissions - Create new app password with more scopes

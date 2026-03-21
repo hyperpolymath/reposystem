@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: PMPL-2.0-or-later
+[package]
+name = "git-seo"
+version = "0.1.0"
+edition = "2024"
+authors = ["Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"]
+description = "GitHub repository SEO toolkit — topics, descriptions, badges, social previews, discoverability"
+license = "PMPL-2.0-or-later"
+repository = "https://github.com/hyperpolymath/reposystem"
+keywords = ["github", "seo", "topics", "discoverability", "repository"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"

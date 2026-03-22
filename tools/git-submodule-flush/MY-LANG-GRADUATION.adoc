@@ -1,0 +1,80 @@
+= git-submodule-flush — My-Lang Graduation Target
+// SPDX-License-Identifier: PMPL-1.0-or-later
+
+== Purpose
+
+This tool is the benchmark for my-lang stdlib readiness. When my-lang can
+implement this tool, it has graduated from "language with potential" to
+"language that can build real CLI tools."
+
+== Stdlib Requirements
+
+To rewrite git-submodule-flush in my-lang, the following stdlib additions
+are needed:
+
+[cols="1,2,1"]
+|===
+| Function | Description | Priority
+
+| `process::spawn(cmd, args)` | Execute a subprocess, return exit code + stdout + stderr | P0
+| `process::capture(cmd, args)` | Execute and capture stdout as String | P0
+| `fs::walk_dir(path)` | Recursively iterate directory entries | P0
+| `fs::write(path, content)` | Write string to file | P1
+| `fs::exists(path)` | Check if path exists | P0
+| `fs::is_dir(path)` | Check if path is directory | P0
+| `fs::is_file(path)` | Check if path is file | P1
+| `fs::canonicalize(path)` | Resolve symlinks and relative paths | P1
+| `path::join(base, child)` | Join path components | P0
+| `path::file_name(path)` | Extract filename from path | P0
+| `path::parent(path)` | Extract parent directory | P1
+| `env::args()` | Get command-line arguments | P0 (exists via clap)
+| `ansi::red(text)` | ANSI color helpers | P2
+| `ansi::green(text)` | ANSI color helpers | P2
+|===
+
+== CLI Contract
+
+The my-lang implementation MUST match this exact CLI interface:
+
+----
+git-submodule-flush [OPTIONS] [REPO]
+
+Options:
+  --execute           Actually commit and push (default: dry-run)
+  --max-depth <N>     Maximum recursion depth (default: 5)
+  --skip <NAME>       Skip repos matching name (repeatable)
+  --message <MSG>     Commit message
+  --author <STRING>   Git author
+  --push              Push after commit (default: true)
+  --remote <NAME>     Remote name (default: origin)
+  --large-threshold   Max files before blocking (default: 50)
+  --force-large       Override large threshold
+  --panic-attack      Run panic-attack assail before each commit
+  --json              JSON output for Hypatia
+  -v, --verbose       Verbose output
+----
+
+== Test Cases
+
+The my-lang version must pass these scenarios:
+
+1. *Clean repo* → prints "All submodules clean" and exits 0
+2. *Dirty submodule (depth 1)* → shows plan with 1 node at depth 1
+3. *Nested submodules (depth 3)* → commits bottom-up: depth 3, then 2, then 1, then 0
+4. *Skip list* → `--skip broken-repo` excludes matching repos
+5. *Large threshold* → repo with 100 files blocks without `--force-large`
+6. *Secret detection* → warns on files matching `.env`, `.pem`, etc.
+7. *Dry run* → default mode, no writes
+8. *JSON output* → valid JSON matching FlushResult schema
+9. *Push failure* → commit preserved, push error reported, continues to next repo
+10. *Pre-commit hook failure* → skipped, index reset, continues to next repo
+
+== Acceptance Criteria
+
+The my-lang version is accepted when:
+
+- [ ] All 10 test cases pass
+- [ ] Binary runs standalone (not via interpreter)
+- [ ] No Rust FFI used (pure my-lang)
+- [ ] Performance within 2x of Rust version
+- [ ] `--json` output identical to Rust version

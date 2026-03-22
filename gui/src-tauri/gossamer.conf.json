@@ -1,0 +1,137 @@
+{
+  "$schema": "https://gossamer.dev/schemas/config/v1",
+  "productName": "reposystem-gui",
+  "version": "0.1.0",
+  "identifier": "com.hyperpolymath.reposystem",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "deno task dev:frontend",
+    "beforeBuildCommand": "deno task build:frontend"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Reposystem - Railway Yard",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600,
+        "maxWidth": null,
+        "maxHeight": null,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "transparent": false,
+        "center": true,
+        "alwaysOnTop": false,
+        "visible": true,
+        "url": "/"
+      }
+    ],
+    "security": {
+      "csp": null,
+      "capabilities": [
+        "filesystem",
+        "network",
+        "clipboard"
+      ],
+      "capabilityTokens": {
+        "enabled": false,
+        "issuer": "gossamer-runtime",
+        "ttl": 3600
+      },
+      "sandbox": {
+        "enabled": true,
+        "allowExec": false,
+        "allowNetwork": true,
+        "allowFilesystem": true
+      }
+    },
+    "ipc": {
+      "protocol": "json",
+      "bridgeInjection": true,
+      "maxMessageSize": 16777216,
+      "timeout": 30000
+    },
+    "tray": {
+      "enabled": false,
+      "icon": null,
+      "tooltip": null,
+      "menuOnLeftClick": true
+    }
+  },
+  "plugins": {},
+  "bundle": {
+    "active": true,
+    "targets": [
+      "deb",
+      "appimage",
+      "dmg",
+      "nsis"
+    ],
+    "icon": [],
+    "resources": [],
+    "copyright": "Copyright (c) 2025 Jonathan D.A. Jewell (hyperpolymath)",
+    "license": "PMPL-1.0-or-later",
+    "shortDescription": "Railway Yard GUI for repository ecosystem management",
+    "longDescription": "Visual graph-based interface for managing repository relationships, edges, groups, aspects, slots, and providers in the reposystem ecosystem.",
+    "linux": {
+      "desktopEntry": true,
+      "category": "Development",
+      "section": "devel",
+      "depends": [],
+      "appimage": {
+        "bundleMediaFramework": false
+      }
+    },
+    "macos": {
+      "bundleIdentifier": "com.hyperpolymath.reposystem",
+      "minimumSystemVersion": "11.0",
+      "frameworks": [],
+      "entitlements": null,
+      "signingIdentity": null,
+      "notarization": {
+        "enabled": false,
+        "teamId": null
+      }
+    },
+    "windows": {
+      "webview2": "embed",
+      "certificateThumbprint": null,
+      "wix": {
+        "language": "en-US"
+      },
+      "nsis": {
+        "displayLanguageSelector": false,
+        "installerIcon": null
+      }
+    },
+    "mobile": {
+      "ios": {
+        "minimumVersion": "14.0",
+        "deviceFamily": [
+          "iphone",
+          "ipad"
+        ],
+        "capabilities": [],
+        "frameworks": [],
+        "entitlements": {}
+      },
+      "android": {
+        "minimumSdk": 24,
+        "targetSdk": 34,
+        "permissions": [],
+        "features": []
+      }
+    }
+  },
+  "ephapax": {
+    "modules": [],
+    "region": "app",
+    "linearVerification": true,
+    "regionBoundary": "strict",
+    "preload": []
+  }
+}

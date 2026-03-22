@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 //
-// Tauri IPC bindings for ReScript
+// Backend IPC bindings for ReScript
+// Uses RuntimeBridge for Gossamer/Tauri/browser dispatch
 
-@module("@tauri-apps/api/core")
-external invoke: (string, 'args) => promise<'result> = "invoke"
+/// Invoke a backend command with arguments (delegates to RuntimeBridge).
+let invoke = RuntimeBridge.invoke
 
-@module("@tauri-apps/api/core")
-external invokeNoArgs: string => promise<'result> = "invoke"
+/// Invoke a backend command with no arguments (delegates to RuntimeBridge).
+let invokeNoArgs = RuntimeBridge.invokeNoArgs
 
 // ============================================================================
 // Types matching Rust types

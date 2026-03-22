@@ -4,6 +4,8 @@
   "tasks": {
     "dev": "tauri dev",
     "build": "tauri build",
+    "dev:gossamer": "gossamer dev",
+    "build:gossamer": "gossamer build",
     "dev:frontend": "rescript build -w & deno run --allow-read --allow-net npm:vite",
     "build:frontend": "rescript build && deno run --allow-read --allow-write --allow-env npm:vite build",
     "rescript": "^12.0.0",
@@ -12,6 +14,7 @@
   },
   "imports": {
     "@tauri-apps/api": "npm:@tauri-apps/api@^2",
+    "@gossamer/api": "npm:@gossamer/api@^1",
     "d3": "npm:d3@^7",
     "vite": "npm:vite@^5"
   }

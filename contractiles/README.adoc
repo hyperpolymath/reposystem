@@ -242,6 +242,9 @@ See `docs/A2ML-FORMAT.adoc` for the full A2ML syntax reference.
 |===
 | Document | What It Covers
 
+| `docs/CLI-REFERENCE.adoc`
+| Unified CLI reference — all 6 binaries, commands, file formats, exit codes, cross-references
+
 | `docs/A2ML-FORMAT.adoc`
 | A2ML syntax reference — blocks, sections, entries, executable fields, templates
 

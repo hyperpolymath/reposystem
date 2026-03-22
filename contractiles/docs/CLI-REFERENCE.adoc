@@ -1,0 +1,513 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+
+= Contractile CLI Reference
+:toc:
+:sectnums:
+:author: Jonathan D.A. Jewell
+
+== Overview
+
+The contractile system provides six CLI binaries built from a single Rust workspace.
+Five correspond to contractile types; the sixth (`contractile`) is a unified entry
+point that wraps all five plus orchestration commands.
+
+[cols="1,1,2,2"]
+|===
+| CLI Binary | File | Directory | Purpose
+
+| `must`
+| `Mustfile.a2ml`
+| `contractiles/must/`
+| Physical State — invariants that must hold (files, configs, format rules)
+
+| `trust`
+| `Trustfile.a2ml`
+| `contractiles/trust/`
+| Provenance State — integrity verification (hashes, signatures, proofs)
+
+| `dust`
+| `Dustfile.a2ml`
+| `contractiles/dust/`
+| Reversibility State — recovery actions (rollback, undo, replay)
+
+| `intend`
+| `Intentfile.a2ml`
+| `contractiles/lust/`
+| Intent State — committed future work (roadmap, migrations, evidence probes)
+
+| `k9`
+| `*.k9.ncl`
+| `contractiles/k9/`
+| Self-validating Nickel components (Kennel/Yard/Hunt security levels)
+
+| `contractile`
+| _(all of the above)_
+| `contractiles/`
+| Unified entry point + orchestration (gen-just, init, status, doctor)
+|===
+
+NOTE: The `intend` CLI reads from `contractiles/lust/`. The directory name `lust/`
+is a legacy convention (from "future lust" — aspiration). The CLI tool and file
+are named `intend` and `Intentfile.a2ml` respectively. Both `contractiles/lust/`
+and `contractiles/intend/` are accepted.
+
+== Installation
+
+[source,bash]
+----
+cd reposystem/contractiles
+just build-cli       # Build all binaries
+just install-cli     # Install to ~/.cargo/bin
+----
+
+Binaries: `must`, `trust`, `dust`, `intend`, `k9`, `contractile`.
+
+== must — Physical State
+
+Validates that declared invariants hold true. Checks are executable commands
+declared in `Mustfile.a2ml` that must exit 0.
+
+[cols="2,3"]
+|===
+| Command | Description
+
+| `must check`
+| Run all must checks. Exit 0 if all pass, exit 1 on any failure.
+
+| `must check --verbose`
+| Show each command as it runs.
+
+| `must check --dry-run`
+| Print commands without executing.
+
+| `must check --json`
+| Output results as JSON (for CI consumption).
+
+| `must fix`
+| Auto-fix violations where a deterministic fix is declared.
+
+| `must enforce`
+| Cycle: check → fix → verify. Ensures fixes actually resolve violations.
+
+| `must list`
+| List all available checks with their names and descriptions.
+
+| `must run <name>`
+| Run a single named check.
+|===
+
+=== Mustfile.a2ml Format
+
+[source]
+----
+[metadata]
+version = "1.0"
+description = "Physical state checks for myproject"
+
+[check "spdx-headers"]
+description = "All source files have SPDX headers"
+command = "rg -L 'SPDX-License-Identifier' src/ --files-without-match | wc -l | grep -q '^0$'"
+fix = "just add-spdx-headers"
+severity = "error"
+
+[check "no-secrets"]
+description = "No hardcoded secrets in source"
+command = "! rg -i 'password|secret|api.key' src/ --quiet"
+severity = "error"
+----
+
+=== Exit Codes
+
+[cols="1,3"]
+|===
+| Code | Meaning
+| 0 | All checks passed
+| 1 | One or more checks failed
+| 2 | Mustfile parse error or missing file
+| 3 | Check command not found or not executable
+|===
+
+== trust — Provenance State
+
+Verifies integrity of artifacts through cryptographic hashes and signatures.
+
+[cols="2,3"]
+|===
+| Command | Description
+
+| `trust verify`
+| Run all trust verifications. Exit 0 if all pass.
+
+| `trust verify --verbose`
+| Show each verification step.
+
+| `trust verify --json`
+| Output results as JSON.
+
+| `trust list`
+| List all verifications with their artifact paths.
+
+| `trust hash <file>`
+| Compute and display SHA-256 hash for a file.
+
+| `trust sign <file>`
+| Sign a file with Ed25519 key (creates `<file>.sig`).
+
+| `trust audit`
+| Show full provenance chain for all declared artifacts.
+|===
+
+=== Trustfile.a2ml Format
+
+[source]
+----
+[metadata]
+version = "1.0"
+description = "Provenance verification for myproject"
+
+[verify "binary-integrity"]
+description = "Release binary matches build hash"
+artifact = "target/release/myproject"
+algorithm = "sha256"
+hash = "abc123..."
+
+[verify "license-signature"]
+description = "LICENSE file is signed"
+artifact = "LICENSE"
+signature = "LICENSE.sig"
+key = "keys/release.pub"
+----
+
+=== Supported Algorithms
+
+[cols="1,2"]
+|===
+| Algorithm | Use Case
+| SHA-256 | Standard hash verification (default)
+| BLAKE3 | High-performance hash verification
+| Ed25519 | Signature verification (current)
+| Dilithium5 | Post-quantum signature verification (future)
+| SPHINCS+ | Post-quantum signature verification (future)
+|===
+
+=== Exit Codes
+
+[cols="1,3"]
+|===
+| Code | Meaning
+| 0 | All verifications passed
+| 1 | One or more verifications failed (hash mismatch or signature invalid)
+| 2 | Trustfile parse error or missing file
+| 3 | Missing artifact or verification tool
+|===
+
+== dust — Reversibility State
+
+Tracks recovery actions and provides rollback capability. Operates on a
+compensating transaction model — each action declares its inverse.
+
+[cols="2,3"]
+|===
+| Command | Description
+
+| `dust status`
+| Show all cleanup/recovery items with current state.
+
+| `dust list`
+| List all declared recovery actions.
+
+| `dust rollback <name>`
+| Execute the inverse action for a named item.
+
+| `dust replay <name>`
+| Re-execute a recovery action (idempotent).
+
+| `dust run <name>`
+| Run a specific cleanup action.
+
+| `dust history`
+| Show execution history with timestamps.
+|===
+
+=== Dustfile.a2ml Format
+
+[source]
+----
+[metadata]
+version = "1.0"
+description = "Recovery actions for myproject"
+
+[recovery "database-migration"]
+description = "Rollback database to previous schema"
+forward = "just db-migrate"
+inverse = "just db-rollback"
+precondition = "pg_isready -q"
+blast-radius = "database"
+idempotent = true
+
+[recovery "config-change"]
+description = "Restore previous configuration"
+forward = "cp config.new.toml config.toml"
+inverse = "cp config.backup.toml config.toml"
+audit-preserve = true
+----
+
+=== Exit Codes
+
+[cols="1,3"]
+|===
+| Code | Meaning
+| 0 | Action completed successfully
+| 1 | Action failed
+| 2 | Dustfile parse error or missing file
+| 3 | Precondition not met
+| 4 | Inverse action not declared (irreversible)
+|===
+
+== intend — Intent State
+
+Tracks committed future work with evidence-based lifecycle transitions.
+Each intent has an evidence probe — a command that tests whether the
+intent has been realised.
+
+[cols="2,3"]
+|===
+| Command | Description
+
+| `intend list`
+| Show all intents with current status.
+
+| `intend check`
+| Run evidence probes for all intents. Updates status if probes pass.
+
+| `intend progress`
+| Show summary: declared/accepted/in-progress/realised/abandoned counts.
+
+| `intend accept <name>`
+| Transition: declared → accepted (team acknowledges the intent).
+
+| `intend start <name>`
+| Transition: accepted → in-progress (work has begun).
+
+| `intend realise <name>`
+| Transition: in-progress → realised (evidence probe confirms completion).
+
+| `intend abandon <name>`
+| Mark as abandoned with reason.
+
+| `intend supersede <name>`
+| Mark as superseded by a new intent.
+|===
+
+=== Intentfile.a2ml Format
+
+[source]
+----
+[metadata]
+version = "1.0"
+description = "Committed future work for myproject"
+
+[intent "migrate-to-rescript"]
+description = "Convert all TypeScript to ReScript"
+status = "in-progress"
+evidence = "! find src/ -name '*.ts' -not -name '*.d.ts' | grep -q ."
+deadline = "2026-06-01"
+owner = "hyperpolymath"
+
+[intent "add-property-tests"]
+description = "Property-based testing for all public APIs"
+status = "declared"
+evidence = "test -d tests/property && just test-property"
+----
+
+=== Lifecycle
+
+[source]
+----
+declared → accepted → in-progress → realised
+                  ↘                ↗
+                   abandoned / superseded
+----
+
+=== Exit Codes
+
+[cols="1,3"]
+|===
+| Code | Meaning
+| 0 | All probes passed / transition successful
+| 1 | One or more probes failed
+| 2 | Intentfile parse error or missing file
+| 3 | Invalid transition (e.g., declared → realised without intermediate steps)
+|===
+
+== k9 — Self-Validating Components
+
+K9 components are Nickel files (`.k9.ncl`) that carry their own validation
+contracts. Three security levels ("The Leash") control execution scope.
+
+[cols="2,3"]
+|===
+| Command | Description
+
+| `k9 eval <file>`
+| Evaluate a K9 component and print its output.
+
+| `k9 run <file>`
+| Run a Hunt-level component (executes side effects).
+
+| `k9 typecheck <file>`
+| Typecheck without executing. Safe for untrusted components.
+
+| `k9 info <file>`
+| Show component metadata (name, level, description, inputs/outputs).
+|===
+
+=== Security Levels (The Leash)
+
+[cols="1,1,3"]
+|===
+| Level | Risk | Capability
+
+| *Kennel*
+| None
+| Pure data declarations. No imports, no functions, no execution.
+
+| *Yard*
+| Low
+| Validated configuration. Type contracts enforced, functions allowed, no I/O.
+
+| *Hunt*
+| Medium
+| Full execution with side effects. Sandboxed. Requires explicit `k9 run`.
+|===
+
+=== K9 Validators for Contractiles
+
+Built-in Yard-level validators check A2ML file semantics:
+
+[source,bash]
+----
+k9 eval contractiles/k9/validators/mustfile-validator.k9.ncl
+k9 eval contractiles/k9/validators/trustfile-validator.k9.ncl
+k9 eval contractiles/k9/validators/dustfile-validator.k9.ncl
+k9 eval contractiles/k9/validators/intentfile-validator.k9.ncl
+----
+
+== contractile — Unified Entry Point
+
+Wraps all five CLIs plus orchestration commands.
+
+[cols="2,3"]
+|===
+| Command | Description
+
+| `contractile must check`
+| Equivalent to `must check`.
+
+| `contractile trust verify`
+| Equivalent to `trust verify`.
+
+| `contractile dust status`
+| Equivalent to `dust status`.
+
+| `contractile intend list`
+| Equivalent to `intend list`.
+
+| `contractile k9 eval <file>`
+| Equivalent to `k9 eval <file>`.
+
+| `contractile gen-just`
+| Generate `contractile.just` recipes from all A2ML + K9 sources.
+
+| `contractile init`
+| Scaffold contractile directory structure in current repo.
+
+| `contractile status`
+| Unified dashboard: must + trust + dust + intend status in one view.
+
+| `contractile doctor`
+| Check that all required tools are available (just, rg, jq, nickel, etc.).
+
+| `contractile completions <shell>`
+| Generate shell completions (bash, zsh, fish, elvish, powershell).
+|===
+
+== File Layout in a Consumer Repo
+
+When a repo adopts contractiles, the standard layout is:
+
+[source]
+----
+myrepo/
+├── Justfile                              # imports contractile.just
+├── contractile.just                      # auto-generated by: contractile gen-just
+└── .machine_readable/
+    └── contractiles/
+        ├── must/Mustfile.a2ml            # Physical State
+        ├── trust/Trustfile.a2ml          # Provenance State
+        ├── dust/Dustfile.a2ml            # Reversibility State
+        ├── lust/Intentfile.a2ml          # Intent State
+        └── k9/                           # K9 components (optional)
+            └── project-metadata.k9.ncl
+----
+
+== Just Integration
+
+Running `contractile gen-just` produces `contractile.just` with recipes:
+
+[source]
+----
+# Auto-generated by contractile gen-just — do not edit
+must-check:        must check
+must-fix:          must fix
+must-enforce:      must enforce
+trust-verify:      trust verify
+trust-hash file:   trust hash {{file}}
+dust-status:       dust status
+dust-rollback name: dust rollback {{name}}
+intend-list:       intend list
+intend-check:      intend check
+k9-eval file:      k9 eval {{file}}
+check:             must check          # alias
+verify:            trust verify        # alias
+audit:             must check && trust verify
+----
+
+Import in your Justfile:
+
+[source]
+----
+import "contractile.just"
+----
+
+== Cross-References
+
+[cols="1,3"]
+|===
+| Document | What It Covers
+
+| `docs/A2ML-FORMAT.adoc`
+| A2ML syntax reference (blocks, sections, entries, executable fields)
+
+| `docs/QUICKSTART.adoc`
+| Getting started guide with examples and CI/CD integration
+
+| `mustfile/docs/must-spec.adoc`
+| Full Must specification (659 lines, 5 golden examples)
+
+| `trustfile/docs/trust-spec.adoc`
+| Full Trust specification (759 lines, 5 golden examples)
+
+| `dustfile/docs/dust-spec.adoc`
+| Full Dust specification (592 lines, 5 golden examples)
+
+| `intentfile/docs/intent-spec.adoc`
+| Full Intent specification (705 lines, 5 golden examples)
+
+| `contractiles/k9/README.adoc`
+| K9 security model and component authoring guide
+
+| `standards/a2ml/docs/CONTRACTILES-A2ML-V1.adoc`
+| Formal A2ML field requirements (external, in standards repo)
+|===

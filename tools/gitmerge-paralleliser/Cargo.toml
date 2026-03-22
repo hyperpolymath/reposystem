@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+
+[package]
+name = "gitmerge-paralleliser"
+version = "0.1.0"
+edition = "2021"
+license = "PMPL-1.0-or-later"
+description = "Split large commits into classified batches (docs, code, data, assets, config) and push in parallel"
+authors = ["Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"]
+repository = "https://github.com/hyperpolymath/reposystem"
+keywords = ["git", "parallel", "merge", "batch", "classification"]
+
+[[bin]]
+name = "gitmerge-paralleliser"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4", features = ["derive"] }
+globset = "0.4"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dev-dependencies]
+tempfile = "3"

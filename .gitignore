@@ -51,3 +51,13 @@ htmlcov/
 /vexometer/*.json
 !/vexometer/example-*.json
 gui/node_modules/
+
+# ReScript build artifacts
+gui/lib/rescript-tea/lib/bs/
+gui/lib/rescript-webapi/lib/bs/
+gui/lib/rescript-d3/lib/bs/
+gui/lib/rescript-tea/lib/ocaml/
+gui/lib/rescript-webapi/lib/ocaml/
+gui/lib/rescript-d3/lib/ocaml/
+gui/lib/rescript-tea/src/*.res.js
+gui/node_modules/

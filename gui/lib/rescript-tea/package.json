@@ -1,0 +1,6 @@
+{
+  "name": "rescript-tea",
+  "version": "0.16.1-hyperpolymath",
+  "description": "The Elm Architecture (TEA) for ReScript — patched for ReScript 12",
+  "license": "LGPL-3.0-or-later"
+}

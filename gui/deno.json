@@ -17,11 +17,8 @@
     "@tauri-apps/api": "npm:@tauri-apps/api@^2",
     "d3": "npm:d3@^7",
     "vite": "npm:vite@^5",
-    "rescript": "npm:rescript@^12",
+    "rescript": "npm:rescript@~11.1.4",
     "@rescript/core": "npm:@rescript/core@^1",
-    "rescript-tea": "npm:rescript-tea@^0.16",
-    "cadre-router": "npm:cadre-router@^0.1",
-    "cadre-tea-router": "npm:cadre-tea-router@^0.1",
-    "rescript-d3": "npm:rescript-d3@^0.1"
+    "rescript-tea": "npm:rescript-tea@^0.16"
   }
 }

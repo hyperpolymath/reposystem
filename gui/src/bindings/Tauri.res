@@ -92,7 +92,7 @@ type polarity =
 type annotationSource = {
   mode: string,
   who: string,
-  when: string,
+  @as("when") when_: string,
   rule_id: option<string>,
 }
 
@@ -196,31 +196,31 @@ type plan = {
 
 module Commands = {
   // Read operations
-  let getRepos = () => invokeNoArgs("get_repos"): promise<array<repo>>
-  let getEdges = () => invokeNoArgs("get_edges"): promise<array<edge>>
-  let getGroups = () => invokeNoArgs("get_groups"): promise<array<group>>
-  let getAspects = () => invokeNoArgs("get_aspects"): promise<array<aspectAnnotation>>
-  let getSlots = () => invokeNoArgs("get_slots"): promise<array<slot>>
-  let getProviders = () => invokeNoArgs("get_providers"): promise<array<provider>>
-  let getBindings = () => invokeNoArgs("get_bindings"): promise<array<slotBinding>>
-  let getPlans = () => invokeNoArgs("get_plans"): promise<array<plan>>
+  let getRepos = (): promise<array<repo>> => invokeNoArgs("get_repos")
+  let getEdges = (): promise<array<edge>> => invokeNoArgs("get_edges")
+  let getGroups = (): promise<array<group>> => invokeNoArgs("get_groups")
+  let getAspects = (): promise<array<aspectAnnotation>> => invokeNoArgs("get_aspects")
+  let getSlots = (): promise<array<slot>> => invokeNoArgs("get_slots")
+  let getProviders = (): promise<array<provider>> => invokeNoArgs("get_providers")
+  let getBindings = (): promise<array<slotBinding>> => invokeNoArgs("get_bindings")
+  let getPlans = (): promise<array<plan>> => invokeNoArgs("get_plans")
 
   // Edge operations
-  let addEdge = (~from: string, ~to_: string, ~rel: string, ~label: option<string>=?) =>
-    invoke("add_edge", {"from": from, "to": to_, "rel": rel, "label": label}): promise<edge>
+  let addEdge = (~from: string, ~to_: string, ~rel: string, ~label: option<string>=?): promise<edge> =>
+    invoke("add_edge", {"from": from, "to": to_, "rel": rel, "label": label})
 
-  let removeEdge = (~edgeId: string) =>
-    invoke("remove_edge", {"edge_id": edgeId}): promise<unit>
+  let removeEdge = (~edgeId: string): promise<unit> =>
+    invoke("remove_edge", {"edge_id": edgeId})
 
   // Group operations
-  let createGroup = (~name: string, ~description: option<string>=?) =>
-    invoke("create_group", {"name": name, "description": description}): promise<group>
+  let createGroup = (~name: string, ~description: option<string>=?): promise<group> =>
+    invoke("create_group", {"name": name, "description": description})
 
-  let addToGroup = (~groupId: string, ~repoId: string) =>
-    invoke("add_to_group", {"group_id": groupId, "repo_id": repoId}): promise<unit>
+  let addToGroup = (~groupId: string, ~repoId: string): promise<unit> =>
+    invoke("add_to_group", {"group_id": groupId, "repo_id": repoId})
 
-  let removeFromGroup = (~groupId: string, ~repoId: string) =>
-    invoke("remove_from_group", {"group_id": groupId, "repo_id": repoId}): promise<unit>
+  let removeFromGroup = (~groupId: string, ~repoId: string): promise<unit> =>
+    invoke("remove_from_group", {"group_id": groupId, "repo_id": repoId})
 
   // Aspect operations
   let tagAspect = (
@@ -229,17 +229,17 @@ module Commands = {
     ~weight: int,
     ~polarity: string,
     ~reason: string,
-  ) =>
+  ): promise<aspectAnnotation> =>
     invoke("tag_aspect", {
       "target": target,
       "aspect_id": aspectId,
       "weight": weight,
       "polarity": polarity,
       "reason": reason,
-    }): promise<aspectAnnotation>
+    })
 
-  let removeAspect = (~annotationId: string) =>
-    invoke("remove_aspect", {"annotation_id": annotationId}): promise<unit>
+  let removeAspect = (~annotationId: string): promise<unit> =>
+    invoke("remove_aspect", {"annotation_id": annotationId})
 
   // Slot operations
   let createSlot = (
@@ -248,14 +248,14 @@ module Commands = {
     ~interfaceVersion: option<string>=?,
     ~description: string,
     ~capabilities: array<string>,
-  ) =>
+  ): promise<slot> =>
     invoke("create_slot", {
       "name": name,
       "category": category,
       "interface_version": interfaceVersion,
       "description": description,
       "capabilities": capabilities,
-    }): promise<slot>
+    })
 
   let createProvider = (
     ~name: string,
@@ -267,7 +267,7 @@ module Commands = {
     ~capabilities: array<string>,
     ~priority: int,
     ~isFallback: bool,
-  ) =>
+  ): promise<provider> =>
     invoke("create_provider", {
       "name": name,
       "slot_id": slotId,
@@ -278,18 +278,18 @@ module Commands = {
       "capabilities": capabilities,
       "priority": priority,
       "is_fallback": isFallback,
-    }): promise<provider>
+    })
 
-  let bindSlot = (~consumerId: string, ~slotId: string, ~providerId: string) =>
+  let bindSlot = (~consumerId: string, ~slotId: string, ~providerId: string): promise<slotBinding> =>
     invoke("bind_slot", {
       "consumer_id": consumerId,
       "slot_id": slotId,
       "provider_id": providerId,
-    }): promise<slotBinding>
+    })
 
-  let unbindSlot = (~bindingId: string) =>
-    invoke("unbind_slot", {"binding_id": bindingId}): promise<unit>
+  let unbindSlot = (~bindingId: string): promise<unit> =>
+    invoke("unbind_slot", {"binding_id": bindingId})
 
   // Persistence
-  let saveGraph = () => invokeNoArgs("save_graph"): promise<unit>
+  let saveGraph = (): promise<unit> => invokeNoArgs("save_graph")
 }

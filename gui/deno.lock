@@ -1,12 +1,11 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@rescript/core@1": "1.6.1_rescript@12.0.2",
+    "npm:@rescript/core@1": "1.6.1_rescript@11.1.4",
     "npm:@tauri-apps/api@2": "2.10.1",
     "npm:d3@7": "7.9.0",
     "npm:rescript-tea@0.16": "0.16.0",
-    "npm:rescript@*": "12.0.2",
-    "npm:rescript@12": "12.0.2",
+    "npm:rescript@~11.1.4": "11.1.4",
     "npm:vite@5": "5.4.21"
   },
   "npm": {
@@ -125,39 +124,11 @@
       "os": ["win32"],
       "cpu": ["x64"]
     },
-    "@rescript/core@1.6.1_rescript@12.0.2": {
+    "@rescript/core@1.6.1_rescript@11.1.4": {
       "integrity": "sha512-vyb5k90ck+65Fgui+5vCja/mUfzKaK3kOPT4Z6aAJdHLH1eljEi1zKhXroCiCtpNLSWp8k4ulh1bdB5WS0hvqA==",
       "dependencies": [
         "rescript"
       ]
-    },
-    "@rescript/darwin-arm64@12.0.2": {
-      "integrity": "sha512-GcfiPE0L2N7smWXMBEW4pvlcqblSbKh2tisZTuOaLPr9+WmaXnBLap6OUT+XoEWzTY0RA4QURfpNJLAgqZPrzw==",
-      "os": ["darwin"],
-      "cpu": ["arm64"]
-    },
-    "@rescript/darwin-x64@12.0.2": {
-      "integrity": "sha512-di4eucoDdLsLqz86h7Cwywsmt+xFup7rpVlkx8L7i22RTqyTw+CD6aGjFj1Ddj2sVUd5SSFiE9Hj86QggzUgbg==",
-      "os": ["darwin"],
-      "cpu": ["x64"]
-    },
-    "@rescript/linux-arm64@12.0.2": {
-      "integrity": "sha512-x6WOyimX0kw9DGADQ02R2rmvKu8SQOrskfYrKREfc2CgDT+FOKAH+qxvpUiljKhrvthoHkVBJOXtlKk854OdjQ==",
-      "os": ["linux"],
-      "cpu": ["arm64"]
-    },
-    "@rescript/linux-x64@12.0.2": {
-      "integrity": "sha512-5QHE+Ca1h3qXxDkw343923WTEdEyBeXphrv+8SZLhLOFNabQ5t6m4rWf52RluDqQpa67j6GB8kVAZpqc2rA2Qw==",
-      "os": ["linux"],
-      "cpu": ["x64"]
-    },
-    "@rescript/runtime@12.0.2": {
-      "integrity": "sha512-Jma1QEgns/WlWeVap/Mv6dVbFEKmftPOrmwQbzLQnnrQ9z6PJjorHIvDMQUigQKnvM/4RhRJ3LiG+CsNtgS9ww=="
-    },
-    "@rescript/win32-x64@12.0.2": {
-      "integrity": "sha512-QcNQiok3H2Xd+cReB1kpH4hlPXnT7DA6ETsJfZugTUOKOdAYLTJ+Imynv+ojuafkUrwa2v0tZAiqHaQsDjf9IQ==",
-      "os": ["win32"],
-      "cpu": ["x64"]
     },
     "@rollup/rollup-android-arm-eabi@4.59.0": {
       "integrity": "sha512-upnNBkA6ZH2VKGcBj9Fyl9IGNPULcjXRlg0LLeaioQWueH30p6IXtJEbKAgvyv+mJaMxSm1l6xwDXYjpEMiLMg==",
@@ -570,18 +541,9 @@
     "rescript-webapi@0.7.0": {
       "integrity": "sha512-fA1LPXSmQY3HtcIStQ2sHu9Xye1XLxd4JvkGQMupux9Q6Tp/jbcdh7bnCaGwHW6aI1QFmTmA/xWxUMb6oPphsQ=="
     },
-    "rescript@12.0.2": {
-      "integrity": "sha512-H1K9ovIxg2BVwJcXN1cZv0Q1pJEyFgNcUDKHSkmKmv5eBZMpXBASTZ2+grDt0zFFNoeFA1B9abAjSf+oTTi7hg==",
-      "dependencies": [
-        "@rescript/runtime"
-      ],
-      "optionalDependencies": [
-        "@rescript/darwin-arm64",
-        "@rescript/darwin-x64",
-        "@rescript/linux-arm64",
-        "@rescript/linux-x64",
-        "@rescript/win32-x64"
-      ],
+    "rescript@11.1.4": {
+      "integrity": "sha512-0bGU0bocihjSC6MsE3TMjHjY0EUpchyrREquLS8VsZ3ohSMD+VHUEwimEfB3kpBI1vYkw3UFZ3WD8R28guz/Vw==",
+      "scripts": true,
       "bin": true
     },
     "robust-predicates@3.0.3": {
@@ -650,7 +612,7 @@
       "npm:@tauri-apps/api@2",
       "npm:d3@7",
       "npm:rescript-tea@0.16",
-      "npm:rescript@12",
+      "npm:rescript@~11.1.4",
       "npm:vite@5"
     ]
   }

@@ -1,0 +1,13 @@
+{
+  "name": "rescript-tea",
+  "version": "0.16.1-hyperpolymath",
+  "sources": ["src"],
+  "package-specs": {
+    "module": "esmodule",
+    "in-source": true
+  },
+  "bs-dependencies": ["rescript-webapi"],
+  "warnings": {
+    "error": false
+  }
+}

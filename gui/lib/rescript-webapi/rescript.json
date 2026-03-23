@@ -1,0 +1,6 @@
+{
+  "name": "rescript-webapi",
+  "sources": [{"dir": "src", "subdirs": true}],
+  "package-specs": {"module": "es6", "in-source": true},
+  "warnings": {"error": false}
+}

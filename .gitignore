@@ -50,3 +50,4 @@ htmlcov/
 # Vexometer traces (keep examples)
 /vexometer/*.json
 !/vexometer/example-*.json
+gui/node_modules/

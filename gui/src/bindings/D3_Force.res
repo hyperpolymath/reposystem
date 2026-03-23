@@ -12,8 +12,8 @@ type node<'a> = {
   mutable y: float,
   mutable vx: float,
   mutable vy: float,
-  mutable fx: Nullable.t<float>,
-  mutable fy: Nullable.t<float>,
+  mutable fx: Js.Nullable.t<float>,
+  mutable fy: Js.Nullable.t<float>,
   data: 'a,
 }
 
@@ -30,7 +30,7 @@ type linkInput<'a> = {
 @send external alphaTarget: (simulation<'a>, float) => simulation<'a> = "alphaTarget"
 @send external restart: simulation<'a> => simulation<'a> = "restart"
 @send external on: (simulation<'a>, string, unit => unit) => simulation<'a> = "on"
-@send external getForce: (simulation<'a>, string) => Nullable.t<force> = "force"
+@send external getForce: (simulation<'a>, string) => Js.Nullable.t<force> = "force"
 
 // Forces
 @module("d3") external forceManyBody: unit => manyBodyForce = "forceManyBody"

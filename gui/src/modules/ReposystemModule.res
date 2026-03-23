@@ -60,7 +60,7 @@ let config: reposystemModuleConfig = {
 
 /// Check if Reposystem has a specific capability.
 let hasCapability = (cap: reposystemCapability): bool => {
-  config.capabilities->Array.includes(cap)
+  config.capabilities->Js.Array2.includes(cap)
 }
 
 /// Human-readable label for a Reposystem capability.

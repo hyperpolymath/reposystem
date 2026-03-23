@@ -65,10 +65,10 @@ let defaultEndpoint = "http://localhost:1430"
 /// Detect whether we're running inside a PanLL host.
 /// Checks for PanLL's presence marker on the window object.
 @val @scope("window")
-external panllInternals: Nullable.t<{..}> = "__PANLL_INTERNALS__"
+external panllInternals: Js.Nullable.t<{..}> = "__PANLL_INTERNALS__"
 
 let isPanllHost = (): bool => {
-  panllInternals->Nullable.toOption->Option.isSome
+  panllInternals->Js.Nullable.toOption->Belt.Option.isSome
 }
 
 /// Connection status as a human-readable label.

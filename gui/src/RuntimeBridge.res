@@ -100,8 +100,8 @@ let invoke = (cmd: string, args: 'a): promise<'b> => {
   } else if isTauriRuntime() {
     tauriInvoke(cmd, args)
   } else {
-    Promise.reject(
-      JsError.throwWithMessage(
+    Js.Promise.reject(
+      Js.Exn.raiseError(
         `No desktop runtime — "${cmd}" requires Gossamer or Tauri`,
       ),
     )

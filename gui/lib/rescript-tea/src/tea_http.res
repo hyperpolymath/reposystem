@@ -159,7 +159,7 @@ let send = (resultToMessage, Request(request, maybeEvents)) => {
       let mayCB = (thenDo, x) =>
         switch x {
         | None => ()
-        | Some(v) => thenDo(v(callbacks))
+        | Some(v) => thenDo(ev => v(callbacks, ev))
         }
       let () = mayCB(cb => setEvent(set_onreadystatechange, cb), onreadystatechange)
       let () = mayCB(cb => setEvent(set_onprogress, cb), onprogress)

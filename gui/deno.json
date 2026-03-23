@@ -18,7 +18,7 @@
     "d3": "npm:d3@^7",
     "vite": "npm:vite@^5",
     "rescript": "npm:rescript@~11.1.4",
-    "@rescript/core": "npm:@rescript/core@^1",
+    "@rescript/core": "npm:@rescript/core@~0.7.0",
     "rescript-tea": "npm:rescript-tea@^0.16"
   }
 }

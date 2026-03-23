@@ -3,7 +3,7 @@
 //
 // TEA Messages - All application events
 
-open Tauri
+open Backend
 
 // Message types
 type t =

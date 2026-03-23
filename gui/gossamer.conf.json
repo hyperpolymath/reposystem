@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "identifier": "com.hyperpolymath.reposystem",
   "build": {
-    "frontendDist": "../dist",
+    "frontendDist": "dist",
     "devUrl": "http://localhost:1420",
     "beforeDevCommand": "deno task dev:frontend",
     "beforeBuildCommand": "deno task build:frontend"
@@ -84,46 +84,6 @@
       "depends": [],
       "appimage": {
         "bundleMediaFramework": false
-      }
-    },
-    "macos": {
-      "bundleIdentifier": "com.hyperpolymath.reposystem",
-      "minimumSystemVersion": "11.0",
-      "frameworks": [],
-      "entitlements": null,
-      "signingIdentity": null,
-      "notarization": {
-        "enabled": false,
-        "teamId": null
-      }
-    },
-    "windows": {
-      "webview2": "embed",
-      "certificateThumbprint": null,
-      "wix": {
-        "language": "en-US"
-      },
-      "nsis": {
-        "displayLanguageSelector": false,
-        "installerIcon": null
-      }
-    },
-    "mobile": {
-      "ios": {
-        "minimumVersion": "14.0",
-        "deviceFamily": [
-          "iphone",
-          "ipad"
-        ],
-        "capabilities": [],
-        "frameworks": [],
-        "entitlements": {}
-      },
-      "android": {
-        "minimumSdk": 24,
-        "targetSdk": 34,
-        "permissions": [],
-        "features": []
       }
     }
   },

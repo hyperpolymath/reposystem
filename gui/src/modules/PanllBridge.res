@@ -3,7 +3,7 @@
 
 /// PanLL Bridge — Communication layer between Reposystem GUI and PanLL.
 ///
-/// Reposystem can operate standalone (Tauri desktop, browser) or as an
+/// Reposystem can operate standalone (Gossamer desktop, browser) or as an
 /// embedded panel inside PanLL. This bridge handles both modes:
 ///
 ///   Standalone mode: Reposystem runs its own TEA loop; PanLL bridge is
@@ -15,7 +15,7 @@
 ///     Panel-W receives graph snapshots for barycentre rendering
 ///
 /// Communication uses window.postMessage when in-browser (PanLL iframe or
-/// same-origin embed) or Tauri invoke when running as a Tauri sub-window.
+/// same-origin embed) or Gossamer invoke when running as a Gossamer sub-window.
 
 /// PanLL connection state.
 type panllConnectionStatus =
@@ -59,7 +59,7 @@ let init: panllState = {
   instanceId: None,
 }
 
-/// PanLL service endpoint (default, overridable via Tauri config).
+/// PanLL service endpoint (default, overridable via Gossamer config).
 let defaultEndpoint = "http://localhost:1430"
 
 /// Detect whether we're running inside a PanLL host.

@@ -3,10 +3,8 @@
   "version": "0.1.0",
   "nodeModulesDir": "auto",
   "tasks": {
-    "dev": "tauri dev",
-    "build": "tauri build",
-    "dev:gossamer": "gossamer dev",
-    "build:gossamer": "gossamer build",
+    "dev": "gossamer dev",
+    "build": "gossamer build",
     "dev:frontend": "rescript build -w & deno run --allow-read --allow-net npm:vite",
     "build:frontend": "rescript build && deno run --allow-read --allow-write --allow-env npm:vite build",
     "rescript": "^12.0.0",
@@ -14,7 +12,6 @@
     "rescript:clean": "rescript clean"
   },
   "imports": {
-    "@tauri-apps/api": "npm:@tauri-apps/api@^2",
     "d3": "npm:d3@^7",
     "vite": "npm:vite@^5",
     "rescript": "npm:rescript@~11.1.4",

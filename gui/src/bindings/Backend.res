@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 //
 // Backend IPC bindings for ReScript
-// Uses RuntimeBridge for Gossamer/Tauri/browser dispatch
+// Uses RuntimeBridge for Gossamer/browser dispatch
 
 /// Invoke a backend command with arguments (delegates to RuntimeBridge).
 let invoke = RuntimeBridge.invoke

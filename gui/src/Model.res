@@ -3,7 +3,7 @@
 //
 // TEA Model - Application state
 
-open Tauri
+open Backend
 
 // Tab navigation
 type tab =

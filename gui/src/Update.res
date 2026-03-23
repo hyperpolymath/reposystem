@@ -427,14 +427,14 @@ let update = (msg: Msg.t, model: Model.t): (Model.t, Cmd.t<Msg.t>) => {
 
 let loadAllData = async () => {
   try {
-    let repos = await Tauri.Commands.getRepos()
-    let edges = await Tauri.Commands.getEdges()
-    let groups = await Tauri.Commands.getGroups()
-    let aspects = await Tauri.Commands.getAspects()
-    let slots = await Tauri.Commands.getSlots()
-    let providers = await Tauri.Commands.getProviders()
-    let bindings = await Tauri.Commands.getBindings()
-    let plans = await Tauri.Commands.getPlans()
+    let repos = await Backend.Commands.getRepos()
+    let edges = await Backend.Commands.getEdges()
+    let groups = await Backend.Commands.getGroups()
+    let aspects = await Backend.Commands.getAspects()
+    let slots = await Backend.Commands.getSlots()
+    let providers = await Backend.Commands.getProviders()
+    let bindings = await Backend.Commands.getBindings()
+    let plans = await Backend.Commands.getPlans()
 
     Msg.DataLoaded(
       Ok({
@@ -455,7 +455,7 @@ let loadAllData = async () => {
 
 let addEdge = async (from, to_, rel) => {
   try {
-    let edge = await Tauri.Commands.addEdge(~from, ~to_, ~rel)
+    let edge = await Backend.Commands.addEdge(~from, ~to_, ~rel)
     Msg.EdgeAdded(Ok(edge))
   } catch {
   | Exn.Error(e) => Msg.EdgeAdded(Error(Exn.message(e)->Option.getOr("Unknown error")))
@@ -464,7 +464,7 @@ let addEdge = async (from, to_, rel) => {
 
 let removeEdge = async edgeId => {
   try {
-    await Tauri.Commands.removeEdge(~edgeId)
+    await Backend.Commands.removeEdge(~edgeId)
     Msg.EdgeRemoved(Ok())
   } catch {
   | Exn.Error(e) => Msg.EdgeRemoved(Error(Exn.message(e)->Option.getOr("Unknown error")))
@@ -473,7 +473,7 @@ let removeEdge = async edgeId => {
 
 let createGroup = async (name, description) => {
   try {
-    let group = await Tauri.Commands.createGroup(~name, ~description?)
+    let group = await Backend.Commands.createGroup(~name, ~description?)
     Msg.GroupCreated(Ok(group))
   } catch {
   | Exn.Error(e) => Msg.GroupCreated(Error(Exn.message(e)->Option.getOr("Unknown error")))
@@ -482,7 +482,7 @@ let createGroup = async (name, description) => {
 
 let addToGroup = async (groupId, repoId) => {
   try {
-    await Tauri.Commands.addToGroup(~groupId, ~repoId)
+    await Backend.Commands.addToGroup(~groupId, ~repoId)
     Msg.LoadAllData
   } catch {
   | Exn.Error(_) => Msg.LoadAllData
@@ -491,7 +491,7 @@ let addToGroup = async (groupId, repoId) => {
 
 let removeFromGroup = async (groupId, repoId) => {
   try {
-    await Tauri.Commands.removeFromGroup(~groupId, ~repoId)
+    await Backend.Commands.removeFromGroup(~groupId, ~repoId)
     Msg.LoadAllData
   } catch {
   | Exn.Error(_) => Msg.LoadAllData
@@ -500,7 +500,7 @@ let removeFromGroup = async (groupId, repoId) => {
 
 let tagAspect = async (target, aspectId, weight, polarity, reason) => {
   try {
-    let aspect = await Tauri.Commands.tagAspect(~target, ~aspectId, ~weight, ~polarity, ~reason)
+    let aspect = await Backend.Commands.tagAspect(~target, ~aspectId, ~weight, ~polarity, ~reason)
     Msg.AspectTagged(Ok(aspect))
   } catch {
   | Exn.Error(e) => Msg.AspectTagged(Error(Exn.message(e)->Option.getOr("Unknown error")))
@@ -509,7 +509,7 @@ let tagAspect = async (target, aspectId, weight, polarity, reason) => {
 
 let removeAspect = async annotationId => {
   try {
-    await Tauri.Commands.removeAspect(~annotationId)
+    await Backend.Commands.removeAspect(~annotationId)
     Msg.AspectRemoved(Ok())
   } catch {
   | Exn.Error(e) => Msg.AspectRemoved(Error(Exn.message(e)->Option.getOr("Unknown error")))
@@ -518,7 +518,7 @@ let removeAspect = async annotationId => {
 
 let createSlot = async (name, category, description, capabilities) => {
   try {
-    let slot = await Tauri.Commands.createSlot(~name, ~category, ~description, ~capabilities)
+    let slot = await Backend.Commands.createSlot(~name, ~category, ~description, ~capabilities)
     Msg.SlotCreated(Ok(slot))
   } catch {
   | Exn.Error(e) => Msg.SlotCreated(Error(Exn.message(e)->Option.getOr("Unknown error")))
@@ -527,7 +527,7 @@ let createSlot = async (name, category, description, capabilities) => {
 
 let createProvider = async (args: Msg.createProviderArgs) => {
   try {
-    let provider = await Tauri.Commands.createProvider(
+    let provider = await Backend.Commands.createProvider(
       ~name=args.name,
       ~slotId=args.slotId,
       ~providerType=args.providerType,
@@ -544,7 +544,7 @@ let createProvider = async (args: Msg.createProviderArgs) => {
 
 let bindSlot = async (consumerId, slotId, providerId) => {
   try {
-    let binding = await Tauri.Commands.bindSlot(~consumerId, ~slotId, ~providerId)
+    let binding = await Backend.Commands.bindSlot(~consumerId, ~slotId, ~providerId)
     Msg.SlotBound(Ok(binding))
   } catch {
   | Exn.Error(e) => Msg.SlotBound(Error(Exn.message(e)->Option.getOr("Unknown error")))
@@ -553,7 +553,7 @@ let bindSlot = async (consumerId, slotId, providerId) => {
 
 let unbindSlot = async bindingId => {
   try {
-    await Tauri.Commands.unbindSlot(~bindingId)
+    await Backend.Commands.unbindSlot(~bindingId)
     Msg.SlotUnbound(Ok())
   } catch {
   | Exn.Error(e) => Msg.SlotUnbound(Error(Exn.message(e)->Option.getOr("Unknown error")))
@@ -562,7 +562,7 @@ let unbindSlot = async bindingId => {
 
 let saveGraph = async () => {
   try {
-    await Tauri.Commands.saveGraph()
+    await Backend.Commands.saveGraph()
     Msg.GraphSaved(Ok())
   } catch {
   | Exn.Error(e) => Msg.GraphSaved(Error(Exn.message(e)->Option.getOr("Unknown error")))

@@ -330,7 +330,7 @@ let renderReposList = (model: Model.t) => {
   )
 }
 
-let forgeToString = (forge: Tauri.forge) =>
+let forgeToString = (forge: Backend.forge) =>
   switch forge {
   | GitHub => "GitHub"
   | GitLab => "GitLab"
@@ -617,7 +617,7 @@ let renderSlotsList = (model: Model.t) => {
   )
 }
 
-let providerTypeToString = (pt: Tauri.providerType) =>
+let providerTypeToString = (pt: Backend.providerType) =>
   switch pt {
   | Local => "local"
   | Ecosystem => "ecosystem"
@@ -651,7 +651,7 @@ let renderPlansList = (model: Model.t) => {
   )
 }
 
-let planStatusToString = (status: Tauri.planStatus) =>
+let planStatusToString = (status: Backend.planStatus) =>
   switch status {
   | Draft => "Draft"
   | Ready => "Ready"
@@ -683,7 +683,7 @@ let renderDetailPanel = (model: Model.t) => {
   )
 }
 
-let renderRepoDetail = (repo: Tauri.repo) => {
+let renderRepoDetail = (repo: Backend.repo) => {
   div(
     [class("detail")],
     [
@@ -708,7 +708,7 @@ let renderRepoDetail = (repo: Tauri.repo) => {
   )
 }
 
-let renderEdgeDetail = (edge: Tauri.edge) => {
+let renderEdgeDetail = (edge: Backend.edge) => {
   div(
     [class("detail")],
     [
@@ -732,7 +732,7 @@ let renderEdgeDetail = (edge: Tauri.edge) => {
   )
 }
 
-let renderGroupDetail = (group: Tauri.group) => {
+let renderGroupDetail = (group: Backend.group) => {
   div(
     [class("detail")],
     [
@@ -769,7 +769,7 @@ let renderGroupDetail = (group: Tauri.group) => {
   )
 }
 
-let renderAspectDetail = (aspect: Tauri.aspectAnnotation) => {
+let renderAspectDetail = (aspect: Backend.aspectAnnotation) => {
   div(
     [class("detail")],
     [
@@ -791,7 +791,7 @@ let renderAspectDetail = (aspect: Tauri.aspectAnnotation) => {
   )
 }
 
-let renderSlotDetail = (slot: Tauri.slot) => {
+let renderSlotDetail = (slot: Backend.slot) => {
   div(
     [class("detail")],
     [
@@ -816,7 +816,7 @@ let renderSlotDetail = (slot: Tauri.slot) => {
   )
 }
 
-let renderProviderDetail = (provider: Tauri.provider) => {
+let renderProviderDetail = (provider: Backend.provider) => {
   div(
     [class("detail")],
     [
@@ -843,7 +843,7 @@ let renderProviderDetail = (provider: Tauri.provider) => {
   )
 }
 
-let renderBindingDetail = (binding: Tauri.slotBinding) => {
+let renderBindingDetail = (binding: Backend.slotBinding) => {
   div(
     [class("detail")],
     [
@@ -867,7 +867,7 @@ let renderBindingDetail = (binding: Tauri.slotBinding) => {
   )
 }
 
-let renderPlanDetail = (plan: Tauri.plan) => {
+let renderPlanDetail = (plan: Backend.plan) => {
   div(
     [class("detail")],
     [

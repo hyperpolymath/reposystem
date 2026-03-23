@@ -21,7 +21,7 @@ let registerGlobal = (name, key, tagger) => {
       }
     }
     let handler = EventHandlerCallback(key, fn)
-    let eventTarget = Webapi.Dom.document |> Webapi.Dom.Document.asEventTarget
+    let eventTarget = Webapi.Dom.document->Webapi.Dom.Document.asEventTarget
     let cache = eventHandlerRegister(callbacks, eventTarget, name, handler)
     () => {
       let _ = eventHandlerUnregister(eventTarget, name, cache)

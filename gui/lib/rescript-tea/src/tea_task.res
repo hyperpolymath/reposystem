@@ -88,44 +88,44 @@ let fromResult: result<'success, 'failure> => t<'success, 'failure> = x =>
   | Error(err) => fail(err)
   }
 
-let mapError = (func, task) => task |> onError(e => fail(func(e)))
+let mapError = (func, task) => onError(e => fail(func(e)), task)
 
-let toOption = task => task |> andThen(v => succeed(Some(v))) |> onError(_ => succeed(None))
+let toOption = task => onError(_ => succeed(None), andThen(v => succeed(Some(v)), task))
 
-let map = (func, task1) => task1 |> andThen(v1 => succeed(func(v1)))
+let map = (func, task1) => andThen(v1 => succeed(func(v1)), task1)
 
 let map2 = (func, task1, task2) =>
-  task1 |> andThen(v1 => task2 |> andThen(v2 => succeed(func(v1, v2))))
+  andThen(v1 => andThen(v2 => succeed(func(v1, v2)), task2), task1)
 
 let map3 = (func, task1, task2, task3) =>
-  task1 |> andThen(v1 => task2 |> andThen(v2 => task3 |> andThen(v3 => succeed(func(v1, v2, v3)))))
+  andThen(v1 => andThen(v2 => andThen(v3 => succeed(func(v1, v2, v3)), task3), task2), task1)
 
 let map4 = (func, task1, task2, task3, task4) =>
-  task1 |> andThen(v1 =>
-    task2 |> andThen(v2 =>
-      task3 |> andThen(v3 => task4 |> andThen(v4 => succeed(func(v1, v2, v3, v4))))
-    )
-  )
+  andThen(v1 =>
+    andThen(v2 =>
+      andThen(v3 => andThen(v4 => succeed(func(v1, v2, v3, v4)), task4), task3)
+    , task2)
+  , task1)
 
 let map5 = (func, task1, task2, task3, task4, task5) =>
-  task1 |> andThen(v1 =>
-    task2 |> andThen(v2 =>
-      task3 |> andThen(v3 =>
-        task4 |> andThen(v4 => task5 |> andThen(v5 => succeed(func(v1, v2, v3, v4, v5))))
-      )
-    )
-  )
+  andThen(v1 =>
+    andThen(v2 =>
+      andThen(v3 =>
+        andThen(v4 => andThen(v5 => succeed(func(v1, v2, v3, v4, v5)), task5), task4)
+      , task3)
+    , task2)
+  , task1)
 
 let map6 = (func, task1, task2, task3, task4, task5, task6) =>
-  task1 |> andThen(v1 =>
-    task2 |> andThen(v2 =>
-      task3 |> andThen(v3 =>
-        task4 |> andThen(v4 =>
-          task5 |> andThen(v5 => task6 |> andThen(v6 => succeed(func(v1, v2, v3, v4, v5, v6))))
-        )
-      )
-    )
-  )
+  andThen(v1 =>
+    andThen(v2 =>
+      andThen(v3 =>
+        andThen(v4 =>
+          andThen(v5 => andThen(v6 => succeed(func(v1, v2, v3, v4, v5, v6)), task6), task5)
+        , task4)
+      , task3)
+    , task2)
+  , task1)
 
 let rec sequence = x =>
   switch x {
@@ -155,37 +155,37 @@ let testing = () => {
     } else {
       fail(3.14)
     }
-  let a1 = succeed(2) |> andThen(n => succeed(n + 2))
+  let a1 = andThen(n => succeed(n + 2), succeed(2))
   let () = doTest(Ok(4), a1)
-  let a2 = succeed(2) |> andThen(n => succeed(Belt.Int.toString(n)))
+  let a2 = andThen(n => succeed(Belt.Int.toString(n)), succeed(2))
   let () = doTest(Ok("2"), a2)
   let m1 = map(sqrt, succeed(9.))
   let () = doTest(Ok(3.), m1)
   let m2 = map2(\"+", succeed(9), succeed(3))
   let () = doTest(Ok(12), m2)
-  let m3 = map(Belt.Int.toString, succeed(9))
+  let m3 = map(x => Belt.Int.toString(x), succeed(9))
   let () = doTest(Ok("9"), m3)
   let s0 = sequence(list{succeed(1), succeed(2)})
   let () = doTest(Ok(list{1, 2}), s0)
   let s1 = sequence(list{succeed(1), fail(2.7), r()})
   let () = doTest(Error(2.7), s1)
-  let e0 = fail("file not found") |> onError(_msg => succeed(42))
+  let e0 = onError(_msg => succeed(42), fail("file not found"))
   let () = doTest(Ok(42), e0)
-  let e1 = fail("file not found") |> onError(_msg => fail(42))
+  let e1 = onError(_msg => fail(42), fail("file not found"))
   let () = doTest(Error(42), e1)
   let n0 = sequence(list{
-    mapError(Belt.Int.toString, fail(42)),
-    mapError(Js.Float.toString, fail(3.14)),
+    mapError(x => Belt.Int.toString(x), fail(42)),
+    mapError(x => Js.Float.toString(x), fail(3.14)),
   })
   let () = doTest(Error("42"), n0)
   let n1 = sequence(list{
-    mapError(Belt.Int.toString, succeed(1)),
-    mapError(Js.Float.toString, fail(3.14)),
+    mapError(x => Belt.Int.toString(x), succeed(1)),
+    mapError(x => Js.Float.toString(x), fail(3.14)),
   })
   let () = doTest(Error("3.14"), n1)
   let n2 = sequence(list{
-    mapError(Belt.Int.toString, succeed(1)),
-    mapError(Js.Float.toString, succeed(2)),
+    mapError(x => Belt.Int.toString(x), succeed(1)),
+    mapError(x => Js.Float.toString(x), succeed(2)),
   })
   let () = doTest(Ok(list{1, 2}), n2)
 
@@ -194,6 +194,6 @@ let testing = () => {
   let () = doTest(Ok(42), fromResult(Ok(42)))
   let () = doTest(Error("failure"), fromResult(Error("failure")))
 
-  let () = doTest(Ok(None), fail("for some reason") |> toOption)
-  let () = doTest(Ok(Some(42)), succeed(42) |> toOption)
+  let () = doTest(Ok(None), toOption(fail("for some reason")))
+  let () = doTest(Ok(Some(42)), toOption(succeed(42)))
 }

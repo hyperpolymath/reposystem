@@ -66,7 +66,7 @@ module Decoder = {
           | Ok(r) => r
           | Error(e) => raise(ParseFail(e))
           }
-        try Ok(Array.to_list(a) |> List.map(parse)) catch {
+        try Ok(List.map(parse, Array.to_list(a))) catch {
         | ParseFail(e) => Error("list -> " ++ e)
         }
       | _ => Error("Non-list value")
@@ -214,7 +214,7 @@ module Decoder = {
       | (Ok(v1), Ok(v2), Ok(v3)) => Ok(mapper(v1, v2, v3))
       | (e1, e2, e3) =>
         open! Tea_result
-        switch e1 |> first(e2) |> first(e3) {
+        switch first(first(e1, e2), e3) {
         | Ok(_) => failwith("Impossible case")
         | Error(e) => Error("map3 -> " ++ e)
         }
@@ -233,7 +233,7 @@ module Decoder = {
       | (Ok(v1), Ok(v2), Ok(v3), Ok(v4)) => Ok(mapper(v1, v2, v3, v4))
       | (e1, e2, e3, e4) =>
         open! Tea_result
-        switch e1 |> first(e2) |> first(e3) |> first(e4) {
+        switch first(first(first(e1, e2), e3), e4) {
         | Ok(_) => failwith("Impossible case")
         | Error(e) => Error("map4 -> " ++ e)
         }
@@ -253,7 +253,7 @@ module Decoder = {
       | (Ok(v1), Ok(v2), Ok(v3), Ok(v4), Ok(v5)) => Ok(mapper(v1, v2, v3, v4, v5))
       | (e1, e2, e3, e4, e5) =>
         open! Tea_result
-        switch e1 |> first(e2) |> first(e3) |> first(e4) |> first(e5) {
+        switch first(first(first(first(e1, e2), e3), e4), e5) {
         | Ok(_) => failwith("Impossible case")
         | Error(e) => Error("map5 -> " ++ e)
         }
@@ -281,7 +281,7 @@ module Decoder = {
       | (Ok(v1), Ok(v2), Ok(v3), Ok(v4), Ok(v5), Ok(v6)) => Ok(mapper(v1, v2, v3, v4, v5, v6))
       | (e1, e2, e3, e4, e5, e6) =>
         open! Tea_result
-        switch e1 |> first(e2) |> first(e3) |> first(e4) |> first(e5) |> first(e6) {
+        switch first(first(first(first(first(e1, e2), e3), e4), e5), e6) {
         | Ok(_) => failwith("Impossible case")
         | Error(e) => Error("map6 -> " ++ e)
         }
@@ -312,7 +312,7 @@ module Decoder = {
         Ok(mapper(v1, v2, v3, v4, v5, v6, v7))
       | (e1, e2, e3, e4, e5, e6, e7) =>
         open! Tea_result
-        switch e1 |> first(e2) |> first(e3) |> first(e4) |> first(e5) |> first(e6) |> first(e7) {
+        switch first(first(first(first(first(first(e1, e2), e3), e4), e5), e6), e7) {
         | Ok(_) => failwith("Impossible case")
         | Error(e) => Error("map7 -> " ++ e)
         }
@@ -345,14 +345,7 @@ module Decoder = {
         Ok(mapper(v1, v2, v3, v4, v5, v6, v7, v8))
       | (e1, e2, e3, e4, e5, e6, e7, e8) =>
         open! Tea_result
-        switch e1
-        |> first(e2)
-        |> first(e3)
-        |> first(e4)
-        |> first(e5)
-        |> first(e6)
-        |> first(e7)
-        |> first(e8) {
+        switch first(first(first(first(first(first(first(e1, e2), e3), e4), e5), e6), e7), e8) {
         | Ok(_) => failwith("Impossible case")
         | Error(e) => Error("map8 -> " ++ e)
         }
@@ -439,7 +432,7 @@ module Encoder = {
     Obj.magic(o)
   }
 
-  let array = (v: array<'t>): Js.Json.t => Obj.magic(Js.Json.Array, v)
+  let array = (v: array<'t>): Js.Json.t => Obj.magic(v)
 
   let list = (v: list<'t>): Js.Json.t => Obj.magic(Array.of_list(v))
 }

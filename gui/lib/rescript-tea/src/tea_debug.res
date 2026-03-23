@@ -34,7 +34,7 @@ let debug = (
       state: Running,
       showDetails: false,
     },
-    cmd |> Tea_cmd.map(clientMsg),
+    Tea_cmd.map(clientMsg, cmd),
   )
 
   let update' = (model, x) =>
@@ -44,7 +44,7 @@ let debug = (
         let (_, cmodel) = List.hd(model.history)
         let (cmodel', cmd) = update(cmodel, msg)
         let dmodel' = {...model, history: list{(msgToString(msg), cmodel'), ...model.history}}
-        (dmodel', cmd |> Tea_cmd.map(clientMsg))
+        (dmodel', Tea_cmd.map(clientMsg, cmd))
       } else {
         (model, Tea_cmd.none)
       }
@@ -59,12 +59,12 @@ let debug = (
 
   let viewStyles = () => {
     open Tea_html
-    let rule = (selector, properties) =>
-      properties
-      |> List.map(((k, v)) => k ++ (":" ++ v))
-      |> String.concat(";")
-      |> (x => j`$(selector) {$(x)}`)
-      |> text
+    let rule = (selector, properties) => {
+      let joined = properties
+        ->List.map(((k, v)) => k ++ (":" ++ v))
+        ->String.concat(";")
+      text(`${selector} {${joined}}`)
+    }
 
     node(
       "style",
@@ -264,7 +264,7 @@ let debug = (
         return JSON.stringify(formatValue(v), null, 2);
       }
     `)
-    aside(list{A.class("details")}, list{model |> format |> text})
+    aside(list{A.class("details")}, list{text(format(model))})
   }
 
   let viewHistory = (model, selectedIndex) => {
@@ -331,7 +331,7 @@ let debug = (
                     E.onClick(TogglePaused),
                     paused ? A.title("click to resume") : A.title("click to pause"),
                   },
-                  list{j`Explore History ($(historyCount))` |> text},
+                  list{text(`Explore History (${Belt.Int.toString(historyCount)})`)},
                 ),
                 if paused {
                   viewHistory(model, selectedIndex)
@@ -394,7 +394,7 @@ let debugNavigationProgram: (
   )
 
   {
-    init: (flags, location) => init(flags, location) |> initDebug,
+    init: (flags, location) => initDebug(init(flags, location)),
     update: update',
     view: view',
     subscriptions: subscriptions',

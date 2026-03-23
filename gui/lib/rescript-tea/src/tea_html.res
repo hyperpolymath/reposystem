@@ -303,12 +303,11 @@ module Attributes = {
 
   let class = name => prop("className", name)
 
-  let classList = classes =>
-    classes
-    |> List.filter(((_fst, snd)) => snd)
-    |> List.map(((fst, _snd)) => fst)
-    |> String.concat(" ")
-    |> class
+  let classList = classes => {
+    let filtered = List.filter(((_fst, snd)) => snd, classes)
+    let names = List.map(((fst, _snd)) => fst, filtered)
+    class(String.concat(" ", names))
+  }
 
   let id = str => prop("id", str)
 
@@ -668,7 +667,7 @@ module Events = {
       if options.preventDefault {
         Webapi.Dom.Event.preventDefault(Obj.magic(event))
       }
-      event |> Tea_json.Decoder.decodeEvent(decoder) |> Tea_result.resultToOption
+      Tea_json.Decoder.decodeEvent(decoder, event)->Tea_result.resultToOption
     })
 
   let on = (~key: string, eventName, decoder) =>
@@ -705,7 +704,7 @@ module Events = {
 
   let onInputOpt = (~key="", msg) =>
     onCB(~key, "input", (ev: Dom.event) => {
-      let element = Webapi.Dom.Event.target(ev) |> Webapi.Dom.EventTarget.unsafeAsElement
+      let element = Webapi.Dom.Event.target(ev)->Webapi.Dom.EventTarget.unsafeAsElement
       switch Webapi.Dom.HtmlElement.ofElement(element) {
       | None => None
       | Some(inputElement) => msg(Webapi.Dom.HtmlElement.value(inputElement))
@@ -716,7 +715,7 @@ module Events = {
 
   let onCheckOpt = (~key="", msg) =>
     onCB(~key, "check", (ev: Dom.event) => {
-      let element = Webapi.Dom.Event.target(ev) |> Webapi.Dom.EventTarget.unsafeAsElement
+      let element = Webapi.Dom.Event.target(ev)->Webapi.Dom.EventTarget.unsafeAsElement
       switch Webapi.Dom.HtmlElement.ofElement(element) {
       | None => None
       | Some(inputElement) => msg(Webapi.Dom.HtmlElement.checked(inputElement))
@@ -727,7 +726,7 @@ module Events = {
 
   let onChangeOpt = (~key="", msg) =>
     onCB(~key, "change", (ev: Dom.event) => {
-      let element = Webapi.Dom.Event.target(ev) |> Webapi.Dom.EventTarget.unsafeAsElement
+      let element = Webapi.Dom.Event.target(ev)->Webapi.Dom.EventTarget.unsafeAsElement
       switch Webapi.Dom.HtmlElement.ofElement(element) {
       | None => None
       | Some(inputElement) => msg(Webapi.Dom.HtmlElement.value(inputElement))

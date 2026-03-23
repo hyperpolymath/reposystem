@@ -102,18 +102,16 @@ let getAllResponseHeadersAsList = (x: t): result<list<(string, string)>, errors>
   switch getAllResponseHeaders(x) {
   | Error(_) as err => err
   | Ok(s) =>
+    let lines = Js.String.split("\r\n", s)
+    let parts = Array.to_list(Array.map(line => Js.String.splitAtMost(": ", ~limit=2, line), lines))
+    let filtered = List.filter(a => Array.length(a) === 2, parts)
     Ok(
-      s
-      |> Js.String.split("\r\n")
-      |> Array.map(Js.String.splitAtMost(": ", ~limit=2))
-      |> Array.to_list
-      |> List.filter(a => Array.length(a) === 2)
-      |> List.map(x =>
+      List.map(x =>
         switch x {
         | [key, value] => (key, value)
         | _ => failwith("Cannot happen, already checked length")
         }
-      ),
+      , filtered),
     )
   }
 

@@ -40,6 +40,6 @@ let rec run:
 let map:
   type a b. (a => b, t<a>) => t<b> =
   (func, cmd) => {
-    let mapper = Vdom.wrapCallbacks(func)
+    let mapper = (callbacks) => Vdom.wrapCallbacks(func, callbacks)
     Mapper(mapper, cmd)
   }

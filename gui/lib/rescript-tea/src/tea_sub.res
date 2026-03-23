@@ -19,7 +19,7 @@ let batch = subs => Batch(subs)
 
 let registration = (key, enableCall) => Registration(
   key,
-  callbacks => enableCall(callbacks.contents),
+  (callbacks, _) => enableCall(callbacks.contents),
   ref(None),
 )
 
@@ -44,11 +44,11 @@ let rec run:
         switch x {
         | NoSub => ()
         | Batch(list{}) => ()
-        | Batch(subs) => List.iter(enable(callbacks), subs)
+        | Batch(subs) => List.iter(sub => enable(callbacks, sub), subs)
         | Mapper(mapper, sub) =>
           let subCallbacks = mapper(callbacks)
           enable(subCallbacks, sub)
-        | Registration(_key, enCB, diCB) => diCB := Some(enCB(callbacks))
+        | Registration(_key, enCB, diCB) => diCB := Some(() => enCB(callbacks, ()))
         }
     let rec disable:
       type msg. (ref<Vdom.applicationCallbacks<msg>>, t<msg>) => unit =
@@ -56,7 +56,7 @@ let rec run:
         switch x {
         | NoSub => ()
         | Batch(list{}) => ()
-        | Batch(subs) => List.iter(disable(callbacks), subs)
+        | Batch(subs) => List.iter(sub => disable(callbacks, sub), subs)
         | Mapper(mapper, sub) =>
           let subCallbacks = mapper(callbacks)
           disable(subCallbacks, sub)

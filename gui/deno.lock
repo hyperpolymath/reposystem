@@ -1,7 +1,7 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@rescript/core@1": "1.6.1_rescript@11.1.4",
+    "npm:@rescript/core@0.7": "0.7.0_rescript@11.1.4",
     "npm:@tauri-apps/api@2": "2.10.1",
     "npm:d3@7": "7.9.0",
     "npm:rescript-tea@0.16": "0.16.0",
@@ -124,8 +124,8 @@
       "os": ["win32"],
       "cpu": ["x64"]
     },
-    "@rescript/core@1.6.1_rescript@11.1.4": {
-      "integrity": "sha512-vyb5k90ck+65Fgui+5vCja/mUfzKaK3kOPT4Z6aAJdHLH1eljEi1zKhXroCiCtpNLSWp8k4ulh1bdB5WS0hvqA==",
+    "@rescript/core@0.7.0_rescript@11.1.4": {
+      "integrity": "sha512-5arTnw1EVPvssqq4v+XHkigROoWXYm/3pD+ZyOSeJgnbzMccRibGWb4L6Ss3QBoEkpuCodX06RnLx8Vqa3kECQ==",
       "dependencies": [
         "rescript"
       ]
@@ -608,7 +608,7 @@
   },
   "workspace": {
     "dependencies": [
-      "npm:@rescript/core@1",
+      "npm:@rescript/core@0.7",
       "npm:@tauri-apps/api@2",
       "npm:d3@7",
       "npm:rescript-tea@0.16",

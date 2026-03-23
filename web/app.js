@@ -102,6 +102,7 @@ function undo() {
   updateGroupSelect();
   updateNodeList();
   render();
+  persistToLocalStorage();
 }
 
 function redo() {
@@ -112,6 +113,7 @@ function redo() {
   updateGroupSelect();
   updateNodeList();
   render();
+  persistToLocalStorage();
 }
 
 function normalizeGraph(raw) {
@@ -744,6 +746,7 @@ function makeDraggable(nodeEl, nodeData, offsetX = 0, offsetY = 0) {
   });
 
   svg.addEventListener("mouseup", () => {
+    if (dragging) persistToLocalStorage();
     dragging = false;
   });
 }
@@ -950,6 +953,7 @@ function deleteSelection() {
   updateGroupSelect();
   updateNodeList();
   render();
+  persistToLocalStorage();
 }
 
 function createGroupFromSelection() {
@@ -969,6 +973,7 @@ function createGroupFromSelection() {
   updateGroupSelect();
   updateNodeList();
   render();
+  persistToLocalStorage();
 }
 
 function addAnnotationText(world) {
@@ -984,6 +989,7 @@ function addAnnotationText(world) {
     z: nextZ++,
   });
   render();
+  persistToLocalStorage();
 }
 
 function addAnnotationBox(start, end) {
@@ -1004,6 +1010,7 @@ function addAnnotationBox(start, end) {
     z: nextZ++,
   });
   render();
+  persistToLocalStorage();
 }
 
 function addAnnotationArrow(start, end) {
@@ -1020,6 +1027,7 @@ function addAnnotationArrow(start, end) {
     z: nextZ++,
   });
   render();
+  persistToLocalStorage();
 }
 
 function downloadJSON() {
@@ -1037,6 +1045,104 @@ function downloadJSON() {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+// ============================================================================
+// Node and Edge creation
+// ============================================================================
+
+function showAddNodeForm() {
+  const name = prompt("Node name:");
+  if (!name || !name.trim()) return;
+  snapshot();
+  const node = ensureNodeShape({
+    kind: "Repo",
+    id: `repo:local:${name.trim().toLowerCase().replace(/\s+/g, "-")}`,
+    name: name.trim(),
+    tags: [],
+    x: center.x + (Math.random() - 0.5) * 200,
+    y: center.y + (Math.random() - 0.5) * 200,
+  });
+  graphData.nodes.push(node);
+  updateNodeList();
+  render();
+  persistToLocalStorage();
+  setStatus(`Added node: ${name.trim()}`);
+}
+
+function showAddEdgeForm() {
+  if (selectedItems.length < 2) {
+    setStatus("Select two nodes first (shift-click), then press E to create an edge.");
+    return;
+  }
+  const from = selectedItems[0];
+  const to = selectedItems[1];
+  if (!from.id || !to.id || from.from || to.from) {
+    setStatus("Select two nodes (not edges) to create an edge.");
+    return;
+  }
+  const rel = prompt("Relationship type (uses, provides, extends, mirrors, replaces):", "uses");
+  if (!rel || !rel.trim()) return;
+  snapshot();
+  const edge = ensureEdgeShape({
+    kind: "Edge",
+    id: `edge:${Date.now()}`,
+    from: from.id,
+    to: to.id,
+    rel: rel.trim(),
+    label: rel.trim(),
+  });
+  graphData.edges.push(edge);
+  selectedItems = [];
+  render();
+  persistToLocalStorage();
+  setStatus(`Added edge: ${from.label || from.name} -> ${to.label || to.name}`);
+}
+
+// ============================================================================
+// localStorage persistence
+// ============================================================================
+
+const STORAGE_KEY = "reposystem-graph-data";
+
+function persistToLocalStorage() {
+  try {
+    const data = {
+      nodes: graphData.nodes,
+      edges: graphData.edges,
+      groups: graphData.groups,
+      annotations: graphData.annotations,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // Storage full or unavailable — fail silently
+  }
+}
+
+function loadFromLocalStorage() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return false;
+    const raw = JSON.parse(stored);
+    if (raw && raw.nodes && raw.nodes.length > 0) {
+      loadGraph(raw);
+      setStatus(`Restored ${graphData.nodes.length} nodes from local storage`);
+      return true;
+    }
+  } catch {
+    // Corrupted data — ignore
+  }
+  return false;
+}
+
+// Auto-persist after each graph load
+const _origLoadGraph2 = loadGraph;
+loadGraph = function (raw) {
+  _origLoadGraph2(raw);
+  persistToLocalStorage();
+};
+
+// Restore from localStorage on startup (if no file loaded)
+loadFromLocalStorage();
 
 // UI event wiring
 layoutSelect.addEventListener("change", () => {
@@ -1205,7 +1311,21 @@ const panllBridge = {
       // Embedded — postMessage to parent PanLL window
       window.parent.postMessage(payload, "*");
     }
-    // Standalone HTTP sync is a TODO — requires Panel-W API endpoint
+    if (panllBridge.instanceId === "standalone") {
+      // Standalone — POST graph snapshot to PanLL Panel-W API
+      try {
+        await fetch(panllBridge.endpoint + "/api/v1/panel-w/graph", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } catch (err) {
+        panllBridge.status = "error";
+        updatePanllStatusUI();
+        setStatus("PanLL sync failed: " + (err.message || "network error"));
+        return;
+      }
+    }
 
     setStatus(`Synced ${graphData.nodes.length} nodes to PanLL Panel-W`);
   },
@@ -1223,6 +1343,12 @@ const panllBridge = {
 
     if (panllBridge.isPanllHost()) {
       window.parent.postMessage(payload, "*");
+    } else {
+      fetch(panllBridge.endpoint + "/api/v1/panel-l/constraints", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }).catch(() => {});
     }
   },
 
@@ -1239,6 +1365,12 @@ const panllBridge = {
 
     if (panllBridge.isPanllHost()) {
       window.parent.postMessage(payload, "*");
+    } else {
+      fetch(panllBridge.endpoint + "/api/v1/panel-n/health", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }).catch(() => {});
     }
   },
 };
@@ -1362,7 +1494,22 @@ document.addEventListener("keydown", (event) => {
     deleteSelection();
   } else if (key === "p") {
     togglePin();
-  } else if (key === "b") {
+  } else if (key === "b" && !event.shiftKey) {
     sendToBack();
+  } else if (key === "escape") {
+    setTool("select");
+  } else if (key === "t") {
+    setTool("text");
+  } else if (key === "r") {
+    setTool("box");
+  } else if (key === "v") {
+    setTool("arrow");
+  } else if (key === "n") {
+    showAddNodeForm();
+  } else if (key === "e") {
+    showAddEdgeForm();
+  } else if (key === "/") {
+    event.preventDefault();
+    searchInput.focus();
   }
 });

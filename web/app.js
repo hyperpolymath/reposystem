@@ -115,18 +115,20 @@ function redo() {
 }
 
 function normalizeGraph(raw) {
-  if (!raw) return { nodes: [], edges: [], annotations: [] };
+  if (!raw) return { nodes: [], edges: [], groups: [], annotations: [] };
 
   if (raw.nodes && raw.edges) {
-    return { nodes: raw.nodes, edges: raw.edges, annotations: raw.annotations || [] };
+    return { nodes: raw.nodes, edges: raw.edges, groups: raw.groups || [], annotations: raw.annotations || [] };
   }
 
   if (raw.graph && raw.graph.nodes) {
-    return { nodes: raw.graph.nodes || [], edges: raw.graph.edges || [], annotations: raw.graph.annotations || [] };
+    return { nodes: raw.graph.nodes || [], edges: raw.graph.edges || [], groups: raw.graph.groups || [], annotations: raw.graph.annotations || [] };
   }
 
-  if (raw.repos || raw.edges) {
-    return { nodes: raw.repos || [], edges: raw.edges || [], annotations: raw.annotations || [] };
+  if (raw.repos || raw.components || raw.edges) {
+    // Rust GraphStore format: repos + components + groups are separate arrays
+    const nodes = [...(raw.repos || []), ...(raw.components || [])];
+    return { nodes, edges: raw.edges || [], groups: raw.groups || [], annotations: raw.annotations || [] };
   }
 
   const nodes = [];
@@ -137,7 +139,7 @@ function normalizeGraph(raw) {
       else nodes.push(item);
     });
   }
-  return { nodes, edges, annotations: [] };
+  return { nodes, edges, groups: [], annotations: [] };
 }
 
 function ensureNodeShape(node) {
@@ -182,7 +184,12 @@ function buildModel(raw) {
   const nodes = normalized.nodes.map(ensureNodeShape);
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
   const edges = normalized.edges.map(ensureEdgeShape).filter((e) => nodeMap.has(e.from) && nodeMap.has(e.to));
-  const groups = nodes.filter((n) => n._kind === "group");
+  const autoGroups = nodes.filter((n) => n._kind === "group");
+  const importedGroupIds = new Set(autoGroups.map((g) => g.id));
+  const extraGroups = (normalized.groups || [])
+    .filter((g) => !importedGroupIds.has(g.id))
+    .map(ensureNodeShape);
+  const groups = [...autoGroups, ...extraGroups];
   const annotations = (normalized.annotations || []).map(ensureAnnotationShape);
   nextZ = 1 + Math.max(0, ...nodes.map((n) => n.z || 0), ...annotations.map((a) => a.z || 0));
   return { nodes, edges, groups, annotations };
@@ -649,6 +656,7 @@ function render() {
       circle.setAttribute("r", 10 + weight * 1.2);
       circle.setAttribute("class", `node ${n._kind} ${selectedItems.includes(n) ? "selected" : ""}`);
       circle.setAttribute("style", `fill: ${n.color || (weightToggle.checked ? weightColor(weight) : "")}`);
+      circle.setAttribute("data-node-label", n.label.toLowerCase());
       circle.addEventListener("click", (event) => selectItem({ type: "node", data: n, event }));
       makeDraggable(circle, n);
       nodeGroup.appendChild(circle);
@@ -657,12 +665,54 @@ function render() {
       label.setAttribute("x", n.x + 14);
       label.setAttribute("y", n.y + 4);
       label.setAttribute("font-size", "12");
+      label.setAttribute("data-node-label", n.label.toLowerCase());
       label.textContent = n.label;
       nodeGroup.appendChild(label);
     }
   });
 
+  // Render annotations (text, box, arrow) sorted by z-index
+  const annoGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  annoGroup.setAttribute("class", "annotations");
+  const sortedAnnotations = [...(graphData.annotations || [])].sort((a, b) => (a.z || 0) - (b.z || 0));
+  sortedAnnotations.forEach((anno) => {
+    const isSelected = selectedItems.includes(anno);
+    if (anno.type === "text") {
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", anno.x);
+      text.setAttribute("y", anno.y);
+      text.setAttribute("font-size", "13");
+      text.setAttribute("class", `annotation annotation-text ${isSelected ? "selected" : ""}`);
+      text.setAttribute("data-anno-id", anno.id);
+      text.textContent = anno.text || "Note";
+      text.addEventListener("click", (event) => selectItem({ data: anno, event }));
+      annoGroup.appendChild(text);
+    } else if (anno.type === "box") {
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", anno.x);
+      rect.setAttribute("y", anno.y);
+      rect.setAttribute("width", anno.w || 80);
+      rect.setAttribute("height", anno.h || 40);
+      rect.setAttribute("class", `annotation annotation-box ${isSelected ? "selected" : ""}`);
+      rect.setAttribute("data-anno-id", anno.id);
+      rect.addEventListener("click", (event) => selectItem({ data: anno, event }));
+      annoGroup.appendChild(rect);
+    } else if (anno.type === "arrow") {
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", anno.x);
+      line.setAttribute("y1", anno.y);
+      line.setAttribute("x2", anno.x + (anno.w || 50));
+      line.setAttribute("y2", anno.y + (anno.h || 0));
+      line.setAttribute("class", `annotation annotation-arrow ${isSelected ? "selected" : ""}`);
+      line.setAttribute("data-anno-id", anno.id);
+      line.setAttribute("marker-end", "url(#marker-one)");
+      line.addEventListener("click", (event) => selectItem({ data: anno, event }));
+      annoGroup.appendChild(line);
+    }
+  });
+
   viewport.appendChild(edgeGroup);
+  viewport.appendChild(annoGroup);
   viewport.appendChild(nodeGroup);
 
   svg.appendChild(defs);
@@ -839,7 +889,7 @@ function applySearchHighlight() {
     return;
   }
   nodes.forEach((nodeEl) => {
-    const label = nodeEl.nextSibling?.textContent?.toLowerCase() || "";
+    const label = nodeEl.getAttribute("data-node-label") || "";
     if (label.includes(query)) nodeEl.classList.add("highlight");
     else nodeEl.classList.remove("highlight");
   });
@@ -976,6 +1026,7 @@ function downloadJSON() {
   const data = {
     nodes: graphData.nodes,
     edges: graphData.edges,
+    groups: graphData.groups,
     annotations: graphData.annotations,
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });

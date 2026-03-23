@@ -152,8 +152,8 @@ type slotBinding = {
   slot_id: string,
   provider_id: string,
   mode: bindingMode,
-  scenario_id: option<string>,
   created_at: string,
+  created_by: string,
 }
 
 type riskLevel =
@@ -169,16 +169,25 @@ type planStatus =
   | @as("rolled_back") RolledBack
   | @as("cancelled") Cancelled
 
+/// Plan operation — tagged union matching Rust's PlanOp enum.
+/// Represented as generic JSON for display; the GUI doesn't create plans yet.
+type planOp = {
+  op: string,
+}
+
 type plan = {
   kind: string,
   id: string,
   name: string,
+  scenario_id: string,
   description: option<string>,
-  scenario_id: option<string>,
+  operations: array<planOp>,
+  overall_risk: riskLevel,
   status: planStatus,
-  risk_level: riskLevel,
   created_at: string,
+  created_by: string,
   applied_at: option<string>,
+  rollback_plan_id: option<string>,
 }
 
 // ============================================================================

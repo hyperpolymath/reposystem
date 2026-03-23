@@ -141,10 +141,39 @@ let tabCount = (model: Model.t, tab: Model.tab) =>
 // Main panel - Content based on active tab
 // ============================================================================
 
+/// Check whether a string matches the current search query (case-insensitive).
+let matchesSearch = (query: string, text: string): bool => {
+  if query == "" {
+    true
+  } else {
+    String.toLowerCase(text)->String.includes(String.toLowerCase(query))
+  }
+}
+
 let renderMainPanel = (model: Model.t) => {
   main(
     [class("main-panel")],
     [
+      // Search bar — shown on all list tabs (not Dashboard)
+      switch model.activeTab {
+      | Dashboard => noNode
+      | _ =>
+        div(
+          [class("search-bar")],
+          [
+            input'(
+              [
+                class("search-input"),
+                type'("text"),
+                placeholder("Search..."),
+                value(model.searchQuery),
+                onInput(value => Msg.SetSearchQuery(value)),
+              ],
+              [],
+            ),
+          ],
+        )
+      },
       if model.loading {
         div([class("loading")], [text("Loading...")])
       } else {
@@ -194,13 +223,17 @@ let renderStatCard = (label: string, count: int) => {
 
 // Repos list
 let renderReposList = (model: Model.t) => {
+  let q = model.searchQuery
+  let filtered = model.repos->Array.filter(repo =>
+    matchesSearch(q, repo.name) || matchesSearch(q, repo.owner)
+  )
   div(
     [class("list-view")],
     [
       div([class("list-header")], [h2([], [text("Repositories")])]),
       ul(
         [class("item-list")],
-        model.repos
+        filtered
         ->Array.map(repo =>
           li(
             [class("item"), onClick(Msg.SelectRepo(repo))],
@@ -228,13 +261,19 @@ let forgeToString = (forge: Tauri.forge) =>
 
 // Edges list
 let renderEdgesList = (model: Model.t) => {
+  let q = model.searchQuery
+  let filtered = model.edges->Array.filter(edge =>
+    matchesSearch(q, edge.label->Option.getOr("")) ||
+    matchesSearch(q, edge.from) ||
+    matchesSearch(q, edge.to_)
+  )
   div(
     [class("list-view")],
     [
       div([class("list-header")], [h2([], [text("Edges")])]),
       ul(
         [class("item-list")],
-        model.edges
+        filtered
         ->Array.map(edge =>
           li(
             [class("item"), onClick(Msg.SelectEdge(edge))],
@@ -252,13 +291,15 @@ let renderEdgesList = (model: Model.t) => {
 
 // Groups list
 let renderGroupsList = (model: Model.t) => {
+  let q = model.searchQuery
+  let filtered = model.groups->Array.filter(group => matchesSearch(q, group.name))
   div(
     [class("list-view")],
     [
       div([class("list-header")], [h2([], [text("Groups")])]),
       ul(
         [class("item-list")],
-        model.groups
+        filtered
         ->Array.map(group =>
           li(
             [class("item"), onClick(Msg.SelectGroup(group))],
@@ -279,13 +320,17 @@ let renderGroupsList = (model: Model.t) => {
 
 // Aspects list
 let renderAspectsList = (model: Model.t) => {
+  let q = model.searchQuery
+  let filtered = model.aspects->Array.filter(aspect =>
+    matchesSearch(q, aspect.aspect_id) || matchesSearch(q, aspect.target)
+  )
   div(
     [class("list-view")],
     [
       div([class("list-header")], [h2([], [text("Aspect Annotations")])]),
       ul(
         [class("item-list")],
-        model.aspects
+        filtered
         ->Array.map(aspect =>
           li(
             [class("item"), onClick(Msg.SelectAspect(aspect))],
@@ -303,13 +348,20 @@ let renderAspectsList = (model: Model.t) => {
 
 // Slots list
 let renderSlotsList = (model: Model.t) => {
+  let q = model.searchQuery
+  let filteredSlots = model.slots->Array.filter(slot =>
+    matchesSearch(q, slot.name) || matchesSearch(q, slot.category)
+  )
+  let filteredProviders = model.providers->Array.filter(provider =>
+    matchesSearch(q, provider.name)
+  )
   div(
     [class("list-view")],
     [
       div([class("list-header")], [h2([], [text("Slots")])]),
       ul(
         [class("item-list")],
-        model.slots
+        filteredSlots
         ->Array.map(slot =>
           li(
             [class("item"), onClick(Msg.SelectSlot(slot))],
@@ -324,7 +376,7 @@ let renderSlotsList = (model: Model.t) => {
       div([class("list-header")], [h2([], [text("Providers")])]),
       ul(
         [class("item-list")],
-        model.providers
+        filteredProviders
         ->Array.map(provider =>
           li(
             [class("item"), onClick(Msg.SelectProvider(provider))],
@@ -350,13 +402,15 @@ let providerTypeToString = (pt: Tauri.providerType) =>
 
 // Plans list
 let renderPlansList = (model: Model.t) => {
+  let q = model.searchQuery
+  let filtered = model.plans->Array.filter(plan => matchesSearch(q, plan.name))
   div(
     [class("list-view")],
     [
       div([class("list-header")], [h2([], [text("Plans")])]),
       ul(
         [class("item-list")],
-        model.plans
+        filtered
         ->Array.map(plan =>
           li(
             [class("item"), onClick(Msg.SelectPlan(plan))],

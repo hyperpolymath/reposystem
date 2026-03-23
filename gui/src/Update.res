@@ -442,6 +442,10 @@ let connectToPanll = async () => {
 }
 
 /// Push the current ecosystem graph to PanLL for Panel-W rendering.
+///
+/// Two modes:
+///   Embedded (PanLL iframe): window.parent.postMessage
+///   Standalone: HTTP POST to PanLL service API
 let syncGraphToPanll = async (model: Model.t) => {
   if !(model.panll->PanllBridge.isConnected) {
     Msg.DismissError
@@ -456,9 +460,42 @@ let syncGraphToPanll = async (model: Model.t) => {
       "bindings": model.bindings,
       "plans": model.plans,
     }
-    let payload = JSON.stringifyAny(graphJson)->Option.getOr("{}")
-    ignore(payload)
-    // TODO: send via postMessage (embedded) or HTTP POST (standalone)
-    Msg.DismissError
+    let message = {
+      "type": "reposystem:graph-snapshot",
+      "source": "reposystem-gui",
+      "timestamp": Date.make()->Date.toISOString,
+      "data": graphJson,
+    }
+    let payload = JSON.stringifyAny(message)->Option.getOr("{}")
+
+    if PanllBridge.isPanllHost() {
+      // Embedded — postMessage to parent PanLL window
+      postMessageToParent(payload)
+      Msg.DismissError
+    } else {
+      // Standalone — POST to PanLL Panel-W API
+      try {
+        let _response = await Fetch.fetch(
+          PanllBridge.defaultEndpoint ++ "/api/v1/panel-w/graph",
+          {method: #POST, body: Fetch.Body.string(payload)},
+        )
+        Msg.DismissError
+      } catch {
+      | Exn.Error(e) =>
+        Msg.PanllConnectionChanged(
+          PanllError(Exn.message(e)->Option.getOr("PanLL sync failed")),
+        )
+      }
+    }
   }
 }
+
+/// Post a message to the parent window (for PanLL embedded mode).
+%%raw(`
+function postMessageToParent(payload) {
+  if (typeof window !== 'undefined' && window.parent !== window) {
+    window.parent.postMessage(JSON.parse(payload), '*');
+  }
+}
+`)
+@val external postMessageToParent: string => unit = "postMessageToParent"

@@ -214,6 +214,160 @@ let update = (msg: Msg.t, model: Model.t): (Model.t, Cmd.t<Msg.t>) => {
   // Error handling
   | DismissError => ({...model, error: None}, Cmd.none)
 
+  // Creation forms — open with empty defaults
+  | OpenEdgeForm => ({...model, openForm: EdgeForm({from: "", to_: "", rel: "uses"})}, Cmd.none)
+  | OpenGroupForm => ({...model, openForm: GroupForm({name: "", description: ""})}, Cmd.none)
+  | OpenAspectForm => ({...model, openForm: AspectForm({target: "", aspectId: "security", weight: "1", polarity: "risk", reason: ""})}, Cmd.none)
+  | OpenSlotForm => ({...model, openForm: SlotForm({name: "", category: "", description: "", capabilities: ""})}, Cmd.none)
+  | OpenProviderForm => ({...model, openForm: ProviderForm({name: "", slotId: "", providerType: "local", repoId: "", capabilities: "", priority: "100", isFallback: false})}, Cmd.none)
+  | OpenBindingForm => ({...model, openForm: BindingForm({consumerId: "", slotId: "", providerId: ""})}, Cmd.none)
+  | CloseForm => ({...model, openForm: NoForm}, Cmd.none)
+
+  // Form field updates
+  | UpdateFormField(field, value) => (
+      {
+        ...model,
+        openForm: switch model.openForm {
+        | EdgeForm(f) =>
+          EdgeForm(
+            switch field {
+            | "from" => {...f, from: value}
+            | "to" => {...f, to_: value}
+            | "rel" => {...f, rel: value}
+            | _ => f
+            },
+          )
+        | GroupForm(f) =>
+          GroupForm(
+            switch field {
+            | "name" => {...f, name: value}
+            | "description" => {...f, description: value}
+            | _ => f
+            },
+          )
+        | AspectForm(f) =>
+          AspectForm(
+            switch field {
+            | "target" => {...f, target: value}
+            | "aspectId" => {...f, aspectId: value}
+            | "weight" => {...f, weight: value}
+            | "polarity" => {...f, polarity: value}
+            | "reason" => {...f, reason: value}
+            | _ => f
+            },
+          )
+        | SlotForm(f) =>
+          SlotForm(
+            switch field {
+            | "name" => {...f, name: value}
+            | "category" => {...f, category: value}
+            | "description" => {...f, description: value}
+            | "capabilities" => {...f, capabilities: value}
+            | _ => f
+            },
+          )
+        | ProviderForm(f) =>
+          ProviderForm(
+            switch field {
+            | "name" => {...f, name: value}
+            | "slotId" => {...f, slotId: value}
+            | "providerType" => {...f, providerType: value}
+            | "repoId" => {...f, repoId: value}
+            | "capabilities" => {...f, capabilities: value}
+            | "priority" => {...f, priority: value}
+            | _ => f
+            },
+          )
+        | BindingForm(f) =>
+          BindingForm(
+            switch field {
+            | "consumerId" => {...f, consumerId: value}
+            | "slotId" => {...f, slotId: value}
+            | "providerId" => {...f, providerId: value}
+            | _ => f
+            },
+          )
+        | NoForm => NoForm
+        },
+      },
+      Cmd.none,
+    )
+
+  | UpdateFormBool(field, value) => (
+      {
+        ...model,
+        openForm: switch model.openForm {
+        | ProviderForm(f) =>
+          ProviderForm(
+            switch field {
+            | "isFallback" => {...f, isFallback: value}
+            | _ => f
+            },
+          )
+        | other => other
+        },
+      },
+      Cmd.none,
+    )
+
+  // Submit current form — dispatch to existing creation messages
+  | SubmitForm =>
+    switch model.openForm {
+    | EdgeForm(f) => (
+        {...model, openForm: NoForm},
+        Cmd.msg(Msg.AddEdge(f.from, f.to_, f.rel)),
+      )
+    | GroupForm(f) => (
+        {...model, openForm: NoForm},
+        Cmd.msg(Msg.CreateGroup(f.name, f.description == "" ? None : Some(f.description))),
+      )
+    | AspectForm(f) => (
+        {...model, openForm: NoForm},
+        Cmd.msg(
+          Msg.TagAspect(
+            f.target,
+            f.aspectId,
+            Int.fromString(f.weight)->Option.getOr(1),
+            f.polarity,
+            f.reason,
+          ),
+        ),
+      )
+    | SlotForm(f) => (
+        {...model, openForm: NoForm},
+        Cmd.msg(
+          Msg.CreateSlot(
+            f.name,
+            f.category,
+            f.description,
+            f.capabilities->String.split(",")->Array.map(String.trim)->Array.filter(s => s != ""),
+          ),
+        ),
+      )
+    | ProviderForm(f) => (
+        {...model, openForm: NoForm},
+        Cmd.msg(
+          Msg.CreateProvider({
+            name: f.name,
+            slotId: f.slotId,
+            providerType: f.providerType,
+            repoId: f.repoId == "" ? None : Some(f.repoId),
+            capabilities: f.capabilities
+              ->String.split(",")
+              ->Array.map(String.trim)
+              ->Array.filter(s => s != ""),
+            priority: Int.fromString(f.priority)->Option.getOr(100),
+            isFallback: f.isFallback,
+          }),
+        ),
+      )
+    | BindingForm(f) => (
+        {...model, openForm: NoForm},
+        Cmd.msg(Msg.BindSlot(f.consumerId, f.slotId, f.providerId)),
+      )
+    | NoForm => (model, Cmd.none)
+    }
+
   // PanLL integration
   | PanllConnect => (
       {...model, panll: {...model.panll, connection: PanllConnecting}},
@@ -252,11 +406,11 @@ let update = (msg: Msg.t, model: Model.t): (Model.t, Cmd.t<Msg.t>) => {
   | PanllInbound(request) => (
       model,
       switch request {
-      | PanllConstraintRequest => Cmd.none // TODO: send constraints to Panel-L
+      | PanllConstraintRequest => Cmd.msg(Msg.PanllSyncGraph)
       | PanllScanRequest => Cmd.msg(Msg.LoadAllData)
-      | PanllExportRequest(_format) => Cmd.none // TODO: export in requested format
-      | PanllFilterRequest(_filter) => Cmd.none // TODO: apply PanLL-requested filter
-      | PanllScenarioRequest(_scenario) => Cmd.none // TODO: run requested scenario
+      | PanllExportRequest(_format) => Cmd.msg(Msg.PanllSyncGraph)
+      | PanllFilterRequest(filter) => Cmd.msg(Msg.SetSearchQuery(filter))
+      | PanllScenarioRequest(_scenario) => Cmd.none // Requires scenario planning UI (P2)
       },
     )
 

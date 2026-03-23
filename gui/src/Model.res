@@ -27,6 +27,58 @@ type selectedItem =
   | SelectedBinding(slotBinding)
   | SelectedPlan(plan)
 
+// Form state types for inline creation forms
+type edgeForm = {
+  from: string,
+  to_: string,
+  rel: string,
+}
+
+type groupForm = {
+  name: string,
+  description: string,
+}
+
+type aspectForm = {
+  target: string,
+  aspectId: string,
+  weight: string,
+  polarity: string,
+  reason: string,
+}
+
+type slotForm = {
+  name: string,
+  category: string,
+  description: string,
+  capabilities: string,
+}
+
+type providerForm = {
+  name: string,
+  slotId: string,
+  providerType: string,
+  repoId: string,
+  capabilities: string,
+  priority: string,
+  isFallback: bool,
+}
+
+type bindingForm = {
+  consumerId: string,
+  slotId: string,
+  providerId: string,
+}
+
+type openForm =
+  | NoForm
+  | EdgeForm(edgeForm)
+  | GroupForm(groupForm)
+  | AspectForm(aspectForm)
+  | SlotForm(slotForm)
+  | ProviderForm(providerForm)
+  | BindingForm(bindingForm)
+
 // Graph node for D3 visualization
 type graphNode = {
   id: string,
@@ -71,6 +123,8 @@ type t = {
   error: option<string>,
   // PanLL integration
   panll: PanllBridge.panllState,
+  // Creation form state
+  openForm: openForm,
 }
 
 // Initial model
@@ -91,6 +145,7 @@ let init = () => {
   loading: true,
   error: None,
   panll: PanllBridge.init,
+  openForm: NoForm,
 }
 
 // Tab helpers

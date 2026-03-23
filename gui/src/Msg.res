@@ -57,6 +57,17 @@ type t =
   | GraphZoom(float)
   // Error handling
   | DismissError
+  // Creation forms
+  | OpenEdgeForm
+  | OpenGroupForm
+  | OpenAspectForm
+  | OpenSlotForm
+  | OpenProviderForm
+  | OpenBindingForm
+  | CloseForm
+  | UpdateFormField(string, string)
+  | UpdateFormBool(string, bool)
+  | SubmitForm
   // PanLL integration
   | PanllConnect
   | PanllDisconnect

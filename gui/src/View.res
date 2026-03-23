@@ -141,6 +141,87 @@ let tabCount = (model: Model.t, tab: Model.tab) =>
 // Main panel - Content based on active tab
 // ============================================================================
 
+// ============================================================================
+// Form field helpers — reusable across all creation forms
+// ============================================================================
+
+/// Render a labeled text input field.
+let formField = (label_: string, fieldName: string, value_: string, ~placeholder: string="") =>
+  div(
+    [class("form-field")],
+    [
+      label([class("form-label")], [text(label_)]),
+      input'(
+        [
+          class("form-input"),
+          type'("text"),
+          placeholder(placeholder),
+          value(value_),
+          onInput(v => Msg.UpdateFormField(fieldName, v)),
+        ],
+        [],
+      ),
+    ],
+  )
+
+/// Render a labeled select dropdown.
+let formSelect = (
+  label_: string,
+  fieldName: string,
+  value_: string,
+  options: array<(string, string)>,
+) =>
+  div(
+    [class("form-field")],
+    [
+      label([class("form-label")], [text(label_)]),
+      select(
+        [class("form-select"), onInput(v => Msg.UpdateFormField(fieldName, v))],
+        Array.concat(
+          [{
+            let selected = value_ == ""
+            option([Tea.Html.Attributes.value(""), Tea.Html.Attributes.disabled(true), Tea.Html.Attributes.selected(selected)], [text(`Select ${label_}...`)])
+          }],
+          options->Array.map(((val, lab)) =>
+            option([Tea.Html.Attributes.value(val), Tea.Html.Attributes.selected(val == value_)], [text(lab)])
+          ),
+        )->Belt.List.fromArray,
+      ),
+    ],
+  )
+
+/// Render a labeled checkbox.
+let formCheckbox = (label_: string, fieldName: string, checked_: bool) =>
+  div(
+    [class("form-field form-field-checkbox")],
+    [
+      label(
+        [class("form-label")],
+        [
+          input'(
+            [
+              type'("checkbox"),
+              Tea.Html.Attributes.checked(checked_),
+              onClick(Msg.UpdateFormBool(fieldName, !checked_)),
+            ],
+            [],
+          ),
+          text(" " ++ label_),
+        ],
+      ),
+    ],
+  )
+
+/// Render Create + Cancel action buttons for forms.
+let formActions = () =>
+  div(
+    [class("form-actions")],
+    [
+      button([onClick(Msg.SubmitForm), class("btn-submit")], [text("Create")]),
+      button([onClick(Msg.CloseForm), class("btn-cancel")], [text("Cancel")]),
+    ],
+  )
+
 /// Check whether a string matches the current search query (case-insensitive).
 let matchesSearch = (query: string, text: string): bool => {
   if query == "" {
@@ -270,7 +351,38 @@ let renderEdgesList = (model: Model.t) => {
   div(
     [class("list-view")],
     [
-      div([class("list-header")], [h2([], [text("Edges")])]),
+      div(
+        [class("list-header")],
+        [
+          h2([], [text("Edges")]),
+          button([onClick(Msg.OpenEdgeForm), class("btn-add")], [text("+")]),
+        ],
+      ),
+      switch model.openForm {
+      | EdgeForm(f) =>
+        div(
+          [class("creation-form")],
+          [
+            h3([], [text("Add Edge")]),
+            formSelect("From", "from", f.from, model.repos->Array.map(r => (r.id, r.name))),
+            formSelect("To", "to", f.to_, model.repos->Array.map(r => (r.id, r.name))),
+            formSelect(
+              "Relation",
+              "rel",
+              f.rel,
+              [
+                ("uses", "Uses"),
+                ("provides", "Provides"),
+                ("extends", "Extends"),
+                ("mirrors", "Mirrors"),
+                ("replaces", "Replaces"),
+              ],
+            ),
+            formActions(),
+          ],
+        )
+      | _ => noNode
+      },
       ul(
         [class("item-list")],
         filtered
@@ -296,7 +408,26 @@ let renderGroupsList = (model: Model.t) => {
   div(
     [class("list-view")],
     [
-      div([class("list-header")], [h2([], [text("Groups")])]),
+      div(
+        [class("list-header")],
+        [
+          h2([], [text("Groups")]),
+          button([onClick(Msg.OpenGroupForm), class("btn-add")], [text("+")]),
+        ],
+      ),
+      switch model.openForm {
+      | GroupForm(f) =>
+        div(
+          [class("creation-form")],
+          [
+            h3([], [text("Create Group")]),
+            formField("Name", "name", f.name, ~placeholder="Group name"),
+            formField("Description", "description", f.description, ~placeholder="Optional description"),
+            formActions(),
+          ],
+        )
+      | _ => noNode
+      },
       ul(
         [class("item-list")],
         filtered
@@ -327,7 +458,51 @@ let renderAspectsList = (model: Model.t) => {
   div(
     [class("list-view")],
     [
-      div([class("list-header")], [h2([], [text("Aspect Annotations")])]),
+      div(
+        [class("list-header")],
+        [
+          h2([], [text("Aspect Annotations")]),
+          button([onClick(Msg.OpenAspectForm), class("btn-add")], [text("+")]),
+        ],
+      ),
+      switch model.openForm {
+      | AspectForm(f) =>
+        div(
+          [class("creation-form")],
+          [
+            h3([], [text("Tag Aspect")]),
+            formSelect("Target", "target", f.target, model.repos->Array.map(r => (r.id, r.name))),
+            formSelect(
+              "Aspect",
+              "aspectId",
+              f.aspectId,
+              [
+                ("security", "Security"),
+                ("reliability", "Reliability"),
+                ("maintainability", "Maintainability"),
+                ("performance", "Performance"),
+                ("supply-chain", "Supply Chain"),
+                ("observability", "Observability"),
+              ],
+            ),
+            formSelect(
+              "Weight",
+              "weight",
+              f.weight,
+              [("0", "0 - None"), ("1", "1 - Low"), ("2", "2 - Medium"), ("3", "3 - High")],
+            ),
+            formSelect(
+              "Polarity",
+              "polarity",
+              f.polarity,
+              [("risk", "Risk"), ("strength", "Strength"), ("neutral", "Neutral")],
+            ),
+            formField("Reason", "reason", f.reason, ~placeholder="Why this annotation?"),
+            formActions(),
+          ],
+        )
+      | _ => noNode
+      },
       ul(
         [class("item-list")],
         filtered
@@ -358,7 +533,28 @@ let renderSlotsList = (model: Model.t) => {
   div(
     [class("list-view")],
     [
-      div([class("list-header")], [h2([], [text("Slots")])]),
+      div(
+        [class("list-header")],
+        [
+          h2([], [text("Slots")]),
+          button([onClick(Msg.OpenSlotForm), class("btn-add")], [text("+")]),
+        ],
+      ),
+      switch model.openForm {
+      | SlotForm(f) =>
+        div(
+          [class("creation-form")],
+          [
+            h3([], [text("Create Slot")]),
+            formField("Name", "name", f.name, ~placeholder="Slot name"),
+            formField("Category", "category", f.category, ~placeholder="e.g. database, auth, cache"),
+            formField("Description", "description", f.description, ~placeholder="What this slot provides"),
+            formField("Capabilities", "capabilities", f.capabilities, ~placeholder="cap1, cap2, ..."),
+            formActions(),
+          ],
+        )
+      | _ => noNode
+      },
       ul(
         [class("item-list")],
         filteredSlots
@@ -373,7 +569,36 @@ let renderSlotsList = (model: Model.t) => {
         )
         ->Belt.List.fromArray,
       ),
-      div([class("list-header")], [h2([], [text("Providers")])]),
+      div(
+        [class("list-header")],
+        [
+          h2([], [text("Providers")]),
+          button([onClick(Msg.OpenProviderForm), class("btn-add")], [text("+")]),
+        ],
+      ),
+      switch model.openForm {
+      | ProviderForm(f) =>
+        div(
+          [class("creation-form")],
+          [
+            h3([], [text("Create Provider")]),
+            formField("Name", "name", f.name, ~placeholder="Provider name"),
+            formSelect("Slot", "slotId", f.slotId, model.slots->Array.map(s => (s.id, s.name))),
+            formSelect(
+              "Type",
+              "providerType",
+              f.providerType,
+              [("local", "Local"), ("ecosystem", "Ecosystem"), ("external", "External"), ("stub", "Stub")],
+            ),
+            formSelect("Repository", "repoId", f.repoId, model.repos->Array.map(r => (r.id, r.name))),
+            formField("Capabilities", "capabilities", f.capabilities, ~placeholder="cap1, cap2, ..."),
+            formField("Priority", "priority", f.priority, ~placeholder="100"),
+            formCheckbox("Fallback provider", "isFallback", f.isFallback),
+            formActions(),
+          ],
+        )
+      | _ => noNode
+      },
       ul(
         [class("item-list")],
         filteredProviders
@@ -520,7 +745,23 @@ let renderGroupDetail = (group: Tauri.group) => {
           dt([], [text("Description")]),
           dd([], [text(group.description->Option.getOr("-"))]),
           dt([], [text("Members")]),
-          dd([], [text(group.members->Array.join(", "))]),
+          dd(
+            [],
+            group.members
+            ->Array.map(m =>
+              div(
+                [class("member-row")],
+                [
+                  span([], [text(m)]),
+                  button(
+                    [onClick(Msg.RemoveFromGroup(group.id, m)), class("btn-danger btn-sm")],
+                    [text("x")],
+                  ),
+                ],
+              )
+            )
+            ->Belt.List.fromArray,
+          ),
         ],
       ),
       button([onClick(Msg.ClearSelection), class("btn-close")], [text("Close")]),

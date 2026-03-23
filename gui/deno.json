@@ -1,6 +1,7 @@
 {
   "name": "@hyperpolymath/reposystem-gui",
   "version": "0.1.0",
+  "nodeModulesDir": "auto",
   "tasks": {
     "dev": "tauri dev",
     "build": "tauri build",
@@ -14,8 +15,13 @@
   },
   "imports": {
     "@tauri-apps/api": "npm:@tauri-apps/api@^2",
-    "@gossamer/api": "npm:@gossamer/api@^1",
     "d3": "npm:d3@^7",
-    "vite": "npm:vite@^5"
+    "vite": "npm:vite@^5",
+    "rescript": "npm:rescript@^12",
+    "@rescript/core": "npm:@rescript/core@^1",
+    "rescript-tea": "npm:rescript-tea@^0.16",
+    "cadre-router": "npm:cadre-router@^0.1",
+    "cadre-tea-router": "npm:cadre-tea-router@^0.1",
+    "rescript-d3": "npm:rescript-d3@^0.1"
   }
 }

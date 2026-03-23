@@ -94,14 +94,13 @@ let toTask = (Request(request, _maybeEvents)) => {
   let {method, headers, url, body, expect, timeout, withCredentials} = request
   let Expect(typ, responseToResult) = expect
   Tea_task.nativeBinding(cb => {
-    let enqRes = (result, _ev) => cb(result)
-    let enqResError = result => enqRes(Error(result))
-    let enqResOk = result => enqRes(Ok(result))
+    let enqResError = (result, _ev) => cb(Error(result))
+    let enqResOk = (result, _ev) => cb(Ok(result))
     let xhr = Web.XMLHttpRequest.create()
     let setEvent = (ev, cb) => ev(cb, xhr)
-    let () = setEvent(Web.XMLHttpRequest.set_onerror, enqResError(NetworkError))
-    let () = setEvent(Web.XMLHttpRequest.set_ontimeout, enqResError(Timeout))
-    let () = setEvent(Web.XMLHttpRequest.set_onabort, enqResError(Aborted))
+    let () = setEvent(Web.XMLHttpRequest.set_onerror, ev => enqResError(NetworkError, ev))
+    let () = setEvent(Web.XMLHttpRequest.set_ontimeout, ev => enqResError(Timeout, ev))
+    let () = setEvent(Web.XMLHttpRequest.set_onabort, ev => enqResError(Aborted, ev))
     let () = setEvent(Web.XMLHttpRequest.set_onload, _ev => {
       open Web.XMLHttpRequest
       let headers = switch getAllResponseHeadersAsDict(xhr) {
@@ -149,8 +148,8 @@ let send = (resultToMessage, Request(request, maybeEvents)) => {
       open Vdom
       callbacks.contents.enqueue(resultToMessage(result))
     }
-    let enqResError = result => enqRes(Error(result))
-    let enqResOk = result => enqRes(Ok(result))
+    let enqResError = (result, _ev) => enqRes(Error(result), _ev)
+    let enqResOk = (result, _ev) => enqRes(Ok(result), _ev)
     let xhr = Web.XMLHttpRequest.create()
     let setEvent = (ev, cb) => ev(cb, xhr)
     let () = switch maybeEvents {
@@ -162,12 +161,12 @@ let send = (resultToMessage, Request(request, maybeEvents)) => {
         | None => ()
         | Some(v) => thenDo(v(callbacks))
         }
-      let () = mayCB(setEvent(set_onreadystatechange), onreadystatechange)
-      let () = mayCB(setEvent(set_onprogress), onprogress)
+      let () = mayCB(cb => setEvent(set_onreadystatechange, cb), onreadystatechange)
+      let () = mayCB(cb => setEvent(set_onprogress, cb), onprogress)
     }
-    let () = setEvent(Web.XMLHttpRequest.set_onerror, enqResError(NetworkError))
-    let () = setEvent(Web.XMLHttpRequest.set_ontimeout, enqResError(Timeout))
-    let () = setEvent(Web.XMLHttpRequest.set_onabort, enqResError(Aborted))
+    let () = setEvent(Web.XMLHttpRequest.set_onerror, ev => enqResError(NetworkError, ev))
+    let () = setEvent(Web.XMLHttpRequest.set_ontimeout, ev => enqResError(Timeout, ev))
+    let () = setEvent(Web.XMLHttpRequest.set_onabort, ev => enqResError(Aborted, ev))
     let () = setEvent(Web.XMLHttpRequest.set_onload, _ev => {
       open Web.XMLHttpRequest
       let headers = switch getAllResponseHeadersAsDict(xhr) {

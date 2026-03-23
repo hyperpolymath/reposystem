@@ -60,9 +60,8 @@ let debug = (
   let viewStyles = () => {
     open Tea_html
     let rule = (selector, properties) => {
-      let joined = properties
-        ->List.map(((k, v)) => k ++ (":" ++ v))
-        ->String.concat(";")
+      let mapped = List.map(((k, v)) => k ++ (":" ++ v), properties)
+      let joined = String.concat(";", mapped)
       text(`${selector} {${joined}}`)
     }
 
@@ -272,7 +271,7 @@ let debug = (
     module A = Tea_html.Attributes
     module E = Tea_html.Events
     let count = List.length(model.history)
-    \"@@"(ul(list{A.class("history")}), List.mapi((i, (msg, cmodel)) => {
+    ul(list{A.class("history")}, List.mapi((i, (msg, cmodel)) => {
         let selected = i == selectedIndex
         li(
           list{
@@ -499,5 +498,5 @@ let navigationProgram: (
       shutdown: shutdown,
     },
   )
-  Tea_navigation.navigationProgram(location, debugged, pnode, flags)
+  Tea_navigation.navigationProgram(location, debugged)(pnode, flags)
 }

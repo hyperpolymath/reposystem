@@ -3,7 +3,7 @@ type rec t<'msg> =
   | Batch(list<t<'msg>>): t<'msg>
   | Registration(
       string,
-      (ref<Vdom.applicationCallbacks<'msg>>, unit) => unit,
+      ref<Vdom.applicationCallbacks<'msg>> => (unit => unit),
       ref<option<unit => unit>>,
     ): t<'msg>
   | Mapper(
@@ -18,7 +18,7 @@ let none: t<'msg>
 
 let batch: list<t<'msg>> => t<'msg>
 
-let registration: (string, (Vdom.applicationCallbacks<'msg>, unit) => unit) => t<'msg>
+let registration: (string, Vdom.applicationCallbacks<'msg> => (unit => unit)) => t<'msg>
 
 let map: ('msg => 'b, t<'msg>) => t<'b>
 

@@ -14,8 +14,8 @@ function registration(key, enableCall) {
   return {
           TAG: "Registration",
           _0: key,
-          _1: (function (callbacks, param) {
-              enableCall(callbacks.contents, undefined);
+          _1: (function (callbacks) {
+              return enableCall(callbacks.contents);
             }),
           _2: {
             contents: undefined
@@ -63,12 +63,7 @@ function run(oldCallbacks, newCallbacks, oldSub, newSub) {
               return ;
             }
         case "Registration" :
-            var enCB = x._1;
-            x._2.contents = (function(callbacks,enCB){
-            return function () {
-              enCB(callbacks, undefined);
-            }
-            }(callbacks,enCB));
+            x._2.contents = x._1(callbacks);
             return ;
         case "Mapper" :
             var subCallbacks = x._0(callbacks);

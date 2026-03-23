@@ -37,6 +37,4 @@ let forward: int => Tea_cmd.t<'a>
 let navigationProgram: (
   Location.t => 'a,
   navigationProgram<'b, 'c, 'a>,
-  Js.null_undefined<Dom.node>,
-  'b,
-) => Tea_app.programInterface<'a>
+) => ((Js.null_undefined<Dom.node>, 'b) => Tea_app.programInterface<'a>)

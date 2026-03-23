@@ -52,8 +52,7 @@ let programLoop: (
   'msg,
   Tea_cmd.t<'b>,
   option<Dom.node>,
-  ref<Tea_cmd.applicationCallbacks<'b>>,
-) => pumpInterface<'msg, 'b>
+) => (ref<Tea_cmd.applicationCallbacks<'b>> => pumpInterface<'msg, 'b>)
 
 let program: (
   program<'flags, 'model, 'msg>,

@@ -3,7 +3,7 @@ type rec t<'msg> =
   | Batch(list<t<'msg>>): t<'msg>
   | Registration(
       string,
-      (ref<Vdom.applicationCallbacks<'msg>>, unit) => unit,
+      ref<Vdom.applicationCallbacks<'msg>> => (unit => unit),
       ref<option<unit => unit>>,
     ): t<'msg>
   | Mapper(
@@ -19,7 +19,7 @@ let batch = subs => Batch(subs)
 
 let registration = (key, enableCall) => Registration(
   key,
-  (callbacks, _) => enableCall(callbacks.contents),
+  callbacks => enableCall(callbacks.contents),
   ref(None),
 )
 
@@ -48,7 +48,7 @@ let rec run:
         | Mapper(mapper, sub) =>
           let subCallbacks = mapper(callbacks)
           enable(subCallbacks, sub)
-        | Registration(_key, enCB, diCB) => diCB := Some(() => enCB(callbacks, ()))
+        | Registration(_key, enCB, diCB) => diCB := Some(enCB(callbacks))
         }
     let rec disable:
       type msg. (ref<Vdom.applicationCallbacks<msg>>, t<msg>) => unit =

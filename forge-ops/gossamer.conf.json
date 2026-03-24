@@ -1,0 +1,97 @@
+{
+  "$schema": "https://gossamer.dev/schemas/config/v1",
+  "productName": "reposystem-forge-ops",
+  "version": "0.1.0",
+  "identifier": "com.hyperpolymath.reposystem.forgeops",
+  "build": {
+    "frontendDist": "dist",
+    "devUrl": "http://localhost:1421",
+    "beforeDevCommand": "deno task dev:frontend",
+    "beforeBuildCommand": "deno task build:frontend"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "ForgeOps - Git Forge Manager",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600,
+        "maxWidth": null,
+        "maxHeight": null,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "transparent": false,
+        "center": true,
+        "alwaysOnTop": false,
+        "visible": true,
+        "url": "/"
+      }
+    ],
+    "security": {
+      "csp": null,
+      "capabilities": [
+        "filesystem",
+        "network",
+        "clipboard"
+      ],
+      "capabilityTokens": {
+        "enabled": false,
+        "issuer": "gossamer-runtime",
+        "ttl": 3600
+      },
+      "sandbox": {
+        "enabled": true,
+        "allowExec": false,
+        "allowNetwork": true,
+        "allowFilesystem": true
+      }
+    },
+    "ipc": {
+      "protocol": "json",
+      "bridgeInjection": true,
+      "maxMessageSize": 16777216,
+      "timeout": 30000
+    },
+    "tray": {
+      "enabled": false,
+      "icon": null,
+      "tooltip": null,
+      "menuOnLeftClick": true
+    }
+  },
+  "plugins": {},
+  "bundle": {
+    "active": true,
+    "targets": [
+      "deb",
+      "appimage",
+      "dmg",
+      "nsis"
+    ],
+    "icon": [],
+    "resources": [],
+    "copyright": "Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)",
+    "license": "PMPL-1.0-or-later",
+    "shortDescription": "Git forge management across GitHub, GitLab, and Bitbucket",
+    "longDescription": "ForgeOps provides unified management of repository settings, mirrors, branch protection, webhooks, CI/CD pipelines, and RSR compliance across GitHub, GitLab, and Bitbucket forges.",
+    "linux": {
+      "desktopEntry": true,
+      "category": "Development",
+      "section": "devel",
+      "depends": [],
+      "appimage": {
+        "bundleMediaFramework": false
+      }
+    }
+  },
+  "ephapax": {
+    "modules": [],
+    "region": "app",
+    "linearVerification": true,
+    "regionBoundary": "strict",
+    "preload": []
+  }
+}

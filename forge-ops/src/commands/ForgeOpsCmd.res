@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: PMPL-1.0-or-later
 
-/// ForgeOps Tauri Command Wrappers — TEA commands for forge API operations.
+/// ForgeOps Gossamer Command Wrappers — TEA commands for forge API operations.
 ///
-/// Each function wraps a `#[tauri::command]` handler from the Rust backend,
-/// using `Tea_Cmd.call` to bridge async Tauri invocations into the TEA loop.
+/// Each function wraps a Gossamer IPC handler from the Rust backend,
+/// using `Tea_Cmd.call` to bridge async Gossamer invocations into the TEA loop.
 ///
 /// Supports three forges: GitHub (gh API), GitLab (REST v4), Bitbucket (REST 2.0).
 /// Local-first: all config is cached in ~/.config/forgeops/
 
-/// External binding to Tauri's invoke function.
-@module("@tauri-apps/api/core")
-external invoke: (string, 'a) => promise<'b> = "invoke"
+/// Gossamer IPC bridge — replaces Tauri's @tauri-apps/api/core invoke.
+let invoke = RuntimeBridge.invoke
 
 // ============================================================================
 // Connection / token verification

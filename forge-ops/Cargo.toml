@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+
+[package]
+name = "reposystem-forge-ops"
+version = "0.1.0"
+description = "Git forge management across GitHub, GitLab, and Bitbucket"
+authors = ["Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"]
+license = "PMPL-1.0-or-later"
+repository = "https://github.com/hyperpolymath/reposystem"
+edition = "2021"
+rust-version = "1.70"
+
+[dependencies]
+gossamer-rs = { path = "../../../gossamer/bindings/rust" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", features = ["blocking", "json"] }
+once_cell = "1"
+chrono = { version = "0.4", features = ["serde"] }
+
+# ForgeOps backend modules live in src-tauri/src/forgeops/ and are compiled
+# as part of this crate via the `mod forgeops` declaration in main.rs.

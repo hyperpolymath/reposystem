@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# Reposystem — Stapeln/Selur service definition.
+#
+# Railway yard for your repository ecosystem. Rust CLI tool that scans
+# and analyses repository collections. Multi-stage build: Chainguard
+# Rust builder + wolfi-base runtime with graphviz for visualisation.
+#
+# Usage:
+#   podman-compose -f selur-compose.toml up -d
+#   just stack-up
+#
+# Mount your repos directory at /data for scanning:
+#   podman-compose -f selur-compose.toml run app scan /data
+
+[project]
+name = "reposystem"
+
+# =============================================================================
+# Reposystem — Repository ecosystem scanner
+# =============================================================================
+[services.app]
+build = { context = ".", dockerfile = "Containerfile" }
+restart = "unless-stopped"
+networks = ["default"]
+environment = [
+  "REPOSYSTEM_DATA_DIR=/data",
+  "RUST_LOG=info",
+]
+volumes = [
+  "reposystem-data:/data",
+]
+healthcheck = { test = "reposystem --version || exit 1", interval = "30s", timeout = "10s", retries = 3 }
+
+# =============================================================================
+# Volumes
+# =============================================================================
+[volumes.reposystem-data]
+driver = "local"

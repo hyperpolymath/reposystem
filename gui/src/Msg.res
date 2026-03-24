@@ -6,7 +6,7 @@
 open Backend
 
 // Message types
-type t =
+type rec t =
   // Navigation
   | SetTab(Model.tab)
   | SetSearchQuery(string)

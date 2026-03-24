@@ -17,12 +17,19 @@ let subscriptions = (_model: Model.t): Sub.t<Msg.t> => {
   Sub.none
 }
 
-// Main application configuration
+// Mount to #app node
+@val @scope("document")
+external getElementById: string => Js.nullable<Dom.node> = "getElementById"
+
 let main = () => {
-  App.standardProgram({
-    init: init,
-    update: Update.update,
-    view: View.view,
-    subscriptions: subscriptions,
-  })
+  App.standardProgram(
+    {
+      init: init,
+      update: Update.update,
+      view: View.view,
+      subscriptions: subscriptions,
+    },
+    getElementById("app"),
+    (),
+  )
 }

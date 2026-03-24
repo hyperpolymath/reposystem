@@ -5,6 +5,10 @@
 
 open D3
 
+// ──────────────────────────────────────────────
+// Types
+// ──────────────────────────────────────────────
+
 // Graph state (mutable, managed by D3)
 type graphState = {
   mutable simulation: option<Force.simulation<Model.graphNode>>,
@@ -12,6 +16,23 @@ type graphState = {
   mutable nodeGroup: option<Selection.t>,
   mutable linkGroup: option<Selection.t>,
 }
+
+// ──────────────────────────────────────────────
+// Small utilities (no dependencies on later bindings)
+// ──────────────────────────────────────────────
+
+// Node color based on kind
+let nodeColor = (kind: [#repo | #slot | #provider]) =>
+  switch kind {
+  | #repo => "#4299e1"
+  | #slot => "#ecc94b"
+  | #provider => "#48bb78"
+  }
+
+// ──────────────────────────────────────────────
+// Module-level state and configuration
+// Depends on: graphState type (above)
+// ──────────────────────────────────────────────
 
 let state: graphState = {
   simulation: None,
@@ -29,7 +50,11 @@ let config = {
   "chargeStrength": -200.0,
 }
 
+// ──────────────────────────────────────────────
 // Initialize the graph visualization
+// Depends on: state, config, Selection, Zoom, Force
+// ──────────────────────────────────────────────
+
 let initGraph = (container: Dom.element) => {
   // Create SVG
   let svg =
@@ -63,7 +88,6 @@ let initGraph = (container: Dom.element) => {
     ->Force.force(
       "charge",
       Force.forceManyBody()
-      ->Force.asManyBodyForce
       ->Force.strength(config["chargeStrength"])
       ->Force.manyBodyForceAsForce,
     )
@@ -77,7 +101,6 @@ let initGraph = (container: Dom.element) => {
     ->Force.force(
       "link",
       Force.forceLinkEmpty()
-      ->Force.asLinkForce
       ->Force.linkDistance(config["linkDistance"]->Int.toFloat)
       ->Force.linkForceAsForce,
     )
@@ -86,13 +109,19 @@ let initGraph = (container: Dom.element) => {
   state.simulation = Some(simulation)
 }
 
+// ──────────────────────────────────────────────
 // Update the graph with new data
+// Depends on: state, config, nodeColor, Force, Selection, Drag
+// ──────────────────────────────────────────────
+
 let updateGraph = (nodes: array<Model.graphNode>, links: array<Model.graphLink>) => {
   switch (state.simulation, state.nodeGroup, state.linkGroup) {
   | (Some(simulation), Some(nodeGroup), Some(linkGroup)) => {
       // Convert to D3 node format
-      let d3Nodes: array<Force.node<Model.graphNode>> = nodes->Array.map(n => {
-        index: 0,
+      let d3Nodes: array<Force.node<Model.graphNode>> = nodes->Array.map((
+        n: Model.graphNode,
+      ): Force.node<Model.graphNode> => {
+        Force.index: 0,
         x: n.x,
         y: n.y,
         vx: n.vx,
@@ -103,8 +132,10 @@ let updateGraph = (nodes: array<Model.graphNode>, links: array<Model.graphLink>)
       })
 
       // Convert links to D3 format
-      let d3Links: array<Force.linkInput<Model.graphNode>> = links->Array.map(l => {
-        source: l.source,
+      let d3Links: array<Force.linkInput<Model.graphNode>> = links->Array.map((
+        l: Model.graphLink,
+      ): Force.linkInput<Model.graphNode> => {
+        Force.source: l.source,
         target: l.target,
       })
 
@@ -118,7 +149,7 @@ let updateGraph = (nodes: array<Model.graphNode>, links: array<Model.graphLink>)
         f
         ->Force.asLinkForce
         ->Force.links(d3Links)
-        ->Force.linkId((link, _, _) => link.source)
+        ->Force.linkId((link: Force.linkInput<Model.graphNode>, _, _) => link.source)
         ->ignore
       | None => ()
       }
@@ -140,30 +171,30 @@ let updateGraph = (nodes: array<Model.graphNode>, links: array<Model.graphLink>)
         ->Selection.data(d3Nodes)
         ->Selection.join("circle")
         ->Selection.attr("r", config["nodeRadius"])
-        ->Selection.attr("fill", n => nodeColor(n.data.kind))
+        ->Selection.attr("fill", (n: Force.node<Model.graphNode>) => nodeColor(n.data.kind))
         ->Selection.attr("stroke", "#fff")
         ->Selection.attr("stroke-width", "1.5")
 
       // Add drag behavior
       let dragBehavior =
         Drag.drag()
-        ->Drag.on("start", (event, d) => {
+        ->Drag.on("start", (event: Drag.dragEvent, d: Force.node<Model.graphNode>) => {
           if event.active == 0 {
             simulation->Force.alphaTarget(0.3)->Force.restart->ignore
           }
-          d.fx = Nullable.make(event.x)
-          d.fy = Nullable.make(event.y)
+          d.Force.fx = Nullable.make(event.x)
+          d.Force.fy = Nullable.make(event.y)
         })
-        ->Drag.on("drag", (event, d) => {
-          d.fx = Nullable.make(event.x)
-          d.fy = Nullable.make(event.y)
+        ->Drag.on("drag", (event: Drag.dragEvent, d: Force.node<Model.graphNode>) => {
+          d.Force.fx = Nullable.make(event.x)
+          d.Force.fy = Nullable.make(event.y)
         })
-        ->Drag.on("end", (event, d) => {
+        ->Drag.on("end", (event: Drag.dragEvent, d: Force.node<Model.graphNode>) => {
           if event.active == 0 {
             simulation->Force.alphaTarget(0.0)->ignore
           }
-          d.fx = Nullable.null
-          d.fy = Nullable.null
+          d.Force.fx = Nullable.null
+          d.Force.fy = Nullable.null
         })
 
       nodeSelection->Drag.applyTo(dragBehavior)->ignore
@@ -171,27 +202,27 @@ let updateGraph = (nodes: array<Model.graphNode>, links: array<Model.graphLink>)
       // Update positions on tick
       simulation->Force.on("tick", () => {
         linkSelection
-        ->Selection.attr("x1", l => {
+        ->Selection.attr("x1", (l: Force.linkInput<Model.graphNode>) => {
           // Find source node position
-          switch d3Nodes->Array.find(n => n.data.id == l.source) {
+          switch d3Nodes->Array.find((n: Force.node<Model.graphNode>) => n.data.id == l.source) {
           | Some(n) => n.x
           | None => 0.0
           }
         })
-        ->Selection.attr("y1", l => {
-          switch d3Nodes->Array.find(n => n.data.id == l.source) {
+        ->Selection.attr("y1", (l: Force.linkInput<Model.graphNode>) => {
+          switch d3Nodes->Array.find((n: Force.node<Model.graphNode>) => n.data.id == l.source) {
           | Some(n) => n.y
           | None => 0.0
           }
         })
-        ->Selection.attr("x2", l => {
-          switch d3Nodes->Array.find(n => n.data.id == l.target) {
+        ->Selection.attr("x2", (l: Force.linkInput<Model.graphNode>) => {
+          switch d3Nodes->Array.find((n: Force.node<Model.graphNode>) => n.data.id == l.target) {
           | Some(n) => n.x
           | None => 0.0
           }
         })
-        ->Selection.attr("y2", l => {
-          switch d3Nodes->Array.find(n => n.data.id == l.target) {
+        ->Selection.attr("y2", (l: Force.linkInput<Model.graphNode>) => {
+          switch d3Nodes->Array.find((n: Force.node<Model.graphNode>) => n.data.id == l.target) {
           | Some(n) => n.y
           | None => 0.0
           }
@@ -199,8 +230,8 @@ let updateGraph = (nodes: array<Model.graphNode>, links: array<Model.graphLink>)
         ->ignore
 
         nodeSelection
-        ->Selection.attr("cx", n => n.x)
-        ->Selection.attr("cy", n => n.y)
+        ->Selection.attr("cx", (n: Force.node<Model.graphNode>) => n.x)
+        ->Selection.attr("cy", (n: Force.node<Model.graphNode>) => n.y)
         ->ignore
       })->ignore
 
@@ -210,11 +241,3 @@ let updateGraph = (nodes: array<Model.graphNode>, links: array<Model.graphLink>)
   | _ => ()
   }
 }
-
-// Node color based on kind
-let nodeColor = (kind: [#repo | #slot | #provider]) =>
-  switch kind {
-  | #repo => "#4299e1"
-  | #slot => "#ecc94b"
-  | #provider => "#48bb78"
-  }

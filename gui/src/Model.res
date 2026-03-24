@@ -203,7 +203,7 @@ let buildGraphNodes = (model: t): array<graphNode> => {
       fy: None,
     })
 
-  Array.concatMany([repoNodes, slotNodes, providerNodes])
+  [repoNodes, slotNodes, providerNodes]->Array.flat
 }
 
 // Build graph links from model data

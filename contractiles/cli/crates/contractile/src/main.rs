@@ -15,6 +15,7 @@
 // Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 #![forbid(unsafe_code)]
+mod adjust;
 mod doctor;
 mod dust;
 mod gen_just;
@@ -64,6 +65,12 @@ enum Commands {
     Intend {
         #[command(subcommand)]
         action: intend::IntendAction,
+    },
+
+    /// Accessibility & Digital Justice for Universal Software & Technology
+    Adjust {
+        #[command(subcommand)]
+        action: adjust::AdjustAction,
     },
 
     /// K9 Nickel component operations
@@ -134,6 +141,7 @@ fn main() {
         "trust" => trust::run_from_args(),
         "dust" => dust::run_from_args(),
         "intend" => intend::run_from_args(),
+        "adjust" => adjust::run_from_args(),
         "k9" => k9_cmd::run_from_args(),
         _ => run_unified(),
     };
@@ -151,7 +159,7 @@ fn setup_symlinks() -> anyhow::Result<()> {
         .parent()
         .ok_or_else(|| anyhow::anyhow!("cannot determine binary directory"))?;
 
-    let commands = ["must", "trust", "dust", "intend", "k9"];
+    let commands = ["must", "trust", "dust", "intend", "adjust", "k9"];
 
     for cmd in &commands {
         let link_path = dir.join(cmd);
@@ -189,6 +197,7 @@ fn run_unified() -> anyhow::Result<()> {
         Some(Commands::Trust { action }) => trust::run(action),
         Some(Commands::Dust { action }) => dust::run(action),
         Some(Commands::Intend { action }) => intend::run(action),
+        Some(Commands::Adjust { action }) => adjust::run(action),
         Some(Commands::K9 { action }) => k9_cmd::run(action),
         Some(Commands::GenJust { dir, output }) => gen_just::run(&dir, &output),
         Some(Commands::Init { name, force }) => init::run(name.as_deref(), force),

@@ -33,6 +33,11 @@ pub mod filenames {
 
     /// Intentfile: declared future intent / roadmap.
     pub const INTENTFILE_A2ML: &str = "Intentfile.a2ml";
+
+    /// Adjustfile: accessibility & digital justice invariants.
+    pub const ADJUSTFILE_A2ML: &str = "Adjustfile.a2ml";
+    /// Adjustfile: S-expression contractile format (in .machine_readable/).
+    pub const ADJUST_CONTRACTILE: &str = "ADJUST.contractile";
 }
 
 /// Search order for locating a contractile file. The CLI tools check these
@@ -62,6 +67,11 @@ pub fn find_contractile(filename: &str) -> Option<std::path::PathBuf> {
     if type_dir == "intent" {
         candidates.insert(0, format!("contractiles/lust/{}", filename));
         candidates.insert(1, format!("lust/{}", filename));
+    }
+
+    // Adjustfile also lives in .machine_readable/ as ADJUST.contractile.
+    if type_dir == "adjust" {
+        candidates.insert(0, ".machine_readable/ADJUST.contractile".to_string());
     }
 
     for candidate in &candidates {

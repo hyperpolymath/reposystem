@@ -160,7 +160,7 @@ fn run_app<B: ratatui::backend::Backend>(
     app: &mut App,
 ) -> io::Result<()> {
     loop {
-        terminal.draw(|f| ui(f, app))?;
+        terminal.draw(|f| ui(f, app)).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{e}")))?;
 
         if let Event::Key(key) = event::read()? {
             if key.kind == KeyEventKind::Press {
@@ -189,7 +189,7 @@ fn ui(f: &mut Frame, app: &App) {
             Constraint::Min(0),    // Content
             Constraint::Length(3), // Help
         ])
-        .split(f.size());
+        .split(f.area());
 
     // Tabs
     let titles: Vec<Line> = Tab::titles()

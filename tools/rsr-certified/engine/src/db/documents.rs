@@ -10,6 +10,7 @@ use crate::{ComplianceStatus, Result, RsrError};
 use serde::{Deserialize, Serialize};
 use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb::opt::auth::Root;
+use surrealdb::types::SurrealValue;
 use surrealdb::Surreal;
 
 /// SurrealDB connection pool
@@ -20,14 +21,14 @@ pub struct SurrealPool {
 }
 
 /// Record ID wrapper for SurrealDB responses
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, SurrealValue)]
 struct Record {
     #[allow(dead_code)]
-    id: surrealdb::RecordId,
+    id: surrealdb::types::RecordId,
 }
 
 /// Compliance report as stored in SurrealDB
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, SurrealValue)]
 struct ComplianceReport {
     platform: String,
     owner: String,
@@ -39,7 +40,7 @@ struct ComplianceReport {
 }
 
 /// Webhook event record
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, SurrealValue)]
 struct WebhookEvent {
     platform: String,
     event_type: String,
@@ -85,7 +86,7 @@ impl SurrealPool {
             .map_err(|e| RsrError::Platform(format!("SurrealDB connection failed: {}", e)))?;
 
         client
-            .signin(Root { username, password })
+            .signin(Root { username: username.to_string(), password: password.to_string() })
             .await
             .map_err(|e| RsrError::Platform(format!("SurrealDB auth failed: {}", e)))?;
 
@@ -175,7 +176,7 @@ impl SurrealPool {
             .map_err(|e| RsrError::Platform(format!("SurrealDB create failed: {}", e)))?;
 
         let id = result
-            .map(|r| r.id.to_string())
+            .map(|r| format!("{:?}", r.id))
             .unwrap_or_else(|| "unknown".to_string());
 
         tracing::debug!("Stored compliance report with ID: {}", id);
@@ -313,7 +314,7 @@ impl SurrealPool {
             .map_err(|e| RsrError::Platform(format!("SurrealDB create failed: {}", e)))?;
 
         let id = result
-            .map(|r| r.id.to_string())
+            .map(|r| format!("{:?}", r.id))
             .unwrap_or_else(|| "unknown".to_string());
 
         Ok(id)

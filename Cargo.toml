@@ -30,8 +30,8 @@ serde_json = "1.0"
 toml = "0.8"
 
 # TUI
-ratatui = "0.26"
-crossterm = "0.27"
+ratatui = { version = "0.30", features = ["crossterm"] }
+crossterm = "0.28"
 
 # Graph processing
 petgraph = "0.6"

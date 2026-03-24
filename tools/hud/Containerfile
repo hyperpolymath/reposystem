@@ -99,11 +99,11 @@ COPY --from=tui-builder --chown=gitvisor:gitvisor \
     /app/tui/bin/gitvisor_tui ./bin/
 
 # Expose Phoenix port
-EXPOSE 4000
+EXPOSE 4060
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:4000/api/v1/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:4060/api/v1/health || exit 1
 
 # Run the Phoenix server
 CMD ["bin/gitvisor", "start"]

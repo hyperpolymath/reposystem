@@ -4,7 +4,7 @@ import Config
 
 # Development endpoint configuration
 config :gitvisor, GitvisorWeb.Endpoint,
-  http: [ip: {127, 0, 0, 1}, port: 4000],
+  http: [ip: {127, 0, 0, 1}, port: 4060],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,

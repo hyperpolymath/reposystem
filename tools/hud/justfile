@@ -138,7 +138,7 @@ container-build:
 
 # Run container
 container-run:
-    nerdctl run -it --rm -p 4000:4000 gitvisor:latest
+    nerdctl run -it --rm -p 4060:4060 gitvisor:latest
 
 # ============================================================================
 # LINTING & FORMATTING

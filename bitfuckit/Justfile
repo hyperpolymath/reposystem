@@ -371,7 +371,7 @@ watch:
 
 # Start GraphQL server (development)
 graphql-dev: build
-    {{binary}} graphql serve --playground --port 4000
+    {{binary}} graphql serve --playground --port 4060
 
 # ============================================================================
 # TUI Development

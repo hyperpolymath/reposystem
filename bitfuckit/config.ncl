@@ -254,7 +254,7 @@
   features = {
     graphql_server = {
       enabled = true,
-      default_port = 4000,
+      default_port = 4060,
       playground = true,
     },
     tui = {

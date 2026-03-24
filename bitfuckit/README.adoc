@@ -380,7 +380,7 @@ end TUI;
 
 [source,bash]
 ----
-# Start GraphQL server on default port 4000
+# Start GraphQL server on default port 4060
 bitfuckit graphql serve
 
 # Custom port

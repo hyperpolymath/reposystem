@@ -12,7 +12,7 @@ package GraphQL_Server
 is
    -- Server configuration
    type Server_Config is record
-      Port            : Positive := 4000;
+      Port            : Positive := 4060;
       Host            : Unbounded_String := To_Unbounded_String ("127.0.0.1");
       Enable_Playground : Boolean := False;
       Enable_Introspection : Boolean := True;

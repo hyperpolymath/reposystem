@@ -23,7 +23,7 @@ export fetch_analytics_data
 export load_seo_report, analyze_seo_trends, seo_score_card
 
 # API client
-const API_ENDPOINT = Ref("http://localhost:4000/api/graphql")
+const API_ENDPOINT = Ref("http://localhost:4060/api/graphql")
 
 function set_endpoint!(url::String)
     API_ENDPOINT[] = url

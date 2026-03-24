@@ -25,7 +25,7 @@ package body Gitvisor.Config is
                  Theme            => "dark                            ");
 
       --  Set default endpoint
-      Config.API_Endpoint (1 .. 21) := "http://localhost:4000";
+      Config.API_Endpoint (1 .. 21) := "http://localhost:4060";
 
       --  Try to load from file
       if Ada.Directories.Exists (Path) then

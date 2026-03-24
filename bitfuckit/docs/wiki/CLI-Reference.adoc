@@ -757,7 +757,7 @@ bitfuckit graphql serve [options]
 |Option |Default |Description
 
 |`--port <n>`
-|4000
+|4060
 |Server port
 
 |`--playground`

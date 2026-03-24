@@ -163,7 +163,7 @@
               "PHX_HOST=localhost"
             ];
             ExposedPorts = {
-              "4000/tcp" = {};
+              "4060/tcp" = {};
             };
           };
         };

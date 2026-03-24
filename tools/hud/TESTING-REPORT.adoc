@@ -373,7 +373,7 @@ analytics/
 
 [source,julia]
 ----
-const API_ENDPOINT = Ref("http://localhost:4000/api/graphql")
+const API_ENDPOINT = Ref("http://localhost:4060/api/graphql")
 ----
 
 *Recommendation*: Use HTTPS in production, document security requirements.

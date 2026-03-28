@@ -1,0 +1,25 @@
+[Desktop Entry]
+Type=Application
+Name=Reposystem
+GenericName=Repository Ecosystem Manager
+Comment=Manage and visualise your repository ecosystem with interactive graphs
+Exec=reposystem-launcher %u
+Icon=reposystem
+Categories=Development;ProjectManagement;
+Terminal=false
+StartupWMClass=reposystem
+Keywords=git;repos;ecosystem;graph;forge;github;gitlab;
+MimeType=x-scheme-handler/reposystem;
+Actions=gossamer;web;tui;
+
+[Desktop Action gossamer]
+Name=Launch Desktop App (Gossamer)
+Exec=reposystem-launcher --gossamer
+
+[Desktop Action web]
+Name=Launch in Browser
+Exec=reposystem-launcher --web
+
+[Desktop Action tui]
+Name=Launch TUI
+Exec=reposystem-launcher --tui

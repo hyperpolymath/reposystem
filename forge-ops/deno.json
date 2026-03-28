@@ -1,0 +1,15 @@
+{
+  "name": "@hyperpolymath/reposystem-forge-ops",
+  "version": "0.1.0",
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "build": "rescript build",
+    "dev": "rescript build -w",
+    "clean": "rescript clean"
+  },
+  "imports": {
+    "rescript": "npm:rescript@~11.1.4",
+    "@rescript/core": "npm:@rescript/core@~0.7.0",
+    "rescript-tea": "npm:rescript-tea@^0.16"
+  }
+}

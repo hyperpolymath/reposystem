@@ -11,7 +11,7 @@
     (project "git-hud")
     (project-version "0.1.0")
     (analyst "Claude Code (Automated Analysis)")
-    (repository "/var/home/hyper/repos/git-hud"))
+    (repository "/var$HOME/repos/git-hud"))
 
   (summary
     (overall-status incomplete)

@@ -16,7 +16,7 @@ scan_interval_days = 7
 [[repositories]]
 id = "reposystem"
 name = "reposystem"
-path = "/var/mnt/eclipse/repos/reposystem"
+path = "/var$REPOS_DIR/reposystem"
 forge = "github"
 owner = "hyperpolymath"
 url = "https://github.com/hyperpolymath/reposystem"
@@ -46,7 +46,7 @@ related = []
 [[repositories]]
 id = "git-dispatcher"
 name = "git-dispatcher"
-path = "/var/mnt/eclipse/repos/git-dispatcher"
+path = "/var$REPOS_DIR/git-dispatcher"
 forge = "github"
 owner = "hyperpolymath"
 url = "https://github.com/hyperpolymath/git-dispatcher"
@@ -76,7 +76,7 @@ related = ["git-hud"]
 [[repositories]]
 id = "git-seo"
 name = "git-seo"
-path = "/var/mnt/eclipse/repos/git-seo"
+path = "/var$REPOS_DIR/git-seo"
 forge = "github"
 owner = "hyperpolymath"
 url = "https://github.com/hyperpolymath/git-seo"
@@ -106,7 +106,7 @@ related = ["gitvisor"]
 [[repositories]]
 id = "techstack-filterlist"
 name = "techstack-filterlist"
-path = "/var/mnt/eclipse/repos/techstack-filterlist"
+path = "/var$REPOS_DIR/techstack-filterlist"
 forge = "github"
 owner = "hyperpolymath"
 url = "https://github.com/hyperpolymath/techstack-filterlist"

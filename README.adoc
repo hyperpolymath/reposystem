@@ -17,7 +17,7 @@ image:https://img.shields.io/badge/status-implementation-green.svg[Implementatio
 [source,bash]
 ----
 # Scan local clones
-cargo run -- scan /mnt/eclipse/repos
+cargo run -- scan $REPOS_DIR
 
 # Export JSON for the web UI
 cargo run -- export --format json > web/export.json

@@ -33,7 +33,7 @@ Each repository is defined as a `[[repositories]]` table:
 [[repositories]]
 id = "git-dispatcher"
 name = "git-dispatcher"
-path = "/var/mnt/eclipse/repos/git-dispatcher"
+path = "/var$REPOS_DIR/git-dispatcher"
 forge = "github"
 owner = "hyperpolymath"
 url = "https://github.com/hyperpolymath/git-dispatcher"
@@ -112,7 +112,7 @@ Pre-defined aspects:
 [[repositories]]
 id = "git-seo"
 name = "git-seo"
-path = "/var/mnt/eclipse/repos/git-seo"
+path = "/var$REPOS_DIR/git-seo"
 forge = "github"
 owner = "hyperpolymath"
 url = "https://github.com/hyperpolymath/git-seo"
@@ -228,7 +228,7 @@ findOrphans(): array<repository>
 
 ```rescript
 RegisterInReposystem({
-  repoPath: "/var/mnt/eclipse/repos/new-repo",
+  repoPath: "/var$REPOS_DIR/new-repo",
   repoName: "new-repo",
   aspects: ["analysis"],
   group: Some("analysis-tools"),

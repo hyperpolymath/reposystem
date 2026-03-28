@@ -17,7 +17,7 @@ Comprehensive testing and analysis report for the Gitvisor project - a hyper-cus
 | Date | 2025-12-29
 | Version | 0.1.0
 | Analyst | Claude Code (Automated Analysis)
-| Repository | /var/home/hyper/repos/git-hud
+| Repository | /var$HOME/repos/git-hud
 |===
 
 toc::[]

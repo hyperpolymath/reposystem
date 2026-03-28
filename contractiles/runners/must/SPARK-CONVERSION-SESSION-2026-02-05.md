@@ -234,7 +234,7 @@ Revert must_types back to `Unbounded_String`.
 ## Files Modified
 
 ```
-/var/mnt/eclipse/repos/must/
+/var$REPOS_DIR/must/
 ├── src/
 │   ├── must_types.ads     [MODIFIED] Bounded strings + type predicates
 │   └── must_types.adb     [MODIFIED] License header updated

@@ -64,3 +64,6 @@ gui/node_modules/
 
 # Rust TUI build artifacts
 tui/target/
+
+# asdf version manager
+.tool-versions

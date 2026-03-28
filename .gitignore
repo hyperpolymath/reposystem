@@ -61,3 +61,6 @@ gui/lib/rescript-webapi/lib/ocaml/
 gui/lib/rescript-d3/lib/ocaml/
 gui/lib/rescript-tea/src/*.res.js
 gui/node_modules/
+
+# Rust TUI build artifacts
+tui/target/

@@ -1,0 +1,34 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+
+= Legacy Ada/SPARK TUI
+:author: Jonathan D.A. Jewell
+
+== Migration Notice
+
+These Ada/SPARK source files are the **original TUI implementation** for
+reposystem. They have been migrated to Rust with SPARK-style contracts
+preserved as `debug_assert!` checks, validated constructors, and
+`#[cfg(debug_assertions)]` runtime guards.
+
+== Why Migrate?
+
+* The GUI already uses Rust (Gossamer-rs) -- unifying on one systems language.
+* Rust's type system can express most SPARK contract semantics idiomatically.
+* Better ecosystem integration (ratatui, crossterm, serde, clap).
+* The SPARK formal verification semantics are preserved via:
+  - Type invariants enforced in `new()` constructors
+  - Pre/post conditions as `debug_assert!` macros
+  - Dynamic predicates as runtime validation in debug builds
+  - Ghost state as `#[cfg(test)]` properties
+
+== Original Files
+
+* `reposystem_tui.ads` -- Package specification (types, contracts)
+* `reposystem_tui.adb` -- Package body (logic, rendering)
+* `reposystem_tui-main.adb` -- Entry point
+* `reposystem_tui.gpr` -- GNAT project file
+
+== Replacement
+
+See `../src/lib.rs` and `../src/main.rs` for the Rust equivalents.

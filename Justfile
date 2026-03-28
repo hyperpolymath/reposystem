@@ -388,3 +388,42 @@ help-me:
     @echo "  https://github.com/hyperpolymath/reposystem/issues/new"
     @echo ""
     @echo "Include the output of 'just doctor' in your report."
+
+# Check all required toolchain dependencies and report health
+doctor:
+    #!/usr/bin/env bash
+    echo "═══════════════════════════════════════════════════"
+    echo "  Reposystem Doctor — Toolchain Health Check"
+    echo "═══════════════════════════════════════════════════"
+    echo ""
+    PASS=0; FAIL=0; WARN=0
+    check() {
+        local name="$1" cmd="$2" min="$3"
+        if command -v "$cmd" >/dev/null 2>&1; then
+            VER=$("$cmd" --version 2>&1 | head -1)
+            echo "  [OK]   $name — $VER"
+            PASS=$((PASS + 1))
+        else
+            echo "  [FAIL] $name — not found (need $min+)"
+            FAIL=$((FAIL + 1))
+        fi
+    }
+    check "just"              just      "1.25" 
+    check "git"               git       "2.40" 
+    check "Rust (cargo)"      cargo     "1.80" 
+    check "Zig"               zig       "0.13" 
+# Optional tools
+if command -v panic-attack >/dev/null 2>&1; then
+    echo "  [OK]   panic-attack — available"
+    PASS=$((PASS + 1))
+else
+    echo "  [WARN] panic-attack — not found (pre-commit scanner)"
+    WARN=$((WARN + 1))
+fi
+    echo ""
+    echo "  Result: $PASS passed, $FAIL failed, $WARN warnings"
+    if [ "$FAIL" -gt 0 ]; then
+        echo "  Run 'just heal' to attempt automatic repair."
+        exit 1
+    fi
+    echo "  All required tools present."

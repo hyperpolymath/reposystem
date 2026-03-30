@@ -67,7 +67,7 @@ defmodule Rhodibot.CLI do
     # Check fail condition
     if fail_level = opts[:fail_on] do
       level_order = [:non_compliant, :bronze, :silver, :gold]
-      min_index = Enum.find_index(level_order, &(&1 == String.to_atom(fail_level)))
+      min_index = Enum.find_index(level_order, &(&1 == String.to_existing_atom(fail_level)))
       actual_index = Enum.find_index(level_order, &(&1 == report.level))
 
       if actual_index < min_index do
@@ -100,7 +100,7 @@ defmodule Rhodibot.CLI do
   end
 
   defp run({[:badge], %{options: opts}}) do
-    badge = Rhodibot.badge(opts.path, format: String.to_atom(opts.format))
+    badge = Rhodibot.badge(opts.path, format: String.to_existing_atom(opts.format))
     IO.puts(badge)
     :ok
   end

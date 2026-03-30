@@ -15,33 +15,70 @@ package body Syncthing_Sync is
       Pd : Process_Descriptor;
       Match : Expect_Match;
       Output : Unbounded_String := Null_Unbounded_String;
-      Args : constant String :=
-         "-s -X " & Method &
-         " -H ""X-API-Key: " & To_String (ST_API_Key) & """ " &
-         (if Data'Length > 0
-          then "-H ""Content-Type: application/json"" -d '" & Data & "' "
-          else "") &
-         To_String (ST_API_URL) & "/rest/" & Endpoint;
+      -- Pass API key via -H @- (stdin) would be ideal but GNAT.Expect
+      -- doesn't support piping stdin easily. Instead, use a temporary
+      -- header file to avoid leaking the key in /proc/cmdline.
+      Header_File : constant String := "/tmp/.bitfuckit-curl-header";
+      use Ada.Text_IO;
+      HF : File_Type;
    begin
       begin
-         Non_Blocking_Spawn
-           (Pd,
-            "/usr/bin/curl",
-            GNAT.OS_Lib.Argument_String_To_List (Args).all,
-            Err_To_Out => True);
+         -- Write API key header to temp file (mode 0600 equivalent)
+         Create (HF, Out_File, Header_File);
+         Put_Line (HF, "X-API-Key: " & To_String (ST_API_Key));
+         Close (HF);
 
-         loop
+         declare
+            Args : constant String :=
+               "-s -X " & Method &
+               " -H @" & Header_File & " " &
+               (if Data'Length > 0
+                then "-H ""Content-Type: application/json"" -d '" & Data & "' "
+                else "") &
+               To_String (ST_API_URL) & "/rest/" & Endpoint;
+         begin
+            Non_Blocking_Spawn
+              (Pd,
+               "/usr/bin/curl",
+               GNAT.OS_Lib.Argument_String_To_List (Args).all,
+               Err_To_Out => True);
+
+            loop
+               begin
+                  Expect (Pd, Match, ".+", Timeout => 10_000);
+                  Append (Output, Expect_Out (Pd));
+               exception
+                  when Process_Died => exit;
+               end;
+            end loop;
+
+            Close (Pd);
+         end;
+
+         -- Clean up header file containing API key
+         begin
+            declare
+               Cleanup : File_Type;
             begin
-               Expect (Pd, Match, ".+", Timeout => 10_000);
-               Append (Output, Expect_Out (Pd));
+               Open (Cleanup, In_File, Header_File);
+               Delete (Cleanup);
             exception
-               when Process_Died => exit;
+               when others => null;  -- Best effort cleanup
             end;
-         end loop;
-
-         Close (Pd);
+         end;
       exception
          when others =>
+            -- Clean up header file on error path too
+            begin
+               declare
+                  Cleanup : File_Type;
+               begin
+                  Open (Cleanup, In_File, Header_File);
+                  Delete (Cleanup);
+               exception
+                  when others => null;
+               end;
+            end;
             Output := To_Unbounded_String ("ERROR: Could not connect to Syncthing");
       end;
 

@@ -61,7 +61,7 @@ defmodule Cadre.Router.Backend do
 
     # Forward request
     case Req.request(
-           method: conn.method |> String.downcase() |> String.to_atom(),
+           method: conn.method |> String.downcase() |> String.to_existing_atom(),
            url: url,
            headers: Map.merge(forward_headers(conn), headers),
            body: read_body(conn)

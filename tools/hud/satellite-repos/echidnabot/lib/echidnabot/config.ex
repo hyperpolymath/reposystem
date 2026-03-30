@@ -86,7 +86,7 @@ defmodule Echidnabot.Config do
 
   defp atomize_keys(map) when is_map(map) do
     Map.new(map, fn
-      {key, value} when is_binary(key) -> {String.to_atom(key), atomize_keys(value)}
+      {key, value} when is_binary(key) -> {String.to_existing_atom(key), atomize_keys(value)}
       {key, value} -> {key, atomize_keys(value)}
     end)
   end

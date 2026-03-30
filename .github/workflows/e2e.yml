@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# End-to-end integration tests for reposystem/stateful-artefacts (Gnosis).
+# Tests template rendering: placeholders, conditionals, loops, filters,
+# badges, cross-file resolution.
+
+name: E2E — Gnosis Template Engine
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths:
+      - 'stateful-artefacts/**'
+      - '.github/workflows/e2e.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'stateful-artefacts/**'
+  workflow_dispatch:
+
+permissions: read-all
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-gnosis:
+    name: E2E — Gnosis Template Rendering
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Install Haskell (GHCup)
+        uses: haskell-actions/setup@dd344bc1cec854a9b55c2b857c28b688010e4fce  # v2
+        with:
+          ghc-version: '9.6'
+          cabal-version: '3.10'
+
+      - name: Cabal cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684  # v4
+        with:
+          path: |
+            ~/.cabal/store
+            stateful-artefacts/dist-newstyle
+          key: ${{ runner.os }}-cabal-${{ hashFiles('stateful-artefacts/cabal.project', 'stateful-artefacts/**/*.cabal') }}
+
+      - name: Build Gnosis
+        run: |
+          cd stateful-artefacts && cabal build all
+
+      - name: Run integration tests
+        run: bash stateful-artefacts/tests/integration-test.sh

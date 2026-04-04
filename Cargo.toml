@@ -71,6 +71,8 @@ tempfile = "3.9"
 assert_cmd = "2.0"
 predicates = "3.0"
 insta = { version = "1.34", features = ["yaml"] }
+criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1.5"
 
 [profile.release]
 lto = true
@@ -85,6 +87,10 @@ debug = true
 [[bin]]
 name = "reposystem"
 path = "src/main.rs"
+
+[[bench]]
+name = "reposystem_bench"
+harness = false
 
 [features]
 default = []

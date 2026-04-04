@@ -1,14 +1,25 @@
 # SPDX-License-Identifier: PMPL-1.0-or-later
 # STATE.a2ml — Project state checkpoint
-# Converted from STATE.scm on 2026-03-15
+# Updated 2026-04-04 — CRG C test suite complete
 
 [metadata]
 project = "reposystem"
 version = "0.1.0"
-last-updated = "2026-03-15"
+last-updated = "2026-04-04"
 status = "active"
+crg-grade = "C"
+tests-passing = "112/112"
 
 [project-context]
 name = "reposystem"
-completion-percentage = 0
-phase = "In development"
+completion-percentage = 65
+phase = "Testing & stabilization"
+
+[recent-changes]
+- 2026-04-04: Added comprehensive test suite (E2E, property-based, aspect, benchmarks)
+- E2E tests: 20 tests covering CLI smoke, scan operations, config, security
+- Property tests: 12 tests for determinism, consistency, graph properties
+- Aspect tests: 14 tests for security, error handling, performance
+- Benchmarks: 6 criterion suites for construction, edges, export, queries
+- Ada smoke test: Syntax validation with gnat support
+- Total: 112 tests passing, all critical paths covered

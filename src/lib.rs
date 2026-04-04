@@ -17,6 +17,8 @@ pub mod config;
 pub mod graph;
 pub mod scanner;
 pub mod tui;
+/// VeriSimDB HTTP client — replaces flat JSON file storage.
+pub mod verisimdb;
 
 /// Core data types matching DATA-MODEL.adoc specification
 pub mod types {

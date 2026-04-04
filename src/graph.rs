@@ -3,6 +3,7 @@
 //! Graph data structures and algorithms for the ecosystem graph
 
 use crate::types::{AspectStore, AuditStore, Edge, GraphStore, Group, PlanStore, Repo, SlotStore};
+use crate::verisimdb::VeriSimDbClient;
 use anyhow::{Context, Result};
 use petgraph::graph::{DiGraph, NodeIndex};
 use std::collections::HashMap;
@@ -48,58 +49,104 @@ impl EcosystemGraph {
         }
     }
 
-    /// Load graph from a directory containing graph.json, aspects.json, slots.json, plans.json, audit.json
+    /// Load graph from VeriSimDB (preferred) falling back to flat JSON files.
+    ///
+    /// For each of the five stores the load priority is:
+    /// 1. VeriSimDB snapshot (`VERISIMDB_URL` env var; default `http://localhost:8080`)
+    /// 2. JSON file in `dir` (graph.json, aspects.json, slots.json, plans.json, audit.json)
+    /// 3. Default empty store
+    ///
+    /// This allows a fresh node to pick up state from VeriSimDB without needing
+    /// the flat files to be present, while remaining backward-compatible when
+    /// VeriSimDB is unavailable.
     pub fn load(dir: &Path) -> Result<Self> {
-        let graph_path = dir.join("graph.json");
+        let vdb = VeriSimDbClient::new();
+
+        let graph_path   = dir.join("graph.json");
         let aspects_path = dir.join("aspects.json");
-        let slots_path = dir.join("slots.json");
-        let plans_path = dir.join("plans.json");
-        let audit_path = dir.join("audit.json");
+        let slots_path   = dir.join("slots.json");
+        let plans_path   = dir.join("plans.json");
+        let audit_path   = dir.join("audit.json");
 
-        let store: GraphStore = if graph_path.exists() {
-            let content = fs::read_to_string(&graph_path)
-                .with_context(|| format!("Failed to read {}", graph_path.display()))?;
-            serde_json::from_str(&content)
-                .with_context(|| format!("Failed to parse {}", graph_path.display()))?
-        } else {
-            GraphStore::default()
-        };
+        // ── GraphStore ─────────────────────────────────────────────────────
+        let store: GraphStore = vdb
+            .load_graph()
+            .unwrap_or(None)
+            .map(Ok)
+            .unwrap_or_else(|| {
+                if graph_path.exists() {
+                    let content = fs::read_to_string(&graph_path)
+                        .with_context(|| format!("Failed to read {}", graph_path.display()))?;
+                    serde_json::from_str(&content)
+                        .with_context(|| format!("Failed to parse {}", graph_path.display()))
+                } else {
+                    Ok(GraphStore::default())
+                }
+            })?;
 
-        let aspects: AspectStore = if aspects_path.exists() {
-            let content = fs::read_to_string(&aspects_path)
-                .with_context(|| format!("Failed to read {}", aspects_path.display()))?;
-            serde_json::from_str(&content)
-                .with_context(|| format!("Failed to parse {}", aspects_path.display()))?
-        } else {
-            AspectStore::default()
-        };
+        // ── AspectStore ────────────────────────────────────────────────────
+        let aspects: AspectStore = vdb
+            .load_aspects()
+            .unwrap_or(None)
+            .map(Ok)
+            .unwrap_or_else(|| {
+                if aspects_path.exists() {
+                    let content = fs::read_to_string(&aspects_path)
+                        .with_context(|| format!("Failed to read {}", aspects_path.display()))?;
+                    serde_json::from_str(&content)
+                        .with_context(|| format!("Failed to parse {}", aspects_path.display()))
+                } else {
+                    Ok(AspectStore::default())
+                }
+            })?;
 
-        let slots: SlotStore = if slots_path.exists() {
-            let content = fs::read_to_string(&slots_path)
-                .with_context(|| format!("Failed to read {}", slots_path.display()))?;
-            serde_json::from_str(&content)
-                .with_context(|| format!("Failed to parse {}", slots_path.display()))?
-        } else {
-            SlotStore::default()
-        };
+        // ── SlotStore ──────────────────────────────────────────────────────
+        let slots: SlotStore = vdb
+            .load_slots()
+            .unwrap_or(None)
+            .map(Ok)
+            .unwrap_or_else(|| {
+                if slots_path.exists() {
+                    let content = fs::read_to_string(&slots_path)
+                        .with_context(|| format!("Failed to read {}", slots_path.display()))?;
+                    serde_json::from_str(&content)
+                        .with_context(|| format!("Failed to parse {}", slots_path.display()))
+                } else {
+                    Ok(SlotStore::default())
+                }
+            })?;
 
-        let plans: PlanStore = if plans_path.exists() {
-            let content = fs::read_to_string(&plans_path)
-                .with_context(|| format!("Failed to read {}", plans_path.display()))?;
-            serde_json::from_str(&content)
-                .with_context(|| format!("Failed to parse {}", plans_path.display()))?
-        } else {
-            PlanStore::default()
-        };
+        // ── PlanStore ──────────────────────────────────────────────────────
+        let plans: PlanStore = vdb
+            .load_plans()
+            .unwrap_or(None)
+            .map(Ok)
+            .unwrap_or_else(|| {
+                if plans_path.exists() {
+                    let content = fs::read_to_string(&plans_path)
+                        .with_context(|| format!("Failed to read {}", plans_path.display()))?;
+                    serde_json::from_str(&content)
+                        .with_context(|| format!("Failed to parse {}", plans_path.display()))
+                } else {
+                    Ok(PlanStore::default())
+                }
+            })?;
 
-        let audit: AuditStore = if audit_path.exists() {
-            let content = fs::read_to_string(&audit_path)
-                .with_context(|| format!("Failed to read {}", audit_path.display()))?;
-            serde_json::from_str(&content)
-                .with_context(|| format!("Failed to parse {}", audit_path.display()))?
-        } else {
-            AuditStore::default()
-        };
+        // ── AuditStore ─────────────────────────────────────────────────────
+        let audit: AuditStore = vdb
+            .load_audit()
+            .unwrap_or(None)
+            .map(Ok)
+            .unwrap_or_else(|| {
+                if audit_path.exists() {
+                    let content = fs::read_to_string(&audit_path)
+                        .with_context(|| format!("Failed to read {}", audit_path.display()))?;
+                    serde_json::from_str(&content)
+                        .with_context(|| format!("Failed to parse {}", audit_path.display()))
+                } else {
+                    Ok(AuditStore::default())
+                }
+            })?;
 
         let mut ecosystem = Self {
             graph: DiGraph::new(),
@@ -117,16 +164,20 @@ impl EcosystemGraph {
         Ok(ecosystem)
     }
 
-    /// Save graph to a directory
+    /// Save graph to a directory and to VeriSimDB.
+    ///
+    /// Flat JSON files in `dir` are written first (authoritative on-disk copy).
+    /// VeriSimDB is then updated with the same data.  VeriSimDB failures are
+    /// logged as warnings — they do not cause `save()` to return `Err`.
     pub fn save(&self, dir: &Path) -> Result<()> {
         fs::create_dir_all(dir)
             .with_context(|| format!("Failed to create directory {}", dir.display()))?;
 
-        let graph_path = dir.join("graph.json");
+        let graph_path   = dir.join("graph.json");
         let aspects_path = dir.join("aspects.json");
-        let slots_path = dir.join("slots.json");
-        let plans_path = dir.join("plans.json");
-        let audit_path = dir.join("audit.json");
+        let slots_path   = dir.join("slots.json");
+        let plans_path   = dir.join("plans.json");
+        let audit_path   = dir.join("audit.json");
 
         let graph_json = serde_json::to_string_pretty(&self.store)
             .context("Failed to serialize graph")?;
@@ -152,6 +203,10 @@ impl EcosystemGraph {
             .context("Failed to serialize audit log")?;
         fs::write(&audit_path, audit_json)
             .with_context(|| format!("Failed to write {}", audit_path.display()))?;
+
+        // Mirror all five stores to VeriSimDB (warnings-only on failure).
+        let vdb = VeriSimDbClient::new();
+        vdb.save_all(&self.store, &self.aspects, &self.slots, &self.plans, &self.audit);
 
         Ok(())
     }

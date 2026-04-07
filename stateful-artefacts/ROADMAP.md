@@ -6,6 +6,15 @@ Transform Git forge documentation from static, manually-maintained files to **se
 
 ---
 
+## Operations Backlog (Issue-Linked)
+
+- [x] **Issue #8 (GitLab cleanup):** `hyperpolymath/ats2-tui` deletion requested via GitLab API on April 7, 2026 (`202 Accepted`, project renamed to `ats2-tui-deletion_scheduled-80308005` while purge completes).
+- [x] **Issue #7 (Bitbucket mirror sync):** `reposystem` mirror force-synced to `bitbucket.org/hyperpolymath/reposystem` on April 7, 2026.
+- [ ] **Issue #7 (Codeberg mirror sync):** `codeberg.org/hyperpolymath/reposystem` does not exist yet; authenticated API create attempts currently return `500`, so mirror push remains blocked pending repo creation.
+- [ ] **Issue #9 (OpenSSF badges):** submit applications after Scorecard/security-policy/branch-protection checks are green (manual browser flow).
+
+---
+
 ## Horizon 1: Clean Foundation (50% Complete) ✅
 
 **Target:** Q1 2026

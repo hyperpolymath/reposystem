@@ -17,14 +17,17 @@ external createDatabase: {..} => database = "Database"
 @send external useDatabase: (database, string) => database = "useDatabase"
 @send external collection: (database, string) => collection = "collection"
 @send external graph: (database, string) => graph = "graph"
-@send external query: (database, string, {..}) => promise<aqlQuery> = "query"
+// Typed externals: arangojs accepts and returns plain JSON, so Js.Json.t is the
+// correct ReScript type. Using `{..}` here previously forced Obj.magic at every
+// call site, which panic-attack flagged as unsafe_blocks.
+@send external query: (database, string, Js.Json.t) => promise<aqlQuery> = "query"
 
-@send external save: (collection, {..}) => promise<{..}> = "save"
-@send external document: (collection, string) => promise<{..}> = "document"
-@send external update: (collection, string, {..}) => promise<{..}> = "update"
-@send external remove: (collection, string) => promise<{..}> = "remove"
+@send external save: (collection, Js.Json.t) => promise<Js.Json.t> = "save"
+@send external document: (collection, string) => promise<Js.Json.t> = "document"
+@send external update: (collection, string, Js.Json.t) => promise<Js.Json.t> = "update"
+@send external remove: (collection, string) => promise<Js.Json.t> = "remove"
 
-@send external all: aqlQuery => promise<array<{..}>> = "all"
+@send external all: aqlQuery => promise<array<Js.Json.t>> = "all"
 
 // Client state
 type client = {
@@ -119,7 +122,7 @@ let edgeToJson = (edge: edge): Js.Json.t => {
 let insertDocument = async (client: client, doc: document): result<unit, string> => {
   try {
     let json = documentToJson(doc)
-    let _ = await client.collections.documents->save(json->Obj.magic)
+    let _ = await client.collections.documents->save(json)
     Ok()
   } catch {
   | exn =>
@@ -136,9 +139,12 @@ let insertDocuments = async (
 ): result<unit, string> => {
   let results = []
   for i in 0 to Belt.Array.length(documents) - 1 {
-    let doc = Belt.Array.getUnsafe(documents, i)
-    let result = await insertDocument(client, doc)
-    results->Js.Array2.push(result)->ignore
+    switch Belt.Array.get(documents, i) {
+    | Some(doc) =>
+      let result = await insertDocument(client, doc)
+      results->Js.Array2.push(result)->ignore
+    | None => ()
+    }
   }
 
   let errors =
@@ -160,7 +166,7 @@ let insertDocuments = async (
 let insertEdge = async (client: client, edge: edge): result<unit, string> => {
   try {
     let json = edgeToJson(edge)
-    let _ = await client.edges.relationships->save(json->Obj.magic)
+    let _ = await client.edges.relationships->save(json)
     Ok()
   } catch {
   | exn =>
@@ -172,9 +178,12 @@ let insertEdge = async (client: client, edge: edge): result<unit, string> => {
 let insertEdges = async (client: client, edges: array<edge>): result<unit, string> => {
   let results = []
   for i in 0 to Belt.Array.length(edges) - 1 {
-    let edge = Belt.Array.getUnsafe(edges, i)
-    let result = await insertEdge(client, edge)
-    results->Js.Array2.push(result)->ignore
+    switch Belt.Array.get(edges, i) {
+    | Some(edge) =>
+      let result = await insertEdge(client, edge)
+      results->Js.Array2.push(result)->ignore
+    | None => ()
+    }
   }
 
   let errors =
@@ -211,7 +220,7 @@ let storeConflict = async (client: client, conflict: conflict): result<unit, str
       ]),
     )
 
-    let _ = await client.collections.conflicts->save(json->Obj.magic)
+    let _ = await client.collections.conflicts->save(json)
     Ok()
   } catch {
   | exn =>
@@ -249,7 +258,7 @@ let storeResolution = async (
       ]),
     )
 
-    let _ = await client.collections.resolutions->save(json->Obj.magic)
+    let _ = await client.collections.resolutions->save(json)
     Ok()
   } catch {
   | exn =>
@@ -266,7 +275,7 @@ let findDocumentByHash = async (
 ): result<option<Js.Json.t>, string> => {
   try {
     let result = await client.collections.documents->document(hash)
-    Ok(Some(result->Obj.magic))
+    Ok(Some(result))
   } catch {
   | _ => Ok(None) // Document not found
   }
@@ -281,9 +290,9 @@ let findDuplicates = async (client: client): result<array<Js.Json.t>, string> =>
       FILTER count > 1
       RETURN { hash, count }
     `
-    let result = await client.db->query(aql, Js.Dict.empty()->Obj.magic)
+    let result = await client.db->query(aql, Js.Json.object_(Js.Dict.empty()))
     let data = await result->all
-    Ok(data->Obj.magic)
+    Ok(data)
   } catch {
   | exn =>
     Error(
@@ -303,9 +312,9 @@ let findRelatedDocuments = async (
       RETURN { vertex: v, edge: e, path: p }
     `
     let bindVars = Js.Dict.fromArray([("start", Js.Json.string("documents/" ++ hash))])
-    let result = await client.db->query(aql, bindVars->Obj.magic)
+    let result = await client.db->query(aql, Js.Json.object_(bindVars))
     let data = await result->all
-    Ok(data->Obj.magic)
+    Ok(data)
   } catch {
   | exn =>
     Error(
@@ -318,7 +327,7 @@ let findRelatedDocuments = async (
 let healthCheck = async (client: client): result<bool, string> => {
   try {
     let aql = "RETURN 1"
-    let _ = await client.db->query(aql, Js.Dict.empty()->Obj.magic)
+    let _ = await client.db->query(aql, Js.Json.object_(Js.Dict.empty()))
     Ok(true)
   } catch {
   | exn =>

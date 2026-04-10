@@ -263,9 +263,12 @@ let executeStage = async (
       | None => ()
       | Some(c) => {
           for i in 0 to Belt.Array.length(conflicts) - 1 {
-            let conflict = Belt.Array.getUnsafe(conflicts, i)
-            let _ = await ArangoClient.storeConflict(c, conflict)
-            ()
+            switch Belt.Array.get(conflicts, i) {
+            | Some(conflict) =>
+              let _ = await ArangoClient.storeConflict(c, conflict)
+              ()
+            | None => ()
+            }
           }
         }
       }
@@ -297,9 +300,12 @@ let executeStage = async (
       | None => ()
       | Some(c) => {
           for i in 0 to Belt.Array.length(resolutions) - 1 {
-            let resolution = Belt.Array.getUnsafe(resolutions, i)
-            let _ = await ArangoClient.storeResolution(c, resolution)
-            ()
+            switch Belt.Array.get(resolutions, i) {
+            | Some(resolution) =>
+              let _ = await ArangoClient.storeResolution(c, resolution)
+              ()
+            | None => ()
+            }
           }
 
           // Create superseded edges

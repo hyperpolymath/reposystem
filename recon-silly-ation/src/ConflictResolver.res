@@ -205,7 +205,10 @@ let detectConflicts = (documents: array<document>): array<conflict> => {
     if Belt.Array.length(docs) > 1 {
       // Multiple documents with same hash but different paths
       let paths = docs->Belt.Array.map(d => d.metadata.path)
-      let allSamePath = paths->Belt.Array.every(p => p == Belt.Array.getUnsafe(paths, 0))
+      let allSamePath = switch Belt.Array.get(paths, 0) {
+      | None => true // vacuously — no paths means no divergence
+      | Some(first) => paths->Belt.Array.every(p => p == first)
+      }
 
       if !allSamePath {
         conflicts
@@ -238,9 +241,10 @@ let detectConflicts = (documents: array<document>): array<conflict> => {
       // Check if versions differ
       let versions = docs->Belt.Array.keepMap(d => d.metadata.version)
       if Belt.Array.length(versions) > 1 {
-        let allSame = versions->Belt.Array.every(v => {
-          compareVersions(v, Belt.Array.getUnsafe(versions, 0)) == 0
-        })
+        let allSame = switch Belt.Array.get(versions, 0) {
+        | None => true
+        | Some(first) => versions->Belt.Array.every(v => compareVersions(v, first) == 0)
+        }
 
         if !allSame {
           conflicts

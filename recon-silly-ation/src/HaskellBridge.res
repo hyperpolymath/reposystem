@@ -61,24 +61,28 @@ let validateDocument = (
     ->Belt.Option.flatMap(Js.Json.decodeArray)
     ->Belt.Option.getWithDefault([])
 
+    // Drop any array element that isn't a JSON object instead of crashing on
+    // the first bad one. keepMap returns Some values and skips Nones.
     let parsedViolations =
-      violations->Belt.Array.map(v => {
-        let obj = v->Js.Json.decodeObject->Belt.Option.getExn
-
-        {
-          violationField: obj
-          ->Js.Dict.get("violationField")
-          ->Belt.Option.flatMap(Js.Json.decodeString)
-          ->Belt.Option.getWithDefault(""),
-          violationMessage: obj
-          ->Js.Dict.get("violationMessage")
-          ->Belt.Option.flatMap(Js.Json.decodeString)
-          ->Belt.Option.getWithDefault(""),
-          violationSeverity: obj
-          ->Js.Dict.get("violationSeverity")
-          ->Belt.Option.flatMap(Js.Json.decodeString)
-          ->Belt.Option.getWithDefault("warning"),
-          violationLine: None,
+      violations->Belt.Array.keepMap(v => {
+        switch v->Js.Json.decodeObject {
+        | None => None
+        | Some(obj) =>
+          Some({
+            violationField: obj
+            ->Js.Dict.get("violationField")
+            ->Belt.Option.flatMap(Js.Json.decodeString)
+            ->Belt.Option.getWithDefault(""),
+            violationMessage: obj
+            ->Js.Dict.get("violationMessage")
+            ->Belt.Option.flatMap(Js.Json.decodeString)
+            ->Belt.Option.getWithDefault(""),
+            violationSeverity: obj
+            ->Js.Dict.get("violationSeverity")
+            ->Belt.Option.flatMap(Js.Json.decodeString)
+            ->Belt.Option.getWithDefault("warning"),
+            violationLine: None,
+          })
         }
       })
 

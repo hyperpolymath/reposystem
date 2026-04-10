@@ -18,6 +18,7 @@ with Config;
 with Bitbucket_API;
 with TUI;
 with RGTV;
+use type RGTV.Credential_Source;
 with GNAT.OS_Lib;
 
 procedure Bitfuckit is

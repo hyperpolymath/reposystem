@@ -30,17 +30,24 @@ external createDatabase: {..} => database = "Database"
 @send external all: aqlQuery => promise<array<Js.Json.t>> = "all"
 
 // Client state
+// ReScript does not allow inline nested record types in record field
+// positions, so the collection groupings are declared as named record
+// types first.
+type collections = {
+  documents: collection,
+  conflicts: collection,
+  resolutions: collection,
+}
+
+type edges = {
+  relationships: collection,
+}
+
 type client = {
   db: database,
   config: config,
-  collections: {
-    documents: collection,
-    conflicts: collection,
-    resolutions: collection,
-  },
-  edges: {
-    relationships: collection,
-  },
+  collections: collections,
+  edges: edges,
 }
 
 // Initialize ArangoDB client

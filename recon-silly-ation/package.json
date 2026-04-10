@@ -1,0 +1,16 @@
+{
+  "name": "recon-silly-ation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ReScript dev-dependency shim. Primary runtime is Deno; this file exists only so pnpm can install the ReScript compiler toolchain for build verification.",
+  "license": "PMPL-1.0-or-later",
+  "packageManager": "pnpm@9.14.4",
+  "devDependencies": {
+    "rescript": "11.1.4",
+    "@rescript/core": "1.6.1"
+  },
+  "scripts": {
+    "build": "rescript build",
+    "clean": "rescript clean"
+  }
+}

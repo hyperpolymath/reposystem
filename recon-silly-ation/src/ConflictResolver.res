@@ -226,17 +226,22 @@ let detectConflicts = (documents: array<document>): array<conflict> => {
   })
 
   // Detect version conflicts (same type, different versions)
-  let byType = Belt.Map.String.empty
+  // Build the per-type grouping via an explicit ref since ReScript's
+  // `let` bindings are immutable; the old code tried to reassign
+  // `byType` in-place, which never compiled.
+  let byType = ref(Belt.Map.String.empty)
   documents->Belt.Array.forEach(doc => {
     let typeStr = documentTypeToString(doc.metadata.documentType)
-    let existing = byType->Belt.Map.String.get(typeStr)
-    byType = switch existing {
-    | None => byType->Belt.Map.String.set(typeStr, [doc])
-    | Some(docs) => byType->Belt.Map.String.set(typeStr, Belt.Array.concat(docs, [doc]))
-    }
+    let existing = byType.contents->Belt.Map.String.get(typeStr)
+    byType :=
+      switch existing {
+      | None => byType.contents->Belt.Map.String.set(typeStr, [doc])
+      | Some(docs) =>
+        byType.contents->Belt.Map.String.set(typeStr, Belt.Array.concat(docs, [doc]))
+      }
   })
 
-  byType->Belt.Map.String.forEach((typeStr, docs) => {
+  byType.contents->Belt.Map.String.forEach((typeStr, docs) => {
     if Belt.Array.length(docs) > 1 {
       // Check if versions differ
       let versions = docs->Belt.Array.keepMap(d => d.metadata.version)

@@ -41,6 +41,9 @@ erl_crash.dump
 # ReScript
 /lib/bs/
 /.bsb.lock
+# rescript.json uses `in-source: true` so .bs.js artifacts land next to .res;
+# exclude them so built output never gets committed.
+*.bs.js
 
 # Python (SaltStack only)
 __pycache__/

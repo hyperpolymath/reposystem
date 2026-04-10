@@ -1,0 +1,12 @@
+{
+  "arangoUrl": "http://localhost:8529",
+  "arangoDatabase": "reconciliation",
+  "arangoUsername": "root",
+  "arangoPassword": "development",
+  "autoResolveThreshold": 0.9,
+  "repositoryPaths": [
+    "/path/to/repo1",
+    "/path/to/repo2"
+  ],
+  "scanInterval": null
+}

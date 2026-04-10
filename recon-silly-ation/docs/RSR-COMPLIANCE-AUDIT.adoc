@@ -1,0 +1,109 @@
+= RSR Compliance Audit: recon-silly-ation
+:toc:
+:icons: font
+
+== Current Compliance Status
+
+[cols="3,1,1,3",options="header"]
+|===
+|Category |Status |Score |Notes
+
+|*1. Documentation*
+|⚠️ Partial
+|6/10
+|Missing: CONTRIBUTING, MAINTAINERS, CHANGELOG
+
+|*2. Security*
+|✅ Good
+|8/10
+|Have: SECURITY.md, .gitignore. Missing: .well-known/security.txt
+
+|*3. Licensing*
+|⚠️ Partial
+|5/10
+|Have: LICENSE (PMPL-1.0-or-later Palimpsest)
+
+|*4. Build Reproducibility*
+|⚠️ Partial
+|6/10
+|Have: justfile, Containerfile, deno.json. Missing: flake.nix
+
+|*5. Testing*
+|⚠️ Partial
+|7/10
+|Have: Test suite. Missing: 100% pass verification
+
+|*6. Community Governance*
+|❌ Missing
+|2/10
+|Missing: CODE_OF_CONDUCT, TPCF perimeter docs
+
+|*7. Offline-First*
+|✅ Excellent
+|9/10
+|Deno can work offline, WASM is local, ArangoDB optional
+
+|*8. Type Safety*
+|✅ Excellent
+|10/10
+|ReScript (compile-time), Rust/WASM (compile-time), Haskell (types)
+
+|*9. Memory Safety*
+|✅ Excellent
+|9/10
+|Rust (ownership), ReScript (GC), Haskell (GC), Deno (V8)
+
+|*10. Attribution*
+|⚠️ Partial
+|5/10
+|Have: LICENSE, basic attribution. Missing: .well-known/humans.txt
+
+|*11. AI Training Policy*
+|❌ Missing
+|0/10
+|Missing: .well-known/ai.txt
+
+|*OVERALL*
+|*Bronze Tier*
+|*67/110*
+|*61% - Needs Silver (80%)*
+|===
+
+== Required Actions for Silver Tier (80%+)
+
+=== Critical (Must Have)
+1. ✅ CONTRIBUTING.adoc - Contribution guidelines
+2. ✅ CODE_OF_CONDUCT.md - Community standards
+3. ✅ MAINTAINERS.md - Project governance
+4. ✅ CHANGELOG.adoc - Version history
+5. ✅ .well-known/security.txt - RFC 9116 security contact
+6. ✅ .well-known/ai.txt - AI training policy
+7. ✅ .well-known/humans.txt - Human attribution
+8. ✅ LICENSE update - PMPL-1.0-or-later (Palimpsest)
+9. ✅ flake.nix - Nix reproducibility
+10. ✅ TPCF documentation - Perimeter declaration
+
+=== Important (Should Have)
+11. ⚠️ RSR compliance verification script
+12. ⚠️ Test coverage reporting
+13. ⚠️ Dependency audit automation
+14. ⚠️ Update README with RSR badge
+
+=== Aspirational (Gold Tier - 90%+)
+15. 🎯 Formal verification integration
+16. 🎯 SBOM (Software Bill of Materials)
+17. 🎯 Provenance attestation
+18. 🎯 Security audit report
+
+== Implementation Plan
+
+. Create all missing documentation files
+. Add .well-known/ directory with required files
+. Update LICENSE for PMPL-1.0-or-later licensing
+. Create flake.nix for Nix users
+. Add RSR compliance checker
+. Document TPCF perimeter
+. Update README with compliance status
+. Commit and verify
+
+Target: *Silver Tier (80%+)* by end of implementation

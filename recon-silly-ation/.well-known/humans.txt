@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# humans.txt - Team attribution for recon-silly-ation
+
+/* TEAM */
+Name: Jonathan D.A. Jewell
+Role: Creator, Maintainer
+Site: https://github.com/hyperpolymath
+Contact: jonathan.jewell@open.ac.uk
+Location: United Kingdom
+
+/* SITE */
+Software: Deno, ReScript, Rust (WASM), Haskell, ArangoDB
+Standards: RSR (Rhodium Standard Repository), RFC 9116
+License: PMPL-1.0-or-later (Palimpsest License)

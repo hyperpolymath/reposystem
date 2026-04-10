@@ -1,0 +1,549 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= ReconForth Language Specification
+:toc: left
+:toclevels: 3
+:sectnums:
+:source-highlighter: rouge
+
+== Overview
+
+ReconForth is a stack-based, Forth-like domain-specific language for document
+reconciliation operations. It complements the Datalog-style LogicEngine with
+imperative, composable operations for:
+
+* Bundle validation and enforcement
+* Document reconciliation checking
+* Pack shipping to specification
+* Automated fix actions
+
+=== Design Philosophy
+
+[quote, Charles Moore]
+Forth has a natural tendency to minimize complexity.
+
+ReconForth follows classic Forth principles:
+
+* **Concatenative**: Words compose by juxtaposition
+* **Stack-based**: Data flows via the parameter stack
+* **Minimal syntax**: No parentheses, no commas, just whitespace-separated words
+* **Extensible**: Define new words from existing words
+
+== Core Types
+
+=== Stack Values
+
+[source]
+----
+Value ::=
+    | Doc(document)      -- Document reference
+    | Hash(string)       -- Content hash (SHA-256)
+    | Bool(bool)         -- Boolean
+    | Int(i64)           -- Integer
+    | Str(string)        -- String
+    | List(Vec<Value>)   -- List of values
+    | Bundle(Vec<Doc>)   -- Document bundle
+    | Pack(PackSpec)     -- Pack specification
+----
+
+=== Pack Specification
+
+A pack defines a complete document bundle requirement:
+
+[source]
+----
+PackSpec ::= {
+    name: string,
+    required: Vec<DocumentType>,
+    optional: Vec<DocumentType>,
+    rules: Vec<Rule>,
+}
+
+Rule ::= {
+    name: string,
+    body: Vec<Word>,    -- ReconForth code
+}
+----
+
+== Word Dictionary
+
+=== Stack Manipulation
+
+[cols="1,2,3"]
+|===
+| Word | Stack Effect | Description
+
+| `dup`
+| `( a -- a a )`
+| Duplicate top of stack
+
+| `drop`
+| `( a -- )`
+| Discard top of stack
+
+| `swap`
+| `( a b -- b a )`
+| Swap top two items
+
+| `over`
+| `( a b -- a b a )`
+| Copy second item to top
+
+| `rot`
+| `( a b c -- b c a )`
+| Rotate third item to top
+
+| `nip`
+| `( a b -- b )`
+| Remove second item
+
+| `tuck`
+| `( a b -- b a b )`
+| Copy top below second
+
+| `depth`
+| `( -- n )`
+| Push stack depth
+|===
+
+=== Document Operations
+
+[cols="1,2,3"]
+|===
+| Word | Stack Effect | Description
+
+| `doc-hash`
+| `( doc -- hash )`
+| Get content hash
+
+| `doc-type`
+| `( doc -- str )`
+| Get document type
+
+| `doc-path`
+| `( doc -- str )`
+| Get file path
+
+| `doc-content`
+| `( doc -- str )`
+| Get raw content
+
+| `doc-version`
+| `( doc -- version? )`
+| Get version (or nil)
+
+| `doc-canonical?`
+| `( doc -- bool )`
+| Is canonical source?
+
+| `docs-same-hash?`
+| `( doc1 doc2 -- bool )`
+| Compare hashes
+
+| `docs-same-type?`
+| `( doc1 doc2 -- bool )`
+| Compare types
+|===
+
+=== Bundle Operations
+
+[cols="1,2,3"]
+|===
+| Word | Stack Effect | Description
+
+| `bundle-new`
+| `( -- bundle )`
+| Create empty bundle
+
+| `bundle-add`
+| `( bundle doc -- bundle )`
+| Add document to bundle
+
+| `bundle-docs`
+| `( bundle -- list )`
+| Get all documents
+
+| `bundle-count`
+| `( bundle -- n )`
+| Count documents
+
+| `bundle-has-type?`
+| `( bundle type -- bool )`
+| Check for document type
+
+| `bundle-get-type`
+| `( bundle type -- doc? )`
+| Get document by type
+
+| `bundle-validate`
+| `( bundle pack -- errors )`
+| Validate against pack spec
+|===
+
+=== Pack Specification
+
+[cols="1,2,3"]
+|===
+| Word | Stack Effect | Description
+
+| `pack-new`
+| `( name -- pack )`
+| Create new pack spec
+
+| `pack-require`
+| `( pack type -- pack )`
+| Add required document type
+
+| `pack-optional`
+| `( pack type -- pack )`
+| Add optional document type
+
+| `pack-rule`
+| `( pack name quotation -- pack )`
+| Add validation rule
+
+| `pack-ship`
+| `( bundle pack -- result )`
+| Ship bundle to pack spec
+|===
+
+=== Control Flow
+
+[cols="1,2,3"]
+|===
+| Word | Stack Effect | Description
+
+| `if`
+| `( bool then else -- result )`
+| Conditional execution
+
+| `when`
+| `( bool quotation -- )`
+| Execute quotation if true
+
+| `unless`
+| `( bool quotation -- )`
+| Execute quotation if false
+
+| `each`
+| `( list quotation -- )`
+| Execute for each item
+
+| `map`
+| `( list quotation -- list' )`
+| Transform each item
+
+| `filter`
+| `( list quotation -- list' )`
+| Keep items where true
+
+| `reduce`
+| `( list init quotation -- result )`
+| Fold over list
+|===
+
+=== Comparison
+
+[cols="1,2,3"]
+|===
+| Word | Stack Effect | Description
+
+| `=`
+| `( a b -- bool )`
+| Equality
+
+| `<>`
+| `( a b -- bool )`
+| Inequality
+
+| `<`
+| `( a b -- bool )`
+| Less than
+
+| `>`
+| `( a b -- bool )`
+| Greater than
+
+| `and`
+| `( a b -- bool )`
+| Logical AND
+
+| `or`
+| `( a b -- bool )`
+| Logical OR
+
+| `not`
+| `( a -- bool )`
+| Logical NOT
+|===
+
+=== String Operations
+
+[cols="1,2,3"]
+|===
+| Word | Stack Effect | Description
+
+| `str-concat`
+| `( s1 s2 -- s )`
+| Concatenate strings
+
+| `str-contains?`
+| `( haystack needle -- bool )`
+| Contains substring
+
+| `str-starts?`
+| `( s prefix -- bool )`
+| Starts with prefix
+
+| `str-ends?`
+| `( s suffix -- bool )`
+| Ends with suffix
+
+| `str-split`
+| `( s delim -- list )`
+| Split string
+
+| `str-trim`
+| `( s -- s' )`
+| Trim whitespace
+
+| `str-upper`
+| `( s -- s' )`
+| Uppercase
+
+| `str-lower`
+| `( s -- s' )`
+| Lowercase
+|===
+
+=== Enforcement Actions
+
+[cols="1,2,3"]
+|===
+| Word | Stack Effect | Description
+
+| `error!`
+| `( message -- )`
+| Report error
+
+| `warn!`
+| `( message -- )`
+| Report warning
+
+| `fix!`
+| `( doc action -- )`
+| Apply fix action
+
+| `require!`
+| `( bool message -- )`
+| Assert or error
+
+| `suggest!`
+| `( doc suggestion -- )`
+| Suggest improvement
+|===
+
+=== Format Detection (formatrix integration)
+
+[cols="1,2,3"]
+|===
+| Word | Stack Effect | Description
+
+| `detect-format`
+| `( content -- format )`
+| Detect markup format
+
+| `parse-doc`
+| `( content format -- ast )`
+| Parse to formatrix AST
+
+| `render-doc`
+| `( ast format -- content )`
+| Render from AST
+
+| `convert-doc`
+| `( content from to -- content' )`
+| Convert between formats
+|===
+
+== Quotations
+
+Quotations are anonymous code blocks, similar to Forth's definition syntax:
+
+[source,forth]
+----
+[ dup * ]  -- quotation that squares top of stack
+----
+
+Quotations are first-class values and can be:
+
+* Pushed onto the stack
+* Passed to higher-order words
+* Called with `call`
+
+[source,forth]
+----
+5 [ dup * ] call   -- result: 25
+----
+
+== Word Definitions
+
+Define new words with `:` and `;`:
+
+[source,forth]
+----
+: square  ( n -- n^2 )
+  dup * ;
+
+: has-readme?  ( bundle -- bool )
+  "README" bundle-has-type? ;
+----
+
+== Example Programs
+
+=== Validate Standard Bundle
+
+[source,forth]
+----
+: validate-standard-bundle  ( bundle -- errors )
+  bundle-new swap
+
+  -- Check required files
+  dup "README" bundle-has-type? not
+  [ "Missing README" error! ] when
+
+  dup "LICENSE" bundle-has-type? not
+  [ "Missing LICENSE" error! ] when
+
+  dup "SECURITY" bundle-has-type? not
+  [ "Missing SECURITY.md - security policy required" warn! ] when
+
+  -- Check for duplicates
+  dup bundle-docs
+  [ doc-hash ] map
+  dup unique-count swap count <>
+  [ "Duplicate content detected" warn! ] when
+
+  drop ;
+----
+
+=== Pack Specification
+
+[source,forth]
+----
+: standard-pack  ( -- pack )
+  "hyperpolymath-standard" pack-new
+
+  -- Required documents
+  "README" pack-require
+  "LICENSE" pack-require
+  "SECURITY" pack-require
+  "CONTRIBUTING" pack-require
+  "CODE_OF_CONDUCT" pack-require
+
+  -- Optional documents
+  "FUNDING" pack-optional
+  "CITATION" pack-optional
+  "CHANGELOG" pack-optional
+
+  -- Custom validation rules
+  "license-must-be-pmpl" [
+    "LICENSE" bundle-get-type
+    doc-content "Palimpsest" str-contains?
+    "License must be PMPL-1.0-or-later (Palimpsest)" require!
+  ] pack-rule
+
+  "readme-has-badges" [
+    "README" bundle-get-type
+    doc-content "![" str-contains?
+    "README should have badges" suggest!
+  ] pack-rule ;
+----
+
+=== Enforcement Bot Rules
+
+[source,forth]
+----
+: check-spdx-headers  ( bundle -- )
+  bundle-docs
+  [
+    dup doc-path ".res" str-ends?
+    swap doc-path ".rs" str-ends? or
+  ] filter
+  [
+    dup doc-content "SPDX-License-Identifier" str-contains? not
+    [ doc-path " missing SPDX header" str-concat error! ] when
+  ] each ;
+
+: check-no-typescript  ( bundle -- )
+  bundle-docs
+  [ doc-path ".ts" str-ends? ] filter
+  count 0 >
+  [ "TypeScript files detected - use ReScript instead" error! ] when ;
+
+: enforce-rsr  ( bundle -- errors )
+  dup check-spdx-headers
+  dup check-no-typescript
+  -- More RSR checks...
+  drop ;
+----
+
+== WASM Integration
+
+ReconForth is compiled to WASM for:
+
+* Performance-critical reconciliation loops
+* Browser-based bundle validation
+* Deno runtime integration
+
+[source,rust]
+----
+#[wasm_bindgen]
+pub fn reconforth_eval(program: &str, bundle: JsValue) -> Result<JsValue, JsValue> {
+    let mut vm = ReconForthVM::new();
+    vm.load_bundle(bundle)?;
+    vm.eval(program)?;
+    vm.get_result()
+}
+----
+
+== ReScript Bindings
+
+[source,rescript]
+----
+@module("./wasm/reconforth.js")
+external evalReconForth: (string, Types.bundle) => result<array<Types.error>, string> = "reconforth_eval"
+
+let validateBundle = (bundle: Types.bundle, packSpec: string): array<Types.error> => {
+  switch evalReconForth(packSpec, bundle) {
+  | Ok(errors) => errors
+  | Error(e) => [{severity: "error", message: e}]
+  }
+}
+----
+
+== Grammar (EBNF)
+
+[source,ebnf]
+----
+program     = { definition | expression } ;
+definition  = ":" word-name stack-effect? { word } ";" ;
+stack-effect = "(" { word } "--" { word } ")" ;
+expression  = { word } ;
+word        = identifier | number | string | quotation ;
+quotation   = "[" { word } "]" ;
+identifier  = letter { letter | digit | "-" | "?" | "!" } ;
+number      = [ "-" ] digit { digit } ;
+string      = '"' { char } '"' ;
+comment     = "--" { char } newline ;
+----
+
+== Version History
+
+=== v0.1.0 (2025-01)
+
+* Initial specification
+* Core stack operations
+* Document and bundle operations
+* Pack specification support
+* formatrix integration (planned)
+

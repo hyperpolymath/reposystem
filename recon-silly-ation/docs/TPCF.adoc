@@ -1,0 +1,271 @@
+= TPCF: Tri-Perimeter Contribution Framework
+:toc:
+:icons: font
+
+== Overview
+
+The *Tri-Perimeter Contribution Framework (TPCF)* is a graduated trust model for open source contribution that balances openness with security and emotional safety.
+
+This project operates under *TPCF Perimeter 3 (Community Sandbox)*.
+
+== Three Perimeters
+
+[cols="1,2,2,2",options="header"]
+|===
+|Perimeter |Trust Level |Access |Use Case
+
+|*Perimeter 1*
+|Core Team
+|Write access to main
+|Core maintainers, trusted contributors
+
+|*Perimeter 2*
+|Verified Contributors
+|PR with fast-track review
+|Regular contributors, proven track record
+
+|*Perimeter 3*
+|Community Sandbox
+|PR with standard review
+|*This project* - All contributors welcome
+
+|===
+
+== Perimeter 3: Community Sandbox
+
+This project uses Perimeter 3, which provides:
+
+=== Open Contribution
+* Anyone can fork and submit PRs
+* No pre-approval required
+* Welcoming to newcomers
+* Clear contribution guidelines
+
+=== Graduated Trust
+* All changes reviewed by maintainers
+* First contributions get thorough review
+* Regular contributors build trust over time
+* Path to Perimeter 2 for sustained contributors
+
+=== Safety Mechanisms
+* All changes are reversible (git revert)
+* CI/CD enforces quality gates
+* Required checks before merge
+* Code of Conduct protects community
+
+=== Emotional Safety
+* Mistakes are learning opportunities
+* No public shaming for errors
+* Constructive feedback only
+* Anxiety-reducing processes
+
+== How It Works
+
+=== For New Contributors
+
+. *Fork* the repository
+. *Make* your changes in a branch
+. *Test* locally (`deno task test`)
+. *Submit* pull request
+. *Respond* to review feedback
+. *Iterate* until approved
+. *Merge* (by maintainer)
+
+=== Review Process
+
+*Standard Review* (Perimeter 3):
+- 1-2 maintainer approvals required
+- CI must pass
+- Documentation must be updated
+- Tests must be included
+- Review within 1 week target
+
+*Fast-Track* (Future - Perimeter 2):
+- For proven contributors
+- 1 maintainer approval
+- Fewer checks required
+- Review within 2 days target
+
+=== Path to Inner Perimeters
+
+*Perimeter 3 → Perimeter 2*:
+- 3+ months regular contribution
+- 10+ merged PRs
+- Demonstrated expertise
+- Community trust built
+- Maintainer nomination
+
+*Perimeter 2 → Perimeter 1*:
+- 6+ months as P2 contributor
+- Deep codebase knowledge
+- Demonstrated judgment
+- Community consensus
+- Commit access granted
+
+== Security Benefits
+
+=== Defense in Depth
+* Review prevents malicious code
+* CI catches bugs and security issues
+* Dependency scanning
+* Code signing (future)
+
+=== Auditability
+* All changes in git history
+* Review comments preserved
+* Attribution clear
+* Provenance tracked
+
+=== Blast Radius Limitation
+* Changes are isolated in PRs
+* Can revert without affecting core
+* Experimental changes contained
+* Rollback is always possible
+
+== Emotional Safety
+
+TPCF Perimeter 3 prioritizes psychological well-being:
+
+=== Principles
+
+*Reversibility*:
+All changes can be undone. Mistakes are not permanent.
+
+*Learning Culture*:
+Errors are teaching moments, not failures.
+
+*Constructive Feedback*:
+Reviews focus on improvement, not criticism.
+
+*No Punishment*:
+Good-faith contributions are never punished.
+
+*Anxiety Reduction*:
+Processes designed to minimize stress.
+
+*Psychological Safety*:
+Safe to ask questions, admit confusion, propose ideas.
+
+=== In Practice
+
+*During Code Review*:
+- "This could be improved by..." (not "This is wrong")
+- "Have you considered..." (not "Why didn't you...")
+- "Let's discuss..." (not "You should have...")
+
+*When Mistakes Happen*:
+- Revert the change
+- Learn what went wrong
+- Update processes to prevent recurrence
+- No blame, no shame
+
+*For Newcomers*:
+- Extra patient reviews
+- Detailed explanations
+- Encouragement to experiment
+- Celebration of first contributions
+
+== Comparison to Other Models
+
+[cols="2,2,2,2",options="header"]
+|===
+|Model |Openness |Security |Emotional Safety
+
+|Fully Open (no review)
+|High
+|Low
+|Medium
+
+|Closed (core team only)
+|Low
+|High
+|Low (high barrier)
+
+|Standard PR (most OSS)
+|Medium
+|Medium
+|Medium
+
+|*TPCF Perimeter 3*
+|*High*
+|*High*
+|*High*
+|===
+
+== Implementation in This Project
+
+=== Required Reviews
+
+All PRs require:
+. Maintainer approval (1+)
+. CI passing (all checks green)
+. Conflicts resolved
+. Documentation updated
+. Tests included
+
+See link:../.github/PULL_REQUEST_TEMPLATE.md[] (if exists)
+
+=== Protected Branches
+
+`main` branch is protected:
+- No direct pushes
+- PR required
+- Reviews required
+- CI must pass
+
+=== CI/CD Checks
+
+Automated gates:
+- Formatting (`deno fmt`)
+- Linting (`deno lint`)
+- Type checking (`deno check`)
+- Tests (`deno test`)
+- WASM compilation
+- Security scanning (future)
+
+=== Governance
+
+See link:../MAINTAINERS.md[] for:
+- Current maintainers
+- Decision-making process
+- Becoming a maintainer
+- Stepping down
+
+== RSR Compliance
+
+TPCF Perimeter 3 contributes to *RSR (Rhodium Standard Repository)* compliance:
+
+- Community Governance ✅
+- Security (layered review) ✅
+- Emotional Safety ✅
+- Transparency ✅
+- Attribution (git history) ✅
+
+== Future Enhancements
+
+Potential additions:
+- [ ] Automated Perimeter 2 promotion
+- [ ] Contributor metrics dashboard
+- [ ] Security badge system
+- [ ] Code signing for releases
+- [ ] Provenance attestation
+- [ ] SBOM generation
+
+== References
+
+* link:../CONTRIBUTING.adoc[Contributing Guidelines]
+* link:../CODE_OF_CONDUCT.md[Code of Conduct]
+* link:../MAINTAINERS.md[Maintainers & Governance]
+* link:RSR-COMPLIANCE-AUDIT.adoc[RSR Compliance Audit]
+
+== Questions?
+
+* GitHub Discussions
+* Email: j.d.a.jewell@open.ac.uk
+* See link:../MAINTAINERS.md[Maintainers]
+
+---
+
+*TPCF Perimeter*: 3 (Community Sandbox) +
+*Status*: Active +
+*Last Updated*: {docdate}

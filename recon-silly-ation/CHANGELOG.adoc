@@ -1,0 +1,104 @@
+= Changelog
+:toc:
+:icons: font
+
+All notable changes to this project will be documented in this file.
+
+The format is based on https://keepachangelog.com/en/1.0.0/[Keep a Changelog],
+and this project adheres to https://semver.org/spec/v2.0.0.html[Semantic Versioning].
+
+== [Unreleased]
+
+=== Added
+- RSR (Rhodium Standard Repository) compliance framework
+- TPCF Perimeter 3 (Community Sandbox) documentation
+- CONTRIBUTING.adoc with full contribution guidelines
+- CODE_OF_CONDUCT.md following Contributor Covenant 2.1
+- MAINTAINERS.md with governance model
+- .well-known/ directory (security.txt, ai.txt, humans.txt)
+- PMPL-1.0-or-later (Palimpsest) licensing
+- flake.nix for Nix reproducibility
+- RSR compliance verification script
+
+== [0.2.0] - 2025-11-22
+
+=== Added
+- Deno runtime migration from Node.js/npm
+- WASM acceleration (Rust modules for hashing/normalization)
+- Podman support with Containerfile
+- AsciiDoc documentation format (README, CLAUDE, docs/)
+- AOT compilation support (deno compile)
+- Performance benchmarks (2-5x improvement with WASM)
+- FUNDING.yml for GitHub Sponsors
+
+=== Changed
+- package.json → deno.json configuration
+- Dockerfile → Containerfile (OCI standard)
+- docker-compose.yml → podman-compose.yml
+- README.md → README.adoc (AsciiDoc format)
+- CLAUDE.md → CLAUDE.adoc (AsciiDoc format)
+- LICENSE updated to PMPL-1.0-or-later (Palimpsest)
+- Complete justfile rewrite for Deno/WASM/Podman
+- CI/CD updated for Deno + Rust + Podman
+
+=== Removed
+- npm/Node.js dependencies
+- Docker-specific files (replaced by Podman/Containerfile)
+
+=== Performance
+- Hash operations: 2-3x faster with WASM
+- Normalization: 1.5-2x faster with WASM
+- Batch processing: 5x faster with WASM
+
+== [0.1.0] - 2025-11-21
+
+=== Added
+- Core ReScript modules (Types, Deduplicator, ConflictResolver)
+- ArangoDB graph database client
+- Idempotent 7-stage pipeline
+- Content-addressable deduplication (SHA-256)
+- Confidence-scored conflict resolution (6 built-in rules)
+- LLM integration with guardrails
+- miniKanren/Datalog logical inference engine
+- Haskell schema validator bridge
+- CCCP compliance checking
+- Graph visualization (DOT/Mermaid)
+- Podman container deployment
+- Comprehensive test suite (14+ tests)
+- CI/CD automation (GitHub Actions)
+- Complete documentation
+  * README.md
+  * CLAUDE.md
+  * docs/doc-reconciliation-architecture.adoc
+  * docs/IMPLEMENTATION-SUMMARY.adoc
+  * SECURITY.md
+  * LICENSE
+
+=== Features
+- Automatic conflict resolution (>0.9 confidence threshold)
+- Multi-model database (document + graph)
+- Type safety (ReScript + Haskell)
+- Memory safety (Rust + ownership model)
+- Offline-first architecture
+- GitLab Pages contributor portal
+
+== Initial Development
+
+=== [0.0.1] - 2025-11-21
+- Initial commit
+- Project scaffolding
+- Basic CLAUDE.md
+
+---
+
+*Legend*:
+- `Added` for new features
+- `Changed` for changes in existing functionality
+- `Deprecated` for soon-to-be removed features
+- `Removed` for now removed features
+- `Fixed` for any bug fixes
+- `Security` for vulnerability fixes
+- `Performance` for performance improvements
+
+*RSR Compliance*: Silver Tier Target +
+*TPCF Perimeter*: 3 (Community Sandbox)

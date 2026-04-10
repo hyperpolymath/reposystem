@@ -1,0 +1,36 @@
+= recon-silly-ation - Citation Guide
+:toc:
+
+== BibTeX
+
+[source,bibtex]
+----
+@software{recon-silly-ation_2025,
+  author = {Polymath, Hyper},
+  title = {recon-silly-ation},
+  year = {2025},
+  url = {https://github.com/hyperpolymath/recon-silly-ation},
+  license = {PMPL-1.0-or-later}
+}
+----
+
+== Harvard Style
+
+Polymath, H. (2025) _recon-silly-ation_ [Computer software]. Available at: https://github.com/hyperpolymath/recon-silly-ation
+
+== OSCOLA
+
+Hyper Polymath, 'recon-silly-ation' (2025) <https://github.com/hyperpolymath/recon-silly-ation>
+
+== MLA
+
+Polymath, Hyper. "recon-silly-ation." 2025, github.com/hyperpolymath/recon-silly-ation.
+
+== APA 7
+
+Polymath, H. (2025). _recon-silly-ation_ [Computer software]. GitHub. https://github.com/hyperpolymath/recon-silly-ation
+
+== See Also
+
+* link:../CITATION.cff[CITATION.cff]
+* link:../codemeta.json[codemeta.json]

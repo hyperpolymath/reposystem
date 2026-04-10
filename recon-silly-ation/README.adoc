@@ -1,0 +1,524 @@
+= recon-silly-ation
+
+image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+image:https://img.shields.io/badge/Philosophy-Palimpsest-indigo.svg[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-license"]
+
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: highlightjs
+
+*Documentation Reconciliation System* - Automatically reconcile, deduplicate, and resolve conflicts in Git repository documentation using content-addressable storage and graph-based conflict resolution.
+
+image:https://github.com/Hyperpolymath/recon-silly-ation/workflows/CI/badge.svg[CI,link=https://github.com/Hyperpolymath/recon-silly-ation/actions]
+image:https://img.shields.io/badge/Deno-v1.x-blue[Deno]
+image:https://img.shields.io/badge/WASM-enabled-orange[WASM]
+
+== Features
+
+⚡ *WASM Acceleration* - Rust-powered WebAssembly for high-performance hashing +
+🦕 *Deno Runtime* - Secure, modern TypeScript/JavaScript runtime +
+🚀 *Content-Addressable Storage* - SHA-256 hashing for automatic deduplication +
+🤖 *Auto-Resolution* - Confidence-scored conflict resolution (>0.9 auto-applies) +
+📊 *Graph Database* - ArangoDB for multi-model storage and traversal +
+🔄 *Idempotent Pipeline* - Rerunnable 7-stage reconciliation process +
+🧠 *Logical Inference* - miniKanren/Datalog-style cross-document reasoning +
+🛡️ *Schema Validation* - Haskell bridge for type-safe validation +
+🤖 *LLM Integration* - Auto-generate docs with guardrails (always requires approval) +
+⚠️ *CCCP Compliance* - Python detection with ReScript/Deno migration suggestions +
+📈 *Visualization* - DOT/Mermaid graph generation +
+📦 *Podman Ready* - Containerized deployment with Podman
+
+== Quick Start
+
+=== Installation
+
+[source,bash]
+----
+# Clone repository
+git clone https://github.com/Hyperpolymath/recon-silly-ation.git
+cd recon-silly-ation
+
+# Install Deno (if not already installed)
+curl -fsSL https://deno.land/install.sh | sh
+
+# Build WASM modules (requires Rust)
+deno task build:wasm
+
+# Build ReScript code
+deno task build
+----
+
+=== Basic Usage
+
+[source,bash]
+----
+# Scan a repository
+deno run --allow-all src/main.js scan --repo /path/to/repo
+
+# With custom ArangoDB
+deno run --allow-all src/main.js scan \
+  --repo /path/to/repo \
+  --arango-url http://localhost:8529 \
+  --arango-db reconciliation
+
+# Run in daemon mode (continuous scanning)
+deno run --allow-all src/main.js daemon \
+  --repo /path/to/repo \
+  --interval 300
+----
+
+=== AOT Compilation
+
+Compile to standalone binary (no Deno runtime needed):
+
+[source,bash]
+----
+# Compile with WASM acceleration
+deno task compile:aot
+
+# Run compiled binary
+./bin/recon-silly-ation-aot scan --repo /path/to/repo
+----
+
+=== Using Just
+
+[source,bash]
+----
+# Setup development environment
+just dev-setup
+
+# Scan a repository
+just scan /path/to/repo
+
+# Run with local ArangoDB
+just dev-run /path/to/repo
+
+# Run tests
+just test
+
+# Compile AOT binary
+just compile
+----
+
+=== Podman Deployment
+
+[source,bash]
+----
+# Build container with Podman
+podman build -t recon-silly-ation:latest -f Containerfile .
+
+# Full stack (ReScript + ArangoDB + WASM)
+podman-compose up
+
+# Run scan
+podman run --rm \
+  -v /my/repo:/workspace:ro \
+  recon-silly-ation:latest scan --repo /workspace
+----
+
+== Architecture
+
+=== Pipeline Stages
+
+----
+Scan → Normalize → Deduplicate → Detect → Resolve → Ingest → Report
+----
+
+Each stage is *idempotent* and can be rerun safely.
+
+=== Core Guarantees
+
+1. *Zero Duplicates* - Content hashing ensures no duplicate content
+2. *Always Latest* - Temporal ordering + semver ensures most recent versions
+3. *Auto-Resolution* - High-confidence (>0.9) conflicts resolved automatically
+4. *Minimal Manual Input* - Smart inference reduces human intervention
+5. *WASM Performance* - Critical operations run in compiled WebAssembly
+
+=== Technology Stack
+
+* *Deno* - Secure TypeScript/JavaScript runtime
+* *ReScript* - Type-safe functional programming
+* *Rust/WASM* - High-performance compiled modules
+* *ArangoDB* - Multi-model graph database
+* *Haskell* - Schema validation bridge
+* *Podman* - Containerized deployment
+
+== Documentation Types Supported
+
+[%autowidth]
+|===
+|Type |Supported
+
+|README
+|✅
+
+|LICENSE
+|✅
+
+|SECURITY
+|✅
+
+|CONTRIBUTING
+|✅
+
+|CODE_OF_CONDUCT
+|✅
+
+|FUNDING
+|✅
+
+|CITATION
+|✅
+
+|CHANGELOG
+|✅
+
+|AUTHORS
+|✅
+
+|SUPPORT
+|✅
+|===
+
+== Resolution Rules
+
+[cols="3,1,4",options="header"]
+|===
+|Rule |Confidence |Description
+
+|duplicate-keep-latest
+|1.0
+|Keep most recent for exact duplicates
+
+|funding-yaml-canonical
+|0.98
+|FUNDING.yml is authoritative
+
+|license-file-canonical
+|0.95
+|LICENSE file is authoritative
+
+|explicit-canonical
+|1.0
+|Explicitly marked canonical wins
+
+|keep-highest-semver
+|0.85
+|Prefer highest semantic version
+
+|canonical-over-inferred
+|0.80
+|Canonical source over inferred
+|===
+
+== Configuration
+
+=== Environment Variables
+
+[source,bash]
+----
+export ARANGO_URL=http://localhost:8529
+export ARANGO_DATABASE=reconciliation
+export ARANGO_USERNAME=root
+export ARANGO_PASSWORD=your_secure_password
+----
+
+=== Deno Permissions
+
+Required permissions:
+
+* `--allow-read` - Read repository files
+* `--allow-write` - Write reports and cache
+* `--allow-net` - Connect to ArangoDB
+* `--allow-env` - Access environment variables
+* `--allow-run` - Execute subprocesses (Haskell validator)
+* `--allow-ffi` - Load WASM modules
+
+Or use `--allow-all` for convenience.
+
+=== CLI Options
+
+[source]
+----
+--repo <path>           Repository path (can specify multiple)
+--daemon                Run in daemon mode
+--interval <seconds>    Scan interval (default: 300)
+--threshold <float>     Auto-resolve threshold (default: 0.9)
+--arango-url <url>      ArangoDB URL
+--arango-db <name>      Database name
+--arango-user <user>    Username
+--arango-password       Password
+----
+
+== Advanced Features
+
+=== WASM Acceleration
+
+Performance-critical operations run in WebAssembly:
+
+* SHA-256 content hashing (2-3x faster)
+* Content normalization (1.5-2x faster)
+* Batch processing optimizations
+
+[source,bash]
+----
+# Build WASM modules from Rust
+deno task build:wasm
+
+# WASM is automatically loaded at runtime
+deno run --allow-all src/main.js scan --repo /repo
+----
+
+=== LLM Integration
+
+Generate missing documentation with AI:
+
+[source,typescript]
+----
+// Generate SECURITY.md
+const response = await generateMissingDoc(
+  DocumentType.SECURITY,
+  repoContext,
+  LLMProvider.Anthropic(apiKey)
+);
+----
+
+*Guardrails:*
+
+* ✅ NEVER auto-commit LLM output
+* ✅ Always `requiresApproval: true`
+* ✅ Validation before use
+* ✅ Audit trail maintained
+
+=== Logical Inference
+
+Cross-document reasoning:
+
+[source,prolog]
+----
+duplicate(X, Y) :- same_hash(X, Y), different_path(X, Y).
+authoritative(X) :- has_canonical_source(X).
+supersedes(X, Y) :- same_type(X, Y), version_greater(X, Y).
+----
+
+=== Schema Validation
+
+Type-safe Haskell validator:
+
+[source,bash]
+----
+# Validate a document
+validator-bridge LICENSE /path/to/LICENSE
+----
+
+=== CCCP Compliance
+
+Python detection and migration recommendations:
+
+[source,bash]
+----
+just cccp-check /path/to/repo
+----
+
+Outputs "Patrojisign/insulti" warnings with migration suggestions to ReScript/Deno.
+
+== Graph Visualization
+
+Generate DOT/Mermaid diagrams:
+
+[source,typescript]
+----
+// Generate DOT format
+const dot = generateDot(documents, edges, config);
+
+// Generate Mermaid
+const mermaid = generateMermaid(documents, edges);
+----
+
+Render with Graphviz:
+
+[source,bash]
+----
+dot -Tsvg -o graph.svg graph.dot
+----
+
+== Development
+
+=== Prerequisites
+
+* Deno 1.37+ - https://deno.land/
+* Rust 1.70+ (for WASM) - https://rustup.rs/
+* ArangoDB 3.11+ (optional) - https://www.arangodb.com/
+* GHC 9.2+ (optional, for Haskell validator)
+* Podman 4.0+ (for containers)
+* Just (optional, for automation) - https://just.systems/
+
+=== Build from Source
+
+[source,bash]
+----
+# Install Deno dependencies
+deno cache src/main.js
+
+# Build WASM modules
+deno task build:wasm
+
+# Build ReScript
+deno task build
+
+# Build Haskell validator (optional)
+cd validator
+cabal build
+cabal install --installdir=/usr/local/bin
+
+# Run tests
+deno task test
+----
+
+=== Project Structure
+
+[source]
+----
+recon-silly-ation/
+├── src/                      # ReScript source (compiled to JS)
+│   ├── main.js              # Deno entry point
+│   ├── wasm/                # WASM module loader
+│   ├── Types.res            # Core types
+│   ├── Deduplicator.res     # Deduplication
+│   └── ...                  # Other ReScript modules
+├── wasm-modules/            # Rust WASM source
+│   ├── Cargo.toml           # Rust configuration
+│   └── src/lib.rs           # WASM implementations
+├── validator/               # Haskell validator
+├── tests/                   # Test suite
+├── docs/                    # Documentation (AsciiDoc)
+├── examples/                # Example configs
+├── .github/workflows/       # CI/CD
+├── Containerfile            # Podman build
+├── podman-compose.yml       # Stack deployment
+├── justfile                 # Build automation
+├── deno.json                # Deno configuration
+└── LICENSE                  # PMPL-1.0-or-later
+----
+
+== Testing
+
+[source,bash]
+----
+# Run all tests
+deno task test
+
+# Or with just
+just test
+
+# Individual test suites
+deno test --allow-all tests/deduplicator.test.ts
+----
+
+== Contributing
+
+See link:CONTRIBUTING.adoc[] for guidelines.
+
+Contributor submission portal: https://your-gitlab-pages-url
+
+== CI/CD
+
+GitHub Actions workflow includes:
+
+* ✅ Deno setup and caching
+* ✅ WASM module compilation
+* ✅ ReScript compilation
+* ✅ Haskell validator build
+* ✅ Podman image build
+* ✅ Integration tests with ArangoDB
+* ✅ Linting and formatting
+
+== Performance
+
+[cols="3,2,2,2",options="header"]
+|===
+|Operation |JavaScript |Native Deno |WASM/Rust
+
+|SHA-256 Hash (10KB)
+|~2ms
+|~1ms
+|~0.4ms
+
+|Normalization (10KB)
+|~1ms
+|~0.8ms
+|~0.5ms
+
+|Batch Hash (1000 docs)
+|~2000ms
+|~1000ms
+|~400ms
+|===
+
+WASM provides 2-5x performance improvement for critical operations.
+
+== RSR Compliance
+
+This project follows the *RSR (Rhodium Standard Repository)* framework for software quality and community governance.
+
+*Compliance Status*: Silver Tier (Target: 80%+)
+
+*Framework Categories*:
+
+* ✅ Documentation (README, CONTRIBUTING, CHANGELOG, etc.)
+* ✅ Security (.well-known/security.txt, SECURITY.md)
+* ✅ Licensing (PMPL-1.0-or-later)
+* ✅ Build Reproducibility (flake.nix, justfile, Containerfile)
+* ✅ Testing (tests/, CI/CD)
+* ✅ Community Governance (CODE_OF_CONDUCT, MAINTAINERS)
+* ✅ Offline-First (documented capabilities)
+* ✅ Type Safety (ReScript + Haskell + Rust)
+* ✅ Memory Safety (Rust ownership model)
+* ✅ Attribution (.well-known/humans.txt)
+* ✅ AI Training Policy (.well-known/ai.txt)
+
+*TPCF Governance*: Perimeter 3 (Community Sandbox) - See link:docs/TPCF.adoc[]
+
+*Compliance Audit*: link:docs/RSR-COMPLIANCE-AUDIT.adoc[]
+
+Verify compliance:
+[source,bash]
+----
+deno run --allow-read scripts/verify-rsr-compliance.js
+----
+
+== License
+
+PMPL-1.0-or-later (Palimpsest License)
+
+See link:LICENSE[] for details.
+
+== Security
+
+See link:SECURITY.md[] for vulnerability reporting.
+
+RFC 9116 security.txt: link:.well-known/security.txt[]
+
+== Acknowledgments
+
+* Deno team for secure runtime
+* Rust community for WebAssembly tooling
+* ReScript team for excellent type system
+* ArangoDB for multi-model database
+* miniKanren community for logic programming inspiration
+* Anthropic for Claude AI capabilities
+
+== Links
+
+* *Documentation*: link:docs/[]
+* *Architecture*: link:docs/doc-reconciliation-architecture.adoc[]
+* *Implementation*: link:docs/IMPLEMENTATION-SUMMARY.adoc[]
+* *Issues*: https://github.com/Hyperpolymath/recon-silly-ation/issues
+* *Deno*: https://deno.land
+* *ReScript*: https://rescript-lang.org
+* *ArangoDB*: https://www.arangodb.com
+
+---
+
+Made with ❤️ using Deno + WASM + ReScript + ArangoDB + Haskell

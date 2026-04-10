@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# ai.txt - AI training and usage policy for recon-silly-ation
+
+# This repository is licensed under PMPL-1.0-or-later (Palimpsest License).
+# AI agents interacting with this codebase must:
+#
+# 1. Respect the PMPL-1.0-or-later license terms
+# 2. Attribute: Jonathan D.A. Jewell (hyperpolymath)
+# 3. Not relicense derivative works
+# 4. Follow the constraints in .machine_readable/AGENTIC.scm
+#
+# Training policy:
+# - Code may be used for AI training only under PMPL-1.0-or-later terms
+# - Attribution is required in any derived model or output
+# - Commercial use requires PMPL compliance
+#
+# Agent interaction:
+# - Read AI.a2ml first, then SCM files in .machine_readable/
+# - Obey language constraints (no TypeScript, Go, Python, Java, Kotlin)
+# - Use Deno runtime, Podman containers, Chainguard base images

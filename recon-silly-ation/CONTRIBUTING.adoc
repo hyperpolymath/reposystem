@@ -1,0 +1,307 @@
+= Contributing to recon-silly-ation
+:toc:
+:toclevels: 3
+:icons: font
+
+Thank you for considering contributing to recon-silly-ation! This project follows the *RSR (Rhodium Standard Repository)* framework and operates under *TPCF Perimeter 3 (Community Sandbox)*.
+
+== Quick Start
+
+. Fork the repository
+. Create a feature branch: `git checkout -b feature/your-feature`
+. Make your changes
+. Run tests: `deno task test`
+. Commit with conventional commits: `git commit -m "feat: add new feature"`
+. Push and create a pull request
+
+== Code of Conduct
+
+This project adheres to the link:CODE_OF_CONDUCT.md[Contributor Covenant Code of Conduct]. By participating, you are expected to uphold this code.
+
+== TPCF Perimeter 3: Community Sandbox
+
+This project operates under *Tri-Perimeter Contribution Framework (TPCF) Perimeter 3*:
+
+* *Open Contribution* - All contributions welcome
+* *Graduated Trust* - Maintainers review all changes
+* *Emotional Safety* - Focus on psychological safety and reversibility
+* *No Harassment* - Zero tolerance for abusive behavior
+
+See link:docs/TPCF.adoc[] for full details.
+
+== Development Environment
+
+=== Prerequisites
+
+* Deno 1.37+
+* Rust 1.70+ (for WASM modules)
+* Podman 4.0+ (optional, for containers)
+* Just (optional, for build automation)
+
+=== Setup
+
+[source,bash]
+----
+# Clone your fork
+git clone https://github.com/YOUR_USERNAME/recon-silly-ation.git
+cd recon-silly-ation
+
+# Install Deno
+curl -fsSL https://deno.land/install.sh | sh
+
+# Build WASM modules
+deno task build:wasm
+
+# Cache dependencies
+deno cache src/main.js
+
+# Run tests
+deno task test
+----
+
+== Making Changes
+
+=== Code Style
+
+* *Deno/TypeScript*: Use `deno fmt` for formatting
+* *ReScript*: Follow ReScript best practices
+* *Rust*: Use `cargo fmt` for WASM modules
+* *Haskell*: Use `ormolu` for validator
+
+=== Commit Message Convention
+
+We use *Conventional Commits*:
+
+----
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+----
+
+*Types:*
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `docs:` - Documentation only
+- `style:` - Code style (formatting, no logic change)
+- `refactor:` - Code restructuring
+- `perf:` - Performance improvement
+- `test:` - Adding or updating tests
+- `chore:` - Maintenance tasks
+- `wasm:` - WASM module changes
+- `rsr:` - RSR compliance improvements
+
+*Examples:*
+----
+feat(pipeline): add WASM-accelerated deduplication
+fix(arango): handle connection timeout gracefully
+docs(readme): update installation instructions
+wasm(hasher): optimize SHA-256 implementation
+rsr: add .well-known/security.txt
+----
+
+=== Testing Requirements
+
+All changes must include tests:
+
+[source,bash]
+----
+# Run all tests
+deno task test
+
+# Run specific test
+deno test --allow-all tests/deduplicator.test.ts
+
+# Check formatting
+deno fmt --check src/ tests/
+
+# Lint
+deno lint src/ tests/
+
+# Type check
+deno check src/main.js
+----
+
+*Minimum Requirements:*
+- All existing tests must pass
+- New features require new tests
+- Bug fixes require regression tests
+- Test coverage should not decrease
+
+=== Documentation Requirements
+
+All changes must update documentation:
+
+* README.adoc - User-facing features
+* CLAUDE.adoc - AI assistant context
+* CHANGELOG.adoc - Version history
+* API documentation - Public interfaces
+* Comments - Complex logic
+
+== Pull Request Process
+
+. *Self-Review*
+   - Run all tests locally
+   - Check formatting and linting
+   - Verify documentation is updated
+   - Test in clean environment
+
+. *Create PR*
+   - Use descriptive title following conventional commits
+   - Fill out PR template completely
+   - Link related issues
+   - Add screenshots for UI changes
+
+. *Code Review*
+   - Address all reviewer comments
+   - Keep discussion respectful and constructive
+   - Ask questions if requirements are unclear
+   - Update PR based on feedback
+
+. *Merge*
+   - Squash commits if requested
+   - Ensure CI passes
+   - Wait for maintainer approval
+   - Celebrate! 🎉
+
+== Review Criteria
+
+Maintainers will evaluate PRs on:
+
+. *Correctness* - Does it work as intended?
+. *Safety* - Type/memory safety maintained?
+. *Performance* - No significant regressions?
+. *Testing* - Adequate test coverage?
+. *Documentation* - Clear and complete?
+. *Style* - Follows project conventions?
+. *RSR Compliance* - Maintains framework standards?
+
+== Types of Contributions
+
+=== Bug Reports
+
+*Before submitting:*
+- Search existing issues
+- Verify bug in latest version
+- Test in clean environment
+
+*Include:*
+- Clear description
+- Steps to reproduce
+- Expected vs actual behavior
+- Environment details (Deno version, OS, etc.)
+- Error messages or logs
+
+=== Feature Requests
+
+*Before submitting:*
+- Search existing issues
+- Check project roadmap
+- Consider if it fits project scope
+
+*Include:*
+- Use case and motivation
+- Proposed solution
+- Alternative approaches
+- Willingness to implement
+
+=== Documentation Improvements
+
+Documentation is always welcome! This includes:
+
+- Fixing typos or grammar
+- Adding examples
+- Clarifying confusing sections
+- Translating (future)
+- Adding diagrams or visualizations
+
+=== Code Contributions
+
+*Good First Issues:*
+- Check issues labeled `good-first-issue`
+- Ask maintainers for guidance
+- Start small to understand codebase
+
+*Major Features:*
+- Discuss in issue first
+- Get maintainer approval for approach
+- Break into smaller PRs if possible
+- Update architecture docs
+
+== RSR Compliance
+
+This project maintains *RSR (Rhodium Standard Repository)* compliance:
+
+*When contributing:*
+- Maintain offline-first capability
+- Preserve type/memory safety
+- Keep dependencies minimal
+- Update compliance documentation
+- Follow TPCF guidelines
+
+*Required Files (keep updated):*
+- CONTRIBUTING.adoc (this file)
+- CODE_OF_CONDUCT.md
+- SECURITY.md
+- CHANGELOG.adoc
+- .well-known/security.txt
+
+== Security Vulnerabilities
+
+*DO NOT* create public issues for security vulnerabilities.
+
+Instead:
+- Email: j.d.a.jewell@open.ac.uk
+- Use GitHub Security Advisories
+- See link:SECURITY.md[] for full policy
+
+== License
+
+By contributing, you agree that your contributions will be licensed under the project's license:
+
+* PMPL-1.0-or-later (Palimpsest License)
+
+See link:LICENSE[] for full terms.
+
+== Attribution
+
+Contributors are recognized in:
+
+* CHANGELOG.adoc - Credited for specific changes
+* .well-known/humans.txt - Team attribution
+* Git history - Permanent record
+
+== Community
+
+* *Discussions*: GitHub Discussions
+* *Chat*: (TBD - Matrix/Discord)
+* *Issues*: GitHub Issues
+* *Email*: j.d.a.jewell@open.ac.uk
+
+== Emotional Safety
+
+We prioritize *emotional safety* and *reversibility*:
+
+* Mistakes are learning opportunities
+* All changes are reversible (git revert)
+* No punishment for good-faith errors
+* Constructive feedback only
+* Take breaks if overwhelmed
+
+== Questions?
+
+* Check link:docs/FAQ.adoc[] (if exists)
+* Ask in GitHub Discussions
+* Contact maintainers: see link:MAINTAINERS.md[]
+* Read link:CLAUDE.adoc[] for AI assistant context
+
+== Thank You!
+
+Your contributions make this project better. We appreciate your time and effort! ❤️
+
+---
+
+*Last Updated*: {docdate} +
+*RSR Compliance*: Silver Tier Target +
+*TPCF Perimeter*: 3 (Community Sandbox)

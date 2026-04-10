@@ -1,0 +1,15 @@
+# GitLab CI for Pages deployment
+
+pages:
+  stage: deploy
+  script:
+    - mkdir -p public
+    - cp .gitlab/pages/index.html public/
+    - cp .gitlab/pages/styles.css public/ || true
+    - cp .gitlab/pages/script.js public/ || true
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
+    - master

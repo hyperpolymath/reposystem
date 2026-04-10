@@ -1,0 +1,316 @@
+= Documentation Reconciliation Architecture
+:toc:
+:toclevels: 3
+:sectnums:
+
+== Overview
+
+The Documentation Reconciliation System is a ReScript-based tool that automatically reconciles, deduplicates, and resolves conflicts in Git repository documentation using content-addressable storage and an ArangoDB graph database.
+
+== Design Principles
+
+=== Core Guarantees
+
+1. *Zero Duplicates* - Content hashing ensures no duplicate content
+2. *Always Latest* - Temporal ordering and semver ensure most recent versions
+3. *Auto-Resolution* - High-confidence conflicts resolved automatically
+4. *Minimal Manual Input* - Smart inference reduces human intervention
+
+=== Type Safety
+
+All components written in ReScript for:
+
+* Compile-time type checking
+* Exhaustive pattern matching
+* Zero runtime type errors
+* Interop with JavaScript ecosystem
+
+== System Architecture
+
+=== High-Level Components
+
+[ditaa]
+....
+    +----------------+
+    | Git Repository |
+    +-------+--------+
+            |
+            v
+    +-------+--------+
+    |   Scanner      |
+    +-------+--------+
+            |
+            v
+    +-------+--------+
+    | Deduplicator   |
+    +-------+--------+
+            |
+            v
+    +-------+--------+
+    |Conflict Detect |
+    +-------+--------+
+            |
+            v
+    +-------+--------+
+    |   Resolver     |
+    +-------+--------+
+            |
+            v
+    +-------+--------+
+    |   ArangoDB     |
+    +----------------+
+....
+
+=== Module Breakdown
+
+==== Types Module (`Types.res`)
+
+Core domain types:
+
+* `document` - Document with content and metadata
+* `documentType` - Enum of documentation types
+* `conflict` - Representation of conflicts
+* `resolutionResult` - Outcome of conflict resolution
+* `edge` - Graph relationship between documents
+
+==== Deduplicator Module (`Deduplicator.res`)
+
+*Purpose*: Content-addressable deduplication
+
+*Algorithm*:
+[source,text]
+----
+1. Normalize content (whitespace, line endings)
+2. Generate SHA-256 hash
+3. Store hash -> document mapping
+4. Detect duplicates by hash collision
+----
+
+*Key Functions*:
+* `hashContent` - Generate content hash
+* `deduplicate` - Remove duplicate documents
+* `findCanonical` - Select canonical from duplicates
+
+==== Conflict Resolver Module (`ConflictResolver.res`)
+
+*Purpose*: Rule-based conflict resolution with confidence scoring
+
+*Resolution Rules*:
+
+[cols="2,1,3"]
+|===
+|Rule |Confidence |Description
+
+|duplicate-keep-latest
+|1.0
+|For exact duplicates, keep most recent
+
+|license-file-canonical
+|0.95
+|LICENSE file is authoritative
+
+|funding-yaml-canonical
+|0.98
+|FUNDING.yml is authoritative
+
+|keep-highest-semver
+|0.85
+|Prefer highest semantic version
+
+|explicit-canonical
+|1.0
+|Explicitly marked canonical wins
+
+|canonical-over-inferred
+|0.80
+|Prefer canonical over inferred
+|===
+
+*Auto-Resolve Threshold*: Default 0.9 (configurable)
+
+==== ArangoDB Client (`ArangoClient.res`)
+
+*Purpose*: Type-safe database operations
+
+*Collections*:
+* `documents` - Document storage
+* `conflicts` - Conflict records
+* `resolutions` - Resolution history
+* `relationships` - Graph edges
+
+*Key Operations*:
+* `insertDocument` - Store document
+* `insertEdge` - Create relationship
+* `findDuplicates` - Query duplicates
+* `findRelatedDocuments` - Graph traversal
+
+==== Pipeline Module (`Pipeline.res`)
+
+*Purpose*: Idempotent orchestration
+
+*Stages*:
+
+[source,text]
+----
+Scan → Normalize → Deduplicate →
+Detect → Resolve → Ingest → Report
+----
+
+*Idempotency*: Each stage can be rerun safely
+
+== Data Model
+
+=== Document Schema
+
+[source,rescript]
+----
+type document = {
+  hash: contentHash,
+  content: string,
+  metadata: {
+    path: string,
+    documentType: documentType,
+    lastModified: float,
+    version: option<version>,
+    canonicalSource: canonicalSource,
+    repository: string,
+    branch: string
+  },
+  createdAt: float
+}
+----
+
+=== Graph Model
+
+*Nodes*: Documents (identified by hash)
+
+*Edges*:
+* `ConflictsWith` - Documents in conflict
+* `SupersededBy` - Version replacement
+* `DuplicateOf` - Exact duplicates
+* `CanonicalFor` - Canonical designation
+* `DerivedFrom` - Content derivation
+
+== Advanced Features
+
+=== Logic Engine (Phase 2)
+
+*Purpose*: miniKanren/Datalog-style logical inference
+
+*Capabilities*:
+* Cross-document reasoning
+* Rule-based inference
+* Constraint solving
+
+*Example Rules*:
+[source,prolog]
+----
+duplicate(X, Y) :- same_hash(X, Y), X != Y.
+authoritative(X) :- has_canonical_source(X).
+supersedes(X, Y) :- same_type(X, Y), version_greater(X, Y).
+----
+
+=== LLM Integration (Phase 2)
+
+*Purpose*: Auto-generate missing documentation
+
+*Guardrails*:
+1. NEVER auto-commit LLM output
+2. Always `requiresApproval: true`
+3. Validate all generated content
+4. Maintain audit trail
+5. Never generate LICENSE files
+
+*Supported Operations*:
+* Generate SECURITY.md
+* Generate CONTRIBUTING.md
+* Suggest conflict resolutions
+* Improve existing docs
+
+=== Haskell Validator Bridge
+
+*Purpose*: Schema enforcement with type safety
+
+*Validation Rules*:
+* LICENSE - Copyright notice, keywords
+* SECURITY - Reporting instructions, contact
+* CONTRIBUTING - PR guidelines, setup
+* README - Title, installation info
+
+=== CCCP Compliance
+
+*Purpose*: Detect Python usage, recommend migrations
+
+*Warnings*:
+* "Patrojisign/insulti" for Python files
+* Security anti-pattern detection
+* Migration suggestions to ReScript/Deno
+
+== Deployment
+
+=== Container Architecture
+
+[source,yaml]
+----
+services:
+  arangodb:    # Graph database
+  reconciliation:  # Main service
+  arangodb-ui: # Optional visualization
+----
+
+=== Environment Configuration
+
+[source,bash]
+----
+ARANGO_URL=http://localhost:8529
+ARANGO_DATABASE=reconciliation
+ARANGO_USERNAME=root
+ARANGO_PASSWORD=<secret>
+----
+
+== Performance Considerations
+
+=== Scalability
+
+* *Documents*: Handles 100k+ documents
+* *Hash Generation*: O(n) in content length
+* *Deduplication*: O(n) in number of documents
+* *Graph Traversal*: Indexed by hash
+
+=== Optimization Strategies
+
+1. Batch database operations
+2. Content normalization before hashing
+3. Index on hash and documentType
+4. Graph edge caching
+
+== Security
+
+=== Threat Model
+
+* Input validation on all document content
+* SQL injection prevented (parameterized queries)
+* Command injection (no shell execution)
+* XSS prevented (no HTML rendering)
+
+=== Best Practices
+
+1. Never execute LLM-generated code
+2. Validate all external input
+3. Use read-only file access where possible
+4. Audit all database modifications
+
+== Future Enhancements
+
+1. *Real-time sync* - WebSocket-based updates
+2. *Distributed processing* - Multi-node pipeline
+3. *ML-based resolution* - Learn from manual resolutions
+4. *Version control integration* - Git hooks
+5. *Web UI* - Interactive conflict resolution
+
+== References
+
+* ReScript Documentation: https://rescript-lang.org
+* ArangoDB Documentation: https://www.arangodb.com/docs
+* miniKanren: http://minikanren.org
+* Semantic Versioning: https://semver.org

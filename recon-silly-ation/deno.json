@@ -1,0 +1,47 @@
+{
+  "name": "recon-silly-ation",
+  "version": "0.2.0",
+  "exports": "./src/main.js",
+  "tasks": {
+    "build": "deno run --allow-run --allow-read --allow-write scripts/build.js",
+    "build:wasm": "deno run --allow-run --allow-read --allow-write scripts/build-wasm.js",
+    "compile": "deno compile --allow-all --output=bin/recon-silly-ation src/main.js",
+    "compile:aot": "deno compile --allow-all --unstable-ffi --output=bin/recon-silly-ation-aot src/main.js",
+    "dev": "deno run --allow-all --watch src/main.js",
+    "test": "deno test --allow-all tests/",
+    "scan": "deno run --allow-all src/main.js scan",
+    "daemon": "deno run --allow-all src/main.js daemon",
+    "lint": "deno lint src/ tests/",
+    "fmt": "deno fmt src/ tests/",
+    "check": "deno check src/main.js"
+  },
+  "imports": {
+    "@/": "./src/",
+    "@std/": "https://deno.land/std@0.208.0/",
+    "@oak/": "https://deno.land/x/oak@v12.6.1/",
+    "arangojs": "npm:arangojs@8.8.1"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window", "dom", "esnext"],
+    "strict": true,
+    "allowJs": true,
+    "checkJs": false,
+    "jsx": "react-jsx"
+  },
+  "lint": {
+    "rules": {
+      "tags": ["recommended"]
+    }
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "semiColons": true,
+    "singleQuote": false,
+    "proseWrap": "preserve"
+  },
+  "lock": true,
+  "nodeModulesDir": false,
+  "unstable": ["ffi", "kv", "worker-options"]
+}

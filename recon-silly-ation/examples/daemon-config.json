@@ -1,0 +1,14 @@
+{
+  "arangoUrl": "http://localhost:8529",
+  "arangoDatabase": "reconciliation",
+  "arangoUsername": "root",
+  "arangoPassword": "your-secure-password",
+  "autoResolveThreshold": 0.9,
+  "repositoryPaths": [
+    "/workspaces/project1",
+    "/workspaces/project2",
+    "/workspaces/project3"
+  ],
+  "scanInterval": 300,
+  "comment": "Daemon mode - scan every 300 seconds (5 minutes)"
+}

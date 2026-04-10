@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation Submission Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 150px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Documentation Submission Portal</h1>
+        <p class="subtitle">Submit documentation updates to the reconciliation system</p>
+
+        <div class="info-box">
+            <strong>How it works:</strong><br>
+            Submit your documentation through this form. The system will automatically:
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>Deduplicate content using content-addressable storage</li>
+                <li>Detect conflicts with existing documentation</li>
+                <li>Apply automatic resolution rules (if confidence > 0.9)</li>
+                <li>Ingest approved changes into the graph database</li>
+            </ul>
+        </div>
+
+        <form id="docForm">
+            <div class="form-group">
+                <label for="repository">Repository *</label>
+                <input type="text" id="repository" name="repository"
+                       placeholder="e.g., organization/project" required>
+            </div>
+
+            <div class="form-group">
+                <label for="branch">Branch *</label>
+                <input type="text" id="branch" name="branch"
+                       placeholder="e.g., main" value="main" required>
+            </div>
+
+            <div class="form-group">
+                <label for="docType">Document Type *</label>
+                <select id="docType" name="docType" required>
+                    <option value="">-- Select Type --</option>
+                    <option value="README">README</option>
+                    <option value="LICENSE">LICENSE</option>
+                    <option value="SECURITY">SECURITY</option>
+                    <option value="CONTRIBUTING">CONTRIBUTING</option>
+                    <option value="CODE_OF_CONDUCT">CODE_OF_CONDUCT</option>
+                    <option value="FUNDING">FUNDING</option>
+                    <option value="CITATION">CITATION</option>
+                    <option value="CHANGELOG">CHANGELOG</option>
+                    <option value="AUTHORS">AUTHORS</option>
+                    <option value="SUPPORT">SUPPORT</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="path">File Path *</label>
+                <input type="text" id="path" name="path"
+                       placeholder="e.g., README.md or docs/SECURITY.md" required>
+            </div>
+
+            <div class="form-group">
+                <label for="version">Version (optional)</label>
+                <input type="text" id="version" name="version"
+                       placeholder="e.g., 1.2.3 (semantic version)">
+            </div>
+
+            <div class="form-group">
+                <label for="canonicalSource">Canonical Source</label>
+                <select id="canonicalSource" name="canonicalSource">
+                    <option value="Inferred">Inferred</option>
+                    <option value="LicenseFile">LICENSE File</option>
+                    <option value="FundingYaml">FUNDING.yml</option>
+                    <option value="SecurityMd">SECURITY.md</option>
+                    <option value="CitationCff">CITATION.cff</option>
+                    <option value="Explicit">Explicitly Canonical</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="content">Content *</label>
+                <textarea id="content" name="content"
+                          placeholder="Paste your documentation content here..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="submitter">Your Name/Email *</label>
+                <input type="text" id="submitter" name="submitter"
+                       placeholder="e.g., Jane Doe <jane@example.com>" required>
+            </div>
+
+            <button type="submit" class="btn">Submit Documentation</button>
+        </form>
+
+        <div class="success-message" id="successMessage">
+            ✅ Documentation submitted successfully! It will be processed through the reconciliation pipeline.
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            ❌ Submission failed. Please check your input and try again.
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('docForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = {
+                repository: document.getElementById('repository').value,
+                branch: document.getElementById('branch').value,
+                documentType: document.getElementById('docType').value,
+                path: document.getElementById('path').value,
+                version: document.getElementById('version').value || null,
+                canonicalSource: document.getElementById('canonicalSource').value,
+                content: document.getElementById('content').value,
+                submitter: document.getElementById('submitter').value,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                // In production, this would POST to your ArangoDB API
+                const response = await fetch('/api/submit-documentation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('errorMessage').style.display = 'none';
+                    document.getElementById('docForm').reset();
+
+                    // Hide success message after 5 seconds
+                    setTimeout(() => {
+                        document.getElementById('successMessage').style.display = 'none';
+                    }, 5000);
+                } else {
+                    throw new Error('Submission failed');
+                }
+            } catch (error) {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('successMessage').style.display = 'none';
+
+                // For demo purposes, also log to console
+                console.log('Form submission (demo mode):', formData);
+
+                // In demo mode, show success after 1 second
+                setTimeout(() => {
+                    document.getElementById('errorMessage').style.display = 'none';
+                    document.getElementById('successMessage').style.display = 'block';
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

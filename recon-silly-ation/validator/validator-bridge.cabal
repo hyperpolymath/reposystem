@@ -1,0 +1,21 @@
+cabal-version:      2.4
+name:               validator-bridge
+version:            0.1.0.0
+synopsis:           Haskell validator bridge for documentation schema enforcement
+description:        Type-safe schema validation for documentation reconciliation system
+license:            MIT
+author:             Hyperpolymath
+maintainer:         j.d.a.jewell@open.ac.uk
+category:           Validation
+build-type:         Simple
+
+executable validator-bridge
+    main-is:          Main.hs
+    other-modules:    DocumentValidator
+    build-depends:    base ^>=4.14.0.0,
+                      aeson >= 2.0,
+                      text >= 1.2,
+                      bytestring >= 0.10
+    hs-source-dirs:   .
+    default-language: Haskell2010
+    ghc-options:      -Wall -threaded -rtsopts -with-rtsopts=-N

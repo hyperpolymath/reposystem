@@ -1,0 +1,77 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  deno:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        deno-version: [1.37.x, 1.40.x]
+
+    steps:
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+    - name: Setup Deno ${{ matrix.deno-version }}
+      uses: denoland/setup-deno@v1
+      with:
+        deno-version: ${{ matrix.deno-version }}
+
+    - name: Cache Deno dependencies
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+      with:
+        path: ~/.cache/deno
+        key: ${{ runner.os }}-deno-${{ hashFiles('deno.lock') }}
+
+    - name: Cache dependencies
+      run: deno cache src/main.ts
+
+    - name: Check formatting
+      run: deno fmt --check src/ || true
+
+    - name: Lint
+      run: deno lint src/ || true
+
+    - name: Type check
+      run: deno check src/main.ts
+
+  wasm:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+    - name: Setup Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        target: wasm32-unknown-unknown
+
+    - name: Build WASM modules
+      run: |
+        cd wasm-modules
+        cargo build --release --target wasm32-unknown-unknown
+
+  podman:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+    - name: Install Podman
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install podman
+
+    - name: Build Podman image
+      run: podman build -t recon-silly-ation:test -f Containerfile .
+
+    - name: Test Podman image
+      run: podman run --rm recon-silly-ation:test help

@@ -25,7 +25,7 @@ let test = (name: string, fn: unit => unit): unit => {
   }
 }
 
-let assert = (cond: bool, msg: string): unit => {
+let assertTrue = (cond: bool, msg: string): unit => {
   if !cond {
     Js.Exn.raiseError(msg)
   }
@@ -145,7 +145,7 @@ let run = (): (int, int) => {
 
   // 10. signatureScheme Ed25519 vs RSA4096
   test("signatureScheme variants are distinct", () => {
-    assert(Ed25519 != RSA4096, "Ed25519 and RSA4096 should be distinct")
+    assertTrue(Ed25519 != RSA4096, "Ed25519 and RSA4096 should be distinct")
   })
 
   (passed.contents, failed.contents)

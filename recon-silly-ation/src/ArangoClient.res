@@ -81,7 +81,7 @@ let initialize = async (config: config): result<client, string> => {
       },
     })
   } catch {
-  | exn => Error(`Failed to initialize ArangoDB: ${exn->Js.Exn.message->Belt.Option.getWithDefault("Unknown error")}`)
+  | exn => Error(`Failed to initialize ArangoDB: ${Js.Exn.asJsExn(exn)->Belt.Option.flatMap(Js.Exn.message)->Belt.Option.getWithDefault("Unknown error")}`)
   }
 }
 
@@ -134,7 +134,7 @@ let insertDocument = async (client: client, doc: document): result<unit, string>
   } catch {
   | exn =>
     Error(
-      `Failed to insert document: ${exn->Js.Exn.message->Belt.Option.getWithDefault("Unknown error")}`,
+      `Failed to insert document: ${Js.Exn.asJsExn(exn)->Belt.Option.flatMap(Js.Exn.message)->Belt.Option.getWithDefault("Unknown error")}`,
     )
   }
 }
@@ -163,7 +163,7 @@ let insertDocuments = async (
     )
 
   if Belt.Array.length(errors) > 0 {
-    Error(`Failed to insert ${errors->Belt.Array.length->Int.toString} documents`)
+    Error(`Failed to insert ${errors->Belt.Array.length->Belt.Int.toString} documents`)
   } else {
     Ok()
   }
@@ -177,7 +177,7 @@ let insertEdge = async (client: client, edge: edge): result<unit, string> => {
     Ok()
   } catch {
   | exn =>
-    Error(`Failed to insert edge: ${exn->Js.Exn.message->Belt.Option.getWithDefault("Unknown error")}`)
+    Error(`Failed to insert edge: ${Js.Exn.asJsExn(exn)->Belt.Option.flatMap(Js.Exn.message)->Belt.Option.getWithDefault("Unknown error")}`)
   }
 }
 
@@ -202,7 +202,7 @@ let insertEdges = async (client: client, edges: array<edge>): result<unit, strin
     )
 
   if Belt.Array.length(errors) > 0 {
-    Error(`Failed to insert ${errors->Belt.Array.length->Int.toString} edges`)
+    Error(`Failed to insert ${errors->Belt.Array.length->Belt.Int.toString} edges`)
   } else {
     Ok()
   }
@@ -232,7 +232,7 @@ let storeConflict = async (client: client, conflict: conflict): result<unit, str
   } catch {
   | exn =>
     Error(
-      `Failed to store conflict: ${exn->Js.Exn.message->Belt.Option.getWithDefault("Unknown error")}`,
+      `Failed to store conflict: ${Js.Exn.asJsExn(exn)->Belt.Option.flatMap(Js.Exn.message)->Belt.Option.getWithDefault("Unknown error")}`,
     )
   }
 }
@@ -270,7 +270,7 @@ let storeResolution = async (
   } catch {
   | exn =>
     Error(
-      `Failed to store resolution: ${exn->Js.Exn.message->Belt.Option.getWithDefault("Unknown error")}`,
+      `Failed to store resolution: ${Js.Exn.asJsExn(exn)->Belt.Option.flatMap(Js.Exn.message)->Belt.Option.getWithDefault("Unknown error")}`,
     )
   }
 }
@@ -303,7 +303,7 @@ let findDuplicates = async (client: client): result<array<Js.Json.t>, string> =>
   } catch {
   | exn =>
     Error(
-      `Failed to find duplicates: ${exn->Js.Exn.message->Belt.Option.getWithDefault("Unknown error")}`,
+      `Failed to find duplicates: ${Js.Exn.asJsExn(exn)->Belt.Option.flatMap(Js.Exn.message)->Belt.Option.getWithDefault("Unknown error")}`,
     )
   }
 }
@@ -325,7 +325,7 @@ let findRelatedDocuments = async (
   } catch {
   | exn =>
     Error(
-      `Failed to find related documents: ${exn->Js.Exn.message->Belt.Option.getWithDefault("Unknown error")}`,
+      `Failed to find related documents: ${Js.Exn.asJsExn(exn)->Belt.Option.flatMap(Js.Exn.message)->Belt.Option.getWithDefault("Unknown error")}`,
     )
   }
 }
@@ -339,7 +339,7 @@ let healthCheck = async (client: client): result<bool, string> => {
   } catch {
   | exn =>
     Error(
-      `Health check failed: ${exn->Js.Exn.message->Belt.Option.getWithDefault("Unknown error")}`,
+      `Health check failed: ${Js.Exn.asJsExn(exn)->Belt.Option.flatMap(Js.Exn.message)->Belt.Option.getWithDefault("Unknown error")}`,
     )
   }
 }

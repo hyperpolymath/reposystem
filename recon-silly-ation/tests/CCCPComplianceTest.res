@@ -27,7 +27,7 @@ let test = (name: string, fn: unit => unit): unit => {
   }
 }
 
-let assert = (cond: bool, msg: string): unit => {
+let assertTrue = (cond: bool, msg: string): unit => {
   if !cond {
     Js.Exn.raiseError(msg)
   }
@@ -48,27 +48,27 @@ let run = (): (int, int) => {
 
   // 1. isPythonFile .py
   test("isPythonFile detects .py files", () => {
-    assert(CCCPCompliance.isPythonFile("script.py"), ".py should be detected")
+    assertTrue(CCCPCompliance.isPythonFile("script.py"), ".py should be detected")
   })
 
   // 2. isPythonFile .pyw
   test("isPythonFile detects .pyw files", () => {
-    assert(CCCPCompliance.isPythonFile("gui_app.pyw"), ".pyw should be detected")
+    assertTrue(CCCPCompliance.isPythonFile("gui_app.pyw"), ".pyw should be detected")
   })
 
   // 3. isPythonFile setup.py
   test("isPythonFile detects setup.py", () => {
-    assert(CCCPCompliance.isPythonFile("setup.py"), "setup.py should be detected")
+    assertTrue(CCCPCompliance.isPythonFile("setup.py"), "setup.py should be detected")
   })
 
   // 4. isPythonFile rejects .js
   test("isPythonFile rejects .js files", () => {
-    assert(!CCCPCompliance.isPythonFile("app.js"), ".js should not be Python")
+    assertTrue(!CCCPCompliance.isPythonFile("app.js"), ".js should not be Python")
   })
 
   // 5. isPythonFile rejects .res
   test("isPythonFile rejects .res files", () => {
-    assert(!CCCPCompliance.isPythonFile("Types.res"), ".res should not be Python")
+    assertTrue(!CCCPCompliance.isPythonFile("Types.res"), ".res should not be Python")
   })
 
   // 6. detectPythonImports finds import statements
@@ -89,7 +89,7 @@ let run = (): (int, int) => {
   test("checkPythonAntiPatterns detects eval()", () => {
     let content = "result = eval(user_input)"
     let patterns = CCCPCompliance.checkPythonAntiPatterns(content)
-    assert(
+    assertTrue(
       patterns->Belt.Array.some(p => Js.String2.includes(p, "eval")),
       "should detect eval()",
     )
@@ -99,7 +99,7 @@ let run = (): (int, int) => {
   test("checkPythonAntiPatterns detects exec()", () => {
     let content = "exec(code_string)"
     let patterns = CCCPCompliance.checkPythonAntiPatterns(content)
-    assert(
+    assertTrue(
       patterns->Belt.Array.some(p => Js.String2.includes(p, "exec")),
       "should detect exec()",
     )
@@ -109,7 +109,7 @@ let run = (): (int, int) => {
   test("checkPythonAntiPatterns detects pickle", () => {
     let content = "import pickle\ndata = pickle.loads(raw)"
     let patterns = CCCPCompliance.checkPythonAntiPatterns(content)
-    assert(
+    assertTrue(
       patterns->Belt.Array.some(p => Js.String2.includes(p, "pickle")),
       "should detect pickle",
     )
@@ -125,7 +125,7 @@ let run = (): (int, int) => {
   // 12. generateMigrationSuggestion default suggestion
   test("generateMigrationSuggestion gives default for no imports", () => {
     let suggestion = CCCPCompliance.generateMigrationSuggestion([])
-    assert(
+    assertTrue(
       Js.String2.includes(suggestion, "ReScript"),
       "default suggestion should mention ReScript",
     )
@@ -134,7 +134,7 @@ let run = (): (int, int) => {
   // 13. generateMigrationSuggestion web framework
   test("generateMigrationSuggestion mentions web for flask imports", () => {
     let suggestion = CCCPCompliance.generateMigrationSuggestion(["import flask"])
-    assert(
+    assertTrue(
       Js.String2.includes(suggestion, "web") || Js.String2.includes(suggestion, "Melange"),
       "should suggest web migration",
     )
@@ -143,7 +143,7 @@ let run = (): (int, int) => {
   // 14. generateMigrationSuggestion data science
   test("generateMigrationSuggestion mentions Julia for numpy imports", () => {
     let suggestion = CCCPCompliance.generateMigrationSuggestion(["import numpy"])
-    assert(
+    assertTrue(
       Js.String2.includes(suggestion, "Julia") || Js.String2.includes(suggestion, "R"),
       "should suggest Julia/R for data science",
     )
@@ -152,7 +152,7 @@ let run = (): (int, int) => {
   // 15. generateReport empty violations is compliant
   test("generateReport reports compliant for empty violations", () => {
     let report = CCCPCompliance.generateReport([])
-    assert(
+    assertTrue(
       Js.String2.includes(report, "compliant"),
       "empty violations should report compliant",
     )
@@ -168,7 +168,7 @@ let run = (): (int, int) => {
       suggestedFix: None,
     }
     let report = CCCPCompliance.generateReport([violation])
-    assert(
+    assertTrue(
       Js.String2.includes(report, "1"),
       "report should mention violation count",
     )

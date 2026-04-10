@@ -25,7 +25,7 @@ let test = (name: string, fn: unit => unit): unit => {
   }
 }
 
-let assert = (cond: bool, msg: string): unit => {
+let assertTrue = (cond: bool, msg: string): unit => {
   if !cond {
     Js.Exn.raiseError(msg)
   }
@@ -87,7 +87,7 @@ let run = (): (int, int) => {
     let d1 = makeDoc("same body", ~path="README.md", ())
     let d2 = makeDoc("same body", ~path="docs/README.md", ())
     let conflicts = ConflictResolver.detectConflicts([d1, d2])
-    assert(Belt.Array.length(conflicts) > 0, "should detect duplicate conflict")
+    assertTrue(Belt.Array.length(conflicts) > 0, "should detect duplicate conflict")
     let first = Belt.Array.getUnsafe(conflicts, 0)
     assertEqual(first.conflictType, DuplicateContent, "type should be DuplicateContent")
   })
@@ -108,7 +108,7 @@ let run = (): (int, int) => {
     )
     let conflicts = ConflictResolver.detectConflicts([d1, d2])
     let versionConflicts = conflicts->Belt.Array.keep(c => c.conflictType == VersionMismatch)
-    assert(Belt.Array.length(versionConflicts) > 0, "should detect version mismatch")
+    assertTrue(Belt.Array.length(versionConflicts) > 0, "should detect version mismatch")
   })
 
   // 3. detectConflicts - canonical conflict
@@ -117,7 +117,7 @@ let run = (): (int, int) => {
     let d2 = makeDoc("content B", ~path="LICENSE.md", ~docType=LICENSE, ~canonicalSource=PackageJson, ())
     let conflicts = ConflictResolver.detectConflicts([d1, d2])
     let canonConflicts = conflicts->Belt.Array.keep(c => c.conflictType == CanonicalConflict)
-    assert(Belt.Array.length(canonConflicts) > 0, "should detect canonical conflict")
+    assertTrue(Belt.Array.length(canonConflicts) > 0, "should detect canonical conflict")
   })
 
   // 4. detectConflicts - no conflicts
@@ -282,7 +282,7 @@ let run = (): (int, int) => {
     }
     let result = ConflictResolver.resolveConflict(conflict, 0.75)
     assertEqual(result.strategy, KeepCanonical, "strategy should be KeepCanonical")
-    assert(result.confidence >= 0.8, "canonical-over-inferred confidence >= 0.80")
+    assertTrue(result.confidence >= 0.8, "canonical-over-inferred confidence >= 0.80")
   })
 
   // 11. threshold auto-resolve
@@ -339,7 +339,7 @@ let run = (): (int, int) => {
     let conflicts = ConflictResolver.detectConflicts([d1, d2])
     let resolutions = ConflictResolver.resolveConflicts(conflicts, 0.5)
     let edges = ConflictResolver.createSupersededEdges(resolutions)
-    assert(Belt.Array.length(edges) >= 1, "at least one edge expected")
+    assertTrue(Belt.Array.length(edges) >= 1, "at least one edge expected")
     let edge = Belt.Array.getUnsafe(edges, 0)
     assertEqual(edge.edgeType, SupersededBy, "edge type should be SupersededBy")
   })
@@ -351,8 +351,8 @@ let run = (): (int, int) => {
     let conflicts = ConflictResolver.detectConflicts([d1, d2])
     let resolutions = ConflictResolver.resolveConflicts(conflicts, 0.9)
     let report = ConflictResolver.generateReport(resolutions, conflicts)
-    assert(Js.String2.length(report) > 0, "report must not be empty")
-    assert(
+    assertTrue(Js.String2.length(report) > 0, "report must not be empty")
+    assertTrue(
       Js.String2.includes(report, "Conflict Resolution Report"),
       "report must contain header",
     )
@@ -365,7 +365,7 @@ let run = (): (int, int) => {
     let conflicts = ConflictResolver.detectConflicts([d1, d2])
     let resolutions = ConflictResolver.resolveConflicts(conflicts, 0.5)
     let report = ConflictResolver.generateReport(resolutions, conflicts)
-    assert(Js.String2.includes(report, "Auto-resolved"), "report should mention auto-resolved")
+    assertTrue(Js.String2.includes(report, "Auto-resolved"), "report should mention auto-resolved")
   })
 
   // 17. no-rule conflict falls back to RequireManual
@@ -384,7 +384,7 @@ let run = (): (int, int) => {
     // canonical-over-inferred might apply since Inferred != Inferred is false...
     // Actually with only 1 doc all rules checking for specific canonicals may not apply
     // Let's just verify we get a result
-    assert(
+    assertTrue(
       result.confidence >= 0.0,
       "should produce a resolution",
     )
@@ -398,7 +398,7 @@ let run = (): (int, int) => {
     let dupConflicts = conflicts->Belt.Array.keep(c => c.conflictType == DuplicateContent)
     switch dupConflicts->Belt.Array.get(0) {
     | Some(c) =>
-      assert(Js.String2.includes(c.id, "_duplicate"), "id should contain _duplicate")
+      assertTrue(Js.String2.includes(c.id, "_duplicate"), "id should contain _duplicate")
     | None => Js.Exn.raiseError("expected duplicate conflict")
     }
   })
@@ -417,7 +417,7 @@ let run = (): (int, int) => {
     switch conflicts->Belt.Array.get(0) {
     | Some(c) => {
         let result = ConflictResolver.resolveConflict(c, 0.9)
-        assert(
+        assertTrue(
           Js.String2.includes(result.reasoning, "rule"),
           "reasoning should mention applied rule",
         )

@@ -25,7 +25,7 @@ let test = (name: string, fn: unit => unit): unit => {
   }
 }
 
-let assert = (cond: bool, msg: string): unit => {
+let assertTrue = (cond: bool, msg: string): unit => {
   if !cond {
     Js.Exn.raiseError(msg)
   }
@@ -91,13 +91,13 @@ let run = (): (int, int) => {
   // 1. generateDot contains "digraph"
   test("generateDot output contains digraph", () => {
     let dot = GraphVisualizer.generateDot([d1, d2], edges, GraphVisualizer.defaultConfig)
-    assert(Js.String2.includes(dot, "digraph"), "DOT must contain digraph keyword")
+    assertTrue(Js.String2.includes(dot, "digraph"), "DOT must contain digraph keyword")
   })
 
   // 2. generateDot contains closing brace
   test("generateDot output ends with closing brace", () => {
     let dot = GraphVisualizer.generateDot([d1, d2], edges, GraphVisualizer.defaultConfig)
-    assert(Js.String2.includes(dot, "}"), "DOT must contain closing brace")
+    assertTrue(Js.String2.includes(dot, "}"), "DOT must contain closing brace")
   })
 
   // 3. node colors - README is blue
@@ -142,25 +142,25 @@ let run = (): (int, int) => {
   // 10. generateMermaid contains "graph"
   test("generateMermaid contains graph keyword", () => {
     let mermaid = GraphVisualizer.generateMermaid([d1, d2], edges)
-    assert(Js.String2.includes(mermaid, "graph"), "Mermaid must contain graph keyword")
+    assertTrue(Js.String2.includes(mermaid, "graph"), "Mermaid must contain graph keyword")
   })
 
   // 11. generateMermaid contains LR
   test("generateMermaid uses left-to-right layout", () => {
     let mermaid = GraphVisualizer.generateMermaid([d1, d2], edges)
-    assert(Js.String2.includes(mermaid, "LR"), "Mermaid should use LR layout")
+    assertTrue(Js.String2.includes(mermaid, "LR"), "Mermaid should use LR layout")
   })
 
   // 12. generateHTML contains DOCTYPE
   test("generateHTML contains DOCTYPE", () => {
     let html = GraphVisualizer.generateHTML([d1, d2], edges, "Test Graph")
-    assert(Js.String2.includes(html, "<!DOCTYPE html>"), "HTML should start with DOCTYPE")
+    assertTrue(Js.String2.includes(html, "<!DOCTYPE html>"), "HTML should start with DOCTYPE")
   })
 
   // 13. generateHTML contains title
   test("generateHTML contains provided title", () => {
     let html = GraphVisualizer.generateHTML([d1, d2], edges, "My Documentation Graph")
-    assert(
+    assertTrue(
       Js.String2.includes(html, "My Documentation Graph"),
       "HTML should contain the title",
     )
@@ -169,14 +169,14 @@ let run = (): (int, int) => {
   // 14. generateHTML contains legend
   test("generateHTML contains legend section", () => {
     let html = GraphVisualizer.generateHTML([d1, d2], edges, "Test")
-    assert(Js.String2.includes(html, "Legend"), "HTML should contain legend")
+    assertTrue(Js.String2.includes(html, "Legend"), "HTML should contain legend")
   })
 
   // 15. empty graph produces valid DOT
   test("generateDot with empty graph", () => {
     let dot = GraphVisualizer.generateDot([], [], GraphVisualizer.defaultConfig)
-    assert(Js.String2.includes(dot, "digraph"), "even empty graph has digraph")
-    assert(Js.String2.includes(dot, "}"), "even empty graph has closing brace")
+    assertTrue(Js.String2.includes(dot, "digraph"), "even empty graph has digraph")
+    assertTrue(Js.String2.includes(dot, "}"), "even empty graph has closing brace")
   })
 
   // 16. edge color for ConflictsWith
@@ -192,7 +192,7 @@ let run = (): (int, int) => {
   // 18. generateDot includes edge label
   test("generateDot includes edge type as label", () => {
     let dot = GraphVisualizer.generateDot([d1, d2], edges, GraphVisualizer.defaultConfig)
-    assert(Js.String2.includes(dot, "duplicate_of"), "DOT should contain edge label")
+    assertTrue(Js.String2.includes(dot, "duplicate_of"), "DOT should contain edge label")
   })
 
   (passed.contents, failed.contents)

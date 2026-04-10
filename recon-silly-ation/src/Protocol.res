@@ -32,7 +32,8 @@ type inlineElement =
   | Link({text: string, url: string})
   | Image({alt: string, url: string})
 
-type blockElement =
+// `rec` required because blockElement's Quote case references itself.
+type rec blockElement =
   | Paragraph(array<inlineElement>)
   | Heading({level: int, content: array<inlineElement>})
   | CodeBlock({language: option<string>, content: string})
@@ -56,7 +57,9 @@ let hashAlgorithm = "sha256"
 // =============================================================================
 
 // SEAM-2A: Generation request protocol
-type generationRequest = {
+// `type rec` required because generationRequest.context forward-references
+// repoContext (declared with `and` below).
+type rec generationRequest = {
   requestId: string,
   documentType: string, // "README", "SECURITY", etc.
   format: string, // "md", "adoc", "org"
@@ -314,6 +317,14 @@ type arangoEdge = {
 }
 
 // SEAM-5C: Pack manifest collection schema
+// Inline nested record types are not allowed in ReScript field positions;
+// extract the validation-result shape as a named type.
+type packValidationResult = {
+  success: bool,
+  errors: array<string>,
+  warnings: array<string>,
+}
+
 type packManifest = {
   _key: string,
   name: string,
@@ -321,11 +332,7 @@ type packManifest = {
   documents: array<string>, // document _keys
   required: array<string>,
   optional: array<string>,
-  validationResult: option<{
-    success: bool,
-    errors: array<string>,
-    warnings: array<string>,
-  }>,
+  validationResult: option<packValidationResult>,
   createdAt: float,
   shippedTo: array<string>,
 }

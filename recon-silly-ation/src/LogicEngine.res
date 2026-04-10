@@ -173,31 +173,33 @@ let defineDocumentRules = (kb: knowledgeBase): knowledgeBase => {
 
 // Infer document relationships
 let inferRelationships = (documents: array<document>): array<(document, document, string)> => {
-  let kb = createKnowledgeBase()
-  let kb = defineDocumentRules(kb)
+  // kb is rolled through addFact calls inside a forEach; `let` bindings are
+  // immutable in ReScript, so the knowledge base lives in a ref.
+  let kb = ref(defineDocumentRules(createKnowledgeBase()))
 
   // Add facts about documents
   documents->Belt.Array.forEach(doc => {
     // Add document existence fact
-    kb = addFact(kb, Compound("document", [DocRef(doc)]))
+    kb := addFact(kb.contents, Compound("document", [DocRef(doc)]))
 
     // Add canonical source facts
     switch doc.metadata.canonicalSource {
     | Inferred => ()
-    | _ => kb = addFact(kb, Compound("has_canonical_source", [DocRef(doc)]))
+    | _ => kb := addFact(kb.contents, Compound("has_canonical_source", [DocRef(doc)]))
     }
 
     // Add version facts
     switch doc.metadata.version {
     | None => ()
     | Some(v) =>
-      kb = addFact(
-        kb,
-        Compound(
-          "has_version",
-          [DocRef(doc), Atom(versionToString(v))],
-        ),
-      )
+      kb :=
+        addFact(
+          kb.contents,
+          Compound(
+            "has_version",
+            [DocRef(doc), Atom(versionToString(v))],
+          ),
+        )
     }
   })
 
@@ -239,12 +241,18 @@ type datalogQuery = {
 
 let executeDatalogQuery = (
   kb: knowledgeBase,
-  query: datalogQuery,
+  q: datalogQuery,
 ): array<substitution> => {
-  // Simplified: execute first condition
-  switch query.where->Belt.Array.get(0) {
+  // Simplified: execute first condition.
+  // Pre-existing bug: the original code called `query(kb, condition)` where
+  // `query` was the parameter (shadowed a missing function of the same name).
+  // Renamed the parameter to `q` to avoid the shadow and stubbed out the
+  // single-condition execution — no `query` function exists in this module
+  // to call. Returns empty substitutions until the real query engine lands.
+  let _ = kb
+  switch q.where->Belt.Array.get(0) {
   | None => []
-  | Some(condition) => query(kb, condition)
+  | Some(_condition) => []
   }
 }
 
@@ -253,19 +261,22 @@ let findCanonicalForType = (
   documents: array<document>,
   docType: documentType,
 ): option<document> => {
-  let kb = createKnowledgeBase()
+  // Same ref pattern as inferRelationships — kb is accumulated inside a
+  // forEach so it needs to be mutable via ref.
+  let kb = ref(createKnowledgeBase())
 
   // Add facts about canonical priority
   documents->Belt.Array.forEach(doc => {
     if doc.metadata.documentType == docType {
       let priority = Deduplicator.getCanonicalPriority(doc.metadata.canonicalSource)
-      kb = addFact(
-        kb,
-        Compound(
-          "document_priority",
-          [DocRef(doc), Atom(priority->Int.toString)],
-        ),
-      )
+      kb :=
+        addFact(
+          kb.contents,
+          Compound(
+            "document_priority",
+            [DocRef(doc), Atom(priority->Belt.Int.toString)],
+          ),
+        )
     }
   })
 
@@ -323,7 +334,7 @@ let reasonAboutConflict = (conflict: conflict): string => {
 
   if Belt.Array.length(canonicals) > 0 {
     reasoning
-    ->Js.Array2.push(`- ${Belt.Array.length(canonicals)->Int.toString} canonical sources found`)
+    ->Js.Array2.push(`- ${Belt.Array.length(canonicals)->Belt.Int.toString} canonical sources found`)
     ->ignore
     reasoning->Js.Array2.push("- Canonical source should take precedence")->ignore
   }
@@ -333,7 +344,7 @@ let reasonAboutConflict = (conflict: conflict): string => {
 
   if Belt.Array.length(versioned) > 0 {
     reasoning
-    ->Js.Array2.push(`- ${Belt.Array.length(versioned)->Int.toString} documents have version info`)
+    ->Js.Array2.push(`- ${Belt.Array.length(versioned)->Belt.Int.toString} documents have version info`)
     ->ignore
     reasoning->Js.Array2.push("- Can use version-based resolution")->ignore
   }

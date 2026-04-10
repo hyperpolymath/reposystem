@@ -25,7 +25,7 @@ let test = (name: string, fn: unit => unit): unit => {
   }
 }
 
-let assert = (cond: bool, msg: string): unit => {
+let assertTrue = (cond: bool, msg: string): unit => {
   if !cond {
     Js.Exn.raiseError(msg)
   }
@@ -117,11 +117,11 @@ let run = (): (int, int) => {
 
       // If a <= b and b <= c then a <= c
       if ab <= 0 && bc <= 0 {
-        assert(ac <= 0, "transitivity: a<=b && b<=c => a<=c")
+        assertTrue(ac <= 0, "transitivity: a<=b && b<=c => a<=c")
       }
       // If a >= b and b >= c then a >= c
       if ab >= 0 && bc >= 0 {
-        assert(ac >= 0, "transitivity: a>=b && b>=c => a>=c")
+        assertTrue(ac >= 0, "transitivity: a>=b && b>=c => a>=c")
       }
     }
   })
@@ -144,7 +144,7 @@ let run = (): (int, int) => {
       let ab = compareVersions(a, b)
       let ba = compareVersions(b, a)
       // sign(compare(a,b)) == -sign(compare(b,a))
-      assert(
+      assertTrue(
         (ab > 0 && ba < 0) || (ab < 0 && ba > 0) || (ab == 0 && ba == 0),
         "anti-symmetry must hold",
       )
@@ -164,7 +164,7 @@ let run = (): (int, int) => {
         let content = Belt.Array.getUnsafe(contentPool, contentIdx)
         Deduplicator.createDocument(
           content,
-          makeMetadata(~path=`doc${i->Int.toString}.md`, ()),
+          makeMetadata(~path=`doc${i->Belt.Int.toString}.md`, ()),
         )
       })
       let result = Deduplicator.deduplicate(docs)
@@ -182,7 +182,7 @@ let run = (): (int, int) => {
     for _ in 1 to 100 {
       let content = nextString(~len=1 + mod(nextInt(), 200), ())
       let hash = Deduplicator.hashContent(content)
-      assert(Js.String2.length(hash) > 0, "hash must be non-empty")
+      assertTrue(Js.String2.length(hash) > 0, "hash must be non-empty")
     }
   })
 
@@ -192,7 +192,7 @@ let run = (): (int, int) => {
     for _ in 1 to 100 {
       let content = nextString(~len=50, ())
       let normalised = Deduplicator.normalizeContent(content)
-      assert(!Js.String2.includes(normalised, "\r\n"), "no CRLF after normalisation")
+      assertTrue(!Js.String2.includes(normalised, "\r\n"), "no CRLF after normalisation")
     }
   })
 

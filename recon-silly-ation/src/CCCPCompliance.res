@@ -66,42 +66,9 @@ let checkPythonAntiPatterns = (content: string): array<string> => {
   antiPatterns
 }
 
-// Generate CCCP violation report
-let scanFile = (path: string): option<cccpViolation> => {
-  if !isPythonFile(path) {
-    None
-  } else {
-    try {
-      let content = readFileSync(path, "utf8")
-      let antiPatterns = checkPythonAntiPatterns(content)
-      let imports = detectPythonImports(content)
-
-      let severity = if Belt.Array.length(antiPatterns) > 0 {
-        "error"
-      } else {
-        "warning"
-      }
-
-      let message = if Belt.Array.length(antiPatterns) > 0 {
-        `Patrojisign/insulti: Python file with security issues detected:\n${antiPatterns->Js.Array2.joinWith("\n  - ")}`
-      } else {
-        `Patrojisign/insulti: Python file detected (${imports->Belt.Array.length->Int.toString} imports)`
-      }
-
-      Some({
-        file: path,
-        violationType: "python-usage",
-        severity: severity,
-        message: message,
-        suggestedFix: Some(generateMigrationSuggestion(imports)),
-      })
-    } catch {
-    | _ => None
-    }
-  }
-}
-
 // Generate migration suggestion
+// Defined before scanFile because ReScript `let` bindings can't
+// forward-reference; scanFile calls this helper.
 let generateMigrationSuggestion = (imports: array<string>): string => {
   let hasDataScience =
     imports->Belt.Array.some(imp => {
@@ -155,6 +122,41 @@ let generateMigrationSuggestion = (imports: array<string>): string => {
   suggestions->Js.Array2.joinWith("\n")
 }
 
+// Generate CCCP violation report
+let scanFile = (path: string): option<cccpViolation> => {
+  if !isPythonFile(path) {
+    None
+  } else {
+    try {
+      let content = readFileSync(path, "utf8")
+      let antiPatterns = checkPythonAntiPatterns(content)
+      let imports = detectPythonImports(content)
+
+      let severity = if Belt.Array.length(antiPatterns) > 0 {
+        "error"
+      } else {
+        "warning"
+      }
+
+      let message = if Belt.Array.length(antiPatterns) > 0 {
+        `Patrojisign/insulti: Python file with security issues detected:\n${antiPatterns->Js.Array2.joinWith("\n  - ")}`
+      } else {
+        `Patrojisign/insulti: Python file detected (${imports->Belt.Array.length->Belt.Int.toString} imports)`
+      }
+
+      Some({
+        file: path,
+        violationType: "python-usage",
+        severity: severity,
+        message: message,
+        suggestedFix: Some(generateMigrationSuggestion(imports)),
+      })
+    } catch {
+    | _ => None
+    }
+  }
+}
+
 // Scan entire repository for CCCP violations
 let scanRepository = (repoPath: string): array<cccpViolation> => {
   let violations = []
@@ -192,10 +194,10 @@ let generateReport = (violations: array<cccpViolation>): string => {
     let warnings = violations->Belt.Array.keep(v => v.severity == "warning")->Belt.Array.length
 
     lines
-    ->Js.Array2.push(`Found ${violations->Belt.Array.length->Int.toString} violations:`)
+    ->Js.Array2.push(`Found ${violations->Belt.Array.length->Belt.Int.toString} violations:`)
     ->ignore
-    lines->Js.Array2.push(`  Errors: ${errors->Int.toString}`)->ignore
-    lines->Js.Array2.push(`  Warnings: ${warnings->Int.toString}`)->ignore
+    lines->Js.Array2.push(`  Errors: ${errors->Belt.Int.toString}`)->ignore
+    lines->Js.Array2.push(`  Warnings: ${warnings->Belt.Int.toString}`)->ignore
     lines->Js.Array2.push("")->ignore
 
     violations->Belt.Array.forEach(violation => {

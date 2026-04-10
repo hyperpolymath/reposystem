@@ -26,7 +26,7 @@ let test = (name: string, fn: unit => unit): unit => {
   }
 }
 
-let assert = (cond: bool, msg: string): unit => {
+let assertTrue = (cond: bool, msg: string): unit => {
   if !cond {
     Js.Exn.raiseError(msg)
   }
@@ -86,24 +86,24 @@ let run = (): (int, int) => {
   test("hashContent uniqueness - different inputs differ", () => {
     let h1 = Deduplicator.hashContent("alpha")
     let h2 = Deduplicator.hashContent("beta")
-    assert(h1 != h2, "different content must produce different hash")
+    assertTrue(h1 != h2, "different content must produce different hash")
   })
 
   // 3. hash non-empty
   test("hashContent produces non-empty string", () => {
     let h = Deduplicator.hashContent("test")
-    assert(Js.String2.length(h) > 0, "hash must be non-empty")
+    assertTrue(Js.String2.length(h) > 0, "hash must be non-empty")
   })
 
   // 4. CRLF normalisation
   test("normalizeContent CRLF to LF", () => {
     let input = "line1\r\nline2\r\nline3"
     let normalized = Deduplicator.normalizeContent(input)
-    assert(
+    assertTrue(
       !Js.String2.includes(normalized, "\r\n"),
       "normalised content should not contain CRLF",
     )
-    assert(Js.String2.includes(normalized, "\n"), "normalised content should contain LF")
+    assertTrue(Js.String2.includes(normalized, "\n"), "normalised content should contain LF")
   })
 
   // 5. trailing whitespace stripping
@@ -112,8 +112,8 @@ let run = (): (int, int) => {
     let normalized = Deduplicator.normalizeContent(input)
     let lines = Js.String2.split(normalized, "\n")
     lines->Belt.Array.forEach(line => {
-      assert(
-        line == Js.String2.trimEnd(line),
+      assertTrue(
+        line == line->Js.String2.replaceByRe(%re("/\s+$/"), ""),
         "each line must not have trailing whitespace",
       )
     })
@@ -123,7 +123,7 @@ let run = (): (int, int) => {
   test("normalizeContent blank line collapse", () => {
     let input = "first\n\n\n\n\nsecond"
     let normalized = Deduplicator.normalizeContent(input)
-    assert(
+    assertTrue(
       !Js.String2.includes(normalized, "\n\n\n"),
       "three or more consecutive newlines should be collapsed to two",
     )
@@ -132,7 +132,7 @@ let run = (): (int, int) => {
   // 7. createDocument sets hash
   test("createDocument sets non-empty hash", () => {
     let doc = makeDoc("# README", "README.md")
-    assert(Js.String2.length(doc.hash) > 0, "hash must be set")
+    assertTrue(Js.String2.length(doc.hash) > 0, "hash must be set")
   })
 
   // 8. createDocument normalises content
@@ -141,7 +141,7 @@ let run = (): (int, int) => {
       "hello\r\nworld   \n\n\n\nfin",
       makeMetadata(~path="test.md", ()),
     )
-    assert(!Js.String2.includes(doc.content, "\r"), "content must be normalised")
+    assertTrue(!Js.String2.includes(doc.content, "\r"), "content must be normalised")
   })
 
   // 9. deduplicate - all unique
@@ -195,14 +195,14 @@ let run = (): (int, int) => {
   test("isDuplicate returns true for same content", () => {
     let d1 = makeDoc("twin", "a.md")
     let d2 = makeDoc("twin", "b.md")
-    assert(Deduplicator.isDuplicate(d1, d2), "should be duplicates")
+    assertTrue(Deduplicator.isDuplicate(d1, d2), "should be duplicates")
   })
 
   // 14. isDuplicate false
   test("isDuplicate returns false for different content", () => {
     let d1 = makeDoc("alpha", "a.md")
     let d2 = makeDoc("beta", "b.md")
-    assert(!Deduplicator.isDuplicate(d1, d2), "should not be duplicates")
+    assertTrue(!Deduplicator.isDuplicate(d1, d2), "should not be duplicates")
   })
 
   // 15. groupByHash
@@ -268,8 +268,8 @@ let run = (): (int, int) => {
     let pExplicit = Deduplicator.getCanonicalPriority(Explicit("x"))
     let pLicense = Deduplicator.getCanonicalPriority(LicenseFile)
     let pInferred = Deduplicator.getCanonicalPriority(Inferred)
-    assert(pExplicit > pLicense, "Explicit > LicenseFile")
-    assert(pLicense > pInferred, "LicenseFile > Inferred")
+    assertTrue(pExplicit > pLicense, "Explicit > LicenseFile")
+    assertTrue(pLicense > pInferred, "LicenseFile > Inferred")
   })
 
   // 21. createDuplicateEdges

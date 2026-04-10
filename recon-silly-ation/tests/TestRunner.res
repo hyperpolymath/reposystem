@@ -70,13 +70,13 @@ let runAllTests = (): unit => {
   Js.Console.log("\n========================================")
   Js.Console.log("  Test Summary")
   Js.Console.log("========================================")
-  Js.Console.log(`  Total:  ${total->Int.toString}`)
-  Js.Console.log(`  Passed: ${totalPassed.contents->Int.toString}`)
-  Js.Console.log(`  Failed: ${totalFailed.contents->Int.toString}`)
+  Js.Console.log(`  Total:  ${total->Belt.Int.toString}`)
+  Js.Console.log(`  Passed: ${totalPassed.contents->Belt.Int.toString}`)
+  Js.Console.log(`  Failed: ${totalFailed.contents->Belt.Int.toString}`)
   Js.Console.log("========================================")
 
   if totalFailed.contents > 0 {
-    Js.Console.log(`\n  RESULT: FAILED (${totalFailed.contents->Int.toString} failures)`)
+    Js.Console.log(`\n  RESULT: FAILED (${totalFailed.contents->Belt.Int.toString} failures)`)
     %raw(`process.exit(1)`)
   } else {
     Js.Console.log("\n  RESULT: ALL TESTS PASSED")

@@ -24,7 +24,7 @@ let test = (name: string, fn: unit => unit): unit => {
   }
 }
 
-let assert = (cond: bool, msg: string): unit => {
+let assertTrue = (cond: bool, msg: string): unit => {
   if !cond {
     Js.Exn.raiseError(msg)
   }
@@ -87,7 +87,7 @@ let run = (): (int, int) => {
     let doc = sampleDoc()
     let json = ArangoClient.documentToJson(doc)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.length(str) > 0, "JSON string must be non-empty")
+    assertTrue(Js.String2.length(str) > 0, "JSON string must be non-empty")
   })
 
   // 2. documentToJson contains _key
@@ -95,7 +95,7 @@ let run = (): (int, int) => {
     let doc = sampleDoc()
     let json = ArangoClient.documentToJson(doc)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "_key"), "must contain _key")
+    assertTrue(Js.String2.includes(str, "_key"), "must contain _key")
   })
 
   // 3. documentToJson contains hash
@@ -103,7 +103,7 @@ let run = (): (int, int) => {
     let doc = sampleDoc()
     let json = ArangoClient.documentToJson(doc)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "\"hash\""), "must contain hash")
+    assertTrue(Js.String2.includes(str, "\"hash\""), "must contain hash")
   })
 
   // 4. documentToJson contains path
@@ -111,7 +111,7 @@ let run = (): (int, int) => {
     let doc = sampleDoc()
     let json = ArangoClient.documentToJson(doc)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "README.md"), "must contain path value")
+    assertTrue(Js.String2.includes(str, "README.md"), "must contain path value")
   })
 
   // 5. documentToJson contains documentType
@@ -119,7 +119,7 @@ let run = (): (int, int) => {
     let doc = sampleDoc()
     let json = ArangoClient.documentToJson(doc)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "README"), "must contain documentType value")
+    assertTrue(Js.String2.includes(str, "README"), "must contain documentType value")
   })
 
   // 6. documentToJson version is null for None
@@ -127,7 +127,7 @@ let run = (): (int, int) => {
     let doc = sampleDoc()
     let json = ArangoClient.documentToJson(doc)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "null"), "version should be null")
+    assertTrue(Js.String2.includes(str, "null"), "version should be null")
   })
 
   // 7. documentToJson version is string when Some
@@ -135,7 +135,7 @@ let run = (): (int, int) => {
     let doc = sampleVersionedDoc()
     let json = ArangoClient.documentToJson(doc)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "2.1.0"), "must contain version string")
+    assertTrue(Js.String2.includes(str, "2.1.0"), "must contain version string")
   })
 
   // 8. edgeToJson produces valid JSON
@@ -149,7 +149,7 @@ let run = (): (int, int) => {
     }
     let json = ArangoClient.edgeToJson(edge)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.length(str) > 0, "edge JSON must be non-empty")
+    assertTrue(Js.String2.length(str) > 0, "edge JSON must be non-empty")
   })
 
   // 9. edgeToJson contains _from with documents/ prefix
@@ -163,7 +163,7 @@ let run = (): (int, int) => {
     }
     let json = ArangoClient.edgeToJson(edge)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "documents/hash_a"), "_from must have documents/ prefix")
+    assertTrue(Js.String2.includes(str, "documents/hash_a"), "_from must have documents/ prefix")
   })
 
   // 10. edgeToJson contains type as string
@@ -177,7 +177,7 @@ let run = (): (int, int) => {
     }
     let json = ArangoClient.edgeToJson(edge)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "superseded_by"), "must contain edge type string")
+    assertTrue(Js.String2.includes(str, "superseded_by"), "must contain edge type string")
   })
 
   (passed.contents, failed.contents)

@@ -25,7 +25,7 @@ let test = (name: string, fn: unit => unit): unit => {
   }
 }
 
-let assert = (cond: bool, msg: string): unit => {
+let assertTrue = (cond: bool, msg: string): unit => {
   if !cond {
     Js.Exn.raiseError(msg)
   }
@@ -95,7 +95,7 @@ let run = (): (int, int) => {
     ]
     assertEqual(Belt.Array.length(docs), 4, "should create 4 documents")
     docs->Belt.Array.forEach(doc => {
-      assert(Js.String2.length(doc.hash) > 0, "each doc should have a hash")
+      assertTrue(Js.String2.length(doc.hash) > 0, "each doc should have a hash")
     })
   })
 
@@ -130,7 +130,7 @@ let run = (): (int, int) => {
       Deduplicator.createDocument(fixtureReadme, makeMetadata(~path="docs/README.md", ~lastModified=2000.0, ())),
     ]
     let conflicts = ConflictResolver.detectConflicts(docs)
-    assert(Belt.Array.length(conflicts) > 0, "should detect duplicate conflict")
+    assertTrue(Belt.Array.length(conflicts) > 0, "should detect duplicate conflict")
   })
 
   // 5. End-to-end: resolve duplicate conflict
@@ -141,7 +141,7 @@ let run = (): (int, int) => {
     ]
     let conflicts = ConflictResolver.detectConflicts(docs)
     let resolutions = ConflictResolver.resolveConflicts(conflicts, 0.9)
-    assert(Belt.Array.length(resolutions) > 0, "should have resolutions")
+    assertTrue(Belt.Array.length(resolutions) > 0, "should have resolutions")
     let res = Belt.Array.getUnsafe(resolutions, 0)
     switch res.selectedDocument {
     | Some(doc) =>
@@ -159,8 +159,8 @@ let run = (): (int, int) => {
     let conflicts = ConflictResolver.detectConflicts(docs)
     let resolutions = ConflictResolver.resolveConflicts(conflicts, 0.9)
     let report = ConflictResolver.generateReport(resolutions, conflicts)
-    assert(Js.String2.length(report) > 0, "report must not be empty")
-    assert(
+    assertTrue(Js.String2.length(report) > 0, "report must not be empty")
+    assertTrue(
       Js.String2.includes(report, "Conflict Resolution Report"),
       "report must contain header",
     )
@@ -172,7 +172,7 @@ let run = (): (int, int) => {
     let doc1 = Deduplicator.createDocument(rawContent, makeMetadata(~path="a.md", ()))
     let doc2 = Deduplicator.createDocument(rawContent, makeMetadata(~path="b.md", ()))
     // Both should normalise identically
-    assert(Deduplicator.isDuplicate(doc1, doc2), "same raw content should be duplicates")
+    assertTrue(Deduplicator.isDuplicate(doc1, doc2), "same raw content should be duplicates")
     // Normalise again and dedup
     let normalized = Pipeline.normalizeDocuments([doc1, doc2])
     let result = Deduplicator.deduplicate(normalized)
@@ -190,7 +190,7 @@ let run = (): (int, int) => {
     // Dedup
     let dedupResult = Deduplicator.deduplicate(docs)
     let dupEdges = Deduplicator.createDuplicateEdges(dedupResult.duplicates)
-    assert(Belt.Array.length(dupEdges) >= 1, "should have duplicate edges")
+    assertTrue(Belt.Array.length(dupEdges) >= 1, "should have duplicate edges")
 
     // Detect conflicts on all docs
     let conflicts = ConflictResolver.detectConflicts(docs)
@@ -201,7 +201,7 @@ let run = (): (int, int) => {
 
     // Total edges
     let totalEdges = Belt.Array.length(dupEdges) + Belt.Array.length(supersededEdges)
-    assert(totalEdges >= 1, "should produce at least 1 total edge")
+    assertTrue(totalEdges >= 1, "should produce at least 1 total edge")
   })
 
   // 9. Graph visualisation from pipeline output
@@ -212,7 +212,7 @@ let run = (): (int, int) => {
     ]
     let edges = Deduplicator.createDuplicateEdges([])
     let dot = GraphVisualizer.generateDot(docs, edges, GraphVisualizer.defaultConfig)
-    assert(Js.String2.includes(dot, "digraph"), "DOT output should be valid")
+    assertTrue(Js.String2.includes(dot, "digraph"), "DOT output should be valid")
   })
 
   // 10. Logic engine integration with pipeline docs
@@ -222,13 +222,13 @@ let run = (): (int, int) => {
       Deduplicator.createDocument(fixtureReadme, makeMetadata(~path="b.md", ())),
     ]
     let rels = LogicEngine.inferRelationships(docs)
-    assert(Belt.Array.length(rels) > 0, "should infer duplicate relationship")
+    assertTrue(Belt.Array.length(rels) > 0, "should infer duplicate relationship")
   })
 
   // 11. CCCP compliance in pipeline context
   test("e2e: CCCP compliance on non-Python docs", () => {
-    assert(!CCCPCompliance.isPythonFile("README.md"), "README.md is not Python")
-    assert(!CCCPCompliance.isPythonFile("LICENSE"), "LICENSE is not Python")
+    assertTrue(!CCCPCompliance.isPythonFile("README.md"), "README.md is not Python")
+    assertTrue(!CCCPCompliance.isPythonFile("LICENSE"), "LICENSE is not Python")
   })
 
   // 12. Version conflict end-to-end
@@ -245,9 +245,9 @@ let run = (): (int, int) => {
     )
     let conflicts = ConflictResolver.detectConflicts([d1, d2])
     let versionConflicts = conflicts->Belt.Array.keep(c => c.conflictType == VersionMismatch)
-    assert(Belt.Array.length(versionConflicts) > 0, "should detect version conflict")
+    assertTrue(Belt.Array.length(versionConflicts) > 0, "should detect version conflict")
     let resolutions = ConflictResolver.resolveConflicts(versionConflicts, 0.5)
-    assert(Belt.Array.length(resolutions) > 0, "should resolve version conflict")
+    assertTrue(Belt.Array.length(resolutions) > 0, "should resolve version conflict")
   })
 
   // 13. Canonical conflict end-to-end
@@ -262,7 +262,7 @@ let run = (): (int, int) => {
     )
     let conflicts = ConflictResolver.detectConflicts([d1, d2])
     let canonConflicts = conflicts->Belt.Array.keep(c => c.conflictType == CanonicalConflict)
-    assert(Belt.Array.length(canonConflicts) > 0, "should detect canonical conflict")
+    assertTrue(Belt.Array.length(canonConflicts) > 0, "should detect canonical conflict")
   })
 
   // 14. ArangoDB serialisation in pipeline context
@@ -270,8 +270,8 @@ let run = (): (int, int) => {
     let doc = Deduplicator.createDocument(fixtureReadme, makeMetadata(~path="README.md", ()))
     let json = ArangoClient.documentToJson(doc)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "README.md"), "serialised doc should contain path")
-    assert(Js.String2.includes(str, "_key"), "serialised doc should contain _key")
+    assertTrue(Js.String2.includes(str, "README.md"), "serialised doc should contain path")
+    assertTrue(Js.String2.includes(str, "_key"), "serialised doc should contain _key")
   })
 
   // 15. Dedup report in pipeline context
@@ -283,8 +283,8 @@ let run = (): (int, int) => {
     ]
     let result = Deduplicator.deduplicate(docs)
     let report = Deduplicator.generateReport(result)
-    assert(Js.String2.includes(report, "Deduplication Report"), "report header")
-    assert(Js.String2.includes(report, "1"), "should mention duplicate count")
+    assertTrue(Js.String2.includes(report, "Deduplication Report"), "report header")
+    assertTrue(Js.String2.includes(report, "1"), "should mention duplicate count")
   })
 
   (passed.contents, failed.contents)

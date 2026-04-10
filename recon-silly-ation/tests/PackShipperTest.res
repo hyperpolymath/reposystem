@@ -24,7 +24,7 @@ let test = (name: string, fn: unit => unit): unit => {
   }
 }
 
-let assert = (cond: bool, msg: string): unit => {
+let assertTrue = (cond: bool, msg: string): unit => {
   if !cond {
     Js.Exn.raiseError(msg)
   }
@@ -45,7 +45,7 @@ let run = (): (int, int) => {
 
   // 1. hyperpolymathPackSpec exists and is non-empty
   test("hyperpolymathPackSpec is non-empty", () => {
-    assert(
+    assertTrue(
       Js.String2.length(PackShipper.hyperpolymathPackSpec) > 0,
       "hyperpolymath pack spec must exist",
     )
@@ -53,7 +53,7 @@ let run = (): (int, int) => {
 
   // 2. hyperpolymathPackSpec contains README requirement
   test("hyperpolymathPackSpec requires README", () => {
-    assert(
+    assertTrue(
       Js.String2.includes(PackShipper.hyperpolymathPackSpec, "README"),
       "hyperpolymath pack should require README",
     )
@@ -61,7 +61,7 @@ let run = (): (int, int) => {
 
   // 3. minimalPackSpec exists and is non-empty
   test("minimalPackSpec is non-empty", () => {
-    assert(
+    assertTrue(
       Js.String2.length(PackShipper.minimalPackSpec) > 0,
       "minimal pack spec must exist",
     )
@@ -69,7 +69,7 @@ let run = (): (int, int) => {
 
   // 4. minimalPackSpec contains LICENSE requirement
   test("minimalPackSpec requires LICENSE", () => {
-    assert(
+    assertTrue(
       Js.String2.includes(PackShipper.minimalPackSpec, "LICENSE"),
       "minimal pack should require LICENSE",
     )
@@ -77,7 +77,7 @@ let run = (): (int, int) => {
 
   // 5. securityPackSpec exists and is non-empty
   test("securityPackSpec is non-empty", () => {
-    assert(
+    assertTrue(
       Js.String2.length(PackShipper.securityPackSpec) > 0,
       "security pack spec must exist",
     )
@@ -85,7 +85,7 @@ let run = (): (int, int) => {
 
   // 6. securityPackSpec contains SECURITY requirement
   test("securityPackSpec requires SECURITY", () => {
-    assert(
+    assertTrue(
       Js.String2.includes(PackShipper.securityPackSpec, "SECURITY"),
       "security pack should require SECURITY",
     )
@@ -93,7 +93,7 @@ let run = (): (int, int) => {
 
   // 7. ossPackSpec exists and is non-empty
   test("ossPackSpec is non-empty", () => {
-    assert(
+    assertTrue(
       Js.String2.length(PackShipper.ossPackSpec) > 0,
       "OSS pack spec must exist",
     )
@@ -101,7 +101,7 @@ let run = (): (int, int) => {
 
   // 8. ossPackSpec contains CODE_OF_CONDUCT
   test("ossPackSpec requires CODE_OF_CONDUCT", () => {
-    assert(
+    assertTrue(
       Js.String2.includes(PackShipper.ossPackSpec, "CODE_OF_CONDUCT"),
       "OSS pack should require CODE_OF_CONDUCT",
     )
@@ -168,8 +168,8 @@ let run = (): (int, int) => {
       },
     }
     let json = PackShipper.manifestToJson(manifest)
-    assert(Js.String2.includes(json, "my-bundle"), "JSON should contain name")
-    assert(Js.String2.includes(json, "2.0.0"), "JSON should contain version")
+    assertTrue(Js.String2.includes(json, "my-bundle"), "JSON should contain name")
+    assertTrue(Js.String2.includes(json, "2.0.0"), "JSON should contain version")
   })
 
   // 12. manifestToJson contains validation section
@@ -191,8 +191,8 @@ let run = (): (int, int) => {
       },
     }
     let json = PackShipper.manifestToJson(manifest)
-    assert(Js.String2.includes(json, "\"validation\""), "JSON should contain validation")
-    assert(Js.String2.includes(json, "\"validated\""), "JSON should contain validated field")
+    assertTrue(Js.String2.includes(json, "\"validation\""), "JSON should contain validation")
+    assertTrue(Js.String2.includes(json, "\"validated\""), "JSON should contain validated field")
   })
 
   (passed.contents, failed.contents)

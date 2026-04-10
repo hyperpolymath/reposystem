@@ -4,20 +4,37 @@
 
 open Types
 
+// execFileSync returns a string when called with `{"encoding": "utf8"}`.
+// The original binding declared the return as Buffer.t, which forced a
+// Buffer.toString call that the current rescript Buffer bindings don't expose.
 @module("child_process") @val
-external execFileSync: (string, array<string>, {..}) => Buffer.t = "execFileSync"
+external execFileSync: (string, array<string>, {..}) => string = "execFileSync"
 
-type validationResult = {
-  isValid: bool,
-  violations: array<schemaViolation>,
-  confidence: float,
-}
+// Direct fs bindings. The rescript Node.Fs module is not available in this
+// repo's bindings configuration, so we bind the JS APIs directly.
+@module("fs") @val
+external writeFileSyncUtf8: (string, string, string) => unit = "writeFileSync"
 
+@module("fs") @val
+external unlinkSync: string => unit = "unlinkSync"
+
+@module("fs") @val
+external accessSync: string => unit = "accessSync"
+
+// schemaViolation must be declared before validationResult because the latter
+// references it in its `violations` field — non-recursive types can't
+// forward-reference.
 type schemaViolation = {
   violationField: string,
   violationMessage: string,
   violationSeverity: string,
   violationLine: option<int>,
+}
+
+type validationResult = {
+  isValid: bool,
+  violations: array<schemaViolation>,
+  confidence: float,
 }
 
 // Call Haskell validator
@@ -30,7 +47,9 @@ let validateDocument = (
 
     // Write content to temp file
     let tempFile = "/tmp/doc_" ++ doc.hash ++ ".tmp"
-    Node.Fs.writeFileSyncWith(tempFile, doc.content, #utf8)
+    // Direct fs.writeFileSync binding — the Node.Fs helpers in the current
+    // rescript node bindings don't include a UTF-8 convenience wrapper.
+    writeFileSyncUtf8(tempFile, doc.content, "utf8")
 
     // Call Haskell validator
     let output = execFileSync(
@@ -39,8 +58,9 @@ let validateDocument = (
       {"encoding": "utf8"},
     )
 
-    // Parse JSON output
-    let json = output->Buffer.toString->Js.Json.parseExn
+    // Parse JSON output — `output` is already a UTF-8 string because
+    // execFileSync was called with `{"encoding": "utf8"}`.
+    let json = Js.Json.parseExn(output)
 
     // Decode validation result
     let isValid = json
@@ -88,7 +108,7 @@ let validateDocument = (
 
     // Clean up temp file
     try {
-      Node.Fs.unlinkSync(tempFile)
+      unlinkSync(tempFile)
     } catch {
     | _ => ()
     }
@@ -101,7 +121,7 @@ let validateDocument = (
   } catch {
   | exn =>
     Error(
-      `Haskell validator failed: ${exn->Js.Exn.message->Belt.Option.getWithDefault("Unknown error")}`,
+      `Haskell validator failed: ${Js.Exn.asJsExn(exn)->Belt.Option.flatMap(Js.Exn.message)->Belt.Option.getWithDefault("Unknown error")}`,
     )
   }
 }
@@ -128,13 +148,13 @@ let generateValidationReport = (
   let lines = []
 
   lines->Js.Array2.push("=== Schema Validation Report ===")->ignore
-  lines->Js.Array2.push(`Total documents validated: ${results->Belt.Array.length->Int.toString}`)->ignore
+  lines->Js.Array2.push(`Total documents validated: ${results->Belt.Array.length->Belt.Int.toString}`)->ignore
 
   let valid = results->Belt.Array.keep(((_, r)) => r.isValid)->Belt.Array.length
   let invalid = results->Belt.Array.length - valid
 
-  lines->Js.Array2.push(`Valid: ${valid->Int.toString}`)->ignore
-  lines->Js.Array2.push(`Invalid: ${invalid->Int.toString}`)->ignore
+  lines->Js.Array2.push(`Valid: ${valid->Belt.Int.toString}`)->ignore
+  lines->Js.Array2.push(`Invalid: ${invalid->Belt.Int.toString}`)->ignore
   lines->Js.Array2.push("")->ignore
 
   results->Belt.Array.forEach(((doc, result)) => {
@@ -157,7 +177,7 @@ let generateValidationReport = (
 // Check if validator is available
 let checkValidatorAvailable = (validatorPath: string): bool => {
   try {
-    Node.Fs.accessSync(validatorPath)
+    accessSync(validatorPath)
     true
   } catch {
   | _ => false

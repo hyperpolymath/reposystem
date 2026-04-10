@@ -154,7 +154,7 @@ let scanRepository = (repoPath: string): result<array<document>, string> => {
   } catch {
   | exn =>
     Error(
-      `Failed to scan repository: ${exn->Js.Exn.message->Belt.Option.getWithDefault("Unknown error")}`,
+      `Failed to scan repository: ${Js.Exn.asJsExn(exn)->Belt.Option.flatMap(Js.Exn.message)->Belt.Option.getWithDefault("Unknown error")}`,
     )
   }
 }
@@ -204,7 +204,7 @@ let executeStage = async (
         }
       })
 
-      Js.Console.log(`Scanned ${allDocuments->Belt.Array.length->Int.toString} documents`)
+      Js.Console.log(`Scanned ${allDocuments->Belt.Array.length->Belt.Int.toString} documents`)
 
       Ok({
         ...state,
@@ -230,7 +230,7 @@ let executeStage = async (
       let result = Deduplicator.deduplicate(state.documents)
 
       Js.Console.log(
-        `Found ${result.stats.duplicateCount->Int.toString} duplicates, ${result.stats.uniqueCount->Int.toString} unique`,
+        `Found ${result.stats.duplicateCount->Belt.Int.toString} duplicates, ${result.stats.uniqueCount->Belt.Int.toString} unique`,
       )
 
       // Create duplicate edges
@@ -256,7 +256,7 @@ let executeStage = async (
       Js.Console.log("Stage: Detect conflicts")
       let conflicts = ConflictResolver.detectConflicts(state.documents)
 
-      Js.Console.log(`Detected ${conflicts->Belt.Array.length->Int.toString} conflicts`)
+      Js.Console.log(`Detected ${conflicts->Belt.Array.length->Belt.Int.toString} conflicts`)
 
       // Store conflicts in database if client available
       switch client {
@@ -292,7 +292,7 @@ let executeStage = async (
       let manual = resolutions->Belt.Array.keep(r => r.requiresApproval)->Belt.Array.length
 
       Js.Console.log(
-        `Resolved: ${autoResolved->Int.toString} auto, ${manual->Int.toString} require approval`,
+        `Resolved: ${autoResolved->Belt.Int.toString} auto, ${manual->Belt.Int.toString} require approval`,
       )
 
       // Store resolutions in database if client available
@@ -341,7 +341,7 @@ let executeStage = async (
           switch result {
           | Ok() => {
               Js.Console.log(
-                `Ingested ${state.documents->Belt.Array.length->Int.toString} documents`,
+                `Ingested ${state.documents->Belt.Array.length->Belt.Int.toString} documents`,
               )
               Ok({
                 ...state,
@@ -467,7 +467,7 @@ let runContinuous = async (config: config): unit => {
     switch config.scanInterval {
     | None => () // Run once and exit
     | Some(interval) => {
-        Js.Console.log(`\nWaiting ${interval->Int.toString} seconds until next scan...`)
+        Js.Console.log(`\nWaiting ${interval->Belt.Int.toString} seconds until next scan...`)
         // Note: In real implementation, use proper async sleep
         await Js.Promise.make((~resolve, ~reject as _) => {
           let _ = Js.Global.setTimeout(() => resolve(.), interval * 1000)

@@ -27,61 +27,64 @@ type cliArgs = {
 }
 
 let parseArgs = (): cliArgs => {
-  let args = argv->Belt.Array.sliceToEnd(2) // Skip node and script path
+  // ReScript arrays don't support `[head, ...rest]` destructuring patterns.
+  // Convert the raw argv array to an immutable list once so the recursive
+  // parser can use `list{head, ...rest}` pattern matching throughout.
+  let args = argv->Belt.Array.sliceToEnd(2)->Belt.List.fromArray
 
-  let rec parse = (args: array<string>, acc: cliArgs): cliArgs => {
+  let rec parse = (args: list<string>, acc: cliArgs): cliArgs => {
     switch args {
-    | [] => acc
-    | [arg, ...rest] =>
+    | list{} => acc
+    | list{arg, ...rest} =>
       switch arg {
       | "--help" | "-h" => {...acc, help: true}
       | "--daemon" | "-d" => parse(rest, {...acc, daemon: true})
       | "--repo" | "-r" =>
         switch rest {
-        | [path, ...remaining] =>
+        | list{path, ...remaining} =>
           parse(remaining, {
             ...acc,
             repositories: Belt.Array.concat(acc.repositories, [path]),
           })
-        | [] => acc
+        | list{} => acc
         }
       | "--arango-url" =>
         switch rest {
-        | [url, ...remaining] => parse(remaining, {...acc, arangoUrl: Some(url)})
-        | [] => acc
+        | list{url, ...remaining} => parse(remaining, {...acc, arangoUrl: Some(url)})
+        | list{} => acc
         }
       | "--arango-db" =>
         switch rest {
-        | [db, ...remaining] => parse(remaining, {...acc, arangoDb: Some(db)})
-        | [] => acc
+        | list{db, ...remaining} => parse(remaining, {...acc, arangoDb: Some(db)})
+        | list{} => acc
         }
       | "--arango-user" =>
         switch rest {
-        | [user, ...remaining] => parse(remaining, {...acc, arangoUser: Some(user)})
-        | [] => acc
+        | list{user, ...remaining} => parse(remaining, {...acc, arangoUser: Some(user)})
+        | list{} => acc
         }
       | "--arango-password" =>
         switch rest {
-        | [pass, ...remaining] => parse(remaining, {...acc, arangoPassword: Some(pass)})
-        | [] => acc
+        | list{pass, ...remaining} => parse(remaining, {...acc, arangoPassword: Some(pass)})
+        | list{} => acc
         }
       | "--threshold" | "-t" =>
         switch rest {
-        | [thresh, ...remaining] =>
+        | list{thresh, ...remaining} =>
           switch Belt.Float.fromString(thresh) {
           | Some(value) => parse(remaining, {...acc, threshold: Some(value)})
           | None => parse(remaining, acc)
           }
-        | [] => acc
+        | list{} => acc
         }
       | "--interval" | "-i" =>
         switch rest {
-        | [interval, ...remaining] =>
+        | list{interval, ...remaining} =>
           switch Belt.Int.fromString(interval) {
           | Some(value) => parse(remaining, {...acc, interval: Some(value)})
           | None => parse(remaining, acc)
           }
-        | [] => acc
+        | list{} => acc
         }
       | _ => parse(rest, acc) // Skip unknown args
       }

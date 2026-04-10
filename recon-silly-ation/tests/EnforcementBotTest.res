@@ -25,7 +25,7 @@ let test = (name: string, fn: unit => unit): unit => {
   }
 }
 
-let assert = (cond: bool, msg: string): unit => {
+let assertTrue = (cond: bool, msg: string): unit => {
   if !cond {
     Js.Exn.raiseError(msg)
   }
@@ -171,7 +171,7 @@ let run = (): (int, int) => {
   test("createRsrBot all jobs enabled", () => {
     let state = EnforcementBot.createRsrBot()
     let allEnabled = state.jobs->Belt.Array.every(j => j.enabled)
-    assert(allEnabled, "all RSR bot jobs should be enabled")
+    assertTrue(allEnabled, "all RSR bot jobs should be enabled")
   })
 
   // 14. removeJob non-existent id is no-op

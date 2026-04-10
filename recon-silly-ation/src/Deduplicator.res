@@ -18,7 +18,7 @@ let hashContent = (content: string): contentHash => {
   } catch {
   | _ => {
       // Fallback to simple hash if crypto not available
-      Js.String2.length(content)->Int.toString ++ "_" ++ Js.String2.slice(content, ~from=0, ~to_=10)
+      Js.String2.length(content)->Belt.Int.toString ++ "_" ++ Js.String2.slice(content, ~from=0, ~to_=10)
     }
   }
 }
@@ -48,28 +48,35 @@ let createDocument = (
 }
 
 // Deduplication result
+// Inline nested record types are not allowed in ReScript field positions;
+// `dedupStats` is extracted so `deduplicationResult` can reference it by name.
+type dedupStats = {
+  totalProcessed: int,
+  uniqueCount: int,
+  duplicateCount: int,
+  spacesSaved: int, // Bytes
+}
+
 type deduplicationResult = {
   unique: array<document>,
   duplicates: array<(document, document)>, // (duplicate, original)
-  stats: {
-    totalProcessed: int,
-    uniqueCount: int,
-    duplicateCount: int,
-    spacesSaved: int, // Bytes
-  },
+  stats: dedupStats,
 }
 
 // Deduplicate documents by content hash
 let deduplicate = (documents: array<document>): deduplicationResult => {
-  let hashMap = Belt.Map.String.empty
+  // `let` bindings are immutable in ReScript, so the rolling hash map is
+  // held in a ref. The old code tried to reassign `hashMap` in-place and
+  // never compiled.
+  let hashMap = ref(Belt.Map.String.empty)
   let unique = []
   let duplicates = []
 
   documents->Belt.Array.forEach(doc => {
-    switch hashMap->Belt.Map.String.get(doc.hash) {
+    switch hashMap.contents->Belt.Map.String.get(doc.hash) {
     | None => {
         // First occurrence - add to unique set
-        hashMap = hashMap->Belt.Map.String.set(doc.hash, doc)
+        hashMap := hashMap.contents->Belt.Map.String.set(doc.hash, doc)
         unique->Js.Array2.push(doc)->ignore
       }
     | Some(original) => {
@@ -208,10 +215,10 @@ let generateReport = (result: deduplicationResult): string => {
 
   let lines = []
   lines->Js.Array2.push("=== Deduplication Report ===")->ignore
-  lines->Js.Array2.push(`Total documents processed: ${totalProcessed->Int.toString}`)->ignore
-  lines->Js.Array2.push(`Unique documents: ${uniqueCount->Int.toString}`)->ignore
-  lines->Js.Array2.push(`Duplicates found: ${duplicateCount->Int.toString}`)->ignore
-  lines->Js.Array2.push(`Space saved: ${spacesSaved->Int.toString} bytes`)->ignore
+  lines->Js.Array2.push(`Total documents processed: ${totalProcessed->Belt.Int.toString}`)->ignore
+  lines->Js.Array2.push(`Unique documents: ${uniqueCount->Belt.Int.toString}`)->ignore
+  lines->Js.Array2.push(`Duplicates found: ${duplicateCount->Belt.Int.toString}`)->ignore
+  lines->Js.Array2.push(`Space saved: ${spacesSaved->Belt.Int.toString} bytes`)->ignore
   lines->Js.Array2.push("")->ignore
 
   if duplicateCount > 0 {

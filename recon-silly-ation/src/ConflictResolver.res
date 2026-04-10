@@ -268,7 +268,7 @@ let detectConflicts = (documents: array<document>): array<conflict> => {
   })
 
   // Detect canonical conflicts (multiple canonical sources for same type)
-  byType->Belt.Map.String.forEach((typeStr, docs) => {
+  byType.contents->Belt.Map.String.forEach((typeStr, docs) => {
     let canonicals = docs->Belt.Array.keep(doc => {
       switch doc.metadata.canonicalSource {
       | Inferred => false
@@ -300,9 +300,9 @@ let generateReport = (
 ): string => {
   let lines = []
   lines->Js.Array2.push("=== Conflict Resolution Report ===")->ignore
-  lines->Js.Array2.push(`Total conflicts: ${conflicts->Belt.Array.length->Int.toString}`)->ignore
+  lines->Js.Array2.push(`Total conflicts: ${conflicts->Belt.Array.length->Belt.Int.toString}`)->ignore
   lines
-  ->Js.Array2.push(`Resolutions: ${resolutions->Belt.Array.length->Int.toString}`)
+  ->Js.Array2.push(`Resolutions: ${resolutions->Belt.Array.length->Belt.Int.toString}`)
   ->ignore
 
   let autoResolved =
@@ -311,10 +311,10 @@ let generateReport = (
     resolutions->Belt.Array.keep(r => r.requiresApproval)->Belt.Array.length
 
   lines
-  ->Js.Array2.push(`Auto-resolved: ${autoResolved->Int.toString} (confidence > threshold)`)
+  ->Js.Array2.push(`Auto-resolved: ${autoResolved->Belt.Int.toString} (confidence > threshold)`)
   ->ignore
   lines
-  ->Js.Array2.push(`Require approval: ${requireApproval->Int.toString} (confidence < threshold)`)
+  ->Js.Array2.push(`Require approval: ${requireApproval->Belt.Int.toString} (confidence < threshold)`)
   ->ignore
   lines->Js.Array2.push("")->ignore
 

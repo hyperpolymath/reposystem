@@ -30,9 +30,9 @@ let runBenchmark = (name: string, iterations: int, fn: unit => unit): benchmarkR
   }
   let elapsed = Js.Date.now() -. start
 
-  let avgMs = elapsed /. Int.toFloat(iterations)
+  let avgMs = elapsed /. Belt.Int.toFloat(iterations)
   let opsPerSec = if elapsed > 0.0 {
-    Int.toFloat(iterations) /. (elapsed /. 1000.0)
+    Belt.Int.toFloat(iterations) /. (elapsed /. 1000.0)
   } else {
     0.0
   }
@@ -44,7 +44,7 @@ let formatResult = (r: benchmarkResult): string => {
   let totalStr = r.totalMs->Js.Float.toFixedWithPrecision(~digits=2)
   let avgStr = r.avgMs->Js.Float.toFixedWithPrecision(~digits=4)
   let opsStr = r.opsPerSec->Js.Math.round->Belt.Float.toString
-  `| ${r.name} | ${r.iterations->Int.toString} | ${totalStr} | ${avgStr} | ${opsStr} |`
+  `| ${r.name} | ${r.iterations->Belt.Int.toString} | ${totalStr} | ${avgStr} | ${opsStr} |`
 }
 
 // ---------------------------------------------------------------------------
@@ -77,9 +77,9 @@ let generateDocs = (count: int): array<document> => {
     let content = if mod(i, 10) == 0 {
       "duplicate content body for benchmarking"
     } else {
-      `unique document content number ${i->Int.toString} for benchmark suite`
+      `unique document content number ${i->Belt.Int.toString} for benchmark suite`
     }
-    Deduplicator.createDocument(content, makeMetadata(~path=`bench-${i->Int.toString}.md`, ()))
+    Deduplicator.createDocument(content, makeMetadata(~path=`bench-${i->Belt.Int.toString}.md`, ()))
   })
 }
 
@@ -222,7 +222,7 @@ let run = (): unit => {
   Js.Console.log(formatResult(r16))
 
   Js.Console.log("")
-  Js.Console.log(`Total benchmarks: ${Belt.Array.length(results)->Int.toString}`)
+  Js.Console.log(`Total benchmarks: ${Belt.Array.length(results)->Belt.Int.toString}`)
   Js.Console.log("Note: WASM benchmarks require wasm-pack build. Run:")
   Js.Console.log("  cd wasm-modules && cargo build --release --target wasm32-unknown-unknown")
   Js.Console.log("  Then compare WASM hash/normalize against JS results above.")

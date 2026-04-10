@@ -231,7 +231,7 @@ let addJob = (
   (),
 ): botState => {
   let job: enforcementJob = {
-    id: `job-${Js.Date.now()->Float.toString}`,
+    id: `job-${Js.Date.now()->Belt.Float.toString}`,
     rule,
     schedule,
     repository,
@@ -299,7 +299,7 @@ let runAllJobs = (state: botState, bundleProvider: string => ReconForth.bundle):
         lastRun: Some(Js.Date.now()),
         nextRun: switch j.schedule {
         | Immediate => None
-        | Interval(seconds) => Some(Js.Date.now() +. Float.fromInt(seconds * 1000))
+        | Interval(seconds) => Some(Js.Date.now() +. Belt.Int.toFloat(seconds * 1000))
         | Cron(_) => Some(Js.Date.now() +. 3600000.0) // Placeholder: 1 hour
         | OnPush => None
         | OnPR => None
@@ -335,27 +335,27 @@ let generateReport = (state: botState): string => {
   `# Enforcement Report
 
 ## Summary
-- Total Jobs: ${Int.toString(totalJobs)}
-- Enabled Jobs: ${Int.toString(enabledJobs)}
-- Passed: ${Int.toString(passedResults)}
-- Failed: ${Int.toString(failedResults)}
-- Total Violations: ${Int.toString(totalViolations)}
+- Total Jobs: ${Belt.Int.toString(totalJobs)}
+- Enabled Jobs: ${Belt.Int.toString(enabledJobs)}
+- Passed: ${Belt.Int.toString(passedResults)}
+- Failed: ${Belt.Int.toString(failedResults)}
+- Total Violations: ${Belt.Int.toString(totalViolations)}
 
 ## Job Details
 ${state.jobs
     ->Belt.Array.map(j =>
       `- ${j.rule.name} (${j.enabled ? "enabled" : "disabled"})
   Repository: ${j.repository}
-  Last Run: ${j.lastRun->Belt.Option.mapWithDefault("never", f => Float.toString(f))}`
+  Last Run: ${j.lastRun->Belt.Option.mapWithDefault("never", f => Belt.Float.toString(f))}`
     )
-    ->Belt.Array.joinWith("\n")}
+    ->Js.Array2.joinWith("\n")}
 
 ## Recent Violations
 ${state.results
     ->Belt.Array.keep(r => !r.passed)
     ->Belt.Array.flatMap(r => r.violations)
     ->Belt.Array.map(v => `- ${v.message}`)
-    ->Belt.Array.joinWith("\n")}
+    ->Js.Array2.joinWith("\n")}
 `
 }
 

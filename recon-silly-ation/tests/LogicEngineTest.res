@@ -25,7 +25,7 @@ let test = (name: string, fn: unit => unit): unit => {
   }
 }
 
-let assert = (cond: bool, msg: string): unit => {
+let assertTrue = (cond: bool, msg: string): unit => {
   if !cond {
     Js.Exn.raiseError(msg)
   }
@@ -183,7 +183,7 @@ let run = (): (int, int) => {
       kb,
       LogicEngine.Compound("color", [LogicEngine.Atom("red")]),
     )
-    assert(Belt.Array.length(results) > 0, "should find matching fact")
+    assertTrue(Belt.Array.length(results) > 0, "should find matching fact")
   })
 
   // 11. query returns empty for non-matching
@@ -198,7 +198,7 @@ let run = (): (int, int) => {
   test("defineDocumentRules adds rules to kb", () => {
     let kb = LogicEngine.createKnowledgeBase()
     let kb = LogicEngine.defineDocumentRules(kb)
-    assert(Belt.Array.length(kb.rules) >= 4, "should have at least 4 document rules")
+    assertTrue(Belt.Array.length(kb.rules) >= 4, "should have at least 4 document rules")
   })
 
   // 13. inferRelationships finds duplicates
@@ -206,7 +206,7 @@ let run = (): (int, int) => {
     let d1 = makeDoc("same content", "a.md")
     let d2 = makeDoc("same content", "b.md")
     let rels = LogicEngine.inferRelationships([d1, d2])
-    assert(Belt.Array.length(rels) > 0, "should infer duplicate relationship")
+    assertTrue(Belt.Array.length(rels) > 0, "should infer duplicate relationship")
     let (_, _, relType) = Belt.Array.getUnsafe(rels, 0)
     assertEqual(relType, "duplicate_of", "relationship type should be duplicate_of")
   })
@@ -227,7 +227,7 @@ let run = (): (int, int) => {
     let d2 = Deduplicator.createDocument("version two", m2)
     let rels = LogicEngine.inferRelationships([d1, d2])
     let supersedes = rels->Belt.Array.keep(((_, _, t)) => t == "supersedes")
-    assert(Belt.Array.length(supersedes) > 0, "should detect supersedes")
+    assertTrue(Belt.Array.length(supersedes) > 0, "should detect supersedes")
   })
 
   // 15. findCanonicalForType selects correct doc
@@ -264,8 +264,8 @@ let run = (): (int, int) => {
       suggestedStrategy: KeepLatest,
     }
     let reasoning = LogicEngine.reasonAboutConflict(conflict)
-    assert(Js.String2.length(reasoning) > 0, "reasoning must be non-empty")
-    assert(Js.String2.includes(reasoning, "identical"), "should mention identical content")
+    assertTrue(Js.String2.length(reasoning) > 0, "reasoning must be non-empty")
+    assertTrue(Js.String2.includes(reasoning, "identical"), "should mention identical content")
   })
 
   // 18. reasonAboutConflict handles different content
@@ -281,7 +281,7 @@ let run = (): (int, int) => {
       suggestedStrategy: Merge,
     }
     let reasoning = LogicEngine.reasonAboutConflict(conflict)
-    assert(Js.String2.includes(reasoning, "different content"), "should note different content")
+    assertTrue(Js.String2.includes(reasoning, "different content"), "should note different content")
   })
 
   // 19. inferenceToEdges converts relationships to edges
@@ -290,7 +290,7 @@ let run = (): (int, int) => {
     let d2 = makeDoc("same", "b.md")
     let rels = LogicEngine.inferRelationships([d1, d2])
     let edges = LogicEngine.inferenceToEdges(rels)
-    assert(Belt.Array.length(edges) > 0, "should produce edges")
+    assertTrue(Belt.Array.length(edges) > 0, "should produce edges")
     let edge = Belt.Array.getUnsafe(edges, 0)
     assertEqual(edge.edgeType, DuplicateOf, "edge type should be DuplicateOf")
     assertEqual(edge.confidence, 0.85, "inferred edge confidence is 0.85")

@@ -61,7 +61,7 @@ let suggestConflictResolutionPrompt = (
   let docContents =
     documents
     ->Belt.Array.mapWithIndex((idx, doc) => {
-      `Document ${idx->Int.toString + 1} (${doc.metadata.path}):
+      `Document ${(idx + 1)->Belt.Int.toString} (${doc.metadata.path}):
 ---
 ${doc.content}
 ---`
@@ -134,7 +134,7 @@ let callLLM = async (
   } catch {
   | exn =>
     Error(
-      `LLM API call failed: ${exn->Js.Exn.message->Belt.Option.getWithDefault("Unknown error")}`,
+      `LLM API call failed: ${Js.Exn.asJsExn(exn)->Belt.Option.flatMap(Js.Exn.message)->Belt.Option.getWithDefault("Unknown error")}`,
     )
   }
 }
@@ -165,29 +165,29 @@ let suggestResolution = async (
 }
 
 // Validate LLM output (basic checks)
+// ReScript has no `return` keyword; the old code tried to early-return from
+// two `if` bodies and never compiled. Refactored to an if/else-if chain
+// where the final arm falls through to the document-specific switch.
 let validateLLMOutput = (response: llmResponse, docType: documentType): result<unit, string> => {
-  // Check content is not empty
   if Js.String2.trim(response.content) == "" {
-    return Error("LLM generated empty content")
-  }
-
-  // Check for common issues
-  if Js.String2.includes(response.content, "[TODO]") {
-    return Error("LLM output contains unresolved TODOs")
-  }
-
-  // Document-specific validation
-  switch docType {
-  | SECURITY => {
-      if !Js.String2.includes(response.content, "Security") &&
-        !Js.String2.includes(response.content, "vulnerability") {
+    Error("LLM generated empty content")
+  } else if Js.String2.includes(response.content, "[TODO]") {
+    Error("LLM output contains unresolved TODOs")
+  } else {
+    // Document-specific validation
+    switch docType {
+    | SECURITY =>
+      if (
+        !Js.String2.includes(response.content, "Security") &&
+          !Js.String2.includes(response.content, "vulnerability")
+      ) {
         Error("SECURITY.md should mention security or vulnerabilities")
       } else {
         Ok()
       }
+    | LICENSE => Error("Should never generate LICENSE files with LLM")
+    | _ => Ok()
     }
-  | LICENSE => Error("Should never generate LICENSE files with LLM")
-  | _ => Ok()
   }
 }
 

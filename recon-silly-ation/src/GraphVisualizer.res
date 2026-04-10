@@ -4,6 +4,11 @@
 
 open Types
 
+// Direct fs.writeFileSync binding. The rescript node bindings in this repo
+// don't expose a UTF-8 convenience helper, so we bind the JS API directly.
+@module("fs") @val
+external writeFileSyncUtf8: (string, string, string) => unit = "writeFileSync"
+
 // DOT graph configuration
 type dotConfig = {
   rankdir: string, // "LR" | "TB" | "RL" | "BT"
@@ -98,8 +103,8 @@ let generateDot = (
   // Header
   lines->Js.Array2.push("digraph Documentation {")->ignore
   lines->Js.Array2.push(`  rankdir=${config.rankdir};`)->ignore
-  lines->Js.Array2.push(`  node [shape=${config.nodeShape}, fontsize=${config.fontSize->Int.toString}, style=filled];`)->ignore
-  lines->Js.Array2.push(`  edge [fontsize=${(config.fontSize - 2)->Int.toString}];`)->ignore
+  lines->Js.Array2.push(`  node [shape=${config.nodeShape}, fontsize=${config.fontSize->Belt.Int.toString}, style=filled];`)->ignore
+  lines->Js.Array2.push(`  edge [fontsize=${(config.fontSize - 2)->Belt.Int.toString}];`)->ignore
   lines->Js.Array2.push("")->ignore
 
   // Nodes
@@ -216,8 +221,8 @@ let generateHTML = (
 
         <div class="stats">
             <strong>Statistics:</strong><br>
-            Documents: ${documents->Belt.Array.length->Int.toString}<br>
-            Relationships: ${edges->Belt.Array.length->Int.toString}
+            Documents: ${documents->Belt.Array.length->Belt.Int.toString}<br>
+            Relationships: ${edges->Belt.Array.length->Belt.Int.toString}
         </div>
 
         <div class="graph-container">
@@ -293,12 +298,14 @@ let exportDot = (
 ): result<unit, string> => {
   try {
     let dot = generateDot(documents, edges, defaultConfig)
-    Node.Fs.writeFileSyncWith(filePath, dot, #utf8)
+    // Direct fs.writeFileSync binding — the Node.Fs helpers in the current
+    // rescript node bindings don't include a UTF-8 convenience wrapper.
+    writeFileSyncUtf8(filePath, dot, "utf8")
     Ok()
   } catch {
   | exn =>
     Error(
-      `Failed to export DOT: ${exn->Js.Exn.message->Belt.Option.getWithDefault("Unknown error")}`,
+      `Failed to export DOT: ${Js.Exn.asJsExn(exn)->Belt.Option.flatMap(Js.Exn.message)->Belt.Option.getWithDefault("Unknown error")}`,
     )
   }
 }
@@ -311,12 +318,12 @@ let exportHTML = (
 ): result<unit, string> => {
   try {
     let html = generateHTML(documents, edges, title)
-    Node.Fs.writeFileSyncWith(filePath, html, #utf8)
+    writeFileSyncUtf8(filePath, html, "utf8")
     Ok()
   } catch {
   | exn =>
     Error(
-      `Failed to export HTML: ${exn->Js.Exn.message->Belt.Option.getWithDefault("Unknown error")}`,
+      `Failed to export HTML: ${Js.Exn.asJsExn(exn)->Belt.Option.flatMap(Js.Exn.message)->Belt.Option.getWithDefault("Unknown error")}`,
     )
   }
 }

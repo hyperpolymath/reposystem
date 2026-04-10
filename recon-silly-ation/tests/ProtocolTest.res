@@ -23,7 +23,7 @@ let test = (name: string, fn: unit => unit): unit => {
   }
 }
 
-let assert = (cond: bool, msg: string): unit => {
+let assertTrue = (cond: bool, msg: string): unit => {
   if !cond {
     Js.Exn.raiseError(msg)
   }
@@ -72,7 +72,7 @@ let run = (): (int, int) => {
     }
     let json = Protocol.documentEventToJson(event)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "evt-test"), "JSON should contain event id")
+    assertTrue(Js.String2.includes(str, "evt-test"), "JSON should contain event id")
   })
 
   // 3. documentEventToJson eventType serialization
@@ -89,7 +89,7 @@ let run = (): (int, int) => {
     }
     let json = Protocol.documentEventToJson(event)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "created"), "eventType should be 'created'")
+    assertTrue(Js.String2.includes(str, "created"), "eventType should be 'created'")
   })
 
   // 4. documentEventToJson Modified event type
@@ -106,7 +106,7 @@ let run = (): (int, int) => {
     }
     let json = Protocol.documentEventToJson(event)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "modified"), "eventType should be 'modified'")
+    assertTrue(Js.String2.includes(str, "modified"), "eventType should be 'modified'")
   })
 
   // 5. documentEventToJson oldHash None becomes null
@@ -123,7 +123,7 @@ let run = (): (int, int) => {
     }
     let json = Protocol.documentEventToJson(event)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "null"), "oldHash None should serialise to null")
+    assertTrue(Js.String2.includes(str, "null"), "oldHash None should serialise to null")
   })
 
   // 6. healthCheckToJson contains componentId
@@ -137,7 +137,7 @@ let run = (): (int, int) => {
     }
     let json = Protocol.healthCheckToJson(check)
     let str = Js.Json.stringify(json)
-    assert(
+    assertTrue(
       Js.String2.includes(str, "recon-silly-ation"),
       "JSON should contain componentId",
     )
@@ -154,7 +154,7 @@ let run = (): (int, int) => {
     }
     let json = Protocol.healthCheckToJson(check)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "healthy"), "status should be 'healthy'")
+    assertTrue(Js.String2.includes(str, "healthy"), "status should be 'healthy'")
   })
 
   // 8. healthCheckToJson Degraded status
@@ -168,8 +168,8 @@ let run = (): (int, int) => {
     }
     let json = Protocol.healthCheckToJson(check)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "degraded"), "status should contain 'degraded'")
-    assert(Js.String2.includes(str, "slow queries"), "should include reason text")
+    assertTrue(Js.String2.includes(str, "degraded"), "status should contain 'degraded'")
+    assertTrue(Js.String2.includes(str, "slow queries"), "should include reason text")
   })
 
   // 9. hashAlgorithm constant
@@ -228,7 +228,7 @@ let run = (): (int, int) => {
     }
     let json = Protocol.healthCheckToJson(check)
     let str = Js.Json.stringify(json)
-    assert(Js.String2.includes(str, "unknown"), "status should be 'unknown'")
+    assertTrue(Js.String2.includes(str, "unknown"), "status should be 'unknown'")
   })
 
   (passed.contents, failed.contents)

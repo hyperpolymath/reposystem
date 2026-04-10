@@ -13,7 +13,9 @@ open Types
 // ============================================================================
 
 // Pack manifest
-type packManifest = {
+// `type rec` required because packManifest forward-references
+// documentManifestEntry and packValidation (declared with `and` below).
+type rec packManifest = {
   name: string,
   version: string,
   description: string,
@@ -219,14 +221,14 @@ let manifestToJson = (manifest: packManifest): string => {
   // Using manual JSON construction for simplicity
   let docsJson = manifest.documents
     ->Belt.Array.map(d =>
-      `{"path":"${d.path}","docType":"${d.docType}","hash":"${d.hash}","size":${Int.toString(d.size)},"required":${d.required ? "true" : "false"}}`
+      `{"path":"${d.path}","docType":"${d.docType}","hash":"${d.hash}","size":${Belt.Int.toString(d.size)},"required":${d.required ? "true" : "false"}}`
     )
-    ->Belt.Array.joinWith(",")
+    ->Js.Array2.joinWith(",")
 
-  let errorsJson = manifest.validation.errors->Belt.Array.map(e => `"${e}"`)->Belt.Array.joinWith(",")
+  let errorsJson = manifest.validation.errors->Belt.Array.map(e => `"${e}"`)->Js.Array2.joinWith(",")
 
   let warningsJson =
-    manifest.validation.warnings->Belt.Array.map(w => `"${w}"`)->Belt.Array.joinWith(",")
+    manifest.validation.warnings->Belt.Array.map(w => `"${w}"`)->Js.Array2.joinWith(",")
 
   `{
   "name": "${manifest.name}",
@@ -234,11 +236,11 @@ let manifestToJson = (manifest: packManifest): string => {
   "description": "${manifest.description}",
   "author": "${manifest.author}",
   "license": "${manifest.license}",
-  "created": ${Float.toString(manifest.created)},
+  "created": ${Belt.Float.toString(manifest.created)},
   "documents": [${docsJson}],
   "validation": {
     "validated": ${manifest.validation.validated ? "true" : "false"},
-    "validatedAt": ${Float.toString(manifest.validation.validatedAt)},
+    "validatedAt": ${Belt.Float.toString(manifest.validation.validatedAt)},
     "errors": [${errorsJson}],
     "warnings": [${warningsJson}]
   }
@@ -361,40 +363,40 @@ let generateShippingReport = (result: shippingResult): string => {
 ## Summary
 - **Success**: ${result.success ? "Yes" : "No"}
 - **Destination**: ${result.destination}
-- **Timestamp**: ${Float.toString(result.timestamp)}
+- **Timestamp**: ${Belt.Float.toString(result.timestamp)}
 ${result.prUrl->Belt.Option.mapWithDefault("", url => `- **Pull Request**: ${url}`)}
 
 ## Manifest
 - **Name**: ${result.manifest.name}
 - **Version**: ${result.manifest.version}
-- **Documents**: ${Int.toString(Belt.Array.length(result.manifest.documents))}
+- **Documents**: ${Belt.Int.toString(Belt.Array.length(result.manifest.documents))}
 - **Validated**: ${result.manifest.validation.validated ? "Yes" : "No"}
 
 ## Documents
 ${result.manifest.documents
     ->Belt.Array.map(d =>
-      `- ${d.path} (${d.docType}, ${Int.toString(d.size)} bytes)`
+      `- ${d.path} (${d.docType}, ${Belt.Int.toString(d.size)} bytes)`
     )
-    ->Belt.Array.joinWith("\n")}
+    ->Js.Array2.joinWith("\n")}
 
 ## Validation
 ${if Belt.Array.length(result.manifest.validation.errors) > 0 {
     `### Errors
-${result.manifest.validation.errors->Belt.Array.map(e => `- ${e}`)->Belt.Array.joinWith("\n")}`
+${result.manifest.validation.errors->Belt.Array.map(e => `- ${e}`)->Js.Array2.joinWith("\n")}`
   } else {
     "No errors"
   }}
 
 ${if Belt.Array.length(result.manifest.validation.warnings) > 0 {
     `### Warnings
-${result.manifest.validation.warnings->Belt.Array.map(w => `- ${w}`)->Belt.Array.joinWith("\n")}`
+${result.manifest.validation.warnings->Belt.Array.map(w => `- ${w}`)->Js.Array2.joinWith("\n")}`
   } else {
     "No warnings"
   }}
 
 ${if Belt.Array.length(result.errors) > 0 {
     `## Shipping Errors
-${result.errors->Belt.Array.map(e => `- ${e}`)->Belt.Array.joinWith("\n")}`
+${result.errors->Belt.Array.map(e => `- ${e}`)->Js.Array2.joinWith("\n")}`
   } else {
     ""
   }}

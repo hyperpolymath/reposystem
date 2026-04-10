@@ -25,7 +25,7 @@ let test = (name: string, fn: unit => unit): unit => {
   }
 }
 
-let assert = (cond: bool, msg: string): unit => {
+let assertTrue = (cond: bool, msg: string): unit => {
   if !cond {
     Js.Exn.raiseError(msg)
   }
@@ -109,26 +109,26 @@ let run = (): (int, int) => {
   test("compareVersions major differs", () => {
     let v1 = {major: 2, minor: 0, patch: 0}
     let v2 = {major: 1, minor: 9, patch: 9}
-    assert(compareVersions(v1, v2) > 0, "2.0.0 > 1.9.9")
+    assertTrue(compareVersions(v1, v2) > 0, "2.0.0 > 1.9.9")
   })
 
   test("compareVersions minor differs", () => {
     let v1 = {major: 1, minor: 3, patch: 0}
     let v2 = {major: 1, minor: 2, patch: 9}
-    assert(compareVersions(v1, v2) > 0, "1.3.0 > 1.2.9")
+    assertTrue(compareVersions(v1, v2) > 0, "1.3.0 > 1.2.9")
   })
 
   test("compareVersions patch differs", () => {
     let v1 = {major: 1, minor: 0, patch: 5}
     let v2 = {major: 1, minor: 0, patch: 3}
-    assert(compareVersions(v1, v2) > 0, "1.0.5 > 1.0.3")
+    assertTrue(compareVersions(v1, v2) > 0, "1.0.5 > 1.0.3")
   })
 
   test("compareVersions transitivity", () => {
     let a = {major: 1, minor: 0, patch: 0}
     let b = {major: 1, minor: 1, patch: 0}
     let c = {major: 2, minor: 0, patch: 0}
-    assert(
+    assertTrue(
       compareVersions(a, b) < 0 && compareVersions(b, c) < 0 && compareVersions(a, c) < 0,
       "version comparison transitivity a < b < c => a < c",
     )

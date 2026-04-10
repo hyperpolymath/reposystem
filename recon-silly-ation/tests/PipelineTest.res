@@ -24,7 +24,7 @@ let test = (name: string, fn: unit => unit): unit => {
   }
 }
 
-let assert = (cond: bool, msg: string): unit => {
+let assertTrue = (cond: bool, msg: string): unit => {
   if !cond {
     Js.Exn.raiseError(msg)
   }
@@ -95,7 +95,7 @@ let run = (): (int, int) => {
   // 6. createPipelineState has startedAt
   test("createPipelineState has positive startedAt", () => {
     let state = Pipeline.createPipelineState()
-    assert(state.startedAt > 0.0, "startedAt should be a positive timestamp")
+    assertTrue(state.startedAt > 0.0, "startedAt should be a positive timestamp")
   })
 
   // 7. createPipelineState has no completedAt
@@ -163,7 +163,7 @@ let run = (): (int, int) => {
     ]
     stages->Belt.Array.forEach(stage => {
       let str = pipelineStageToString(stage)
-      assert(Js.String2.length(str) > 0, "stage toString must be non-empty")
+      assertTrue(Js.String2.length(str) > 0, "stage toString must be non-empty")
     })
   })
 
@@ -172,7 +172,7 @@ let run = (): (int, int) => {
     switch Pipeline.scanRepository("/var$REPOS_DIR/recon-silly-ation") {
     | Ok(docs) =>
       // The project root should have README, LICENSE, SECURITY, etc.
-      assert(Belt.Array.length(docs) >= 1, "should find at least 1 doc file")
+      assertTrue(Belt.Array.length(docs) >= 1, "should find at least 1 doc file")
     | Error(_) => Js.Exn.raiseError("expected Ok for existing directory")
     }
   })

@@ -30,7 +30,8 @@ type hashAlgorithm =
 // Ed448 provides classical fallback (RFC 8032, 448-bit Edwards curve).
 // Hybrid combines PQ + classical for defence-in-depth.
 // SPHINCS+ is the stateless hash-based backup (FIPS 205 / SLH-DSA).
-type signatureAlgorithm =
+// `type rec` required because Hybrid recurses on signatureAlgorithm.
+type rec signatureAlgorithm =
   | Dilithium5_AES // ML-DSA-87 (FIPS 204), lattice-based, AES variant
   | Ed448 // Classical fallback, 224-bit security level
   | Hybrid(signatureAlgorithm, signatureAlgorithm) // Combined PQ + classical

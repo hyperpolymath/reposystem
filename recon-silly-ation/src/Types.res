@@ -59,7 +59,7 @@ type version = {
 }
 
 let versionToString = (v: version): string => {
-  `${v.major->Int.toString}.${v.minor->Int.toString}.${v.patch->Int.toString}`
+  `${v.major->Belt.Int.toString}.${v.minor->Belt.Int.toString}.${v.patch->Belt.Int.toString}`
 }
 
 let compareVersions = (v1: version, v2: version): int => {

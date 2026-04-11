@@ -1,63 +1,28 @@
-;; SPDX-License-Identifier: PMPL-1.0-or-later
-;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
-;;
-;; Git Dispatcher Meta
-;; ====================
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# META.a2ml — Dispatcher meta-level information
+[metadata]
+version = "1.0"
+last-updated = "2026-04-11"
 
-(define-module (git-dispatcher meta)
-  #:export (meta-info architecture-decisions development-practices))
+[project-info]
+license = "PMPL-1.0-or-later"
+author = "Jonathan D.A. Jewell (hyperpolymath)"
 
-(define meta-info
-  '((media-type . "application/meta+scheme")
-    (version . "1.0")
-    (project . "git-dispatcher")))
+[architecture-decisions]
+decisions = [
+  { id = "adr-001", title = "Dispatcher, Not Executor", status = "accepted", date = "2026-04-11" },
+  { id = "adr-002", title = "Reposystem as Source of Truth", status = "accepted", date = "2026-04-11" },
+]
 
-(define architecture-decisions
-  '(;; ADR-001: Dispatcher, Not Executor
-    ((id . "adr-001")
-     (title . "Dispatcher, Not Executor")
-     (status . "accepted")
-     (date . "2026-01-26")
-     (context . "Need scalable operations across many repos")
-     (decision . "Git Dispatcher coordinates work; execution is delegated to gitbot-fleet or local runners")
-     (consequences
-      (positive
-       ("Separation of concerns"
-        "Flexible execution backends"))
-      (negative
-       ("More moving parts to integrate"))))
+[development-practices]
+versioning = "SemVer"
+documentation = "AsciiDoc"
+build-tool = "just"
 
-    ;; ADR-002: Reposystem as Source of Truth
-    ((id . "adr-002")
-     (title . "Reposystem as Source of Truth")
-     (status . "accepted")
-     (date . "2026-01-26")
-     (context . "Need deterministic inputs for dispatch")
-     (decision . "Ingest Reposystem graph exports and scenario plans")
-     (consequences
-      (positive
-       ("Deterministic dispatch"
-        "Aligned with ecosystem graph"))
-      (negative
-       ("Requires contract stability"))))))
-
-(define development-practices
-  '((code-style
-     (languages . (rust))
-     (formatter . "rustfmt")
-     (linter . "clippy"))
-
-    (security
-     (supply-chain . "pin dependencies")
-     (secrets . "never commit secrets")
-     (permissions . "explicit workflow permissions"))
-
-    (documentation
-     (format . "asciidoc")
-     (examples . "docs/examples/"))
-
-    (versioning
-     (scheme . "semver")
-     (changelog . "keep-a-changelog format"))))
-
-(define opsm-link "OPSM link: multi-repo dispatch for OPSM rollouts.")
+[maintenance-axes]
+scoping-first = true
+axis-1 = "must > intend > like"
+axis-2 = "corrective > adaptive > perfective"
+axis-3 = "systems > compliance > effects"

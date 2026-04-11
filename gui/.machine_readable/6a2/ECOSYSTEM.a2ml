@@ -1,20 +1,20 @@
-;; SPDX-License-Identifier: PMPL-1.0-or-later
-;; ECOSYSTEM.scm - Project ecosystem position
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# ECOSYSTEM.a2ml — Gui ecosystem position
+[metadata]
+version = "1.0"
+last-updated = "2026-04-11"
 
-(ecosystem
- (version "1.0")
- (name "reposystem-gui")
- (type "TODO: library|application|tool|framework")
- (purpose "TODO: Brief purpose statement")
+[project]
+name = "Gui"
+purpose = "TODO: Brief purpose statement"
+role = "TODO: library|application|tool|framework"
 
- (position-in-ecosystem
-  "TODO: Describe where this fits in the hyperpolymath ecosystem")
+[position-in-ecosystem]
+category = ""
 
- (related-projects
-  ())  ;; Add related projects with relationship types
-
- (what-this-is
-  "TODO: What this project is")
-
- (what-this-is-not
-  "TODO: What this project is not"))
+[related-projects]
+projects = [
+  # No related projects recorded
+]

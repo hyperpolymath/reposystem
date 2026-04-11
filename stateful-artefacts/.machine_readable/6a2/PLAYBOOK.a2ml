@@ -1,71 +1,26 @@
-;; SPDX-License-Identifier: PMPL-1.0-or-later
-;; SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell (hyperpolymath)
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# PLAYBOOK.a2ml — Operational playbook
+[metadata]
+version = "0.1.0"
+last-updated = "2026-04-11"
 
-;;; PLAYBOOK.scm — Stateful Artefacts for Git Forges
-;;; Executable plans and operational procedures
+[deployment]
+# method = "gitops"  # gitops | manual | ci-triggered
+# target = "container"  # container | binary | library | wasm
 
-(define-module (stateful-artefacts playbook)
-  #:export (playbook))
+[incident-response]
+# 1. Check .machine_readable/STATE.a2ml for current status
+# 2. Review recent commits and CI results
+# 3. Run `just validate` to check compliance
+# 4. Run `just security` to audit for vulnerabilities
 
-(define playbook
-  '((procedures
-      ((name . "hydration-manual")
-       (description . "Force a manual re-render of artefacts without committing")
-       (role . "developer")
-       (steps . (("cd" "gnosis")
-                 ("cabal" "run" "gnosis" "--" "../AI.template.djot" "../AI.djot")))
-       (on-success . "Artefact updated locally")
-       (on-failure . "Check Haskell compilation errors"))
+[release-process]
+# 1. Update version in STATE.a2ml, META.a2ml
+# 2. Run `just release-preflight` (validate + quality + security + maint-hard-pass)
+# 3. Tag and push
 
-      ((name . "hydration-commit")
-       (description . "Standard commit workflow with automatic hydration")
-       (role . "developer")
-       (steps . (("git" "add" ".")
-                 ("git" "commit" "-m" "MESSAGE")))
-       (on-success . "Pre-commit hook triggers Gnosis automatically")
-       (on-failure . "Gnosis failed - commit aborted"))
-
-      ((name . "resolve-conflict-manual")
-       (description . "Manually invoke Paxos resolution on STATE.scm")
-       (role . "developer")
-       (steps . (("./gnosis/paxos-resolve.sh" ".base" ".local" ".remote")))
-       (on-success . "Conflict resolved by timestamp comparison")
-       (on-failure . "Missing timestamps - manual merge required"))
-
-      ((name . "audit-languages")
-       (description . "Scan repository for banned languages")
-       (role . "rhodibot")
-       (steps . (("fd" "-e" "ts" "-e" "py" "-e" "go" ".")))
-       (on-success . "No banned languages found")
-       (on-failure . "Violation detected - alert maintainer"))
-
-      ((name . "install-hook")
-       (description . "Install the pre-commit hook for automatic hydration")
-       (role . "developer")
-       (steps . (("cp" "gnosis/pre-commit" ".git/hooks/pre-commit")
-                 ("chmod" "+x" ".git/hooks/pre-commit")))
-       (on-success . "Hook installed - Gnosis will run on every commit")
-       (on-failure . "Check file permissions"))
-
-      ((name . "build-gnosis")
-       (description . "Compile the Gnosis engine from source")
-       (role . "developer")
-       (steps . (("cd" "gnosis")
-                 ("cabal" "build")))
-       (on-success . "Engine compiled successfully")
-       (on-failure . "Check GHC and dependencies")))
-
-    (alerts
-      ((trigger . "on-failure")
-       (message . "Do not push. Revert to last known good state."))
-
-      ((trigger . "on-banned-lang")
-       (message . "Fail build immediately. Notify maintainer."))
-
-      ((trigger . "on-accessibility-fail")
-       (message . "FlexiText missing alt-text. Cannot render.")))
-
-    (contacts
-      ((role . "maintainer")
-       (name . "hyperpolymath")
-       (method . "github-issue")))))
+[maintenance-operations]
+# Baseline audit: just maint-audit
+# Hard release gate: just maint-hard-pass

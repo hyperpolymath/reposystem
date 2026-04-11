@@ -1,51 +1,34 @@
-;; SPDX-License-Identifier: PMPL-1.0-or-later
-;; SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell (hyperpolymath)
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# AGENTIC.a2ml — AI agent constraints and capabilities
+[metadata]
+version = "0.1.0"
+last-updated = "2026-04-11"
 
-;;; AGENTIC.scm — Stateful Artefacts for Git Forges
-;;; AI agent interaction patterns and gating policies
+[agent-permissions]
+can-edit-source = true
+can-edit-tests = true
+can-edit-docs = true
+can-edit-config = true
+can-create-files = true
 
-(define-module (stateful-artefacts agentic)
-  #:export (agentic-gating))
+[agent-constraints]
+# What AI agents must NOT do:
+# - Never use banned language patterns (believe_me, unsafeCoerce, etc.)
+# - Never commit secrets or credentials
+# - Never use banned languages (TypeScript, Python, Go, etc.)
+# - Never place state files in repository root (must be in .machine_readable/)
+# - Never use AGPL license (use PMPL-1.0-or-later)
 
-(define agentic-gating
-  '((directives
-      (read-first . ("AI.djot" "README.adoc" ".machine_readable/STATE.scm"))
-      (write-policy . "derived-only")  ;; Agents edit STATE.scm, NEVER AI.djot directly
-      (template-policy . "read-only")  ;; AI.template.djot is human-authored
-      (approval-required . #f))        ;; Can operate autonomously within bounds
+[maintenance-integrity]
+fail-closed = true
+require-evidence-per-step = true
+allow-silent-skip = false
+require-rerun-after-fix = true
+release-claim-requires-hard-pass = true
 
-    (safety
-      (tri-guard
-        (sanitization . "strict")      ;; No HTML/JS injection allowed
-        (boundaries . "explicit")      ;; Only edit inside (:tags) or marked regions
-        (accessibility . "mandatory")) ;; Must provide alt-text for all visuals
-
-      (forbidden-operations
-        ("Direct modification of AI.djot")
-        ("Modification of .git/hooks/")
-        ("Network calls during rendering")
-        ("Execution of arbitrary shell commands")
-        ("Modification of gnosis/ source without review"))
-
-      (permitted-operations
-        ("Read any .scm file")
-        ("Update STATE.scm metadata")
-        ("Run cabal build/run commands")
-        ("Create new .scm files in .machine_readable/")
-        ("Suggest edits to AI.template.djot")))
-
-    (context
-      (persona . "Hyperpolymath Documentation Assistant")
-      (tone . "Professional, precise, accessible")
-      (expertise . ("Haskell" "Guile Scheme" "Git" "Accessibility" "Documentation"))
-      (banned-topics . ("React" "Python" "npm" "node_modules")))
-
-    (entropy-budget
-      (max-tokens-per-edit . 2000)
-      (max-files-per-session . 10)
-      (require-explanation . #t))
-
-    (verification
-      (pre-edit . "Check that target file exists and is writable")
-      (post-edit . "Verify S-expression syntax is valid")
-      (on-conflict . "Defer to Paxos-Lite resolver"))))
+[automation-hooks]
+# on-enter: Read 0-AI-MANIFEST.a2ml, then STATE.a2ml
+# on-exit: Update STATE.a2ml with session outcomes
+# on-commit: Run just validate-rsr

@@ -1,37 +1,21 @@
-;; SPDX-License-Identifier: PMPL-1.0-or-later
-;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
-;;
-;; Git Dispatcher Neurosymbolic Integration
-;; ========================================
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# NEUROSYM.a2ml — Neurosymbolic integration metadata
+[metadata]
+version = "0.1.0"
+last-updated = "2026-04-11"
 
-(define-module (git-dispatcher neurosym)
-  #:export (integration-model boundaries))
+[hypatia-config]
+scan-enabled = true
+scan-depth = "standard"  # quick | standard | deep
+report-format = "logtalk"
 
-(define integration-model
-  '((philosophy . "LLM proposes dispatch intent; symbolic plan remains source of truth")
+[symbolic-rules]
+# Custom symbolic rules for this project
+# - { name = "no-unsafe-ffi", pattern = "believe_me|unsafeCoerce", severity = "critical" }
 
-    (layers
-     ((layer . "symbolic")
-      (role . "source of truth")
-      (components . ("reposystem plans" "graph export" "policy rules"))
-      (properties
-       ("Deterministic" "Auditable" "Reversible")))
-
-     ((layer . "neural")
-      (role . "proposal and explanation")
-      (capabilities
-       ("Summarize plans"
-        "Suggest batch boundaries"
-        "Surface risk hotspots"))
-      (outputs . "Advice only")))))
-
-(define boundaries
-  '((what-neural-can-do
-     ("Explain plan impacts"
-      "Summarize audit logs"
-      "Recommend ordering"))
-
-    (what-neural-cannot-do
-     ("Execute dispatch"
-      "Approve changes"
-      "Modify plans"))))
+[neural-config]
+# Neural pattern detection settings
+# confidence-threshold = 0.85
+# model = "hypatia-v2"

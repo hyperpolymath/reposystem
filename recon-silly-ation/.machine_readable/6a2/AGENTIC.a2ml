@@ -1,30 +1,34 @@
-;; SPDX-License-Identifier: PMPL-1.0-or-later
-;; AGENTIC.scm - AI agent interaction patterns for recon-silly-ation
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# AGENTIC.a2ml — AI agent constraints and capabilities
+[metadata]
+version = "0.1.0"
+last-updated = "2026-04-11"
 
-(define agentic-config
-  `((version . "1.0.0")
-    (claude-code
-      ((model . "claude-opus-4-6")
-       (tools . ("read" "edit" "write" "bash" "grep" "glob"))
-       (permissions . "read-all")
-       (session-protocol . "read AI.a2ml first, then SCM files")))
-    (gitbot-fleet
-      ((rhodibot . ((role . "RSR compliance") (auto-fix . #t)))
-       (echidnabot . ((role . "security scanning") (auto-fix . #f)))
-       (sustainabot . ((role . "dependency updates") (auto-fix . #t)))
-       (glambot . ((role . "documentation quality") (auto-fix . #f)))
-       (seambot . ((role . "SEAM protocol validation") (auto-fix . #f)))
-       (finishbot . ((role . "completion tracking") (auto-fix . #f)))))
-    (patterns
-      ((code-review . "thorough")
-       (refactoring . "conservative")
-       (testing . "comprehensive")
-       (commit-style . "conventional-commits")))
-    (language-constraints
-      ((allowed . ("rescript" "rust" "haskell" "javascript" "bash" "guile-scheme"))
-       (banned . ("typescript" "go" "python" "java" "kotlin"))))
-    (runtime-constraints
-      ((runtime . "deno")
-       (package-manager . "deno")
-       (container-runtime . "podman")
-       (base-images . "cgr.dev/chainguard/wolfi-base")))))
+[agent-permissions]
+can-edit-source = true
+can-edit-tests = true
+can-edit-docs = true
+can-edit-config = true
+can-create-files = true
+
+[agent-constraints]
+# What AI agents must NOT do:
+# - Never use banned language patterns (believe_me, unsafeCoerce, etc.)
+# - Never commit secrets or credentials
+# - Never use banned languages (TypeScript, Python, Go, etc.)
+# - Never place state files in repository root (must be in .machine_readable/)
+# - Never use AGPL license (use PMPL-1.0-or-later)
+
+[maintenance-integrity]
+fail-closed = true
+require-evidence-per-step = true
+allow-silent-skip = false
+require-rerun-after-fix = true
+release-claim-requires-hard-pass = true
+
+[automation-hooks]
+# on-enter: Read 0-AI-MANIFEST.a2ml, then STATE.a2ml
+# on-exit: Update STATE.a2ml with session outcomes
+# on-commit: Run just validate-rsr

@@ -1,54 +1,26 @@
-;; SPDX-License-Identifier: PMPL-1.0-or-later
-;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
-;;
-;; Git Dispatcher Playbook
-;; ========================
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# PLAYBOOK.a2ml — Operational playbook
+[metadata]
+version = "0.1.0"
+last-updated = "2026-04-11"
 
-(define-module (git-dispatcher playbook)
-  #:export (plays troubleshooting))
+[deployment]
+# method = "gitops"  # gitops | manual | ci-triggered
+# target = "container"  # container | binary | library | wasm
 
-(define plays
-  '(;; PLAY-001: Dry-run dispatch
-    ((id . "play-001")
-     (name . "Dry-run Dispatch")
-     (purpose . "Validate a Reposystem plan before execution")
-     (steps
-      (("step" . 1)
-       ("action" . "Generate plan from Reposystem")
-       ("command" . "reposystem plan create --scenario baseline"))
-      (("step" . 2)
-       ("action" . "Export graph")
-       ("command" . "reposystem export --format json > export.json"))
-      (("step" . 3)
-       ("action" . "Run dispatcher dry-run")
-       ("command" . "git-dispatcher dry-run --plan plan.json --graph export.json")))
-     (validation
-      ("No destructive changes applied"
-       "Audit log produced")))
+[incident-response]
+# 1. Check .machine_readable/STATE.a2ml for current status
+# 2. Review recent commits and CI results
+# 3. Run `just validate` to check compliance
+# 4. Run `just security` to audit for vulnerabilities
 
-    ;; PLAY-002: Dispatch with approvals
-    ((id . "play-002")
-     (name . "Dispatch with Approvals")
-     (purpose . "Execute a plan with explicit approvals")
-     (steps
-      (("step" . 1)
-       ("action" . "Load plan")
-       ("command" . "git-dispatcher run --plan plan.json --require-approval"))
-      (("step" . 2)
-       ("action" . "Approve operations in order")
-       ("command" . "Approve per prompt")))
-     (validation
-      ("All approved operations executed"
-       "Audit log recorded")))))
+[release-process]
+# 1. Update version in STATE.a2ml, META.a2ml
+# 2. Run `just release-preflight` (validate + quality + security + maint-hard-pass)
+# 3. Tag and push
 
-(define troubleshooting
-  '((id . "ts-001")
-    (symptom . "Plan rejected")
-    (causes
-     ("Missing graph export"
-      "Schema mismatch"
-      "Invalid references"))
-    (resolution
-     ("Re-export graph from Reposystem"
-      "Validate schema version"
-      "Check plan references"))))
+[maintenance-operations]
+# Baseline audit: just maint-audit
+# Hard release gate: just maint-hard-pass

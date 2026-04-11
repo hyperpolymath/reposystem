@@ -1,41 +1,38 @@
-;; SPDX-License-Identifier: PMPL-1.0-or-later
-;; STATE.scm - Current project state
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# STATE.a2ml — Gui project state
+[metadata]
+project = "reposystem-gui"
+version = "1.0"
+last-updated = "2026-02-04"
+status = "active"
+session = "converted from scheme — 2026-04-11"
 
-(define state
-  '((metadata
-     (version "1.0")
-     (schema-version "1.0")
-     (created "2026-02-04")
-     (updated "2026-02-04")
-     (project "reposystem-gui")
-     (repo "hyperpolymath/reposystem-gui"))
+[project-context]
+name = "Reposystem Gui"
+purpose = """TODO: Add project description"""
+completion-percentage = 0
 
-    (project-context
-     (name "reposystem-gui")
-     (tagline "TODO: Add project description")
-     (tech-stack ()))
+[position]
+phase = "development"   # design | implementation | testing | maintenance | archived
+maturity = "experimental"  # experimental | alpha | beta | production | lts
 
-    (current-position
-     (phase "development")
-     (overall-completion 0)
-     (components ())
-     (working-features ()))
+[route-to-mvp]
+milestones = [
+  # No milestones recorded
+]
 
-    (route-to-mvp
-     (milestones
-      ((milestone-id "m1")
-       (name "Initial Setup")
-       (items ("Add project description"
-               "Define tech stack"
-               "Set up initial features")))))
+[blockers-and-issues]
+issues = [
+  # No blockers recorded
+]
 
-    (blockers-and-issues
-     (critical ())
-     (high ())
-     (medium ())
-     (low ()))
+[critical-next-actions]
+actions = [
+  "Update STATE.scm with project details",
+]
 
-    (critical-next-actions
-     (immediate ("Update STATE.scm with project details"))
-     (this-week ())
-     (this-month ()))))
+[maintenance-status]
+last-run-utc = "2026-02-04T00:00:00Z"
+last-result = "unknown"  # unknown | pass | warn | fail

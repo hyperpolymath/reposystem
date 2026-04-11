@@ -1,52 +1,22 @@
-;; SPDX-License-Identifier: PMPL-1.0-or-later
-;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
-;;
-;; Git Dispatcher Ecosystem Position
-;; ==================================
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# ECOSYSTEM.a2ml — Dispatcher ecosystem position
+[metadata]
+version = "1.0"
+last-updated = "2026-04-11"
 
-(ecosystem
- (version . "1.0")
- (name . "git-dispatcher")
- (type . "automation-tool")
- (purpose . "Dispatch repo operations based on Reposystem scenarios")
+[project]
+name = "Dispatcher"
+purpose = "Dispatch repo operations based on Reposystem scenarios"
+role = "automation-tool"
 
- (position-in-ecosystem
-  (layer . "orchestration")
-  (role . "execution coordinator")
-  (consumers . ("git-hud" "gitbot-fleet"))
-  (providers . ("reposystem")))
+[position-in-ecosystem]
+category = ""
 
- (related-projects
-  ((name . "reposystem")
-   (relationship . "upstream-source")
-   (integration . "Consumes graph exports and scenario plans")
-   (direction . "reposystem → git-dispatcher"))
-
-  ((name . "git-hud")
-   (relationship . "sibling-standard")
-   (integration . "Surfaces dispatch status and outcomes")
-   (direction . "git-dispatcher → git-hud"))
-
-  ((name . "gitbot-fleet")
-   (relationship . "sibling-tools")
-   (integration . "Executes operations at scale")
-   (direction . "git-dispatcher → gitbot-fleet")))
-
- (integration-points
-  ((point . "plan-ingest")
-   (format . "reposystem plan + graph export")
-   (purpose . "Translate scenario into actionable operations"))
-
-  ((point . "dispatch-events")
-   (format . "structured JSON")
-   (purpose . "Audit and UI status updates")))
-
- (dependencies
-  ((name . "rust-toolchain")
-   (purpose . "CLI compilation")
-   (optional . #f)))
-  (opsm-integration
-    (relationship "core")
-    (description "multi-repo dispatch for OPSM rollouts.")
-    (direction "opsm -> git-dispatcher"))
-)
+[related-projects]
+projects = [
+  { name = "git-dispatcher", relationship = "upstream-source" },
+  { name = "git-hud", relationship = "sibling-standard" },
+  { name = "gitbot-fleet", relationship = "sibling-tools" },
+]

@@ -1,47 +1,38 @@
-;; SPDX-License-Identifier: MPL-2.0-or-later
-;; STATE.scm - Final State (Partially Archived)
-;; Generated: 2025-12-09
-;; Status: PARTIAL-ARCHIVED
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# STATE.a2ml — Rhodibot project state
+[metadata]
+project = "rhodibot"
+version = "0.1.0"
+last-updated = "2026-04-11"
+status = "active"
+session = "converted from scheme — 2026-04-11"
 
-(project
-  (name . "rhodibot")
-  (status . partial-archived)
-  (superseded-by . "conative-gating")
-  (archive-date . "2025-12-09")
-  (archive-reason . "Bot infrastructure superseded, specs preserved for SLM training"))
+[project-context]
+name = "Rhodibot"
+purpose = """Elixir GitHub App for RSR enforcement"""
+completion-percentage = 0
 
-(final-state
-  (completion . "40%")
-  (blockers . 8)
-  (lessons . "Category specifications are more valuable than enforcement machinery"))
+[position]
+phase = "initial"   # design | implementation | testing | maintenance | archived
+maturity = "experimental"  # experimental | alpha | beta | production | lts
 
-(what-was-archived
-  (purpose . "Elixir GitHub App for RSR enforcement")
-  (stack . (elixir phoenix github-app))
-  (location . ".archive/lib/"))
+[route-to-mvp]
+milestones = [
+  # No milestones recorded
+]
 
-(what-was-kept
-  (purpose . "RSR category specifications for SLM training")
-  (location . "categories/")
-  (categories
-    (01 . "Foundational Infrastructure")
-    (02 . "Documentation Standards")
-    (03 . "Security Architecture")
-    (04 . "Architecture Principles")
-    (05 . "Web Standards")
-    (06 . "Semantic Web & IndieWeb")
-    (07 . "FOSS & Licensing")
-    (08 . "Cognitive Ergonomics")
-    (09 . "Lifecycle Management")
-    (10 . "Community & Governance")
-    (11 . "Accountability")
-    (12 . "Language Policy")))
+[blockers-and-issues]
+issues = [
+  # No blockers recorded
+]
 
-(successor-reference
-  (repo . "https://github.com/hyperpolymath/conative-gating")
-  (relationship . "Categories become SLM training material"))
+[critical-next-actions]
+actions = [
+  # No actions recorded
+]
 
-(extracted-value
-  (patterns . "Category structure → Conative Gating training format")
-  (specs . "12 categories → training/violations/ and training/compliant/")
-  (lessons . "Specification of 'good' is more durable than enforcement code"))
+[maintenance-status]
+last-run-utc = "2026-04-11T00:00:00Z"
+last-result = "unknown"  # unknown | pass | warn | fail

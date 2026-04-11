@@ -1,42 +1,34 @@
-;; SPDX-License-Identifier: PMPL-1.0-or-later
-;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
-;;
-;; Git Dispatcher Agentic Interface
-;; =================================
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# AGENTIC.a2ml — AI agent constraints and capabilities
+[metadata]
+version = "0.1.0"
+last-updated = "2026-04-11"
 
-(define-module (git-dispatcher agentic)
-  #:export (agent-capabilities agent-boundaries))
+[agent-permissions]
+can-edit-source = true
+can-edit-tests = true
+can-edit-docs = true
+can-edit-config = true
+can-create-files = true
 
-(define agent-capabilities
-  '((description . "How AI agents can interact with git-dispatcher")
+[agent-constraints]
+# What AI agents must NOT do:
+# - Never use banned language patterns (believe_me, unsafeCoerce, etc.)
+# - Never commit secrets or credentials
+# - Never use banned languages (TypeScript, Python, Go, etc.)
+# - Never place state files in repository root (must be in .machine_readable/)
+# - Never use AGPL license (use PMPL-1.0-or-later)
 
-    (read-operations
-     ((operation . "dry-run")
-      (description . "Simulate dispatch without making changes")
-      (autonomy . "full")
-      (approval-required . #f))
+[maintenance-integrity]
+fail-closed = true
+require-evidence-per-step = true
+allow-silent-skip = false
+require-rerun-after-fix = true
+release-claim-requires-hard-pass = true
 
-     ((operation . "audit")
-      (description . "Inspect audit logs and outcomes")
-      (autonomy . "full")
-      (approval-required . #f)))
-
-    (restricted-operations
-     ((operation . "dispatch run")
-      (description . "Execute repo changes")
-      (autonomy . "user-initiated-only")
-      (approval-required . #t)
-      (confirmation-level . "explicit-per-change")))))
-
-(define agent-boundaries
-  '((doctrine . "Human approval for all mutating actions")
-
-    (prohibited-actions
-     ("Run dispatch without explicit user confirmation"
-      "Auto-approve steps"
-      "Bypass audit logging"))
-
-    (encouraged-actions
-     ("Validate plans for consistency"
-      "Recommend safer batch sizing"
-      "Summarize audit results"))))
+[automation-hooks]
+# on-enter: Read 0-AI-MANIFEST.a2ml, then STATE.a2ml
+# on-exit: Update STATE.a2ml with session outcomes
+# on-commit: Run just validate-rsr

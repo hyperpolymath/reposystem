@@ -3,7 +3,6 @@
 // Tests: createBotState, addJob, removeJob, setJobEnabled,
 // rule names, createRsrBot, createMinimalBot
 
-open Types
 
 // ---------------------------------------------------------------------------
 // Test helpers

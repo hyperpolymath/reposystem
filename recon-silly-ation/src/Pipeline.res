@@ -96,7 +96,10 @@ let scanRepository = (repoPath: string): result<array<document>, string> => {
           })
         } else if stat->isFile {
           let filename = basename(path)
-          let ext = extname(path)
+          // Extension isn't consulted here — filename matching is exact.
+          // Leave the call in place (documented surface area) but drop
+          // the unused binding.
+          let _ext = extname(path)
 
           // Identify documentation files
           let docType = switch filename->Js.String2.toUpperCase {

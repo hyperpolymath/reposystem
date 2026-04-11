@@ -3,7 +3,6 @@
 // Note: No SecurityScheme module exists yet; tests focus on type construction
 // and expected security context defaults using inline types.
 
-open Types
 
 // ---------------------------------------------------------------------------
 // Test helpers

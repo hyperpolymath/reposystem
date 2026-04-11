@@ -6,8 +6,6 @@
 // according to pack specifications. It ensures bundles meet requirements
 // before distribution.
 
-open Types
-
 // ============================================================================
 // Types
 // ============================================================================
@@ -252,8 +250,11 @@ let manifestToJson = (manifest: packManifest): string => {
 // ============================================================================
 
 // Ship a bundle to a destination
+// `_bundle` is not yet consumed — shipping currently operates on the
+// manifest only. Prefix-underscore suppresses the unused-variable warning
+// while preserving the parameter position for future implementations.
 let ship = (
-  bundle: ReconForth.bundle,
+  _bundle: ReconForth.bundle,
   manifest: packManifest,
   options: shippingOptions,
 ): shippingResult => {

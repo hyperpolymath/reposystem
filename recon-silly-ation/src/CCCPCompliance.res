@@ -161,7 +161,7 @@ let scanFile = (path: string): option<cccpViolation> => {
 let scanRepository = (repoPath: string): array<cccpViolation> => {
   let violations = []
 
-  let rec scanDir = (path: string) => {
+  let scanDir = (path: string) => {
     if existsSync(path) {
       try {
         // Note: Would need proper directory traversal in real implementation

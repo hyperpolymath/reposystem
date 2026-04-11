@@ -2,7 +2,6 @@
 // PackShipperTest - Unit tests for document bundle packaging and distribution
 // Tests: pack spec strings, validateManifest, manifestToJson
 
-open Types
 
 // ---------------------------------------------------------------------------
 // Test helpers

@@ -109,7 +109,9 @@ let callLLM = async (
     }
 
     switch provider {
-    | Anthropic(apiKey) => {
+    // Underscored payloads are intentional: the three provider branches
+    // are stubs that don't actually call the respective APIs yet.
+    | Anthropic(_apiKey) => {
         // Call Anthropic API
         // Note: This is a simplified version - real implementation would use proper SDK
         let response = {
@@ -122,11 +124,11 @@ let callLLM = async (
 
         Ok(response)
       }
-    | OpenAI(apiKey) => {
+    | OpenAI(_apiKey) => {
         // Similar implementation for OpenAI
         Error("OpenAI integration not yet implemented")
       }
-    | Local(modelPath) => {
+    | Local(_modelPath) => {
         // Local model integration
         Error("Local model integration not yet implemented")
       }

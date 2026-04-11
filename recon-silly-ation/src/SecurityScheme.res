@@ -6,8 +6,6 @@
 // Algorithm selections follow NIST PQC standards (FIPS 203/204/205)
 // with classical fallbacks for transition period.
 
-open Types
-
 // =============================================================================
 // Hash Algorithm Types
 // =============================================================================

@@ -6,8 +6,6 @@
 // ReconForth rules. It integrates with the reconciliation pipeline to
 // automatically detect and report violations.
 
-open Types
-
 // ============================================================================
 // Types
 // ============================================================================

@@ -25,49 +25,66 @@ install-rust:
         rustc --version; \
     fi
 
-# Cache Deno dependencies
-cache:
-    deno cache src/main.ts
+# Install ReScript toolchain (dev-only shim via pnpm)
+install-rescript:
+    @if [ ! -d node_modules/.bin ]; then \
+        echo "Installing ReScript toolchain via pnpm..."; \
+        COREPACK_INTEGRITY_KEYS=0 pnpm install --ignore-scripts; \
+    else \
+        echo "ReScript toolchain already installed."; \
+    fi
+
+# Build ReScript sources (emits src/*.bs.js via in-source: true)
+rescript-build: install-rescript
+    ./node_modules/.bin/rescript build
+
+# Clean ReScript build artifacts (in-source .bs.js files)
+rescript-clean:
+    ./node_modules/.bin/rescript clean
+
+# Cache Deno dependencies — primary entry point is the compiled CLI
+cache: rescript-build
+    deno cache src/CLI.bs.js
 
 # Build WASM modules from Rust
 build-wasm: install-rust
     deno task build:wasm
 
-# Build everything
-build: build-wasm cache
+# Build everything (ReScript + WASM + Deno cache)
+build: rescript-build build-wasm cache
     @echo "✅ Build complete"
 
 # Clean build artifacts
-clean:
+clean: rescript-clean
     rm -rf lib/
     rm -rf wasm-modules/target/
     rm -rf bin/
     rm -f src/wasm/hasher.wasm
     @echo "✅ Cleaned"
 
-# Run the CLI
-run *ARGS:
-    deno run --allow-all src/main.ts {{ARGS}}
+# Run the CLI (via compiled ReScript)
+run *ARGS: rescript-build
+    deno run --allow-all src/CLI.bs.js {{ARGS}}
 
 # Scan a repository
-scan REPO:
-    deno run --allow-all src/main.ts scan --repo reposystem
+scan REPO: rescript-build
+    deno run --allow-all src/CLI.bs.js scan --repo reposystem
 
 # Run in daemon mode
-daemon REPO INTERVAL="300":
-    deno run --allow-all src/main.ts daemon --repo reposystem --interval {{INTERVAL}}
+daemon REPO INTERVAL="300": rescript-build
+    deno run --allow-all src/CLI.bs.js daemon --repo reposystem --interval {{INTERVAL}}
 
 # Compile to AOT binary
 compile: build
     deno task compile:aot
 
-# Run tests
-test:
+# Run tests (ReScript build first, then deno task)
+test: rescript-build
     deno task test
 
-# Type check
-check:
-    deno check src/main.ts
+# Type check (runs rescript build as the canonical check)
+check: rescript-build
+    @echo "✅ ReScript type-check passed via rescript build"
 
 # Lint code
 lint:

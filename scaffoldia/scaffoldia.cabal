@@ -36,6 +36,7 @@ executable scaffoldia
     default-language: Haskell2010
     build-depends:
         base >= 4.14 && < 5,
+        scaffoldia,
         optparse-applicative >= 0.17 && < 0.19,
         aeson >= 2.0 && < 2.3,
         text >= 1.2 && < 2.2,

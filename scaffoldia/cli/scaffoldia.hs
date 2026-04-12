@@ -21,6 +21,7 @@ import System.Exit (ExitCode(..), exitFailure, exitSuccess)
 import System.Directory (doesFileExist, doesDirectoryExist, listDirectory, createDirectoryIfMissing)
 import System.FilePath ((</>), takeExtension)
 import System.Process (readProcessWithExitCode)
+import System.IO (hFlush, stdout)
 import Control.Monad (when, forM_, unless)
 import Data.List (intercalate, isPrefixOf)
 import Data.Aeson (FromJSON, ToJSON, decode, encode)
@@ -28,6 +29,11 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import GHC.Generics (Generic)
+
+-- Scaffoldia library imports
+import qualified Scaffoldia.Types as SL
+import qualified Scaffoldia.RepoKind as SRK
+import qualified Scaffoldia.Provision as SP
 
 -- | Command-line options
 data Options = Options
@@ -37,12 +43,29 @@ data Options = Options
 
 -- | Available commands
 data Command
-  = Init InitOpts        -- ^ Initialize a new scaffold
+  = Init InitOpts        -- ^ Initialize a new scaffold (template-based, legacy)
   | Validate ValidateOpts -- ^ Validate a template
   | List ListOpts        -- ^ List available templates
   | Build BuildOpts      -- ^ Build scaffold from template
   | Check CheckOpts      -- ^ Check project structure
+  | New NewOpts          -- ^ NEW: Interactive repo creation walking the trainyard
+  | Kinds KindsOpts      -- ^ NEW: List repo kinds in the taxonomy
   deriving (Show)
+
+-- | New command options — interactive repo creation via the RepoKind taxonomy
+data NewOpts = NewOpts
+  { newKind        :: Maybe String  -- ^ Repo kind (if omitted, interactive)
+  , newName        :: Maybe String  -- ^ Repo name (if omitted, prompted)
+  , newTarget      :: FilePath      -- ^ Where to mint
+  , newInteractive :: Bool          -- ^ Interactive mode (default True)
+  , newDryRun      :: Bool          -- ^ Show plan but do not execute
+  } deriving (Show)
+
+-- | Kinds command options
+data KindsOpts = KindsOpts
+  { kindsDetailed :: Bool
+  , kindsFilter   :: Maybe String
+  } deriving (Show)
 
 -- | Init command options
 data InitOpts = InitOpts
@@ -100,9 +123,15 @@ optionsParser = Options
 -- | Parser for commands
 commandParser :: Parser Command
 commandParser = subparser
-  ( command "init"
+  ( command "new"
+      (info (New <$> newOptsParser)
+            (progDesc "Create a new repo by kind (walks RepoKind taxonomy)"))
+ <> command "kinds"
+      (info (Kinds <$> kindsOptsParser)
+            (progDesc "List available repo kinds"))
+ <> command "init"
       (info (Init <$> initOptsParser)
-            (progDesc "Initialize a new scaffold from template"))
+            (progDesc "Initialize a new scaffold from template (legacy)"))
  <> command "validate"
       (info (Validate <$> validateOptsParser)
             (progDesc "Validate a template definition"))
@@ -116,6 +145,45 @@ commandParser = subparser
       (info (Check <$> checkOptsParser)
             (progDesc "Check project structure against constraints"))
   )
+
+-- | Parser for new options
+newOptsParser :: Parser NewOpts
+newOptsParser = NewOpts
+  <$> optional (strOption
+      ( long "kind"
+     <> short 'k'
+     <> metavar "KIND"
+     <> help "Repo kind (e.g. boj-cartridge, rust-cli). If omitted, prompts interactively" ))
+  <*> optional (strOption
+      ( long "name"
+     <> short 'n'
+     <> metavar "NAME"
+     <> help "Repository name" ))
+  <*> strOption
+      ( long "target"
+     <> short 't'
+     <> metavar "DIR"
+     <> value "."
+     <> help "Target directory (default: current)" )
+  <*> (not <$> switch
+      ( long "non-interactive"
+     <> help "Disable interactive prompts" ))
+  <*> switch
+      ( long "dry-run"
+     <> help "Show the provision plan without executing it" )
+
+-- | Parser for kinds options
+kindsOptsParser :: Parser KindsOpts
+kindsOptsParser = KindsOpts
+  <$> switch
+      ( long "detailed"
+     <> short 'd'
+     <> help "Show layers, connections, and prompts for each kind" )
+  <*> optional (strOption
+      ( long "filter"
+     <> short 'f'
+     <> metavar "PATTERN"
+     <> help "Filter kinds by name substring" ))
 
 -- | Parser for init options
 initOptsParser :: Parser InitOpts
@@ -206,6 +274,8 @@ runCommand verbose cmd = case cmd of
   List opts     -> runList verbose opts
   Build opts    -> runBuild verbose opts
   Check opts    -> runCheck verbose opts
+  New opts      -> runNew verbose opts
+  Kinds opts    -> runKinds verbose opts
 
 -- | Run init command
 runInit :: Bool -> InitOpts -> IO ()
@@ -461,3 +531,218 @@ fixProjectIssues path issues = forM_ issues $ \issue ->
       putStrLn "  Creating .gitignore..."
       writeFile (path </> ".gitignore") "dist-newstyle/\n*.hi\n*.o\n.cabal-sandbox/\n"
     _ -> putStrLn $ "  Skipping unknown issue: " ++ issue
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- NEW: RepoKind-aware commands (the trainyard CLI)
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- | All repo kinds in the taxonomy.
+allRepoKinds :: [SL.RepoKind]
+allRepoKinds = [minBound..maxBound]
+
+-- | Parse a repo kind from its string identifier.
+parseRepoKind :: String -> Maybe SL.RepoKind
+parseRepoKind s =
+  let target = T.pack s
+  in case filter ((== target) . SL.repoKindId) allRepoKinds of
+       (k:_) -> Just k
+       []    -> Nothing
+
+-- | Run the kinds command — list the taxonomy.
+runKinds :: Bool -> KindsOpts -> IO ()
+runKinds _verbose opts = do
+  let filtered = case kindsFilter opts of
+        Nothing  -> allRepoKinds
+        Just pat ->
+          let p = T.toLower (T.pack pat)
+          in filter (\k -> p `T.isInfixOf` T.toLower (SL.repoKindId k)) allRepoKinds
+
+  putStrLn "Available repo kinds:"
+  putStrLn ""
+  forM_ filtered $ \k ->
+    if kindsDetailed opts
+      then printDetailedKind k
+      else printKindSummary k
+
+-- | Print a one-line summary of a repo kind.
+printKindSummary :: SL.RepoKind -> IO ()
+printKindSummary k = do
+  let idStr   = T.unpack (SL.repoKindId k)
+      descStr = T.unpack (SRK.repoKindDescription k)
+  putStrLn $ "  " ++ pad 22 idStr ++ "  " ++ descStr
+  where
+    pad n s = s ++ replicate (max 0 (n - length s)) ' '
+
+-- | Print detailed info for a repo kind — layers, connections, prompts.
+printDetailedKind :: SL.RepoKind -> IO ()
+printDetailedKind k = do
+  let idStr = T.unpack (SL.repoKindId k)
+  putStrLn $ "━━━ " ++ idStr ++ " ━━━"
+  putStrLn $ "  " ++ T.unpack (SRK.repoKindDescription k)
+  putStrLn ""
+  putStrLn "  Layers (required):"
+  forM_ (SRK.repoKindLayers k) $ \l ->
+    putStrLn $ "    - " ++ T.unpack (SL.layerId l)
+  let opts = SRK.repoKindOptionalLayers k
+  unless (null opts) $ do
+    putStrLn "  Layers (optional):"
+    forM_ opts $ \l ->
+      putStrLn $ "    - " ++ T.unpack (SL.layerId l)
+  putStrLn ""
+  putStrLn "  Estate connections:"
+  forM_ (SRK.repoKindConnections k) $ \i ->
+    putStrLn $ "    " ++ (if SL.integRequired i then "[R]" else "[O]")
+            ++ " " ++ show (SL.integTarget i)
+            ++ " — " ++ T.unpack (SL.integDescription i)
+  putStrLn ""
+  putStrLn "  Provision steps:"
+  forM_ (SRK.repoKindProvisionSteps k) $ \s ->
+    putStrLn $ "    " ++ (if SL.provIdempotent s then "[↻]" else "[!]")
+            ++ " " ++ T.unpack (SL.provDescription s)
+  putStrLn ""
+
+-- | Run the new command — interactive repo creation.
+runNew :: Bool -> NewOpts -> IO ()
+runNew verbose opts = do
+  -- Step 1: Resolve the repo kind
+  kind <- case newKind opts of
+    Just kStr -> case parseRepoKind kStr of
+      Just k  -> return k
+      Nothing -> do
+        putStrLn $ "Error: Unknown repo kind: " ++ kStr
+        putStrLn "Run 'scaffoldia kinds' to see available kinds"
+        exitFailure
+    Nothing ->
+      if newInteractive opts
+        then promptRepoKind
+        else do
+          putStrLn "Error: --kind is required in non-interactive mode"
+          exitFailure
+
+  -- Step 2: Resolve the repo name
+  name <- case newName opts of
+    Just n  -> return n
+    Nothing ->
+      if newInteractive opts
+        then promptString "Repository name"
+        else do
+          putStrLn "Error: --name is required in non-interactive mode"
+          exitFailure
+
+  when verbose $ putStrLn $ "Kind: " ++ T.unpack (SL.repoKindId kind)
+  when verbose $ putStrLn $ "Name: " ++ name
+
+  -- Step 3: Show the plan
+  putStrLn ""
+  putStrLn "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  putStrLn $ "Creating: " ++ name
+  putStrLn $ "Kind:     " ++ T.unpack (SL.repoKindId kind)
+  putStrLn $ "          " ++ T.unpack (SRK.repoKindDescription kind)
+  putStrLn $ "License:  " ++ T.unpack (SRK.repoKindLicense kind)
+  putStrLn "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  putStrLn ""
+
+  -- Step 4: Show layers
+  putStrLn "Layers to scaffold:"
+  forM_ (SRK.repoKindLayers kind) $ \l ->
+    putStrLn $ "  ✓ " ++ T.unpack (SL.layerId l)
+  putStrLn ""
+
+  -- Step 5: Show required connections
+  let requiredConns = SP.filterRequired kind
+  putStrLn "Estate connections (required):"
+  forM_ requiredConns $ \i ->
+    putStrLn $ "  → " ++ show (SL.integTarget i) ++ " — " ++ T.unpack (SL.integDescription i)
+  putStrLn ""
+
+  -- Step 6: Offer optional connections (interactive)
+  let optionalConns = filter (not . SL.integRequired) (SRK.repoKindConnections kind)
+  enabledOptional <-
+    if newInteractive opts && not (null optionalConns)
+      then do
+        putStrLn "Optional connections — enable any? (y/N for each)"
+        forM optionalConns $ \i -> do
+          let q = show (SL.integTarget i) ++ " (" ++ T.unpack (SL.integDescription i) ++ ")"
+          ans <- promptYesNo q False
+          return (i, ans)
+      else return []
+  let enabledTargets = map (SL.integTarget . fst) (filter snd enabledOptional)
+                    ++ map SL.integTarget requiredConns
+
+  -- Step 7: Show remaining prompts
+  let prompts = SRK.repoKindPrompts kind
+  when (newInteractive opts && not (null prompts)) $ do
+    putStrLn ""
+    putStrLn "Configuration prompts:"
+    forM_ prompts $ \p ->
+      putStrLn $ "  ? " ++ T.unpack (SL.promptQuestion p)
+             ++ (case SL.promptDefault p of
+                  Just d -> " [" ++ T.unpack d ++ "]"
+                  Nothing -> " (required)")
+
+  -- Step 8: Plan provision steps
+  let steps = SP.planProvision kind enabledTargets
+  putStrLn ""
+  putStrLn "Provision plan:"
+  forM_ (zip [1::Int ..] steps) $ \(n, s) ->
+    putStrLn $ "  " ++ show n ++ ". "
+            ++ (if SL.provIdempotent s then "[↻]" else "[!]")
+            ++ " " ++ T.unpack (SL.provDescription s)
+  putStrLn ""
+
+  -- Step 9: Dry run stops here
+  when (newDryRun opts) $ do
+    putStrLn "(dry run — no files created, no provision steps executed)"
+    exitSuccess
+
+  -- Step 10: Create target directory and note what would be minted
+  let target = newTarget opts </> name
+  createDirectoryIfMissing True target
+  putStrLn $ "Minting to: " ++ target
+  putStrLn ("  (Nickel template rendering not yet wired — see registry/" ++ T.unpack (SL.repoKindId kind) ++ "/)")
+  putStrLn ""
+  putStrLn "✓ Plan complete. Template rendering is the next wiring step."
+  exitSuccess
+
+-- | Interactive prompt: pick a repo kind.
+promptRepoKind :: IO SL.RepoKind
+promptRepoKind = do
+  putStrLn "Available repo kinds:"
+  forM_ (zip [1::Int ..] allRepoKinds) $ \(n, k) ->
+    putStrLn $ "  " ++ show n ++ ". " ++ T.unpack (SL.repoKindId k)
+            ++ " — " ++ T.unpack (SRK.repoKindDescription k)
+  putStr "Pick a number: "
+  hFlush stdout
+  line <- getLine
+  case reads line :: [(Int, String)] of
+    [(n, _)] | n >= 1 && n <= length allRepoKinds ->
+      return (allRepoKinds !! (n - 1))
+    _ -> do
+      putStrLn "Invalid selection, please try again."
+      promptRepoKind
+
+-- | Interactive prompt: get a string.
+promptString :: String -> IO String
+promptString question = do
+  putStr $ question ++ ": "
+  hFlush stdout
+  getLine
+
+-- | Interactive prompt: yes/no.
+promptYesNo :: String -> Bool -> IO Bool
+promptYesNo question defaultAns = do
+  let defStr = if defaultAns then "Y/n" else "y/N"
+  putStr $ "  " ++ question ++ " [" ++ defStr ++ "]: "
+  hFlush stdout
+  line <- getLine
+  case map (\c -> if c >= 'A' && c <= 'Z' then toEnum (fromEnum c + 32) else c) line of
+    ""    -> return defaultAns
+    "y"   -> return True
+    "yes" -> return True
+    "n"   -> return False
+    "no"  -> return False
+    _     -> return defaultAns
+
+-- | Map forM_ to forM (for the optional connections loop).
+forM :: Monad m => [a] -> (a -> m b) -> m [b]
+forM = flip mapM

@@ -1,0 +1,469 @@
+= repo-batcher Architecture
+:toc:
+:toclevels: 3
+// SPDX-License-Identifier: PMPL-1.0-or-later
+
+== Overview
+
+repo-batcher is a formally verified batch operation tool for mass repository management. It provides type-safe operations across multiple git repositories with compile-time correctness guarantees.
+
+== Design Philosophy
+
+[quote]
+____
+Mass operations should be *formally correct*, *efficiently parallel*, and *safely reversible*.
+____
+
+Key principles:
+
+* **Formal Verification**: ATS2 dependent types prove operation correctness at compile-time
+* **Type Safety**: Operations validated before execution, preventing destructive errors
+* **Parallel Execution**: V coroutines enable efficient multi-repository processing
+* **Batch Processing**: Watch folder pattern separates operation definition from execution
+* **Rollback Safety**: All operations support dry-run and rollback mechanisms
+
+== Language Stack
+
+=== Layer Architecture
+
+[source]
+----
+┌─────────────────────────────────────┐
+│  V CLI Layer                         │  Fast CLI, file watching, parallel execution
+│  (src/v/)                            │
+└──────────────┬──────────────────────┘
+               │ FFI
+┌──────────────▼──────────────────────┐
+│  ATS2 Core Logic                    │  Formally verified operations
+│  (src/ats2/)                        │  Dependent type proofs
+└──────────────┬──────────────────────┘
+               │ Optional FFI (via Zig bridge)
+┌──────────────▼──────────────────────┐
+│  Idris2 ABI Definitions             │  Interface specifications with proofs
+│  (src/abi/)                         │  (per RSR standard)
+└─────────────────────────────────────┘
+----
+
+=== Language Roles
+
+|===
+| Language | Purpose | Rationale
+
+| **ATS2**
+| Core batch operation logic with dependent type proofs
+| Theorem-proving capabilities ensure operation correctness. Prevents file overwrites, invalid replacements, git errors.
+
+| **V**
+| CLI interface, file watching, parallel execution
+| Fast compilation, simple C FFI, lightweight coroutines for parallel processing.
+
+| **Idris2**
+| ABI definitions (per RSR standard)
+| Formal interface specifications with compile-time verification.
+
+| **Zig**
+| FFI bridge to C libraries (if needed)
+| Zero-overhead C interop for git libraries or system calls.
+|===
+
+== Core Components
+
+=== 1. Operation Engine (ATS2)
+
+Located in `src/ats2/operations/`
+
+Defines formally verified operation types:
+
+[source,ats]
+----
+datatype operation =
+  | LicenseUpdate of (old: string, new: string, validation: proof)
+  | FileReplace of (pattern: string, replacement: path, backup: bool)
+  | GitBatchSync of (targets: list(repo), parallel: nat)
+  | WorkflowUpdate of (file: path, changes: diff, validate: proof)
+  | CustomOp of (template: path, args: map)
+----
+
+Each operation includes:
+
+* **Validation proofs**: Type-level guarantees of correctness
+* **Dry-run support**: Preview changes before execution
+* **Rollback mechanism**: Undo failed operations
+
+=== 2. CLI Layer (V)
+
+Located in `src/v/cli/`
+
+Provides two modes:
+
+==== Interactive Mode
+
+[source,bash]
+----
+# List available operations
+repo-batcher list-ops
+
+# Execute operation on specific repos
+repo-batcher license-update --old AGPL-3.0 --new PMPL-1.0-or-later \
+  --targets repo1,repo2,repo3 --dry-run
+
+# Batch git sync (ported from sync_repos.sh)
+repo-batcher git-sync --parallel 4 --depth 2
+----
+
+==== Watch Folder Mode
+
+[source,bash]
+----
+# Start watch daemon
+repo-batcher watch
+
+# Drop operation file into watch/
+cat > watch/update-licenses.toml <<EOF
+operation = "license-update"
+old_license = "AGPL-3.0"
+new_license = "PMPL-1.0-or-later"
+targets = ["repo1", "repo2", "repo3"]
+dry_run = false
+EOF
+
+# Operation executes automatically
+----
+
+=== 3. Watch System (V)
+
+Located in `src/v/watcher/`
+
+Monitors `watch/` folder for operation files:
+
+* **TOML format**: Human-readable operation definitions
+* **Hot reload**: Picks up new operations automatically
+* **Execution queue**: Processes operations in order
+* **Result logging**: Detailed logs in `~/.local/share/repo-batcher/logs/`
+
+=== 4. Parallel Executor (V)
+
+Located in `src/v/executor/`
+
+Executes operations across multiple repositories in parallel:
+
+* **V coroutines**: Lightweight concurrency
+* **Configurable parallelism**: Default 4, adjustable based on CPU/network
+* **Progress reporting**: Real-time status updates
+* **Error isolation**: Failure in one repo doesn't block others
+
+== Operation Types
+
+=== License Update
+
+Replaces license headers and LICENSE files across repos.
+
+**ATS2 proof obligations:**
+
+* Old license pattern exists in target files
+* New license is valid SPDX identifier
+* SPDX headers are properly formatted
+* License file content matches declared license
+
+**Example:**
+
+[source,bash]
+----
+repo-batcher license-update \
+  --old "AGPL-3.0" \
+  --new "PMPL-1.0-or-later" \
+  --targets "$(cat repos.txt)" \
+  --backup \
+  --dry-run
+----
+
+=== File Replace
+
+Replaces files across repositories with validation.
+
+**ATS2 proof obligations:**
+
+* Target pattern is valid glob/regex
+* Replacement file exists and is readable
+* No circular replacements (file A → file B → file A)
+* Backup created before replacement (if enabled)
+
+**Example:**
+
+[source,bash]
+----
+repo-batcher file-replace \
+  --pattern ".github/workflows/old-workflow.yml" \
+  --replacement templates/new-workflow.yml \
+  --backup \
+  --targets "@all-repos"
+----
+
+=== Git Batch Sync
+
+Ported from `sync_repos.sh` with formal verification.
+
+**ATS2 proof obligations:**
+
+* All targets are valid git repositories
+* No uncommitted changes (or user confirms overwrite)
+* Remote exists and is reachable
+* No merge conflicts
+
+**Example:**
+
+[source,bash]
+----
+repo-batcher git-sync \
+  --parallel 4 \
+  --depth 2 \
+  --commit-message "general update" \
+  --summary-report
+----
+
+=== Workflow Update
+
+Updates GitHub Actions workflows with validation.
+
+**ATS2 proof obligations:**
+
+* Workflow YAML is valid
+* Action SHAs are valid commits
+* Required secrets are defined
+* CodeQL matrix matches repository languages
+
+**Example:**
+
+[source,bash]
+----
+repo-batcher workflow-update \
+  --file "hypatia-scan.yml" \
+  --action "actions/checkout@v5" \
+  --sha "93cb6efe18208431cddfb8368fd83d5badbf9bfd" \
+  --targets "@rsr-repos"
+----
+
+== Target Selection
+
+Multiple ways to specify target repositories:
+
+[source,bash]
+----
+# Explicit list
+--targets "repo1,repo2,repo3"
+
+# From file
+--targets "$(cat repos.txt)"
+
+# All repos in directory
+--targets "@all-repos"  # Scans ~/Documents/hyperpolymath-repos/
+
+# Pattern matching
+--targets "@rsr-*"  # All RSR-compliant repos
+
+# Watch folder
+# watch/op.toml: targets = ["@all-repos"]
+----
+
+== Operation Templates
+
+Custom operations via templates in `templates/`:
+
+[source,toml]
+----
+# templates/update-author.toml
+[operation]
+type = "file-replace"
+name = "Update author attribution"
+
+[validation]
+check_files = ["Cargo.toml", "Project.toml", "package.json"]
+pattern = "author.*=.*"
+require_backup = true
+
+[replacements]
+old_pattern = '''authors = \[".*"\]'''
+new_value = '''authors = ["Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"]'''
+
+[targets]
+glob = "*/Cargo.toml"
+----
+
+Use with:
+
+[source,bash]
+----
+repo-batcher custom --template update-author.toml --targets "@all-repos"
+----
+
+== Error Handling
+
+=== Compile-Time Guarantees
+
+ATS2 prevents:
+
+* File overwrites without backup
+* Invalid license identifiers
+* Non-existent replacement files
+* Circular dependencies
+* Type mismatches
+
+=== Runtime Validation
+
+V CLI checks:
+
+* Git repository validity
+* Remote connectivity
+* Disk space availability
+* Permission errors
+
+=== Rollback Mechanism
+
+All operations support rollback:
+
+[source,bash]
+----
+# Operation fails midway
+repo-batcher license-update --targets "@all-repos"
+# Error: Operation failed in repo42
+
+# Automatic rollback
+repo-batcher rollback --last
+
+# Manual rollback from log
+repo-batcher rollback --log-id 20260206-143022
+----
+
+== Performance
+
+Based on `sync_repos.sh` benchmarks:
+
+* **Serial execution**: ~30 repos/minute
+* **Parallel (4 jobs)**: ~120 repos/minute
+* **Parallel (8 jobs)**: ~200 repos/minute
+
+V coroutines expected to improve performance by 20-30% over GNU parallel.
+
+== Integration with Hyperpolymath Ecosystem
+
+=== gitvisor
+
+repo-batcher can use gitvisor analysis for target selection:
+
+[source,bash]
+----
+# Find all repos with outdated workflows
+gitvisor find --workflow-outdated > outdated.txt
+repo-batcher workflow-update --targets "$(cat outdated.txt)"
+----
+
+=== gitbot-fleet
+
+gitbot-fleet bots can trigger repo-batcher operations:
+
+[source,bash]
+----
+# rhodibot detects RSR violation
+rhodibot --fix-via-batcher --operation "workflow-update"
+----
+
+=== robot-repo-automaton
+
+robot-repo-automaton can use repo-batcher for mass fixes:
+
+[source,bash]
+----
+# Automaton creates batch operation file
+robot-repo-automaton generate-batch-op > watch/auto-fix.toml
+----
+
+== Development Roadmap
+
+See `STATE.scm` for detailed milestones.
+
+=== Phase 1: Core Architecture (Current)
+
+* [x] Project structure
+* [ ] Architecture documentation (this file)
+* [ ] ATS2 operation type definitions
+* [ ] V CLI skeleton
+
+=== Phase 2: Basic Operations
+
+* [ ] License update implementation
+* [ ] File replace implementation
+* [ ] Git batch sync (port sync_repos.sh)
+* [ ] Operation validation proofs
+
+=== Phase 3: Watch System
+
+* [ ] Watch folder monitoring
+* [ ] TOML operation parser
+* [ ] Target list handling
+* [ ] Parallel execution engine
+
+=== Phase 4: Advanced Features
+
+* [ ] Workflow file updates
+* [ ] Dependency updates
+* [ ] Code pattern replacements
+* [ ] Custom operation templates
+
+== Building and Testing
+
+[source,bash]
+----
+# Install dependencies
+# ATS2: http://www.ats-lang.org/Downloads.html
+# V: https://github.com/vlang/v
+
+# Build
+cd ~/Documents/hyperpolymath-repos/repo-batcher
+make build
+
+# Run tests
+make test
+
+# Install
+sudo make install  # Installs to /usr/local/bin/repo-batcher
+----
+
+== Configuration
+
+Config file: `~/.config/repo-batcher/config.toml`
+
+[source,toml]
+----
+[general]
+repos_dir = "~/Documents/hyperpolymath-repos"
+parallel_jobs = 4
+log_level = "info"
+
+[watch]
+enabled = true
+folder = "~/.config/repo-batcher/watch"
+check_interval = 30  # seconds
+
+[operations]
+default_dry_run = true
+backup_enabled = true
+backup_dir = "~/.local/share/repo-batcher/backups"
+
+[git]
+default_commit_message = "chore: batch update via repo-batcher"
+push_after_commit = true
+----
+
+== Security Considerations
+
+* All operations run in user context (no sudo)
+* Backup required for destructive operations
+* Dry-run default prevents accidents
+* ATS2 proofs prevent invalid operations
+* Logs all operations for audit trail
+
+== License
+
+SPDX-License-Identifier: PMPL-1.0-or-later
+
+See LICENSE file for full text.

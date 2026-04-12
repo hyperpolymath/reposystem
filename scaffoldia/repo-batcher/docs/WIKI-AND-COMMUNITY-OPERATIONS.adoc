@@ -1,0 +1,570 @@
+= Wiki and Community Health Operations
+:toc:
+:toclevels: 3
+:version: 1.0.0
+:date: 2026-02-06
+
+== Overview
+
+Two new operations for repository standardization:
+
+1. **wiki-setup** - Initialize wikis with first page (solves GitHub automation blocker)
+2. **community-setup** - Deploy community health files in bulk
+
+== The Wiki Problem
+
+=== Why Wikis Block Automation
+
+GitHub has an architectural quirk:
+
+[source,bash]
+----
+1. Enable wiki in settings    ✅ Can do via API
+2. First page creation        ❌ Blocks all automation!
+3. Everything else            ✅ Can automate after step 2
+----
+
+**The Issue:**
+
+* `has_wiki=true` just enables the "Wiki" tab
+* The wiki git repo (`repo.wiki.git`) only exists after first page creation
+* Until then, there's no repo to clone/edit
+* LLMs and automation tools cannot access the wiki
+
+**Our Solution:**
+
+[source,bash]
+----
+repo-batcher wiki-setup \
+  --targets "@all-repos" \
+  --dry-run
+----
+
+This operation:
+
+1. Enables wiki feature via API
+2. Initializes local git repo
+3. Creates `Home.md` with content
+4. Pushes to `repo.wiki.git` (creates it!)
+5. Now automation works! ✅
+
+== Wiki Setup Operation
+
+=== Basic Usage
+
+[source,bash]
+----
+# Initialize all wikis with default Home page
+repo-batcher wiki-setup \
+  --targets "@all-repos" \
+  --dry-run
+
+# Use custom Home template
+repo-batcher wiki-setup \
+  --targets "@pattern:poly-*-mcp" \
+  --home-template ~/templates/wiki-home.md
+----
+
+=== Default Home.md Content
+
+[source,markdown]
+----
+# {repo-name} Wiki
+
+Welcome to the {repo-name} wiki!
+
+## Getting Started
+
+This wiki was automatically initialized by repo-batcher.
+
+## Contents
+
+- [Home](Home)
+
+## Contributing
+
+Feel free to contribute to this wiki by editing pages or creating new ones.
+----
+
+=== Custom Templates
+
+Create your own `Home.md` template:
+
+[source,bash]
+----
+cat > ~/templates/mcp-wiki-home.md <<'EOF'
+# MCP Server Wiki
+
+## Installation
+
+```bash
+npm install @hyperpolymath/{repo-name}
+```
+
+## Configuration
+
+See [Configuration](Configuration) for details.
+
+## API Reference
+
+- [API Documentation](API)
+- [Examples](Examples)
+
+## Support
+
+For issues, see [GitHub Issues](https://github.com/hyperpolymath/{repo-name}/issues).
+EOF
+
+repo-batcher wiki-setup \
+  --targets "@pattern:poly-*-mcp" \
+  --home-template ~/templates/mcp-wiki-home.md
+----
+
+=== What Gets Created
+
+[cols="2,3,3",options="header"]
+|===
+|Action |What Happens |Result
+
+|Enable Feature
+|`PATCH /repos/{owner}/{repo}` with `has_wiki=true`
+|Wiki tab appears in GitHub UI
+
+|Initialize Repo
+|Creates temp git repo, adds `Home.md`, pushes
+|`repo.wiki.git` now exists
+
+|Enable Automation
+|LLMs can now `git clone repo.wiki.git`
+|Full automation possible! ✅
+|===
+
+== Community Health Files Operation
+
+=== What Are Community Health Files?
+
+GitHub recognizes these special files:
+
+[cols="2,3",options="header"]
+|===
+|File |Purpose
+
+|`CODE_OF_CONDUCT.md`
+|Community behavior standards
+
+|`CONTRIBUTING.md`
+|How to contribute
+
+|`SECURITY.md`
+|Security policy & reporting
+
+|`SUPPORT.md`
+|How to get help
+
+|`FUNDING.yml`
+|Sponsorship links
+|===
+
+These files:
+
+* Show up in special GitHub UI locations
+* Appear when opening issues/PRs
+* Signal project professionalism
+* Required for GitHub verified badges
+
+=== Basic Usage
+
+[source,bash]
+----
+# Deploy default community files to all repos
+repo-batcher community-setup \
+  --targets "@all-repos" \
+  --dry-run
+
+# Use custom templates
+repo-batcher community-setup \
+  --targets "@pattern:poly-*-mcp" \
+  --template-dir ~/templates/community/
+----
+
+=== Default Templates
+
+==== CODE_OF_CONDUCT.md
+
+Based on Contributor Covenant 2.0:
+
+* Pledge for harassment-free environment
+* Community standards
+* Enforcement guidelines
+
+==== CONTRIBUTING.md
+
+Comprehensive contribution guide:
+
+* Getting started (fork, branch, commit, PR)
+* Code style guidelines
+* Bug reporting process
+* Feature request process
+* Pull request checklist
+
+==== SECURITY.md
+
+Security policy:
+
+* Supported versions table
+* Vulnerability reporting process
+* Response timeline commitments
+* Security best practices
+
+==== SUPPORT.md
+
+Support resources:
+
+* Documentation links
+* Where to ask questions
+* Bug reporting guidelines
+* Feature request process
+* Response time expectations
+
+==== FUNDING.yml
+
+Sponsorship configuration:
+
+[source,yaml]
+----
+github: hyperpolymath
+# patreon: your-username
+# open_collective: your-project
+----
+
+=== Custom Templates
+
+Create your own community files:
+
+[source,bash]
+----
+mkdir -p ~/templates/community
+
+# Custom CODE_OF_CONDUCT.md
+cat > ~/templates/community/CODE_OF_CONDUCT.md <<'EOF'
+# Code of Conduct
+
+## Our Standards
+
+- Be respectful
+- Be constructive
+- Be collaborative
+
+## Enforcement
+
+Contact maintainers for issues.
+EOF
+
+# Custom CONTRIBUTING.md
+cat > ~/templates/community/CONTRIBUTING.md <<'EOF'
+# Contributing
+
+1. Fork the repo
+2. Create feature branch
+3. Make changes
+4. Submit PR
+
+See DEVELOPMENT.md for details.
+EOF
+
+# Deploy to all MCP servers
+repo-batcher community-setup \
+  --targets "@pattern:poly-*-mcp" \
+  --template-dir ~/templates/community/
+----
+
+=== What Gets Created
+
+[cols="2,3,2",options="header"]
+|===
+|File |Location |Size
+
+|CODE_OF_CONDUCT.md
+|`.github/CODE_OF_CONDUCT.md`
+|~1.5KB
+
+|CONTRIBUTING.md
+|`.github/CONTRIBUTING.md`
+|~2KB
+
+|SECURITY.md
+|`.github/SECURITY.md`
+|~1.5KB
+
+|SUPPORT.md
+|`.github/SUPPORT.md`
+|~1KB
+
+|FUNDING.yml
+|`.github/FUNDING.yml`
+|~200B
+|===
+
+== Integration with Other Operations
+
+=== Workflow: Bootstrap New Repository
+
+[source,bash]
+----
+# 1. Create repository
+gh repo create hyperpolymath/new-project --public
+
+# 2. Clone template
+git clone https://github.com/hyperpolymath/rsr-template-repo new-project
+
+# 3. Deploy community files
+repo-batcher community-setup \
+  --targets "new-project" \
+  --template-dir ~/templates/community/
+
+# 4. Initialize wiki
+repo-batcher wiki-setup \
+  --targets "new-project" \
+  --home-template ~/templates/wiki-home.md
+
+# 5. Deploy workflows
+repo-batcher file-replace \
+  --pattern ".github/workflows/*.yml" \
+  --replacement ~/templates/workflows/ \
+  --targets "new-project"
+
+# 6. Configure settings
+repo-batcher github-settings \
+  --targets "new-project" \
+  --config ~/templates/repo-settings.toml
+
+# 7. Commit and push
+cd new-project
+git add .
+git commit -m "feat: initialize repository with standards"
+git push
+----
+
+=== Workflow: Standardize Existing Repos
+
+[source,bash]
+----
+# Deploy community files to all repos without them
+repo-batcher community-setup \
+  --targets "@all-repos"
+
+# Initialize wikis for repos that lack them
+repo-batcher wiki-setup \
+  --targets "@all-repos"
+
+# Sync everything
+repo-batcher git-sync \
+  --parallel 8 \
+  --commit-message "chore: add community health files and initialize wikis"
+----
+
+== Command Reference
+
+=== wiki-setup
+
+[source,bash]
+----
+repo-batcher wiki-setup \
+  --targets "@all-repos" \
+  [--home-template PATH] \
+  [--dry-run]
+----
+
+**Flags:**
+
+* `--targets`, `-t` - Target repositories (required)
+* `--home-template`, `-h` - Path to Home.md template
+* `--dry-run`, `-d` - Preview without executing
+
+**Examples:**
+
+[source,bash]
+----
+# Default home page
+repo-batcher wiki-setup -t "@all-repos" -d
+
+# Custom template
+repo-batcher wiki-setup \
+  -t "@pattern:poly-*-mcp" \
+  -h ~/templates/wiki-home.md
+
+# Single repo
+repo-batcher wiki-setup -t "hyperpolymath/repo-batcher"
+----
+
+=== community-setup
+
+[source,bash]
+----
+repo-batcher community-setup \
+  --targets "@all-repos" \
+  [--template-dir PATH] \
+  [--dry-run]
+----
+
+**Flags:**
+
+* `--targets`, `-t` - Target repositories (required)
+* `--template-dir`, `-T` - Directory with custom templates
+* `--dry-run`, `-d` - Preview without executing
+
+**Examples:**
+
+[source,bash]
+----
+# Default templates
+repo-batcher community-setup -t "@all-repos" -d
+
+# Custom templates
+repo-batcher community-setup \
+  -t "@pattern:poly-*-mcp" \
+  -T ~/templates/community/
+
+# Specific repos
+repo-batcher community-setup \
+  -t "repo1,repo2,repo3"
+----
+
+== Safety Features
+
+=== wiki-setup
+
+* ✅ Checks if wiki already initialized (skips if exists)
+* ✅ Enables feature via API first
+* ✅ Uses temporary directory (auto-cleanup)
+* ✅ Dry-run support
+* ✅ Requires gh CLI authentication
+* ✅ Reports success/failure per repo
+
+=== community-setup
+
+* ✅ Checks if files already exist (reports status)
+* ✅ Creates `.github/` directory if missing
+* ✅ Skips identical files (no unnecessary changes)
+* ✅ Reports created/updated/skipped counts
+* ✅ Dry-run support
+* ✅ Works with local repositories (no API needed)
+
+== Performance
+
+=== wiki-setup
+
+[cols="2,2,2",options="header"]
+|===
+|Repos |Time (Sequential) |Time (Parallel)
+
+|10 repos
+|~2 minutes
+|~30 seconds
+
+|100 repos
+|~20 minutes
+|~5 minutes
+
+|565 repos
+|~3 hours
+|~45 minutes
+|===
+
+**Why slower than other operations?**
+
+* Requires git clone/push per repo
+* Network latency for GitHub API + git operations
+* Wiki repos can be slow to initialize
+
+=== community-setup
+
+[cols="2,2,2",options="header"]
+|===
+|Repos |Time (Sequential) |Time (Parallel)
+
+|10 repos
+|~5 seconds
+|~2 seconds
+
+|100 repos
+|~50 seconds
+|~15 seconds
+
+|565 repos
+|~5 minutes
+|~90 seconds
+|===
+
+**Why fast?**
+
+* Local file operations only
+* No network calls
+* Minimal disk I/O
+
+== Troubleshooting
+
+=== wiki-setup Issues
+
+**Error: "Failed to push to wiki repo"**
+
+* Check gh CLI authentication: `gh auth status`
+* Verify repository exists: `gh repo view owner/repo`
+* Check wiki feature enabled in repo settings
+
+**Error: "Wiki already exists"**
+
+* This is normal! Operation skips already-initialized wikis
+* Use `--dry-run` to preview which repos need initialization
+
+**Error: "Permission denied"**
+
+* Need write access to repository
+* Need wiki feature enabled (operation does this automatically)
+
+=== community-setup Issues
+
+**Error: "Failed to create .github directory"**
+
+* Check repository path is correct
+* Verify write permissions on repository
+
+**Files not appearing in GitHub UI**
+
+* Files must be in `.github/` directory
+* Some files show up in specific contexts (e.g., CODE_OF_CONDUCT when opening issues)
+* Try refreshing GitHub page or wait ~1 minute for cache
+
+== Future Enhancements
+
+=== Planned Features (Week 3-4)
+
+**wiki-setup:**
+
+* Deploy additional wiki pages from templates
+* Support for wiki sidebar configuration
+* Wiki footer customization
+* Bulk wiki content updates
+
+**community-setup:**
+
+* Issue template deployment (`.github/ISSUE_TEMPLATE/`)
+* PR template customization
+* GitHub Sponsors configuration
+* Custom badges in README
+
+== Conclusion
+
+These operations solve two key repository management problems:
+
+1. **Wiki automation blocker** - Now LLMs and tools can access wikis
+2. **Community health standardization** - Deploy professional files in bulk
+
+Together they enable:
+
+* ✅ Fully automated repository setup
+* ✅ Professional project appearance
+* ✅ Community engagement infrastructure
+* ✅ GitHub verified badges eligibility
+
+**Ready to use on 565+ repositories!** 🚀

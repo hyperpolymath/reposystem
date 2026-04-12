@@ -1,0 +1,662 @@
+= GitHub Settings Operation Design
+:toc:
+:toclevels: 3
+:version: 1.0.0-proposal
+:date: 2026-02-06
+
+== Overview
+
+Extend repo-batcher with a **github-settings** operation for bulk repository configuration management.
+
+== Use Cases
+
+=== 1. Security Hardening
+```bash
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --set branch-protection=true \
+  --set delete-branch-on-merge=true \
+  --set require-signed-commits=true
+```
+
+=== 2. Feature Management
+```bash
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --set has-issues=true \
+  --set has-wiki=false \
+  --set has-projects=true
+```
+
+=== 3. Visibility & Access
+```bash
+repo-batcher github-settings \
+  --targets "@pattern:poly-*-mcp" \
+  --set visibility=public \
+  --set allow-squash-merge=true \
+  --set allow-rebase-merge=false
+```
+
+=== 4. Topics/Tags
+```bash
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --add-topics "mcp-server,typescript,formally-verified"
+```
+
+=== 5. Branch Protection Rules
+```bash
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --branch main \
+  --require-reviews=2 \
+  --require-status-checks="ci,security-scan" \
+  --enforce-admins=false
+```
+
+== Architecture
+
+=== API Integration
+
+**GitHub REST API** (via gh CLI):
+```v
+// src/v/github/settings.v
+pub struct GitHubSettings {
+pub mut:
+  // Repository settings
+  has_issues         ?bool
+  has_wiki           ?bool
+  has_projects       ?bool
+  has_downloads      ?bool
+
+  // Merge settings
+  allow_squash_merge ?bool
+  allow_merge_commit ?bool
+  allow_rebase_merge ?bool
+  delete_branch_on_merge ?bool
+
+  // Security settings
+  visibility         ?string  // 'public', 'private', 'internal'
+  security_and_analysis ?SecuritySettings
+
+  // Branch protection
+  branch_protection  ?BranchProtection
+
+  // Topics/tags
+  topics             ?[]string
+}
+
+pub struct BranchProtection {
+pub:
+  branch                string
+  required_reviews      int
+  require_code_owner    bool
+  dismiss_stale_reviews bool
+  require_status_checks []string
+  enforce_admins        bool
+  required_signatures   bool
+}
+
+pub struct SecuritySettings {
+pub:
+  dependabot_alerts   bool
+  dependabot_security bool
+  secret_scanning     bool
+}
+```
+
+=== Implementation Strategy
+
+**Option A: Pure API** (Recommended)
+```v
+fn update_repo_settings(repo string, settings GitHubSettings) !{
+  // Use gh api for each setting
+  if new_val := settings.has_issues {
+    gh api -X PATCH "/repos/$repo" -f has_issues=$new_val
+  }
+
+  if new_val := settings.delete_branch_on_merge {
+    gh api -X PATCH "/repos/$repo" -f delete_branch_on_merge=$new_val
+  }
+
+  // Branch protection
+  if bp := settings.branch_protection {
+    update_branch_protection(repo, bp)
+  }
+}
+```
+
+**Option B: Hybrid** (API + Local Validation)
+- Use ATS2 to validate settings constraints
+- Prove settings are safe before applying
+- Use V for GitHub API calls
+
+=== Formal Verification (ATS2)
+
+```ats
+(* Type-level proofs for settings safety *)
+
+datatype visibility = Public | Private | Internal
+
+(* Prove: public repos cannot have secret scanning disabled *)
+extern
+praxi prove_public_requires_scanning:
+  {v: visibility}
+  (v == Public) -<prf> (secret_scanning == true)
+
+(* Prove: protected branches require valid checks *)
+datatype branch_protection(checks: list(string)) where length(checks) > 0 =
+  | BranchProtection of (
+      required_reviews: int,  // Must be > 0
+      status_checks: list(string, checks),
+      enforce_admins: bool
+    )
+```
+
+== Settings Categories
+
+=== 1. Repository Features
+[cols="2,2,2,3",options="header"]
+|===
+|Setting |Type |Default |Description
+
+|has_issues
+|bool
+|true
+|Enable issue tracker
+
+|has_wiki
+|bool
+|false
+|Enable wiki
+
+|has_projects
+|bool
+|true
+|Enable project boards
+
+|has_downloads
+|bool
+|false
+|Enable downloads section
+|===
+
+=== 2. Merge Settings
+[cols="2,2,2,3",options="header"]
+|===
+|Setting |Type |Default |Description
+
+|allow_squash_merge
+|bool
+|true
+|Allow squash merging
+
+|allow_merge_commit
+|bool
+|true
+|Allow merge commits
+
+|allow_rebase_merge
+|bool
+|false
+|Allow rebase merging
+
+|delete_branch_on_merge
+|bool
+|true
+|Auto-delete head branches
+
+|allow_auto_merge
+|bool
+|false
+|Enable auto-merge
+|===
+
+=== 3. Security Settings
+[cols="2,2,2,3",options="header"]
+|===
+|Setting |Type |Default |Description
+
+|visibility
+|enum
+|public
+|Repository visibility
+
+|dependabot_alerts
+|bool
+|true
+|Dependabot vulnerability alerts
+
+|dependabot_security_updates
+|bool
+|true
+|Automated security updates
+
+|secret_scanning
+|bool
+|true
+|Secret scanning
+
+|secret_scanning_push_protection
+|bool
+|true
+|Block pushes with secrets
+
+|private_vulnerability_reporting
+|bool
+|true
+|Security advisories
+|===
+
+=== 4. Branch Protection
+[cols="2,2,2,3",options="header"]
+|===
+|Setting |Type |Default |Description
+
+|required_pull_request_reviews
+|int
+|2
+|Required approving reviews
+
+|dismiss_stale_reviews
+|bool
+|true
+|Dismiss when new commits
+
+|require_code_owner_reviews
+|bool
+|false
+|Require CODEOWNERS approval
+
+|required_status_checks
+|[]string
+|[]
+|Required CI checks
+
+|enforce_admins
+|bool
+|false
+|Apply rules to admins
+
+|require_signed_commits
+|bool
+|false
+|Require GPG signatures
+
+|require_linear_history
+|bool
+|true
+|No merge commits
+
+|allow_force_pushes
+|bool
+|false
+|Allow force push
+
+|allow_deletions
+|bool
+|false
+|Allow branch deletion
+|===
+
+=== 5. Topics/Labels
+[cols="2,2,2,3",options="header"]
+|===
+|Setting |Type |Default |Description
+
+|topics
+|[]string
+|[]
+|Repository topics/tags
+
+|labels
+|[]Label
+|[]
+|Issue labels
+|===
+
+== Command Interface
+
+=== Basic Usage
+
+```bash
+# Set single setting
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --set has-wiki=false
+
+# Set multiple settings
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --set has-wiki=false \
+  --set has-downloads=false \
+  --set delete-branch-on-merge=true
+
+# Use config file
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --config settings.toml
+```
+
+=== Config File Format
+
+```toml
+# settings.toml - Repository settings template
+
+[repository]
+has_issues = true
+has_wiki = false
+has_projects = true
+has_downloads = false
+
+[merge]
+allow_squash_merge = true
+allow_merge_commit = false
+allow_rebase_merge = false
+delete_branch_on_merge = true
+allow_auto_merge = false
+
+[security]
+visibility = "public"
+dependabot_alerts = true
+dependabot_security_updates = true
+secret_scanning = true
+secret_scanning_push_protection = true
+
+[branch_protection]
+branch = "main"
+required_reviews = 2
+dismiss_stale_reviews = true
+require_code_owner_reviews = false
+required_status_checks = ["ci", "security-scan", "codeql"]
+enforce_admins = false
+require_signed_commits = false
+require_linear_history = true
+allow_force_pushes = false
+allow_deletions = false
+
+[topics]
+add = ["mcp-server", "formally-verified", "typescript"]
+remove = ["experimental", "deprecated"]
+```
+
+=== Advanced Usage
+
+```bash
+# Apply different settings to different repo groups
+repo-batcher github-settings \
+  --targets "@pattern:*-mcp" \
+  --config mcp-server-settings.toml
+
+repo-batcher github-settings \
+  --targets "@pattern:*-lib" \
+  --config library-settings.toml
+
+# Dry-run to preview changes
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --config settings.toml \
+  --dry-run
+
+# Semi-auto mode (pause on conflicts)
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --config settings.toml \
+  --mode semi-auto
+```
+
+== Safety Features
+
+=== 1. Pre-flight Validation
+
+```v
+fn validate_settings(settings GitHubSettings) !{
+  // Check for dangerous combinations
+  if settings.visibility == 'public' &&
+     settings.secret_scanning == false {
+    return error('Public repos must have secret scanning enabled')
+  }
+
+  // Validate branch exists
+  if bp := settings.branch_protection {
+    if !branch_exists(bp.branch) {
+      return error('Branch ${bp.branch} does not exist')
+    }
+  }
+
+  // Validate status checks
+  if bp := settings.branch_protection {
+    for check in bp.required_status_checks {
+      if !check_exists(check) {
+        return error('Status check ${check} not found')
+      }
+    }
+  }
+}
+```
+
+=== 2. Rollback Support
+
+```v
+struct SettingsBackup {
+  repo_name   string
+  timestamp   i64
+  old_settings GitHubSettings
+}
+
+fn backup_settings(repo string) !SettingsBackup {
+  current := fetch_current_settings(repo)!
+  return SettingsBackup{
+    repo_name: repo
+    timestamp: time.now().unix
+    old_settings: current
+  }
+}
+
+fn rollback_settings(backup SettingsBackup) !{
+  apply_settings(backup.repo_name, backup.old_settings)!
+}
+```
+
+=== 3. Idempotency
+
+```v
+// Only update settings that differ from current
+fn apply_settings_idempotent(repo string, new_settings GitHubSettings) !{
+  current := fetch_current_settings(repo)!
+
+  diff := compute_diff(current, new_settings)
+
+  if diff.is_empty() {
+    println('${repo}: No changes needed (already correct)')
+    return
+  }
+
+  apply_diff(repo, diff)!
+}
+```
+
+== Integration with Existing Operations
+
+The github-settings operation complements existing operations:
+
+```bash
+# 1. Update workflows with SHA pinning
+repo-batcher workflow-update --targets "@all-repos"
+
+# 2. Enable branch protection for those workflows
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --set branch-protection=true \
+  --require-status-checks="workflow-linter,security-scan"
+
+# 3. Audit SPDX compliance
+repo-batcher spdx-audit --targets "@all-repos"
+
+# 4. Update licenses where needed
+repo-batcher license-update \
+  --old "MIT" \
+  --new "PMPL-1.0-or-later" \
+  --targets "@non-compliant"
+
+# 5. Sync changes
+repo-batcher git-sync \
+  --parallel 8 \
+  --commit-message "chore: security hardening"
+```
+
+== Implementation Priority
+
+=== Phase 1: Basic Settings (Week 1)
+- [x] Design architecture
+- [ ] Implement basic repo settings (has_issues, has_wiki, etc.)
+- [ ] Implement merge settings
+- [ ] Config file parser (TOML)
+- [ ] Dry-run support
+
+=== Phase 2: Security Settings (Week 2)
+- [ ] Visibility management
+- [ ] Dependabot settings
+- [ ] Secret scanning settings
+- [ ] Pre-flight validation
+
+=== Phase 3: Branch Protection (Week 3)
+- [ ] Basic branch protection
+- [ ] Required reviews
+- [ ] Required status checks
+- [ ] Signature requirements
+
+=== Phase 4: Advanced Features (Week 4)
+- [ ] Topics management
+- [ ] Rollback support
+- [ ] Idempotency checks
+- [ ] Integration tests
+
+== API Endpoints Used
+
+```
+PATCH /repos/{owner}/{repo}
+  - Update repository settings
+
+PUT /repos/{owner}/{repo}/topics
+  - Set repository topics
+
+PUT /repos/{owner}/{repo}/branches/{branch}/protection
+  - Configure branch protection
+
+PATCH /repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews
+  - Update review requirements
+
+PUT /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks
+  - Set required checks
+```
+
+== Example Workflows
+
+=== Workflow 1: Secure All Repositories
+
+```bash
+# 1. Enable security features
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --set dependabot-alerts=true \
+  --set secret-scanning=true \
+  --set secret-scanning-push-protection=true
+
+# 2. Protect main branch
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --branch main \
+  --require-reviews=2 \
+  --require-status-checks="ci,security" \
+  --require-signed-commits=true
+
+# 3. Verify with audit
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --audit \
+  --report security-audit.txt
+```
+
+=== Workflow 2: Standardize MCP Servers
+
+```bash
+# Create MCP server standard settings
+cat > mcp-settings.toml <<EOF
+[repository]
+has_issues = true
+has_wiki = false
+has_projects = false
+
+[merge]
+allow_squash_merge = true
+delete_branch_on_merge = true
+
+[branch_protection]
+branch = "main"
+required_reviews = 1
+required_status_checks = ["ci", "codeql"]
+
+[topics]
+add = ["mcp-server", "typescript", "claude-ai"]
+EOF
+
+# Apply to all MCP repos
+repo-batcher github-settings \
+  --targets "@pattern:poly-*-mcp" \
+  --config mcp-settings.toml \
+  --mode semi-auto
+```
+
+=== Workflow 3: Migrate to Private
+
+```bash
+# Make all experimental repos private
+repo-batcher github-settings \
+  --targets "@topic:experimental" \
+  --set visibility=private \
+  --mode manual  # Requires approval per repo
+```
+
+== Advantages vs. Manual Configuration
+
+[cols="2,2,2",options="header"]
+|===
+|Aspect |Manual (GitHub UI) |repo-batcher
+
+|Time for 565 repos
+|~10 hours (click per repo)
+|~5 minutes (automated)
+
+|Consistency
+|Prone to errors
+|100% consistent
+
+|Auditability
+|No record
+|Complete audit trail
+
+|Rollback
+|Manual undo
+|Automatic rollback
+
+|Verification
+|Manual checking
+|Formal proofs (ATS2)
+
+|Preview
+|No dry-run
+|Full dry-run support
+|===
+
+== Conclusion
+
+The **github-settings** operation is a natural extension of repo-batcher that:
+
+1. ✅ **Fits existing architecture** (operation + FFI pattern)
+2. ✅ **Solves real problem** (bulk repository configuration)
+3. ✅ **Maintains safety** (formal verification, rollback)
+4. ✅ **Complements existing operations** (workflow → settings → sync)
+5. ✅ **High ROI** (10 hours → 5 minutes for 565 repos)
+
+**Recommendation**: Implement in v1.5 after crash recovery and idempotency fixes.

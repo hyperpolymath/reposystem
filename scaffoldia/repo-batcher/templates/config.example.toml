@@ -1,0 +1,82 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# repo-batcher configuration file
+# Copy to ~/.config/repo-batcher/config.toml
+
+[general]
+# Root directory for repositories
+repos_dir = "~/Documents/hyperpolymath-repos"
+
+# Number of parallel jobs (adjust based on CPU/network)
+parallel_jobs = 4
+
+# Log level: debug, info, warn, error
+log_level = "info"
+
+# Log directory
+log_dir = "~/.local/share/repo-batcher/logs"
+
+[watch]
+# Enable watch folder daemon
+enabled = true
+
+# Watch folder path
+folder = "~/.config/repo-batcher/watch"
+
+# Check interval in seconds
+check_interval = 30
+
+# Auto-delete processed operation files
+auto_delete_processed = true
+
+[operations]
+# Default to dry-run mode for safety
+default_dry_run = true
+
+# Require backup for destructive operations
+backup_enabled = true
+
+# Backup directory
+backup_dir = "~/.local/share/repo-batcher/backups"
+
+# Keep backups for N days (0 = keep forever)
+backup_retention_days = 30
+
+[git]
+# Default commit message for git-sync
+default_commit_message = "chore: batch update via repo-batcher"
+
+# Push after commit
+push_after_commit = true
+
+# Check for uncommitted changes before operations
+check_uncommitted = true
+
+[validation]
+# Validate SPDX license identifiers against official list
+validate_spdx_strict = true
+
+# Require valid git repos for all operations
+require_valid_repos = true
+
+# Check for merge conflicts before operations
+check_merge_conflicts = true
+
+[targets]
+# Patterns for target selection
+# Format: pattern = "description"
+all_repos = "~/Documents/hyperpolymath-repos/*"
+rsr_repos = "~/Documents/hyperpolymath-repos/rsr-*"
+satellites = "~/Documents/hyperpolymath-repos/*/satellites/*"
+
+[notifications]
+# Enable desktop notifications (Linux only)
+desktop_notifications = true
+
+# Email notifications (requires SMTP config)
+email_notifications = false
+email_to = ""
+email_from = ""
+smtp_server = ""
+smtp_port = 587
+smtp_user = ""
+smtp_password = ""

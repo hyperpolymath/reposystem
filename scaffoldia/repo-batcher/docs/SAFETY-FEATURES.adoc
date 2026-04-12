@@ -1,0 +1,665 @@
+= Safety Features
+:toc:
+:toclevels: 3
+:version: 1.0.0
+:date: 2026-02-06
+
+== Overview
+
+repo-batcher operates on hundreds of repositories simultaneously. **Safety is paramount.** This document describes the comprehensive safety system that protects your repositories from accidents.
+
+== Safety Architecture
+
+=== Multi-Layer Protection
+
+[source]
+----
+┌─────────────────────────────────────┐
+│  Layer 1: Configuration             │
+│  .safety.toml settings              │
+└─────────────────────────────────────┘
+           ↓
+┌─────────────────────────────────────┐
+│  Layer 2: Pre-flight Validation     │
+│  Check permissions, git status      │
+└─────────────────────────────────────┘
+           ↓
+┌─────────────────────────────────────┐
+│  Layer 3: User Confirmation         │
+│  Prompt before bulk operations      │
+└─────────────────────────────────────┘
+           ↓
+┌─────────────────────────────────────┐
+│  Layer 4: Rate Limiting             │
+│  Prevent API hammering              │
+└─────────────────────────────────────┘
+           ↓
+┌─────────────────────────────────────┐
+│  Layer 5: Backup & Rollback         │
+│  Create backups, enable rollback    │
+└─────────────────────────────────────┘
+           ↓
+┌─────────────────────────────────────┐
+│  Layer 6: Audit Logging             │
+│  Track all operations               │
+└─────────────────────────────────────┘
+----
+
+== Safety Levels
+
+=== Paranoid Mode (Maximum Safety)
+
+**When to use:** Production systems, critical repositories
+
+[source,bash]
+----
+# In .safety.toml
+level = "paranoid"
+----
+
+**Characteristics:**
+* Confirms every batch operation
+* Maximum 50 repos per operation
+* Requires confirmation if >5 repos
+* 500ms rate limit between operations
+* Always creates backups
+* Full audit logging
+
+**Example:**
+[source,bash]
+----
+$ repo-batcher community-setup --targets "@all-repos"
+
+=== OPERATION CONFIRMATION REQUIRED ===
+Operation: Deploy community health files
+Type: local_changes
+Target repos: 565
+Dry run: false
+
+⚠️  WARNINGS:
+  - Paranoid mode: Confirm batch operation
+  - Operation targets 565 repositories
+
+First 5 repositories:
+  - repo-1
+  - repo-2
+  - repo-3
+  - repo-4
+  - repo-5
+  ... and 560 more
+
+Proceed with this operation? [y/N]:
+----
+
+=== Strict Mode (Recommended)
+
+**When to use:** Normal development work
+
+[source,bash]
+----
+# In .safety.toml
+level = "strict"
+----
+
+**Characteristics:**
+* Requires dry-run first for remote operations
+* Maximum 100 repos per operation
+* Confirms if >10 repos
+* 100ms rate limit
+* Creates backups
+* Audit logging enabled
+
+=== Relaxed Mode
+
+**When to use:** Personal projects, testing
+
+[source,bash]
+----
+# In .safety.toml
+level = "relaxed"
+----
+
+**Characteristics:**
+* Minimal safety checks
+* Higher repo limits
+* Fewer confirmation prompts
+* Still logs operations
+
+=== Disabled Mode (⚠️ DANGEROUS)
+
+**When to use:** Automated scripts (use with extreme caution)
+
+[source,bash]
+----
+# In .safety.toml
+level = "disabled"
+----
+
+**⚠️ WARNING:** No safety checks! Only use in controlled environments.
+
+== Pre-flight Validation
+
+=== Validation Rules
+
+==== 1. Git Repository Check
+
+Verifies all paths are valid git repositories.
+
+**Severity:** ERROR (blocks operation)
+
+[source]
+----
+❌ VALIDATION ERRORS (operation blocked):
+  [git_repository_check] Not a git repository: /path/to/dir
+----
+
+==== 2. Write Permission Check
+
+Verifies write access to all repositories.
+
+**Severity:** ERROR (blocks operation)
+
+[source]
+----
+❌ VALIDATION ERRORS (operation blocked):
+  [write_permission_check] No write permission: /path/to/repo
+----
+
+==== 3. Uncommitted Changes Check
+
+Warns if repositories have uncommitted changes.
+
+**Severity:** WARNING (can proceed)
+
+[source]
+----
+⚠️  VALIDATION WARNINGS:
+  [uncommitted_changes_check] Uncommitted changes in 12 repositories
+----
+
+==== 4. Remote Exists Check
+
+For push operations, verifies remote is configured.
+
+**Severity:** WARNING
+
+[source]
+----
+⚠️  VALIDATION WARNINGS:
+  [remote_exists_check] No remote configured in 3 repositories
+----
+
+==== 5. Disk Space Check
+
+Warns if disk usage exceeds 90%.
+
+**Severity:** WARNING
+
+[source]
+----
+⚠️  VALIDATION WARNINGS:
+  [disk_space_check] Disk usage at 92% (>90%)
+----
+
+=== Disabling Validation
+
+To disable specific rules (not recommended):
+
+[source,toml]
+----
+[validation]
+enabled = true
+rules = [
+    "git_repository_check",      # Keep essential checks
+    "write_permission_check",    # Keep essential checks
+    # "uncommitted_changes_check",  # Disabled
+    # "remote_exists_check",        # Disabled
+    # "disk_space_check",           # Disabled
+]
+----
+
+== Exclusion Lists
+
+=== Pattern-Based Exclusions
+
+Never operate on paths matching these patterns:
+
+[source,toml]
+----
+[exclusions]
+patterns = [
+    ".git",           # Git internals
+    "node_modules",   # Dependencies
+    "vendor",         # Third-party code
+    ".env",           # Environment variables
+    ".secrets",       # Secret files
+    "*.pem",          # Certificates
+    "*.key",          # Private keys
+    "*.p12",          # PKCS12 files
+    ".aws",           # AWS credentials
+    ".ssh",           # SSH keys
+]
+----
+
+=== Repository-Specific Exclusions
+
+Protect critical repositories by name:
+
+[source,toml]
+----
+[exclusions]
+repositories = [
+    "prod-api",
+    "customer-database",
+    "payment-service",
+    "auth-service",
+]
+----
+
+**Result:**
+[source]
+----
+❌ VALIDATION ERRORS (operation blocked):
+  Some repos match exclusion list: ["prod-api", "payment-service"]
+----
+
+== Confirmation Prompts
+
+=== Automatic Triggers
+
+Confirmation required when:
+
+1. **Repo count exceeds threshold** (default: 10)
+2. **Destructive operations** (delete, force-push)
+3. **Remote changes** without dry-run
+4. **Paranoid mode** (always)
+
+=== Confirmation Dialog
+
+[source]
+----
+=== OPERATION CONFIRMATION REQUIRED ===
+Operation: Update licenses across repositories
+Type: local_changes
+Target repos: 45
+Dry run: false
+
+⚠️  WARNINGS:
+  - Operation targets 45 repositories
+  - No dry-run performed
+
+Repositories:
+  - repo-1
+  - repo-2
+  ... and 43 more
+
+Proceed with this operation? [y/N]: _
+----
+
+**Type 'y' or 'yes' to proceed. Any other input aborts.**
+
+=== Bypassing Confirmation
+
+For automation (use carefully):
+
+[source,bash]
+----
+# Use --force flag (requires safety.level != "paranoid")
+repo-batcher community-setup \
+  --targets "@all-repos" \
+  --force
+
+# Or pipe 'yes'
+echo "y" | repo-batcher community-setup --targets "@all-repos"
+----
+
+== Rate Limiting
+
+=== Purpose
+
+Prevents hammering GitHub API and avoids rate limits.
+
+=== Configuration
+
+[source,toml]
+----
+[safety]
+rate_limit_ms = 100  # Wait 100ms between operations
+----
+
+**Values:**
+* `0` = No rate limiting (not recommended)
+* `100` = Standard (10 ops/second)
+* `500` = Conservative (2 ops/second)
+* `1000` = Very safe (1 op/second)
+
+=== How It Works
+
+[source]
+----
+Operation 1 → Wait 100ms → Operation 2 → Wait 100ms → Operation 3
+----
+
+For 565 repositories at 100ms:
+* Total delay: 56.5 seconds
+* Operations still complete quickly
+
+== Backup & Rollback
+
+=== Automatic Backups
+
+Before any destructive operation:
+
+[source,toml]
+----
+[safety]
+backup_before = true
+----
+
+**Backup location:**
+[source]
+----
+~/.local/share/repo-batcher/backups/
+  └── operation-20260206-143022/
+      ├── repo-1/
+      │   └── file.txt.backup
+      ├── repo-2/
+      │   └── file.txt.backup
+      └── manifest.json
+----
+
+=== Rollback
+
+Undo the last operation:
+
+[source,bash]
+----
+# Rollback last operation
+repo-batcher rollback --last
+
+# Rollback specific operation
+repo-batcher rollback --log-id operation-20260206-143022
+
+# List available rollbacks
+repo-batcher rollback
+----
+
+== Checkpoint & Resume
+
+=== Automatic Checkpoints
+
+For long operations, automatic checkpoints enable resume:
+
+[source,toml]
+----
+[recovery]
+enable_checkpoints = true
+checkpoint_every = 10      # Checkpoint every 10 repos
+checkpoint_retention_days = 7
+----
+
+=== How It Works
+
+[source]
+----
+Processing 565 repositories:
+[10/565] ✓ Checkpoint saved
+[20/565] ✓ Checkpoint saved
+[30/565] ✗ CRASH!
+
+Next run:
+Detected incomplete operation. Resume? [Y/n] y
+Resuming from checkpoint: [30/565]
+----
+
+=== Manual Resume
+
+[source,bash]
+----
+# Check for incomplete operations
+repo-batcher resume --list
+
+# Resume specific operation
+repo-batcher resume --operation-id abc123
+----
+
+== Audit Logging
+
+=== Log Location
+
+[source,bash]
+----
+~/.local/share/repo-batcher/audit.log
+----
+
+=== Log Format
+
+[source]
+----
+2026-02-06 14:30:22 | local_changes | 45 repos | community-setup | SUCCESS
+2026-02-06 14:35:10 | remote_changes | 12 repos | git-sync | SUCCESS
+2026-02-06 14:40:05 | read_only | 565 repos | spdx-audit | SUCCESS
+----
+
+=== Viewing Logs
+
+[source,bash]
+----
+# View recent operations
+tail -20 ~/.local/share/repo-batcher/audit.log
+
+# Search for failures
+grep FAILED ~/.local/share/repo-batcher/audit.log
+
+# View operations on specific date
+grep "2026-02-06" ~/.local/share/repo-batcher/audit.log
+----
+
+== Operation Types
+
+Safety checks vary by operation type:
+
+[cols="2,2,3",options="header"]
+|===
+|Type |Examples |Safety Measures
+
+|**read_only**
+|spdx-audit, list
+|Minimal checks, no backups
+
+|**local_changes**
+|community-setup, templates-setup
+|Validation, backups, rate limiting
+
+|**remote_changes**
+|git-sync, wiki-setup
+|All safety measures, requires dry-run first
+
+|**destructive**
+|(none currently)
+|Maximum safety, requires --force flag
+|===
+
+== Best Practices
+
+=== 1. Always Dry-Run First
+
+[source,bash]
+----
+# Step 1: Dry-run
+repo-batcher community-setup --targets "@all-repos" --dry-run
+
+# Step 2: Review output
+# Step 3: Execute
+repo-batcher community-setup --targets "@all-repos"
+----
+
+=== 2. Start Small
+
+Test on subset before full rollout:
+
+[source,bash]
+----
+# Test on 3 repos
+repo-batcher community-setup --targets "repo1,repo2,repo3"
+
+# If successful, expand
+repo-batcher community-setup --targets "@pattern:test-*"
+
+# Finally, all repos
+repo-batcher community-setup --targets "@all-repos"
+----
+
+=== 3. Use Patterns Carefully
+
+[source,bash]
+----
+# Good: Specific pattern
+--targets "@pattern:poly-*-mcp"
+
+# Risky: Too broad
+--targets "@all-repos"
+
+# Better: Dry-run first
+--targets "@all-repos" --dry-run
+----
+
+=== 4. Monitor Audit Logs
+
+[source,bash]
+----
+# Watch logs in real-time
+tail -f ~/.local/share/repo-batcher/audit.log
+
+# Check for errors after operations
+grep -E "ERROR|FAILED" ~/.local/share/repo-batcher/audit.log
+----
+
+=== 5. Keep Backups
+
+[source,bash]
+----
+# Verify backup creation
+ls -la ~/.local/share/repo-batcher/backups/
+
+# Test rollback on non-critical repo
+repo-batcher rollback --last
+----
+
+== Configuration Examples
+
+=== Maximum Safety (Production)
+
+[source,toml]
+----
+[safety]
+level = "paranoid"
+require_dry_run = true
+max_repos = 25
+confirm_threshold = 3
+rate_limit_ms = 1000
+backup_before = true
+audit_log = true
+
+[exclusions]
+repositories = [
+    "prod-api",
+    "prod-web",
+    "prod-db",
+]
+----
+
+=== Balanced (Development)
+
+[source,toml]
+----
+[safety]
+level = "strict"
+require_dry_run = true
+max_repos = 100
+confirm_threshold = 10
+rate_limit_ms = 100
+backup_before = true
+audit_log = true
+----
+
+=== Fast (Testing/Personal)
+
+[source,toml]
+----
+[safety]
+level = "relaxed"
+require_dry_run = false
+max_repos = 200
+confirm_threshold = 50
+rate_limit_ms = 50
+backup_before = true
+audit_log = true
+----
+
+== Emergency Procedures
+
+=== If Something Goes Wrong
+
+1. **Stop immediately:**
+   [source,bash]
+   ----
+   Ctrl+C
+   ----
+
+2. **Check what changed:**
+   [source,bash]
+   ----
+   tail -50 ~/.local/share/repo-batcher/audit.log
+   ----
+
+3. **Rollback if needed:**
+   [source,bash]
+   ----
+   repo-batcher rollback --last
+   ----
+
+4. **Verify rollback:**
+   [source,bash]
+   ----
+   # Check git status in affected repos
+   cd ~/Documents/hyperpolymath-repos/repo-name
+   git status
+   git diff
+   ----
+
+=== Recovering from Crashes
+
+[source,bash]
+----
+# Check for incomplete operations
+repo-batcher resume --list
+
+# Resume the operation
+repo-batcher resume --operation-id abc123
+
+# Or start fresh
+rm -rf ~/.local/share/repo-batcher/checkpoints/abc123
+----
+
+== Summary
+
+**Safety Features Checklist:**
+
+* ✅ Safety levels (paranoid/strict/relaxed/disabled)
+* ✅ Pre-flight validation (5 rules)
+* ✅ Exclusion lists (patterns + specific repos)
+* ✅ User confirmation prompts
+* ✅ Rate limiting (prevent API abuse)
+* ✅ Automatic backups
+* ✅ Rollback capability
+* ✅ Checkpoint & resume
+* ✅ Audit logging
+* ✅ Dry-run enforcement
+* ✅ Repository count limits
+
+**Recommended Configuration:**
+
+For most users, **strict mode with dry-run** provides the best balance of safety and convenience.
+
+**Remember:** When in doubt, dry-run first! 🛡️

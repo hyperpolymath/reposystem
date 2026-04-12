@@ -1,0 +1,61 @@
+= 🧱 Scaffoldia
+
+image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+
+*Scaffoldia* is a developer-centred, modular, and community-driven repo scaffolding engine. 
+It helps developers, educators, and teams generate idiomatic, validated, and narratable project structures across languages, tools, and a range of project themes and audience stances.
+
+== 🔧 What It Does
+
+- 🧠 Validates language/tool templates via a Haskell-powered registry
+- 🧩 Composes repo scaffolds using Nickel
+- 🧪 Infers missing structure with MiniKanren
+- 🎮 Offers a visual Blockly-style builder (Rescript/Tauri)
+- 🛰️ Injects CI/CD and dialectic logic via Robot-Repo-Automaton and Guix (with Nix fallback)
+
+== 🗺️ Roadmap
+
+[cols="1,2,1",options="header"]
+|===
+|Version |Features |Status
+
+|v0.1.0
+|Haskell CLI, Nickel builder, MiniKanren constraints
+|✅ Complete
+
+|v0.2.0
+|Template registry, built-in templates (asdf plugins), CI integration
+|🚧 In Progress
+
+|v0.3.0
+|Visual builder UI, Blockly integration, ReScript/Tauri mobile
+|📋 Planned
+|===
+
+See link:.machine_readable/STATE.scm[STATE.scm] for detailed project status.
+
+== Structure
+
+```plaintext
+scaffoldia/
+├── registry/         # Community templates (Rust, Haskell, Svalinn and Nerdctl (with Podman fallback) etc.)
+├── builder/          # Nickel engine for scaffold generation
+├── constraints/      # MiniKanren rules for structure inference
+├── cli/              # Optional CLI interface
+├── ui/               # Visual builder (Svelte/Vite)
+├── docs/             # Architecture, mascot logic, contribution guides
+
+== 🚀 Getting Started
+
+```bash
+./scaffoldia-init.sh source scaffoldia-init.nu for nushell users
+cd scaffoldia
+git init
+
+🧠 Philosophy
+
+Scaffoldia is the Rosetta Stone of repo structure: symbolic and scalable; composable and narratable. 
+
+Every folder and file has its vole. 

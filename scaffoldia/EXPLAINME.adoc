@@ -1,0 +1,264 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+= Scaffoldia — The Estate-Wide Repo Creation Orchestrator
+:toc:
+:toc-placement: preamble
+
+== What Scaffoldia Is
+
+Scaffoldia is the tool you use when you say *"I want to make a new repo."*
+
+It is not a template cloner. It is an **orchestrator** that understands the
+**topology of the hyperpolymath estate** — the ~300 repositories, the
+services they run, the protocols they speak, and the junctions where they
+connect. When you tell Scaffoldia what _kind_ of repo you want, it knows:
+
+1. **What layers you need** — the structural components (Idris2 ABI, Zig FFI,
+   Nickel manifests, Deno adapters, PanLL panels, etc.)
+2. **Where the repo sits in the network** — which estate systems it wires
+   into (BoJ catalogue, Groove mesh, VeriSimDB, launcher-scaffolder, etc.)
+3. **What to ask you** — the configuration questions specific to this kind
+   (port number, capability domain, target languages, social image, etc.)
+4. **How to wire it in** — the ordered post-mint provisioning sequence
+   (GitHub creation, rulesets, mirroring, catalogue registration, etc.)
+
+== The Trainyard Model
+
+The hyperpolymath estate is a **trainyard**. Each repository sits on a
+**track** (its architectural category), and connects to other tracks at
+**junctions** (integration points with shared services).
+
+=== Tracks (Repo Kinds)
+
+[cols="1,2,2"]
+|===
+| Track | What lives here | Example repos
+
+| **BoJ Cartridge**
+| MCP tools with formally verified ABIs
+| aws-mcp, agent-mcp, local-coord-mcp
+
+| **Ecosystem FFI**
+| Cross-language FFI packages
+| a2ml-haskell, a2ml-rs, k9-haskell
+
+| **Proven Server**
+| Formally verified servers with Groove endpoints
+| proven-servers, boj-server
+
+| **Language Tool**
+| Tree-sitter grammars, LSP/DAP adapters
+| tree-sitter-a2ml, tree-sitter-k9
+
+| **PanLL Panel**
+| ReScript TEA UI modules
+| panll (the framework itself)
+
+| **Gleam/Elixir Service**
+| BEAM backend services
+| burble, k9_gleam, k9_ex
+
+| **Tauri/Dioxus App**
+| Desktop and mobile applications
+| idaptik, nafa-app
+
+| **Rust/SPARK CLI**
+| Command-line tools
+| panic-attacker, launch-scaffolder
+
+| **Julia Package**
+| Data processing and batch scripts
+| KnotTheory.jl, BowtieRisk.jl
+
+| **Standards Extension**
+| A2ML schemas and prose specs
+| standards (monorepo)
+
+| **Game**
+| AGPL co-developed games
+| nash-equilibrium, ass (Airborne Submarine Squadron)
+|===
+
+=== Junctions (Integration Targets)
+
+Junctions are the shared services that multiple tracks connect through.
+When a repo sits on a track, Scaffoldia knows which junctions it touches.
+
+[cols="1,3"]
+|===
+| Junction | What it does
+
+| **GitHub**
+| Repo creation, branch protection rulesets, forge mirroring
+
+| **BoJ Catalogue**
+| Cartridge registration (Catalogue.idr, TOPOLOGY.md, MCP bridge)
+
+| **PanLL Registry**
+| Panel registration in the PanLL workspace
+
+| **Groove Network**
+| Inter-service communication mesh
+
+| **Proven Servers**
+| Formally verified protocol wiring
+
+| **VeriSimDB**
+| Per-project database instance provisioning
+
+| **Hypatia**
+| Neurosymbolic CI rule registration
+
+| **Launch-Scaffolder**
+| Desktop launcher and .desktop file generation
+
+| **OPSM**
+| Runtime management registration
+
+| **Social Image**
+| GitHub Open Graph image generation
+
+| **Ecosystem Registry**
+| Position in developer-ecosystem
+|===
+
+== The Four Roles
+
+Scaffoldia has four roles, each handling a different phase of repo creation:
+
+=== 1. Minter
+
+*"Here are the files you need."*
+
+The minter generates the file structure for a repo kind. It uses templates
+with variable substitution (Nickel for config, `{{var}}` for text) and
+knows which layers each kind requires.
+
+A BoJ cartridge mints: `abi/`, `ffi/`, `adapter/`, `panels/`, `cartridge.ncl`,
+`mod.js`, `README.adoc`, `EXPLAINME.adoc`, etc.
+
+A Rust CLI mints: `Cargo.toml`, `src/main.rs`, launcher script, etc.
+
+=== 2. Provisioner
+
+*"Now let me wire it into the estate."*
+
+After minting, the provisioner runs the ordered sequence of post-mint
+actions: create the GitHub repo, apply rulesets, set up mirroring, register
+in catalogues, provision databases, wire protocols, generate launchers.
+
+Some steps are automatic (shell commands). Others are interactive (need
+human decisions). The provisioner knows which is which and pauses at
+interactive steps.
+
+=== 3. Configurator
+
+*"Let me ask you the right questions."*
+
+Each repo kind has a set of minting prompts — the questions Scaffoldia asks
+during creation. A BoJ cartridge asks for domain, port, and protocols. A
+Tauri app asks about mobile targets. A game asks whether it's co-developed
+(AGPL) or solo (PMPL).
+
+The configurator validates answers against estate constraints (e.g. port
+numbers against TOPOLOGY.md, repo names against existing repos).
+
+=== 4. Harness
+
+*"Here's your test and CI scaffolding."*
+
+The harness generates the test infrastructure matched to the repo kind:
+Zig tests for FFI code, Idris2 proofs for ABI code, ReScript tests for
+TEA modules, and the 17 standard RSR GitHub Actions workflows.
+
+== How It Works
+
+[source]
+----
+$ scaffoldia new
+
+What kind of repo? [use arrows]
+  > BoJ Cartridge
+    Ecosystem FFI
+    Proven Server
+    Language Tool
+    ...
+
+Name: local-coord-mcp
+Description: Localhost multi-instance coordination
+Domain: [Agent]
+Port: 7745
+Protocols: [MCP, Agentic]
+
+Minting...
+  ✓ abi/LocalCoord/SafeLocalCoord.idr
+  ✓ abi/LocalCoord/Protocol.idr
+  ✓ ffi/local_coord_ffi.zig
+  ✓ adapter/local_coord_adapter.zig
+  ✓ cartridge.ncl → cartridge.json
+  ✓ mod.js
+  ✓ panels/manifest.json
+  ✓ README.adoc, EXPLAINME.adoc, REPORT.adoc
+
+Provisioning...
+  ✓ GitHub repo created
+  ✓ Branch protection applied
+  ✓ Forge mirroring configured
+  ✗ BoJ Catalogue registration — interactive (edit Catalogue.idr)
+  ⏸ Paused. Run `scaffoldia provision --resume` after manual step.
+
+Would you like to set a social image now? [y/N]
+----
+
+== Architecture
+
+[source]
+----
+┌─────────────────────────────────────────────┐
+│                 scaffoldia new               │
+│                                             │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
+│  │  Minter  │→ │Provision │→ │ Harness  │  │
+│  │          │  │   er     │  │          │  │
+│  │ Layers → │  │Junctions │  │ Tests +  │  │
+│  │ Files    │  │→ Wiring  │  │ CI       │  │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  │
+│       │             ��             │         │
+│  ┌────▼─���───────────��─────────────▼─────┐   │
+│  │           Configurator               │   │
+│  │  Prompts ← RepoKind → Constraints   │   │
+│  └──────────────────────────────────────┘   │
+└─────────────────────────────────────────────┘
+        │              │              │
+  ┌────���▼─────┐  ┌─────▼─────┐  ┌───▼────┐
+  │  Nickel   │  │  gh CLI   │  │ launch │
+  │  export   │  │  rulesets │  │scaffold│
+  │           │  │  mirror   │  │  er    │
+  └───────────┘  └───────────┘  └────────┘
+----
+
+== Relationship to Other Tools
+
+[cols="1,2"]
+|===
+| Tool | Relationship
+
+| **rsr-template-repo**
+| The RSR base template. Scaffoldia uses it as the foundation, then adds
+  kind-specific layers on top. `just init` from the template is step zero.
+
+| **launch-scaffolder**
+| Generates launchers (.sh + .desktop). Scaffoldia delegates to it during
+  provisioning for repo kinds that need launchers (Tauri, Dioxus, Rust CLI).
+
+| **proven-servers**
+| Formally verified server protocols. Scaffoldia wires new ProvenServer
+  repos into the proven-agentic protocol mesh.
+
+| **boj-server**
+| The BoJ cartridge registry. Scaffoldia registers new BojCartridge repos
+  in Catalogue.idr and TOPOLOGY.md.
+
+| **standards**
+| The A2ML/RSR specification repo. StandardsExtension repos extend it.
+|===

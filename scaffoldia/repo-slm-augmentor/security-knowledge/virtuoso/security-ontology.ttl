@@ -1,0 +1,181 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sec: <https://hyperpolymath.dev/ontology/security#> .
+@prefix wf: <https://hyperpolymath.dev/ontology/workflow#> .
+@prefix gh: <https://hyperpolymath.dev/ontology/github#> .
+
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Security Knowledge Ontology for GitHub Workflow Analysis
+# Compatible with Virtuoso Open Source
+
+# =============================================================================
+# Ontology Metadata
+# =============================================================================
+
+<https://hyperpolymath.dev/ontology/security>
+    a owl:Ontology ;
+    rdfs:label "GitHub Workflow Security Ontology"@en ;
+    rdfs:comment "Knowledge base for OpenSSF-compliant GitHub workflow security"@en ;
+    owl:versionInfo "1.0.0" .
+
+# =============================================================================
+# Classes
+# =============================================================================
+
+sec:SecurityError a owl:Class ;
+    rdfs:label "Security Error"@en ;
+    rdfs:comment "A detected security issue in repository configuration"@en .
+
+sec:WorkflowError a owl:Class ;
+    rdfs:subClassOf sec:SecurityError ;
+    rdfs:label "Workflow Error"@en ;
+    rdfs:comment "Security issue in GitHub Actions workflow"@en .
+
+sec:LicenseError a owl:Class ;
+    rdfs:subClassOf sec:SecurityError ;
+    rdfs:label "License Error"@en ;
+    rdfs:comment "SPDX licensing or attribution issue"@en .
+
+sec:Severity a owl:Class ;
+    rdfs:label "Severity Level"@en .
+
+sec:Fix a owl:Class ;
+    rdfs:label "Fix"@en ;
+    rdfs:comment "Remediation for a security error"@en .
+
+gh:Action a owl:Class ;
+    rdfs:label "GitHub Action"@en .
+
+gh:PinnedAction a owl:Class ;
+    rdfs:subClassOf gh:Action ;
+    rdfs:label "SHA-Pinned Action"@en .
+
+# =============================================================================
+# Properties
+# =============================================================================
+
+sec:hasErrorId a owl:DatatypeProperty ;
+    rdfs:domain sec:SecurityError ;
+    rdfs:range xsd:string ;
+    rdfs:label "error ID"@en .
+
+sec:hasSeverity a owl:ObjectProperty ;
+    rdfs:domain sec:SecurityError ;
+    rdfs:range sec:Severity ;
+    rdfs:label "has severity"@en .
+
+sec:isAutoFixable a owl:DatatypeProperty ;
+    rdfs:domain sec:SecurityError ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "is auto-fixable"@en .
+
+sec:hasFix a owl:ObjectProperty ;
+    rdfs:domain sec:SecurityError ;
+    rdfs:range sec:Fix ;
+    rdfs:label "has fix"@en .
+
+gh:hasAction a owl:DatatypeProperty ;
+    rdfs:domain gh:PinnedAction ;
+    rdfs:range xsd:string ;
+    rdfs:label "action name"@en .
+
+gh:hasVersion a owl:DatatypeProperty ;
+    rdfs:domain gh:PinnedAction ;
+    rdfs:range xsd:string ;
+    rdfs:label "version tag"@en .
+
+gh:hasSHA a owl:DatatypeProperty ;
+    rdfs:domain gh:PinnedAction ;
+    rdfs:range xsd:string ;
+    rdfs:label "commit SHA"@en .
+
+# =============================================================================
+# Severity Instances
+# =============================================================================
+
+sec:Critical a sec:Severity ;
+    rdfs:label "Critical"@en ;
+    rdfs:comment "Must fix immediately"@en .
+
+sec:High a sec:Severity ;
+    rdfs:label "High"@en ;
+    rdfs:comment "Should fix soon - security risk"@en .
+
+sec:Medium a sec:Severity ;
+    rdfs:label "Medium"@en ;
+    rdfs:comment "Should fix - maintainability issue"@en .
+
+sec:Low a sec:Severity ;
+    rdfs:label "Low"@en ;
+    rdfs:comment "Nice to fix - minor improvement"@en .
+
+# =============================================================================
+# Error Instances
+# =============================================================================
+
+sec:ERR-WF-001 a sec:WorkflowError ;
+    sec:hasErrorId "ERR-WF-001" ;
+    rdfs:label "Duplicate CodeQL workflows"@en ;
+    sec:hasSeverity sec:Medium ;
+    sec:isAutoFixable true .
+
+sec:ERR-WF-002 a sec:WorkflowError ;
+    sec:hasErrorId "ERR-WF-002" ;
+    rdfs:label "CodeQL language matrix mismatch"@en ;
+    sec:hasSeverity sec:High ;
+    sec:isAutoFixable true .
+
+sec:ERR-WF-006 a sec:WorkflowError ;
+    sec:hasErrorId "ERR-WF-006" ;
+    rdfs:label "Invalid action SHA"@en ;
+    sec:hasSeverity sec:High ;
+    sec:isAutoFixable true .
+
+sec:ERR-SEC-001 a sec:SecurityError ;
+    sec:hasErrorId "ERR-SEC-001" ;
+    rdfs:label "Unpinned GitHub Actions"@en ;
+    sec:hasSeverity sec:High ;
+    sec:isAutoFixable true .
+
+sec:ERR-SEC-002 a sec:SecurityError ;
+    sec:hasErrorId "ERR-SEC-002" ;
+    rdfs:label "Missing workflow permissions"@en ;
+    sec:hasSeverity sec:High ;
+    sec:isAutoFixable true .
+
+sec:ERR-LIC-001 a sec:LicenseError ;
+    sec:hasErrorId "ERR-LIC-001" ;
+    rdfs:label "Missing SPDX header"@en ;
+    sec:hasSeverity sec:Medium ;
+    sec:isAutoFixable true .
+
+# =============================================================================
+# Pinned Action Instances (December 2025)
+# =============================================================================
+
+gh:checkout-v4 a gh:PinnedAction ;
+    gh:hasAction "actions/checkout" ;
+    gh:hasVersion "v4.2.2" ;
+    gh:hasSHA "11bd71901bbe5b1630ceea73d27597364c9af683" .
+
+gh:codeql-init-v3 a gh:PinnedAction ;
+    gh:hasAction "github/codeql-action/init" ;
+    gh:hasVersion "v3" ;
+    gh:hasSHA "662472033e021d55d94146f66f6058822b0b39fd" .
+
+gh:scorecard-v2 a gh:PinnedAction ;
+    gh:hasAction "ossf/scorecard-action" ;
+    gh:hasVersion "v2.4.0" ;
+    gh:hasSHA "62b2cac7ed8198b15735ed49ab1e5cf35480ba46" .
+
+gh:ssh-agent-v0 a gh:PinnedAction ;
+    gh:hasAction "webfactory/ssh-agent" ;
+    gh:hasVersion "v0.9.1" ;
+    gh:hasSHA "a6f90b1f127823b31d4d4a8d96047790581349bd" .
+
+gh:editorconfig-main a gh:PinnedAction ;
+    gh:hasAction "editorconfig-checker/action-editorconfig-checker" ;
+    gh:hasVersion "main" ;
+    gh:hasSHA "8d9ca9cf96953707b7299eaec419c6cfcd3a65ac" .

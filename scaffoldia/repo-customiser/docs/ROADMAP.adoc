@@ -1,0 +1,230 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+// SPDX-FileCopyrightText: 2024-2025 Hyper Polymath
+
+= RSR Template Repository Roadmap
+:author: Hyper Polymath
+:revnumber: v0.2.0
+:revdate: 2025
+:toc:
+:sectnums:
+:icons: font
+
+== Current Status (v0.2.0)
+
+=== Completed Components
+
+[cols="2,3,1,1"]
+|===
+|Component |Description |Lines |Status
+
+|**Nickel Configuration**
+|OS detection (`os_detect.ncl`) + Type schemas (`schema.ncl`)
+|45
+|✅ 100%
+
+|**Ada/SPARK Adapter**
+|Memory-safe repository customization (`rsr-adapter.adb`)
+|14
+|✅ 100%
+
+|**22-Shell Bootstrap**
+|Universal shell bridge + offline-first toolchain installer
+|102
+|✅ 100%
+
+|**GitHub Workflows**
+|CodeQL, Scorecard, RSR antipattern, security, quality (10 workflows)
+|661
+|✅ 100%
+
+|**GitLab CI/CD**
+|Primary CI — Trivy, Gitleaks, Semgrep, linting, testing
+|175
+|✅ 100%
+
+|**Task Runner**
+|Justfile with bootstrap, tidy, cross-platform build
+|23
+|✅ 100%
+
+|**Documentation**
+|README, CONTRIBUTING, SECURITY, architecture, citations
+|—
+|✅ 100%
+
+|**Editor Config**
+|Multi-language formatting (.editorconfig, .gitattributes)
+|124
+|✅ 100%
+|===
+
+=== Developed Artifacts Summary
+
+[source,text]
+----
+ncl/lib/os_detect.ncl    26 lines   Deployment target detection (ASIC/Kinoite/Darwin/PC)
+ncl/lib/schema.ncl       19 lines   Project & Deployment type contracts
+rsr-adapter.adb          14 lines   Ada/SPARK repo customizer
+scripts/bootstrap.sh     64 lines   Rhodium Bootstrap v2.0
+scripts/all-shells.sh    38 lines   Shell bridge (POSIX/Structured/C-Shell/Windows)
+Justfile                 23 lines   Local task runner
+.gitlab-ci.yml          175 lines   Primary CI/CD pipeline
+.github/workflows/*     661 lines   10 security & quality workflows
+----
+
+**Total developed code: ~1,020 lines across 4 languages (Nickel, Ada, Shell, YAML)**
+
+=== In Progress
+
+* Language-specific template branches
+* Expanded documentation with usage examples
+* Pre-commit hook configuration
+
+== Roadmap
+
+=== Phase 1: Foundation (v0.1 – v0.2) — ✅ COMPLETE
+
+[cols="1,4"]
+|===
+|Status |Milestone
+
+|✅ |Initial RSR-compliant repository structure
+|✅ |Core SCM metadata files (STATE.scm, META.scm, ECOSYSTEM.scm references)
+|✅ |Nickel configuration contracts (os_detect.ncl, schema.ncl)
+|✅ |Ada/SPARK memory-safe adapter (rsr-adapter.adb)
+|✅ |22-shell bootstrap system (bootstrap.sh, all-shells.sh)
+|✅ |Justfile with cross-platform recipes
+|✅ |GitHub workflows (CodeQL, Scorecard, quality checks)
+|✅ |GitLab CI/CD (Trivy, Gitleaks, Semgrep, linting)
+|✅ |SHA-pinned all GitHub Actions for supply chain security
+|✅ |Nix flake fallback (flake.nix)
+|✅ |Comprehensive documentation (README, SECURITY, CONTRIBUTING)
+|===
+
+=== Phase 2: Language Templates (v0.3)
+
+[cols="1,4"]
+|===
+|Status |Milestone
+
+|[ ] |**Rust template branch** — Cargo.toml, rustfmt.toml, clippy.toml, example crate
+|[ ] |**ReScript template branch** — rescript.json, example .res/.resi files
+|[ ] |**Elixir template branch** — mix.exs, .formatter.exs, example modules
+|[ ] |**Ada/SPARK template branch** — .gpr project files, SPARK proofs
+|[ ] |Example CI/CD configurations per language
+|[ ] |Pre-commit hooks configuration (.pre-commit-config.yaml)
+|[ ] |Language-specific .editorconfig extensions
+|===
+
+=== Phase 3: Tooling (v0.4)
+
+[cols="1,4"]
+|===
+|Status |Milestone
+
+|[ ] |**RSR compliance checker CLI** — Rust binary to validate repos
+|[ ] |Template scaffolding command (`just scaffold <lang>`)
+|[ ] |Automated STATE.scm generation from project metadata
+|[ ] |Badge generation from STATE.scm (stability, version, license)
+|[ ] |Nickel contract validation in CI
+|===
+
+=== Phase 4: Ecosystem Integration (v0.5)
+
+[cols="1,4"]
+|===
+|Status |Milestone
+
+|[ ] |Integration with **elegant-STATE** tooling
+|[ ] |Guix channel publishing automation
+|[ ] |Cross-repo validation workflows
+|[ ] |Dependency graph visualization
+|[ ] |RSR registry for discovering compliant repos
+|===
+
+=== Phase 5: Production Ready (v1.0)
+
+[cols="1,4"]
+|===
+|Status |Milestone
+
+|[ ] |Full documentation suite with tutorials
+|[ ] |Video tutorials for each language template
+|[ ] |Migration guides from npm/pip/go-mod ecosystems
+|[ ] |Enterprise deployment patterns
+|[ ] |Audit trail and compliance reporting
+|===
+
+== Security Roadmap
+
+=== Completed
+
+[cols="1,4"]
+|===
+|Status |Security Measure
+
+|✅ |All GitHub Actions SHA-pinned (supply chain hardening)
+|✅ |No MD5/SHA1 for security purposes (SHA256+ only)
+|✅ |HTTPS-only enforcement (no plaintext URLs)
+|✅ |TruffleHog secret scanning in CI
+|✅ |OSSF Scorecard integration
+|✅ |CodeQL static analysis
+|✅ |Trivy container scanning (GitLab)
+|✅ |Gitleaks credential detection (GitLab)
+|✅ |Semgrep SAST scanning (GitLab)
+|✅ |RFC 9116 security.txt validation
+|===
+
+=== Planned
+
+[cols="1,4"]
+|===
+|Status |Security Measure
+
+|[ ] |**SLSA Level 3 compliance** — provenance attestations
+|[ ] |**Sigstore signing integration** — keyless code signing
+|[ ] |Reproducible builds verification
+|[ ] |Software Bill of Materials (SBOM) automation
+|[ ] |Dependency vulnerability alerting
+|[ ] |Runtime security scanning
+|===
+
+== Language Policy Enforcement
+
+The RSR antipattern workflow automatically blocks:
+
+[cols="2,3"]
+|===
+|Blocked Pattern |Enforcement
+
+|`*.ts`, `*.tsx`
+|TypeScript → use ReScript
+
+|`package.json` with deps
+|npm → use Deno
+
+|`go.mod`, `go.sum`
+|Go → use Rust
+
+|`*.py` (non-SaltStack)
+|Python → use ReScript/Rust
+
+|`*.kt`, `*.swift`
+|Kotlin/Swift → use Tauri/Dioxus
+|===
+
+== Contributing
+
+See link:../CONTRIBUTING.md[CONTRIBUTING.md] for how to contribute to this roadmap.
+
+== References
+
+* https://github.com/hyperpolymath/rhodium-standard-repositories[RSR Framework]
+* https://github.com/hyperpolymath/must-spec[Must Spec]
+* https://github.com/hyperpolymath/nickel-augmented[Nickel Augmented]
+* https://github.com/hyperpolymath/elegant-STATE[elegant-STATE]
+* https://rhodium.sh[Rhodium Standard Documentation]
+
+---
+
+_Last updated: v0.2.0_

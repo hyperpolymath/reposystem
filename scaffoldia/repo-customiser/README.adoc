@@ -1,0 +1,312 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+// SPDX-FileCopyrightText: 2024-2025 Hyper Polymath
+
+= RSR Template Repository
+:author: Hyper Polymath
+:email: hyperpolymath
+:revnumber: v0.2.0
+:revdate: 2025
+:toc: macro
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+:experimental:
+
+[.lead]
+The **Rhodium Standard Repository** (RSR) template—a comprehensive framework for creating secure, polyglot, FOSS-compliant repositories with enforced language policy and cross-platform deployment.
+
+image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[MPL-2.0-or-later,link="https://opensource.org/licenses/MPL-2.0"]
+image:https://img.shields.io/badge/phase-1%20complete-brightgreen[Phase 1 Complete]
+image:https://img.shields.io/badge/shells-22%20supported-orange[22 Shells]
+
+== License & Philosophy
+
+This project must declare **MPL-2.0-or-later** for platform/tooling compatibility.
+
+Philosophy: **Palimpsest**. The Palimpsest-MPL (PMPL) text is provided in `license/PMPL-1.0.txt`, and the canonical source is the palimpsest-license repository.
+
+toc::[]
+
+== Overview
+
+RSR provides a standardized template for repositories following the **Hyperpolymath Rhodium Standard**—an opinionated framework that:
+
+* Enforces a curated language policy (ReScript, Rust, Deno, Nickel, Ada, Gleam)
+* Bans problematic ecosystems (TypeScript, Node.js, npm, Go, general Python)
+* Provides cross-platform deployment from Edge ASICs to standard PCs
+* Implements security-first CI/CD with supply chain hardening
+* Supports 22 different shell environments
+
+== What's Developed
+
+=== Configuration as Code (Nickel)
+
+The `ncl/` directory contains Nickel-based configuration contracts:
+
+[source,nickel]
+.ncl/lib/os_detect.ncl — Deployment Target Detection
+----
+target_type =
+  if env.os == "minix" then 'Edge_ASIC
+  else if env.is_immutable == "true" then 'Kinoite_Layered
+  else if env.os == "darwin" then 'Apple_Darwin
+  else 'Standard_PC
+----
+
+[cols="1,3"]
+|===
+|File |Purpose
+
+|`ncl/lib/os_detect.ncl`
+|OS/architecture detection with automatic deployment priority routing (Edge ASIC → Kinoite → Darwin → Standard PC)
+
+|`ncl/lib/schema.ncl`
+|Type contracts for `Project` and `Deployment` configurations with stability tiers and cloud mount protocols
+|===
+
+=== Memory-Safe Adapter (Ada/SPARK)
+
+[source,ada]
+.rsr-adapter.adb — Repository Customization
+----
+procedure Customize_Repo is
+   type Choice is (Keep, Blank, Delete);
+   Repo_Name : String := Get_Input("Project Name?");
+   -- SPARK ensures file operations are memory-safe
+----
+
+Ada/SPARK provides formally-verifiable file operations for template customization, ensuring no memory corruption during repo setup.
+
+=== 22-Shell Bootstrap System
+
+[source,bash]
+.scripts/bootstrap.sh — Rhodium Standard Bootstrap v2.0
+----
+# Targets: Linux, Minix, macOS, iOS, Android, PC (ASIC/Edge compatible)
+# Shells: bash, cmd, oil, ash, csh, dash, elvish, fish, ion, ksh, murex,
+#         ngs, nushell, powershell-core, tcsh, tsh, zsh, minix shell
+----
+
+[cols="1,1,3"]
+|===
+|Script |Lines |Function
+
+|`bootstrap.sh`
+|64
+|Offline-first toolchain installer for `just`, `must`, `nicaug`
+
+|`all-shells.sh`
+|38
+|Universal shell bridge categorizing 22 shells into POSIX (11), Structured (6), C-Shell/Plan9 (3), Windows (2)
+|===
+
+=== CI/CD Workflows (836+ lines)
+
+[cols="2,1,3"]
+|===
+|Workflow |Platform |Purpose
+
+|`codeql.yml`
+|GitHub
+|CodeQL Advanced static analysis for multiple languages
+
+|`rsr-antipattern.yml`
+|GitHub
+|**Language policy enforcement** — blocks TS/Go/npm, allows ReScript/Deno/Rust
+
+|`security-policy.yml`
+|GitHub
+|Weak crypto detection (MD5/SHA1), HTTP URL blocking, secret scanning
+
+|`wellknown-enforcement.yml`
+|GitHub
+|RFC 9116 security.txt validation
+
+|`quality.yml`
+|GitHub
+|TruffleHog, EditorConfig, permission checks
+
+|`scorecard.yml`
+|GitHub
+|OSSF Scorecard integration
+
+|`.gitlab-ci.yml`
+|GitLab
+|**Primary CI** — Trivy, Gitleaks, Semgrep, rustfmt, clippy, cargo test
+|===
+
+=== Task Runner
+
+[source,just]
+.Justfile — Local Task Runner
+----
+bootstrap:        # Secure Rhodium Toolchain
+tidy:             # Whitespace & deprecation purge
+build target:     # Cross-platform build (ASIC to PC)
+----
+
+== Repository Structure
+
+[source,text]
+----
+.
+├── .rhodium/           # [MACHINE] AI context, JSON specs, hidden logic
+├── ncl/                # [LOGIC] Nickel contracts and permutations
+│   └── lib/
+│       ├── os_detect.ncl   # OS/arch detection
+│       └── schema.ncl      # Type contracts
+├── scripts/            # [ENGINE] 22-shell compatibility
+│   ├── bootstrap.sh        # Toolchain installer
+│   └── all-shells.sh       # Shell bridge
+├── .github/workflows/  # GitHub Actions (11 workflows)
+├── rsr-adapter.adb     # [SAFETY] Ada/SPARK repo adapter
+├── Justfile            # [ARTISAN] Local task runner
+├── Mustfile            # [AUTHORITY] Global deployment (future)
+└── *.adoc              # [HUMAN] Documentation
+----
+
+== Language Policy
+
+=== Allowed
+
+[cols="1,2,2"]
+|===
+|Language |Use Case |Notes
+
+|**ReScript**
+|Primary application code
+|Compiles to JS, type-safe
+
+|**Rust**
+|Systems, WASM, CLI tools
+|Performance-critical
+
+|**Deno**
+|Runtime & package management
+|Replaces Node/npm/bun
+
+|**Nickel**
+|Configuration language
+|Complex configs
+
+|**Ada/SPARK**
+|Safety-critical systems
+|Formally verifiable
+
+|**Gleam**
+|Backend services
+|BEAM or JS compilation
+
+|**Tauri 2.0+ / Dioxus**
+|Mobile apps
+|Rust-first, no Swift/Kotlin
+|===
+
+=== Banned
+
+[cols="1,1"]
+|===
+|Banned |Replacement
+
+|TypeScript |ReScript
+|Node.js/npm/pnpm/yarn/bun |Deno
+|Go |Rust
+|Python (general) |ReScript/Rust
+|Kotlin/Swift |Tauri/Dioxus
+|===
+
+== Quick Start
+
+[source,bash]
+----
+# Clone the template
+git clone https://github.com/hyperpolymath/RSR-template-repo my-project
+cd my-project
+
+# Bootstrap the toolchain (just, must, nicaug)
+just bootstrap
+
+# Customize the repository
+./rsr-adapter  # or run the Ada binary when compiled
+
+# Start developing
+just --list
+----
+
+== Security Features
+
+* **SHA-pinned GitHub Actions** — Supply chain protection
+* **No MD5/SHA1** — Modern cryptography only (SHA256+)
+* **HTTPS-only** — No plaintext URLs
+* **TruffleHog scanning** — Secret detection
+* **CodeQL analysis** — Vulnerability detection
+* **OSSF Scorecard** — Security posture tracking
+* **Trivy/Gitleaks/Semgrep** — GitLab security pipeline
+
+== Documentation
+
+[cols="1,3"]
+|===
+|Document |Purpose
+
+|link:docs/ROADMAP.adoc[ROADMAP.adoc]
+|Development phases and milestones
+
+|link:architecture.adoc[architecture.adoc]
+|Repository structure philosophy
+
+|link:CONTRIBUTING.md[CONTRIBUTING.md]
+|Contribution guidelines with perimeter model
+
+|link:SECURITY.md[SECURITY.md]
+|Vulnerability reporting procedures
+
+|link:docs/CITATIONS.adoc[CITATIONS.adoc]
+|Citation formats (BibTeX, Harvard, APA 7, MLA, OSCALA)
+|===
+
+== Status
+
+[cols="2,1,1"]
+|===
+|Component |Status |Version
+
+|RSR Core Structure
+|✅ Complete
+|v0.2.0
+
+|Nickel Configuration
+|✅ Complete
+|v0.2.0
+
+|22-Shell Bootstrap
+|✅ Complete
+|v2.0
+
+|CI/CD Workflows
+|✅ Complete
+|v0.2.0
+
+|Language Templates
+|🔄 In Progress
+|v0.3
+
+|RSR Compliance CLI
+|📋 Planned
+|v0.4
+|===
+
+== References
+
+* https://github.com/hyperpolymath/rhodium-standard-repositories[RSR Framework]
+* https://github.com/hyperpolymath/must-spec[Must Spec]
+* https://github.com/hyperpolymath/elegant-STATE[elegant-STATE]
+* https://rhodium.sh[Rhodium Standard Documentation]
+
+== License
+
+Dual-licensed under **MIT** OR **PMPL-1.0-or-later** at your option.
+
+---
+
+_Rhodium Standard — Precision Through Constraint_

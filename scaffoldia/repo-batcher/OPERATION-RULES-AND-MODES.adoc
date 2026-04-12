@@ -1,0 +1,705 @@
+= Operation Rules, Safety Constraints & Automation Modes
+:toc:
+:toclevels: 4
+:version: 0.9.0
+:date: 2026-02-06
+
+== Overview
+
+This document defines:
+1. **What NOT to touch** (exclusion rules)
+2. **Conflict resolution strategies**
+3. **Automation modes** (manual / semi-auto / fully-auto)
+4. **Safety constraints per operation**
+
+---
+
+== Part 1: Exclusion Rules (What NOT to Touch)
+
+=== Global Exclusion Patterns
+
+These paths are **NEVER** modified by any operation:
+
+==== 1. Hidden State Directories
+```
+.git/              # Git internals (NEVER touch)
+.gitignore         # User-defined ignore patterns
+node_modules/      # Dependencies (managed by package managers)
+target/            # Rust build artifacts
+dist/              # Build outputs
+build/             # Build outputs
+vendor/            # Vendored dependencies
+.venv/             # Python virtual environments
+venv/              # Python virtual environments
+```
+
+==== 2. User-Specific Configurations
+```
+.env               # Environment secrets (CRITICAL)
+.env.local         # Local environment overrides
+*.pem              # SSL certificates
+*.key              # Private keys
+*credentials*      # Any file with "credentials" in name
+*secret*           # Any file with "secret" in name
+.ssh/              # SSH keys
+```
+
+==== 3. Build Artifacts & Caches
+```
+*.o                # Object files
+*.so               # Shared libraries
+*.dylib            # Dynamic libraries
+*.a                # Static libraries
+*.beam             # BEAM bytecode
+*.pyc              # Python bytecode
+*.class            # Java bytecode
+.cache/            # General caches
+```
+
+==== 4. IDE & Editor Configurations
+```
+.vscode/           # VS Code settings
+.idea/             # IntelliJ settings
+*.swp              # Vim swap files
+*.swo              # Vim swap files
+*~                 # Editor backup files
+```
+
+==== 5. OS-Specific Files
+```
+.DS_Store          # macOS folder attributes
+Thumbs.db          # Windows thumbnails
+desktop.ini        # Windows folder config
+```
+
+=== Per-Operation Exclusion Rules
+
+==== license-update
+**Never Touch**:
+- Files without existing license headers (don't add new headers)
+- Binary files (executables, images, PDFs)
+- Third-party code in `vendor/`, `third_party/`
+- Generated code files (e.g., `*.pb.go`, `*_generated.rs`)
+
+**Rationale**: Preserve third-party licenses, avoid corrupting binaries
+
+==== file-replace
+**Never Replace**:
+- Files larger than 10MB (likely binaries or data)
+- Files with no write permission
+- Symlinks (security risk - could escape repo)
+- Files in `.git/` directory
+
+**Rationale**: Prevent accidental damage to large files or system corruption
+
+==== workflow-update
+**Only Touch**:
+- `.github/workflows/*.yml`
+- `.github/workflows/*.yaml`
+
+**Never Touch**:
+- Workflows in other locations
+- Non-workflow YAML files
+- Third-party action definitions (actions/*.yml inside action repos)
+
+**Rationale**: Strict scope to prevent unintended changes
+
+==== git-sync
+**Never Commit**:
+- Files matching `.gitignore` patterns
+- Untracked binary files > 1MB
+- Files with merge conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`)
+- Submodule directories (require special handling)
+
+**Rationale**: Avoid polluting repos with ignored/large files
+
+==== spdx-audit
+**Read-Only**:
+- All operations are read-only
+- No exclusions needed (safe to scan everything)
+
+---
+
+== Part 2: Conflict Resolution Strategies
+
+=== Git Conflicts (git-sync)
+
+==== Detection
+```v
+pub fn has_merge_conflicts(repo string) bool {
+  result := os.execute('git -C ${repo} status --porcelain')
+  return result.output.contains('UU ') ||  // Both modified
+         result.output.contains('AA ') ||  // Both added
+         result.output.contains('DD ')     // Both deleted
+}
+```
+
+==== Resolution Strategy
+
+[cols="2,2,3",options="header"]
+|===
+|Conflict Type |Auto-Resolve? |Strategy
+
+|Clean repo
+|✅ YES
+|Proceed with commit
+
+|Uncommitted changes
+|✅ YES
+|Commit changes as-is
+
+|Merge conflicts
+|❌ NO
+|**Abort** and report conflict
+
+|Untracked large files
+|⚠️ WARN
+|Skip file, warn user
+
+|Detached HEAD
+|❌ NO
+|**Abort** and report state
+|===
+
+**Manual Mode**: Report conflict, skip repo
+**Semi-Auto Mode**: Attempt simple resolution (e.g., keep ours/theirs)
+**Fully-Auto Mode**: Abort operation, alert user
+
+=== License Conflicts (license-update)
+
+==== Scenarios
+
+**1. Mixed Licenses in Repo**
+```
+Problem: Some files have MIT, some have Apache-2.0
+Solution: Report conflict, require manual resolution
+```
+
+**2. Third-Party Code**
+```
+Problem: Trying to change license in vendor/
+Solution: Skip vendor/ directories automatically
+```
+
+**3. Existing PMPL License**
+```
+Problem: Trying to update PMPL → PMPL
+Solution: Skip (idempotent), log "already correct"
+```
+
+=== File Replacement Conflicts (file-replace)
+
+==== Circular Replacement Detection
+```v
+pub fn is_circular_replacement(source string, dest string) bool {
+  source_hash := compute_hash(read_file(source))
+  dest_hash := compute_hash(read_file(dest))
+  return source_hash == dest_hash
+}
+```
+
+**Action**: Skip circular replacement, warn user
+
+==== Permission Conflicts
+```
+Problem: File exists but is read-only
+Solution: Skip file, report permission error
+```
+
+==== Backup Conflicts
+```
+Problem: Backup file already exists (.backup)
+Solution: Generate timestamped backup (.backup.20260206143522)
+```
+
+=== Workflow Conflicts (workflow-update)
+
+==== Already Pinned Workflows
+```yaml
+uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # Already pinned
+```
+**Action**: Skip (idempotent), log "already SHA-pinned"
+
+==== Unknown Actions
+```yaml
+uses: my-org/custom-action@v1  # Not in SHA database
+```
+**Action**: Skip this action, log warning, continue with known actions
+
+==== Invalid YAML
+```
+Problem: Workflow has syntax errors
+Solution: Skip file, report YAML parse error
+```
+
+---
+
+== Part 3: Automation Modes
+
+=== Mode Definitions
+
+==== 1. Manual Mode (Default)
+
+**Characteristics**:
+- User approves EVERY action
+- Full visibility into changes
+- Safest mode for production
+
+**Workflow**:
+```
+1. Tool proposes action: "Update LICENSE in repo-batcher?"
+2. User reviews diff
+3. User approves: [y/N]
+4. Tool executes
+5. Repeat for each repo
+```
+
+**Use Cases**:
+- Critical production repositories
+- Legal/compliance-sensitive changes
+- Learning tool behavior
+- First-time operations
+
+**Example**:
+```bash
+repo-batcher license-update \
+  --mode manual \
+  --old "MIT" \
+  --new "PMPL-1.0-or-later" \
+  --targets "@critical-repos"
+
+Proposal: repo-batcher (1/15)
+  Old license: MIT
+  New license: PMPL-1.0-or-later
+  Files affected: LICENSE, 12 source files
+
+  Diff preview:
+    -// SPDX-License-Identifier: MIT
+    +// SPDX-License-Identifier: PMPL-1.0-or-later
+
+Approve? [y/N/d=diff/s=skip-repo/q=quit]: _
+```
+
+==== 2. Semi-Auto Mode (Recommended)
+
+**Characteristics**:
+- Bulk approval with exception handling
+- User approves operation once, tool executes all
+- Pauses on conflicts/errors for user decision
+- Balance of speed and safety
+
+**Workflow**:
+```
+1. User approves operation for all repos
+2. Tool executes automatically
+3. On error/conflict: pause and ask user
+4. User resolves or skips
+5. Continue automatically
+```
+
+**Use Cases**:
+- Standard maintenance across many repos
+- Operations with high success rate
+- Known-good repositories
+- Regular batch updates
+
+**Example**:
+```bash
+repo-batcher license-update \
+  --mode semi-auto \
+  --old "MIT" \
+  --new "PMPL-1.0-or-later" \
+  --targets "@all-repos"
+
+Pre-flight checks:
+  ✓ 570 repos accessible
+  ✓ Write permissions verified
+  ⚠ 4 repos have mixed licenses (will prompt)
+
+Approve operation for all 570 repos? [y/N]: y
+
+Executing...
+[1/570] ✓ repo-batcher
+[2/570] ✓ lithoglyph
+[3/570] ✓ gitvisor
+[4/570] ⚠ legacy-project - CONFLICT DETECTED
+
+Conflict: legacy-project has mixed licenses (MIT + Apache-2.0)
+Options:
+  [s] Skip this repo
+  [m] Switch to manual mode for this repo
+  [a] Abort entire operation
+  [c] Continue, skip all conflicts
+
+Choice: _
+```
+
+==== 3. Fully-Auto Mode (Advanced)
+
+**Characteristics**:
+- Zero user interaction (except critical errors)
+- Executes all operations without pausing
+- Logs all actions for review
+- Fastest mode, highest risk
+
+**Workflow**:
+```
+1. User starts operation with full-auto flag
+2. Tool executes across all repos
+3. Conflicts are auto-resolved using default strategy
+4. Generates comprehensive log
+5. Email/notify user when complete
+```
+
+**Use Cases**:
+- Cron jobs / scheduled operations
+- CI/CD integration
+- Known-safe operations (read-only audits)
+- Mature, well-tested automation
+
+**Safety Constraints**:
+- Requires `--confirm-auto` flag (explicit opt-in)
+- Dry-run MUST succeed first
+- Requires backup enabled
+- Only for idempotent operations (recommended)
+
+**Example**:
+```bash
+# Dry-run required first
+repo-batcher workflow-update \
+  --mode fully-auto \
+  --targets "@all-repos" \
+  --dry-run
+# Verify output...
+
+# Execute for real
+repo-batcher workflow-update \
+  --mode fully-auto \
+  --targets "@all-repos" \
+  --confirm-auto \
+  --backup
+
+[FULLY-AUTO MODE]
+Warning: This will execute across 574 repos without interaction.
+Type 'I UNDERSTAND' to proceed: _
+```
+
+=== Mode Comparison
+
+[cols="2,1,1,1,3",options="header"]
+|===
+|Feature |Manual |Semi-Auto |Fully-Auto |Notes
+
+|User interaction
+|Every repo
+|On conflicts
+|Never
+|
+
+|Speed
+|Slowest
+|Medium
+|Fastest
+|
+
+|Safety
+|Highest
+|High
+|Medium
+|Requires explicit opt-in
+
+|Error handling
+|User decides
+|User decides
+|Auto-resolve
+|Fully-auto uses default strategies
+
+|Suitable for
+|Production
+|Maintenance
+|Automation
+|
+
+|Dry-run required
+|No
+|Recommended
+|**Yes**
+|Fully-auto fails without successful dry-run
+
+|Backup required
+|Optional
+|Recommended
+|**Yes**
+|Fully-auto enforces backups
+
+|Rollback
+|Manual
+|Manual
+|Auto-rollback
+|Fully-auto auto-rolls-back on critical failures
+|===
+
+=== Mode Selection Logic
+
+**Decision Tree**:
+```
+Are you changing critical repos (production, infrastructure)?
+  → YES: Use **Manual** mode
+
+Is this a well-tested operation (workflow-update, spdx-audit)?
+  → YES: Use **Semi-Auto** or **Fully-Auto** mode
+
+Is this a destructive operation (git-sync, file-replace)?
+  → YES: Use **Manual** or **Semi-Auto** mode
+  → NO: Safe for **Fully-Auto** mode
+
+Do you need to run unattended (cron job)?
+  → YES: Use **Fully-Auto** mode (with dry-run first)
+
+First time running this operation?
+  → YES: Use **Manual** mode (learn behavior)
+  → NO: Use **Semi-Auto** or **Fully-Auto** mode
+```
+
+---
+
+== Part 4: Safety Constraints Per Operation
+
+=== license-update
+
+**Hard Constraints**:
+- ✅ Must validate SPDX identifiers (both old and new)
+- ✅ Must create backups (unless explicitly disabled)
+- ✅ Must skip third-party code directories
+- ❌ Cannot modify files without existing license headers
+
+**Soft Constraints**:
+- ⚠️ Warn if changing to non-OSI approved license
+- ⚠️ Warn if mixed licenses detected
+- ⚠️ Suggest manual review if > 100 files affected per repo
+
+**Auto-Resolve Rules**:
+- If file already has target license → skip (idempotent)
+- If file is in vendor/ → skip
+- If file is binary → skip
+- If permission denied → skip, log error
+
+=== git-sync
+
+**Hard Constraints**:
+- ✅ Must check for uncommitted changes before proceeding
+- ✅ Must check for merge conflicts (abort if found)
+- ✅ Must verify remote exists and is reachable
+- ❌ Cannot commit if detached HEAD
+- ❌ Cannot commit if .gitignore violates
+
+**Soft Constraints**:
+- ⚠️ Warn if committing large files (> 1MB)
+- ⚠️ Warn if no changes to commit (skip)
+- ⚠️ Warn if pushing to main without protection
+
+**Auto-Resolve Rules**:
+- No changes → skip (idempotent)
+- Remote unreachable → skip, log error
+- Merge conflict → abort, report conflict
+
+=== file-replace
+
+**Hard Constraints**:
+- ✅ Must validate replacement file exists
+- ✅ Must create backups before replacing
+- ✅ Must detect circular replacements (FNV-1a hash)
+- ❌ Cannot replace symlinks (security risk)
+- ❌ Cannot replace files > 10MB (likely binaries)
+
+**Soft Constraints**:
+- ⚠️ Warn if replacing file with different extension
+- ⚠️ Warn if no files match pattern
+- ⚠️ Warn if > 50 files affected per repo
+
+**Auto-Resolve Rules**:
+- Circular replacement detected → skip
+- Permission denied → skip, log error
+- File already matches replacement → skip (idempotent)
+
+=== workflow-update
+
+**Hard Constraints**:
+- ✅ Must only modify `.github/workflows/*.y{a}ml`
+- ✅ Must preserve YAML validity
+- ✅ Must use known SHA pins from database
+- ❌ Cannot modify non-workflow YAML files
+- ❌ Cannot pin unknown actions (not in database)
+
+**Soft Constraints**:
+- ⚠️ Warn if workflow already SHA-pinned
+- ⚠️ Warn if unknown action encountered (skip that action)
+- ⚠️ Suggest updating SHA database if many unknowns
+
+**Auto-Resolve Rules**:
+- Already SHA-pinned → skip (idempotent)
+- Unknown action → skip this action, continue with known
+- Invalid YAML → skip file, log error
+
+=== spdx-audit
+
+**Hard Constraints**:
+- ✅ Read-only (NO modifications)
+- ✅ Must scan all source file types
+- ❌ No constraints (safe operation)
+
+**Soft Constraints**:
+- None (read-only operation)
+
+**Auto-Resolve Rules**:
+- Permission denied → skip file, log error
+- Binary file → skip
+- Unreadable file → skip, log error
+
+---
+
+== Part 5: Configuration Files
+
+=== Repo-Specific Exclusions
+
+Create `.repo-batcher.toml` in repository root:
+
+```toml
+# .repo-batcher.toml - Repo-specific rules
+
+[exclusions]
+# Global exclusions (apply to all operations)
+patterns = [
+  "vendor/**",
+  "third_party/**",
+  "legacy_code/**",
+  "generated/**"
+]
+
+# Per-operation exclusions
+[exclusions.license-update]
+patterns = [
+  "src/vendored_lib/**"  # Keep original licenses
+]
+
+[exclusions.file-replace]
+patterns = [
+  "config/production.yml"  # Never replace production config
+]
+
+[automation]
+# Default automation mode for this repo
+mode = "manual"  # or "semi-auto", "fully-auto"
+
+# Operations that require manual approval
+manual_only = ["git-sync", "license-update"]
+
+[safety]
+# Require dry-run before real execution
+require_dry_run = true
+
+# Maximum files affected before requiring manual approval
+max_files_before_prompt = 50
+```
+
+=== Global Configuration
+
+Create `~/.config/repo-batcher/config.toml`:
+
+```toml
+# Global repo-batcher configuration
+
+[defaults]
+automation_mode = "semi-auto"
+backup = true
+dry_run_first = true
+
+[exclusions]
+# Global patterns (apply to all repos)
+patterns = [
+  "**/.git",
+  "**/.env",
+  "**/.env.local",
+  "**/node_modules",
+  "**/target",
+  "**/dist",
+  "**/build"
+]
+
+[safety]
+# Require explicit confirmation for fully-auto mode
+confirm_fully_auto = true
+
+# Maximum repos before requiring confirmation
+max_repos_before_prompt = 100
+
+# Pause after N consecutive failures
+pause_after_failures = 5
+
+[resolution]
+# Conflict resolution strategies
+[resolution.git-conflicts]
+strategy = "abort"  # or "skip", "manual"
+
+[resolution.permission-errors]
+strategy = "skip"  # or "abort", "manual"
+
+[resolution.circular-replacements]
+strategy = "skip"  # or "abort", "manual"
+
+[learning]
+# Enable failure pattern learning
+enabled = true
+
+# Skip repos with N consecutive failures
+skip_after_failures = 3
+
+# Suggest pre-flight checks based on history
+suggest_checks = true
+```
+
+---
+
+== Part 6: Implementation Checklist
+
+=== Phase 1: Basic Rules (This Week)
+- [ ] Implement global exclusion patterns
+- [ ] Add per-operation exclusions
+- [ ] Create `.repo-batcher.toml` parser
+- [ ] Test exclusion logic
+
+=== Phase 2: Automation Modes (Next Week)
+- [ ] Implement manual mode (default)
+- [ ] Implement semi-auto mode
+- [ ] Implement fully-auto mode
+- [ ] Add mode selection CLI flags
+- [ ] Test mode transitions
+
+=== Phase 3: Conflict Resolution (2 Weeks)
+- [ ] Implement git conflict detection
+- [ ] Implement license conflict detection
+- [ ] Implement file replacement conflicts
+- [ ] Test resolution strategies
+
+=== Phase 4: Safety Constraints (3 Weeks)
+- [ ] Add pre-flight validation
+- [ ] Implement hard constraints (compile-time proofs)
+- [ ] Implement soft constraints (runtime checks)
+- [ ] Test constraint violations
+
+---
+
+## Conclusion
+
+This comprehensive ruleset ensures repo-batcher:
+1. **Never touches** sensitive files (secrets, credentials)
+2. **Handles conflicts** gracefully (abort, skip, or manual)
+3. **Supports automation** (manual → semi-auto → fully-auto)
+4. **Enforces safety** (constraints per operation)
+5. **Learns from failures** (skip problematic repos)
+
+**Next Steps**:
+1. Implement exclusion pattern matching
+2. Add automation mode flags to CLI
+3. Create conflict resolution handlers
+4. Test all safety constraints

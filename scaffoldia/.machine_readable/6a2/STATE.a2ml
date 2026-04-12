@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# STATE.a2ml — Scaffoldia project state
+[metadata]
+project = "scaffoldia"
+version = "0.2.0-dev"
+last-updated = "2026-02-01"
+status = "active"
+session = "converted from scheme — 2026-04-11"
+
+[project-context]
+name = "Scaffoldia"
+purpose = """Repository scaffolding engine with formal validation"""
+completion-percentage = 55
+
+[position]
+phase = "active-development"   # design | implementation | testing | maintenance | archived
+maturity = "experimental"  # experimental | alpha | beta | production | lts
+
+[route-to-mvp]
+milestones = [
+  # No milestones recorded
+]
+
+[blockers-and-issues]
+issues = [
+  "Haskell CLI needs Nickel evaluation via FFI or shell",
+]
+
+[critical-next-actions]
+actions = [
+  "Compile Haskell CLI with stack",
+  "Generate asdf-ui-plugin from template",
+  "Sync all changes to remote",
+  "Integrate nickel CLI into Haskell",
+  "Generate all 3 asdf plugins from templates",
+  "Template validation in CI",
+  "Release with template registry",
+  "Begin SvelteKit UI prototype",
+]
+
+[maintenance-status]
+last-run-utc = "2026-02-01T00:00:00Z"
+last-result = "unknown"  # unknown | pass | warn | fail

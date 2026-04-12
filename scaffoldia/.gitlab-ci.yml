@@ -1,0 +1,173 @@
+# GitLab CI/CD Configuration
+
+stages:
+  - lint
+  - test
+  - build
+  - security
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  PODMAN_USERNS: keep-id
+
+# Default settings
+default:
+  image: alpine:latest
+  before_script:
+    - echo "Starting job..."
+  after_script:
+    - echo "Job completed."
+
+# Templates
+.cache_template: &cache_config
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+      - .cache/
+      - vendor/
+
+# Lint stage
+lint:shell:
+  stage: lint
+  image: koalaman/shellcheck-alpine:stable
+  script:
+    - shellcheck **/*.sh
+  only:
+    changes:
+      - "**/*.sh"
+
+lint:yaml:
+  stage: lint
+  image: sdesbure/yamllint
+  script:
+    - yamllint -c .yamllint .
+  only:
+    changes:
+      - "**/*.yml"
+      - "**/*.yaml"
+
+lint:markdown:
+  stage: lint
+  image: node:lts-alpine
+  script:
+    - npm install -g markdownlint-cli
+    - markdownlint '**/*.md'
+  only:
+    changes:
+      - "**/*.md"
+
+# Test stage
+test:unit:
+  stage: test
+  image: python:3.11-slim
+  script:
+    - pip install -r requirements.txt
+    - pytest tests/unit
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    reports:
+      junit: test-results.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - htmlcov/
+    expire_in: 1 week
+
+test:integration:
+  stage: test
+  image: python:3.11-slim
+  services:
+    - postgres:latest
+  variables:
+    POSTGRES_DB: testdb
+    POSTGRES_USER: testuser
+    POSTGRES_PASSWORD: testpass
+  script:
+    - pip install -r requirements.txt
+    - pytest tests/integration
+
+# Build stage
+build:podman:
+  stage: build
+  image: quay.io/podman/stable
+  script:
+    - podman build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
+    - podman tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - podman push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - podman push $CI_REGISTRY_IMAGE:latest
+  only:
+    - main
+    - tags
+
+build:binary:
+  stage: build
+  image: rust:latest
+  script:
+    - cargo build --release
+  artifacts:
+    paths:
+      - target/release/
+    expire_in: 1 month
+
+# Security stage
+security:sast:
+  stage: security
+  image: returntocorp/semgrep
+  script:
+    - semgrep --config=auto --json --output=semgrep-report.json
+  artifacts:
+    reports:
+      sast: semgrep-report.json
+  allow_failure: true
+
+security:dependency-scan:
+  stage: security
+  image: aquasec/trivy:latest
+  script:
+    - trivy fs --format json --output trivy-report.json .
+  artifacts:
+    reports:
+      dependency_scanning: trivy-report.json
+  allow_failure: true
+
+security:container-scan:
+  stage: security
+  image: aquasec/trivy:latest
+  script:
+    - trivy image --format json $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  only:
+    - main
+  allow_failure: true
+
+# Deploy stage
+deploy:staging:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "Deploying to staging..."
+    - apk add --no-cache curl
+    - curl -X POST $STAGING_WEBHOOK_URL
+  environment:
+    name: staging
+    url: https://staging.example.com
+  only:
+    - main
+
+deploy:production:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "Deploying to production..."
+    - apk add --no-cache curl
+    - curl -X POST $PRODUCTION_WEBHOOK_URL
+  environment:
+    name: production
+    url: https://example.com
+  only:
+    - tags
+  when: manual

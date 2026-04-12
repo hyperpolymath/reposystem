@@ -1,0 +1,477 @@
+= asdf Plugin Architecture Guide
+:toc:
+:toclevels: 3
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+
+== Overview
+
+This guide documents the architecture for creating production-ready asdf plugins using Scaffoldia's aspect-oriented approach with Nickel, ReScript, and Bun.
+
+== The Golden Architecture
+
+=== Three-Repo Separation
+
+**CRITICAL:** Always create three separate repos for asdf plugin ecosystems:
+
+[cols="1,2,1,1"]
+|===
+|Repo |Purpose |Port |Type
+
+|`asdf-ui-plugin`
+|SvelteKit/Vite dashboard, RBAC, audit log
+|843
+|Persistent service
+
+|`asdf-security-plugin`
+|CVE scanning, VirusTotal, provenance
+|844
+|Persistent service
+
+|`asdf-metaiconic-plugin`
+|Nickel aspect injection, config generation
+|845
+|CLI-style (non-persistent)
+|===
+
+**Why three repos?**
+
+* Clear separation of concerns
+* Independent versioning and installation
+* No port conflicts
+* Composable when all three installed
+* Easier testing and maintenance
+
+=== Technology Stack
+
+[cols="1,2,2"]
+|===
+|Layer |Technology |Why
+
+|Configuration
+|Nickel
+|Type-safe, composable, aspect-oriented
+
+|Plugin Logic
+|ReScript + Bun
+|Type-safe, fast startup, portable
+
+|UI (asdf-ui-plugin only)
+|SvelteKit + Vite
+|SSR, strict CSP, edge deployment
+
+|Deployment
+|Cloudflare Pages
+|Zero-config, edge network, free tier
+
+|Fallback Runtime
+|Node.js
+|Local development, self-hosting
+
+|Fallback Container
+|Podman Quadlet
+|Persistent services, systemd integration
+|===
+
+== Nickel Aspect-Oriented Configuration
+
+=== Production Profile Template
+
+[source,nickel]
+----
+{
+  tags = ["ui","security","audit","licensing","provenance"],
+
+  deploy = {
+    target = "cloudflare_pages",
+    wrangler_project = "asdf-ui-plugin",
+    node_fallback = true
+  },
+
+  service = {
+    port = 843,
+    persistent = true
+  },
+
+  rbac = {
+    default_role = "operator",
+    alternatives = ["viewer","admin"]
+  },
+
+  security = {
+    csp = "strict",
+    downgrade = {
+      allow_inline_styles = false,
+      allow_external_connect = []
+    }
+  },
+
+  license = {
+    primary = "PMPL-1.0-or-later",
+    secondary = "Palimpsest",
+    canonical = "https://gitlab.com/hyperpolymath/palimpsest-license"
+  }
+}
+----
+
+=== Aspect Definitions
+
+The metaiconic plugin defines aspects that are woven into generated artefacts:
+
+[source,nickel]
+----
+aspects = {
+  enabled = [
+    "security-hardening",
+    "audit-provenance",
+    "licensing-palimpsest",
+    "provenance-tracker"
+  ]
+}
+----
+
+**Aspect Hooks:**
+
+* `pre_startup` - Runs before service starts
+* `post_update` - Runs after plugin update
+* `render_docs` - Generates documentation
+
+**Generated Artefacts:**
+
+* `wrangler.toml` - Cloudflare Pages config
+* `*.container` - Podman Quadlet units
+* `_headers` - CSP headers for edge deployment
+* `docs/*.adoc` - Auto-generated documentation
+
+== asdf Plugin Requirements
+
+=== Required Scripts
+
+All three repos MUST have these scripts in `bin/`:
+
+[cols="1,3"]
+|===
+|Script |Purpose
+
+|`list-all`
+|List all installable versions (space-separated, newest last)
+
+|`install`
+|Install a specific version using `$ASDF_INSTALL_PATH`
+
+|`download`
+|Download source/binary using `$ASDF_DOWNLOAD_PATH`
+|===
+
+=== Recommended Scripts
+
+[cols="1,3"]
+|===
+|Script |Purpose
+
+|`latest-stable`
+|Output the latest stable version
+
+|`help.overview`
+|General plugin/tool description
+
+|`help.deps`
+|List dependencies (e.g., `git`, `curl`, `bun`)
+
+|`help.config`
+|Configuration info (env vars, etc.)
+
+|`help.links`
+|Relevant links (repo, docs, website)
+|===
+
+=== Optional Scripts (Enhanced UX)
+
+[cols="1,3"]
+|===
+|Script |Purpose
+
+|`list-bin-paths`
+|List directories with executables
+
+|`exec-env`
+|Prepare environment for shims
+
+|`uninstall`
+|Uninstall a version
+
+|`post-plugin-add`
+|Post-add hook
+
+|`post-plugin-update`
+|Post-update hook
+
+|`pre-plugin-remove`
+|Pre-remove hook
+|===
+
+== ReScript + Bun Implementation
+
+=== Directory Structure
+
+[source,plaintext]
+----
+asdf-ui-plugin/
+├── src/
+│   ├── lib/              # SvelteKit components
+│   ├── abi/              # Idris2 ABI definitions (if FFI needed)
+│   └── main.res          # ReScript entry point
+├── bin/
+│   ├── list-all          # Shell wrapper → Bun
+│   ├── install           # Shell wrapper → Bun
+│   ├── latest-stable     # Shell wrapper → Bun
+│   └── help.overview     # Shell wrapper → Bun
+├── ffi/
+│   └── zig/              # Zig FFI (if needed)
+├── cfg/
+│   └── profiles/
+│       ├── production.ncl
+│       └── hardened.ncl
+├── package.json
+├── bsconfig.json         # ReScript config
+├── bunfig.toml
+├── wrangler.toml
+└── _routes.json
+----
+
+=== Shell Wrapper Template
+
+[source,bash]
+----
+#!/bin/sh
+# SPDX-License-Identifier: PMPL-1.0-or-later
+bun run "$(dirname "$0")/../dist/main.js" list-all
+----
+
+=== ReScript Module Template
+
+[source,rescript]
+----
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// src/ListAll.res
+
+@val external argv: array<string> = "process.argv"
+
+let fetchVersions = () => {
+  // Fetch versions from API or Git tags
+  ["0.1.0", "0.2.0", "0.3.0"]
+}
+
+let main = () => {
+  let versions = fetchVersions()
+  Js.log(Js.Array2.joinWith(versions, " "))
+}
+
+main()
+----
+
+=== Install Script Template
+
+[source,bash]
+----
+#!/bin/sh
+# SPDX-License-Identifier: PMPL-1.0-or-later
+
+version="$1"
+install_path="$ASDF_INSTALL_PATH"
+
+echo "Installing asdf-ui-plugin version ${version} to ${install_path}"
+mkdir -p "${install_path}"
+
+# Download and install logic here
+# Use bun run dist/install.js if complex logic needed
+
+echo "${version}" > "${install_path}/version"
+----
+
+== Interoperability
+
+When all three plugins are installed:
+
+[source,plaintext]
+----
+┌─────────────────────┐
+│  asdf-ui-plugin     │
+│  (Port 843)         │
+│  - Dashboard        │
+│  - RBAC             │ ──consumes──▶ ┌────────────────────────┐
+│  - Audit Log        │                │ asdf-security-plugin   │
+└─────────────────────┘                │ (Port 844)             │
+         ▲                              │ - CVE Scanning         │
+         │                              │ - VirusTotal           │
+         │                              │ - Provenance           │
+    generates config                    └────────────────────────┘
+         │                                       ▲
+         │                                       │
+┌────────────────────────┐                       │
+│ asdf-metaiconic-plugin │                       │
+│ (Port 845, CLI)        │ ──────generates config─┘
+│ - Nickel Aspects       │
+│ - Config Generation    │
+│ - Artefact Export      │
+└────────────────────────┘
+----
+
+== Deployment Targets
+
+=== Cloudflare Pages (Default)
+
+[source,toml]
+----
+# wrangler.toml (generated by metaiconic plugin)
+name = "asdf-ui-plugin"
+compatibility_date = "2026-02-01"
+pages_build_output_dir = "dist"
+
+[env.production]
+route = "asdf-ui.example.com/*"
+----
+
+[source,json]
+----
+// _routes.json (generated)
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": ["/api/*"]
+}
+----
+
+=== Node.js Fallback
+
+[source,bash]
+----
+# Install adapter-node for local preview
+npm install @sveltejs/adapter-node
+node build/index.js
+----
+
+=== Podman Quadlet (Persistent Services)
+
+[source,ini]
+----
+# asdf-ui-plugin.container (generated)
+[Unit]
+Description=asdf UI Plugin Dashboard
+After=network-online.target
+
+[Container]
+Image=registry.gitlab.com/hyperpolymath/asdf-ui-plugin:latest
+PublishPort=843:843
+Environment=NODE_ENV=production
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+----
+
+== Testing
+
+=== Local Testing
+
+[source,bash]
+----
+# Test plugin registration
+asdf plugin add asdf-ui-plugin /path/to/asdf-ui-plugin
+asdf list all asdf-ui-plugin
+
+# Test installation
+asdf install asdf-ui-plugin 0.3.0
+asdf global asdf-ui-plugin 0.3.0
+
+# Test execution
+asdf exec asdf-ui-plugin --version
+----
+
+=== CI Testing
+
+[source,yaml]
+----
+# .gitlab-ci.yml
+test:
+  stage: test
+  image: node:20-alpine
+  script:
+    - apk add --no-cache git curl jq
+    - bun install
+    - bun run build
+    - asdf plugin test asdf-ui-plugin $CI_PROJECT_DIR "asdf-ui-plugin --version"
+----
+
+== Scaffoldia Integration
+
+To generate an asdf plugin using Scaffoldia:
+
+[source,bash]
+----
+# Initialize plugin scaffold
+scaffoldia init \
+  --template asdf-plugin \
+  --variant ui \
+  --output asdf-ui-plugin \
+  --config cfg/profiles/production.ncl
+
+# Generates:
+# - Full asdf plugin structure (bin/, src/, cfg/)
+# - ReScript + Bun setup
+# - SvelteKit UI (for ui variant)
+# - Nickel production config
+# - CI/CD workflows
+# - Documentation
+----
+
+== Best Practices
+
+=== Golden Rules
+
+1. **No asdf commands in plugin scripts** - Use env vars (`$ASDF_INSTALL_PATH`, etc.)
+2. **Minimize dependencies** - Assume only POSIX shell, git, curl
+3. **No non-portable tools** - Avoid GNU-specific flags
+4. **Type-safe logic** - Use ReScript, not shell, for complex logic
+5. **Fast startup** - Use Bun, not Node
+6. **Document everything** - Use `help.*` scripts
+7. **Test thoroughly** - Use `asdf plugin test`
+
+=== Security Checklist
+
+* [ ] Strict CSP in production
+* [ ] RBAC with default role `operator`
+* [ ] Audit logging for all actions
+* [ ] CVE scanning on dependencies
+* [ ] VirusTotal checks on downloads
+* [ ] Provenance tracking for all artefacts
+* [ ] License headers in all files (PMPL-1.0-or-later)
+
+=== Port Allocation
+
+* 843: UI plugin (dashboard)
+* 844: Security plugin (scanning)
+* 845: Metaiconic plugin (config, usually CLI)
+
+**Never reuse ports** - Each plugin needs its own port to avoid conflicts when all three are installed.
+
+== Example: Complete asdf-ui-plugin
+
+See the full example at:
+
+* https://gitlab.com/hyperpolymath/asdf-ui-plugin
+* https://gitlab.com/hyperpolymath/asdf-security-plugin
+* https://gitlab.com/hyperpolymath/asdf-metaiconic-plugin
+
+These repos demonstrate the complete architecture in production.
+
+== References
+
+* https://asdf-vm.com/plugins/create.html[asdf Plugin Creation Guide]
+* https://nickel-lang.org/[Nickel Language]
+* https://rescript-lang.org/[ReScript Language]
+* https://bun.sh/[Bun Runtime]
+* https://kit.svelte.dev/[SvelteKit Framework]
+* https://developers.cloudflare.com/pages/[Cloudflare Pages]

@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+resolver: lts-22.39
+
+packages:
+  - .
+
+extra-deps: []
+
+# Use system GHC if compatible
+system-ghc: true
+install-ghc: false

@@ -1,0 +1,163 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= repo-batcher Roadmap
+
+== Current Status
+
+**Version 1.0.0 - Production Ready** ✅
+
+repo-batcher is production-ready with 11 batch operations + safety system covering the core needs of managing 574+ repositories.
+
+== Completed Milestones
+
+=== v0.1.0 - Foundation ✅
+* [x] ATS2 dependent type system for formal verification
+* [x] V CLI layer with fast execution
+* [x] FFI bridge (ATS2 ↔ V via C)
+* [x] Basic operations (license-update, file-replace, git-sync)
+* [x] String utilities and operation validation
+
+=== v0.5.0 - Production Features ✅
+* [x] Watch folder monitoring (250 lines)
+* [x] Parallel execution with V coroutines (8 workers)
+* [x] Rollback system with checksums
+* [x] Performance benchmarks (8x speedup vs bash)
+* [x] Integration tests (5 passing)
+* [x] Real repo tests (7 passing)
+
+=== v0.7.0 - Expanded Operations ✅
+* [x] workflow-update (GitHub Actions SHA pinning)
+* [x] spdx-audit (compliance checking)
+* [x] github-settings (bulk repo configuration)
+* [x] 18 GitHub Actions pins
+* [x] 30+ file extension support
+
+=== v0.9.0 - Safety System ✅
+* [x] 6-layer safety protection
+* [x] 4 safety levels (paranoid, strict, relaxed, disabled)
+* [x] Pre-flight validation (5 rules)
+* [x] User confirmation prompts
+* [x] Rate limiting (100ms default)
+* [x] Audit logging
+* [x] Safety integration for all operations
+* [x] 37 tests passing (5 integration + 7 real repo + 18 GitHub ops + 12 safety)
+
+=== v1.0.0 - Template Merge System ✅
+* [x] template-merge operation (716 lines)
+* [x] Convert repos to template form (preserves content)
+* [x] 5 GitHub workflows (hypatia-scan, codeql, scorecard, quality, mirror)
+* [x] 6 SCM files (META, ECOSYSTEM, STATE, CHECKLIST, ROADMAP, CHANGELOG)
+* [x] 6 bot directives (rhodibot, echidnabot, sustainabot, glambot, seambot, finishbot)
+* [x] Contractiles directory creation
+* [x] justfile and .editorconfig templates
+* [x] Full safety integration
+* [x] 8,059+ verified lines
+
+== Current Operations (13 total)
+
+[cols="1,3,1"]
+|===
+| Operation | Description | Status
+
+| license-update
+| Replace license headers and LICENSE files
+| ✅ Complete
+
+| git-sync
+| Batch commit and push (8x faster than bash)
+| ✅ Complete
+
+| file-replace
+| Replace files with circular detection
+| ✅ Complete
+
+| workflow-update
+| Update GitHub Actions workflows with SHA pinning
+| ✅ Complete
+
+| spdx-audit
+| SPDX compliance checking
+| ✅ Complete
+
+| github-settings
+| Bulk repository configuration (Week 1: basic settings)
+| 🔨 25% complete
+
+| wiki-setup
+| Initialize wikis with first page
+| ✅ Complete
+
+| community-setup
+| Deploy community health files
+| ✅ Complete
+
+| templates-setup
+| Deploy issue and PR templates
+| ✅ Complete
+
+| discussions-setup
+| Enable and configure GitHub Discussions
+| ✅ Complete
+
+| pages-setup
+| Enable and configure GitHub Pages
+| ✅ Complete
+
+| template-merge
+| Convert repos to template form (preserves content)
+| ✅ Complete
+
+| custom
+| Execute custom operations from templates
+| 📝 Placeholder
+|===
+
+== Future Directions
+
+=== v1.1.0 - GitHub Settings Completion (Weeks 2-4)
+* [ ] Week 2: Security settings (visibility, Dependabot, code scanning)
+* [ ] Week 3: Branch protection (required reviews, status checks, signatures)
+* [ ] Week 4: Advanced features (topics, rollback, idempotency)
+
+=== v1.2.0 - Custom Operation System
+* [ ] Template system for user-defined operations
+* [ ] Operation composition (chain operations)
+* [ ] Custom validation rules
+* [ ] Operation marketplace/sharing
+
+=== v1.3.0 - Enhanced Safety
+* [ ] Checkpoint/resume for long operations
+* [ ] Advanced conflict detection
+* [ ] Predictive safety (ML-based risk assessment)
+* [ ] Safety profiles (per-org, per-repo-type)
+
+=== v1.4.0 - Integration & Automation
+* [ ] Git hooks for auto-operations
+* [ ] CI/CD integration plugins
+* [ ] Webhook support
+* [ ] REST API for remote operations
+
+=== v2.0.0 - Advanced Features
+* [ ] Distributed execution (across machines)
+* [ ] Real-time progress dashboard
+* [ ] Operation scheduling/cron
+* [ ] Multi-forge support (GitLab, Bitbucket, Gitea)
+* [ ] Advanced rollback (time-travel)
+
+== Long-term Vision
+
+repo-batcher aims to be the **standard tool for managing repositories at scale** with:
+
+1. **Formal Correctness**: Every operation proven safe before execution
+2. **Maximum Performance**: Parallel execution optimized for mass operations
+3. **Complete Safety**: Multi-layer protection preventing accidents
+4. **Universal Applicability**: Works across forges, languages, and workflows
+5. **Community-Driven**: Extensible operation system for custom needs
+
+== Contributing
+
+See link:CONTRIBUTING.md[Contributing Guide] for how to help with:
+* New operations (github-settings weeks 2-4, custom operations)
+* Performance improvements
+* Documentation
+* Safety rule enhancements
+* Integration plugins

@@ -1,0 +1,370 @@
+= Getting Started with repo-batcher
+:toc:
+// SPDX-License-Identifier: PMPL-1.0-or-later
+
+== Project Status
+
+**Status**: Alpha - Core architecture complete, operations in development
+
+This project transforms the bash scripts (`sync_repos.sh`, `robust_sync.sh`) into a formally verified, type-safe batch operation tool using ATS2 and V.
+
+== What's Been Built (2026-02-06)
+
+=== ✅ Complete
+
+* [x] Project structure from RSR template
+* [x] Architecture documentation (link:docs/ARCHITECTURE.adoc[ARCHITECTURE.adoc])
+* [x] ATS2 operation type definitions with dependent types (link:src/ats2/operations/types.dats[types.dats])
+* [x] V CLI skeleton with all commands (link:src/v/main.v[main.v])
+* [x] Checkpoint files (STATE.scm, ECOSYSTEM.scm, META.scm)
+* [x] Build system (justfile)
+* [x] Configuration templates
+* [x] Operation templates
+
+=== 🚧 In Progress
+
+* [ ] Operation implementations (Task #5)
+  - License update
+  - File replace
+  - Git batch sync (port from sync_repos.sh)
+
+=== 📋 To Do
+
+* [ ] ATS2-V FFI bridge
+* [ ] Watch folder monitoring
+* [ ] Parallel execution engine
+* [ ] Rollback system
+* [ ] Integration tests
+
+== Quick Start
+
+=== 1. Install Dependencies
+
+[source,bash]
+----
+# ATS2 (formal verification)
+# Download from: http://www.ats-lang.org/Downloads.html
+
+# V (CLI and execution)
+git clone https://github.com/vlang/v
+cd v && make
+sudo ./v symlink
+----
+
+=== 2. Build repo-batcher
+
+[source,bash]
+----
+cd ~/Documents/hyperpolymath-repos/repo-batcher
+just build-dev  # Development build (fast)
+# or
+just build      # Production build (optimized)
+----
+
+=== 3. Set Up Configuration
+
+[source,bash]
+----
+just setup-config
+# Edit ~/.config/repo-batcher/config.toml
+----
+
+=== 4. Test with Dry Run
+
+[source,bash]
+----
+# List operations
+./build/repo-batcher list-ops
+
+# Test license update (dry run - safe!)
+./build/repo-batcher license-update \
+  --old "AGPL-3.0" \
+  --new "PMPL-1.0-or-later" \
+  --targets "test-repo1,test-repo2" \
+  --dry-run
+----
+
+== Architecture Overview
+
+[source]
+----
+repo-batcher/
+├── src/
+│   ├── ats2/              # Formally verified core
+│   │   ├── operations/    # Operation types with proofs
+│   │   ├── validation/    # Validation logic
+│   │   └── batch/         # Batch execution engine
+│   ├── v/                 # V CLI layer
+│   │   ├── cli/           # Command-line interface
+│   │   ├── watcher/       # Watch folder monitoring
+│   │   └── executor/      # Parallel execution
+│   ├── abi/               # Idris2 ABI (if needed for FFI)
+│   └── ffi/zig/           # Zig FFI bridge (if needed)
+├── templates/             # Operation and config templates
+├── watch/                 # Drop folder for batch operations
+└── docs/                  # Architecture and operations guide
+----
+
+=== ATS2 Core (src/ats2/)
+
+Provides **formally verified operations** with dependent type proofs:
+
+* **Type safety**: Invalid operations rejected at compile-time
+* **Proof obligations**: Enforces correctness invariants
+* **No runtime errors**: Proofs eliminate entire error classes
+
+Key types defined in `src/ats2/operations/types.dats`:
+
+* `license_update_op` - Proves SPDX IDs are valid
+* `file_replace_op` - Proves no circular replacements
+* `git_sync_op` - Proves repos are valid git repositories
+* `batch_result` - Tracks success/failure with dependent types
+
+=== V CLI Layer (src/v/)
+
+Provides **fast parallel execution** with simple interface:
+
+* **CLI commands**: Intuitive command structure
+* **Parallel execution**: V coroutines for multi-repo operations
+* **Watch daemon**: Automatic operation processing
+* **FFI to ATS2**: Calls formally verified core
+
+Available commands in `src/v/main.v`:
+
+* `list-ops` - Show available operations
+* `license-update` - Update licenses across repos
+* `file-replace` - Replace files with validation
+* `git-sync` - Batch git operations (from sync_repos.sh)
+* `watch` - Start watch daemon
+* `rollback` - Undo operations
+
+== Usage Examples
+
+=== License Updates
+
+Replace all AGPL-3.0 licenses with PMPL-1.0-or-later:
+
+[source,bash]
+----
+repo-batcher license-update \
+  --old "AGPL-3.0" \
+  --new "PMPL-1.0-or-later" \
+  --targets "@all-repos" \
+  --backup \
+  --dry-run  # Preview first!
+
+# Then execute for real:
+repo-batcher license-update \
+  --old "AGPL-3.0" \
+  --new "PMPL-1.0-or-later" \
+  --targets "@all-repos" \
+  --backup
+----
+
+=== File Replacements
+
+Replace workflow files across repositories:
+
+[source,bash]
+----
+repo-batcher file-replace \
+  --pattern ".github/workflows/old-ci.yml" \
+  --replacement templates/new-ci.yml \
+  --targets "@rsr-repos" \
+  --backup
+----
+
+=== Git Batch Sync (from sync_repos.sh)
+
+Sync all repos in parallel:
+
+[source,bash]
+----
+# Using justfile recipe
+just git-sync 4 2
+
+# Or directly:
+repo-batcher git-sync \
+  --parallel 4 \
+  --depth 2 \
+  --commit-message "chore: general update"
+----
+
+=== Watch Folder Mode
+
+Drop operation files for automatic processing:
+
+[source,bash]
+----
+# Start watch daemon
+repo-batcher watch &
+
+# Drop operation file
+cp templates/license-update.example.toml \
+   ~/.config/repo-batcher/watch/update-licenses.toml
+
+# Operation executes automatically
+# Check logs: ~/.local/share/repo-batcher/logs/latest.log
+----
+
+== Development Workflow
+
+=== Building
+
+[source,bash]
+----
+# Quick dev build
+just build-dev
+
+# Production build
+just build
+
+# Run tests
+just test
+
+# Check code quality
+just check
+----
+
+=== Testing Operations Safely
+
+**Always use `--dry-run` first!**
+
+[source,bash]
+----
+# Preview changes (no filesystem modifications)
+just dry-run license-update "repo1,repo2"
+
+# Check what would happen
+cat ~/.local/share/repo-batcher/logs/latest.log
+----
+
+=== Adding New Operations
+
+1. Define type in `src/ats2/operations/types.dats`
+2. Implement validation and execution in ATS2
+3. Add CLI command in `src/v/main.v`
+4. Create template in `templates/`
+5. Document in `docs/OPERATIONS.adoc`
+
+== Why ATS2 + V?
+
+=== Why ATS2?
+
+**Problem**: Bash scripts for mass operations are fragile. When updating 500+ repos, runtime errors after processing 327 repos are catastrophic.
+
+**Solution**: ATS2 dependent types prove operations are correct *before* execution.
+
+[source,ats]
+----
+(* Proof that license is valid SPDX ID *)
+datatype license_update_op(old:string, new:string) =
+  | LicenseUpdate(old, new) of (
+      spdx_id(old),      (* Compile-time proof old license is valid *)
+      spdx_id(new),      (* Compile-time proof new license is valid *)
+      backup_policy      (* Ensures backup if required *)
+    )
+----
+
+**Guarantees:**
+
+* No invalid SPDX identifiers
+* No missing backup when required
+* No circular file replacements
+* No git operations on non-repos
+
+=== Why V?
+
+**Problem**: Rust is complex, Go doesn't have theorem-proving, Python is too slow for 500+ repos.
+
+**Solution**: V provides fast compilation, simple FFI, and lightweight coroutines.
+
+[source,v]
+----
+// Simple CLI with built-in parallelism
+fn cmd_git_sync(cmd cli.Command) ! {
+    parallel := cmd.flags.get_int('parallel') or { 4 }
+    // V coroutines handle parallel execution
+    for repo in repos {
+        go process_repo(repo)
+    }
+}
+----
+
+**Benefits:**
+
+* Fast compilation (2-3s vs. Rust's minutes)
+* Simple C FFI to ATS2
+* Lightweight coroutines for parallelism
+* Easy to read and maintain
+
+== Migration from sync_repos.sh
+
+The existing bash scripts are functional but fragile:
+
+[source,bash]
+----
+# sync_repos.sh - works but no safety
+find . -name ".git" | parallel -j 4 process_repo {}
+----
+
+repo-batcher provides the same functionality with formal guarantees:
+
+[source,bash]
+----
+# Formally verified, type-safe, provably correct
+repo-batcher git-sync --parallel 4 --depth 2
+----
+
+**Improvements:**
+
+* Compile-time validation (no runtime surprises)
+* Automatic backups with rollback
+* Detailed logging and error tracking
+* Dry-run mode for safe testing
+* Type-safe parallel execution
+
+== Next Steps
+
+1. **Complete Task #5**: Implement basic operations
+   - License update implementation
+   - File replace implementation
+   - Git sync implementation (port sync_repos.sh logic)
+
+2. **ATS2-V FFI**: Bridge between ATS2 core and V CLI
+   - C function exports from ATS2
+   - V C interop layer
+   - Type marshalling
+
+3. **Watch System**: Monitor folder for operation files
+   - TOML parser
+   - File watcher
+   - Operation queue
+
+4. **Parallel Executor**: V coroutines for multi-repo processing
+   - Progress reporting
+   - Error isolation
+   - Resource management
+
+5. **Integration Testing**: Test against real repositories
+   - Dry-run validation
+   - Backup and rollback
+   - Parallel execution
+
+== Getting Help
+
+* **Architecture**: link:docs/ARCHITECTURE.adoc[ARCHITECTURE.adoc]
+* **Current State**: link:STATE.scm[STATE.scm]
+* **Design Rationale**: link:META.scm[META.scm]
+* **Ecosystem Position**: link:ECOSYSTEM.scm[ECOSYSTEM.scm]
+
+== Contributing
+
+This project is in active development. Key areas needing help:
+
+* ATS2 operation implementations with proofs
+* V FFI optimization
+* Operation templates
+* Documentation
+
+See link:CONTRIBUTING.md[CONTRIBUTING.md] for details.

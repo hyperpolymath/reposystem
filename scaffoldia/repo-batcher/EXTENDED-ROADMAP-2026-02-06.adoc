@@ -1,0 +1,929 @@
+= repo-batcher Extended Roadmap
+:toc:
+:toclevels: 4
+:version: 0.9.0 → 2.0.0
+:date: 2026-02-06
+
+== Vision
+
+Transform repo-batcher from a batch operation tool into a **self-healing, crash-resilient, learning system** for managing 574+ repositories with formal correctness guarantees and operational intelligence.
+
+== Current State (v0.9.0)
+
+=== Implemented ✅
+- 5 formally verified operations
+- Parallel execution (8x faster than bash)
+- Backup & rollback system
+- Watch folder monitoring
+- Comprehensive testing
+
+=== Gaps 🔍
+- No crash recovery
+- No operation learning
+- Limited idempotency guarantees
+- No failure pattern analysis
+- Manual operation state tracking
+
+---
+
+== Phase 1: Operational Resilience (v1.0)
+
+**Timeline**: 1-2 weeks
+**Priority**: HIGH
+**Goal**: Make repo-batcher crash-proof and self-recovering
+
+=== 1.1 Crash Recovery System
+
+==== Requirements
+- Operation state persistence (ATS2 proofs)
+- Automatic resume after crashes
+- Partial completion tracking
+- Transaction-like semantics per repo
+
+==== Implementation
+[source,ats]
+----
+(* Operation state with dependent types *)
+datatype operation_state(completed: int, total: int) where completed <= total =
+  | OperationState(completed, total) of (
+      operation_id: string,
+      repos_completed: list(string, completed),
+      repos_pending: list(string, total - completed),
+      last_checkpoint: timestamp
+    )
+----
+
+**Files**:
+- `src/ats2/recovery/operation_state.dats` (300 lines)
+- `src/ats2/recovery/checkpoint_manager.dats` (250 lines)
+- `src/v/recovery/resume.v` (200 lines)
+
+**Features**:
+- Write-ahead log (WAL) for operation progress
+- Atomic checkpoint creation every N repos
+- Automatic resume on startup
+- Crash detection via PID/lockfile
+
+**Safety Proofs**:
+- Prove: checkpoint_complete(n) → processed(0..n)
+- Prove: resume(state) → continues_from(last_checkpoint)
+- Prove: no_duplicate_processing
+
+=== 1.2 Idempotency Analysis & Guarantees
+
+==== Operation Classification
+
+[cols="2,1,1,3",options="header"]
+|===
+|Operation |Idempotent? |Retry-Safe? |Reasoning
+
+|license-update
+|**NO**
+|YES
+|Repeated execution creates multiple backups; content changes are idempotent
+
+|git-sync
+|**NO**
+|PARTIAL
+|Creates multiple commits if run twice; push is idempotent if no new commits
+
+|file-replace
+|**YES**
+|YES
+|Target file content becomes identical to replacement (deterministic)
+
+|workflow-update
+|**YES**
+|YES
+|SHA pins are deterministic; already-pinned refs unchanged
+
+|spdx-audit
+|**YES**
+|YES
+|Read-only; no state changes
+
+|custom
+|**DEPENDS**
+|**DEPENDS**
+|Determined by user template
+|===
+
+==== Idempotency Guarantees
+
+**file-replace**:
+[source,ats]
+----
+(* Idempotency proof *)
+theorem file_replace_idempotent:
+  ∀ pattern replacement repo.
+    let result1 = execute_file_replace(pattern, replacement, repo)
+    let result2 = execute_file_replace(pattern, replacement, repo)
+    in result1 == result2
+----
+
+**workflow-update**:
+[source,ats]
+----
+(* SHA pinning is idempotent *)
+theorem workflow_update_idempotent:
+  ∀ repo.
+    let result1 = execute_workflow_update(repo)
+    let result2 = execute_workflow_update(repo)
+    in sha_pinned(result1) → result1 == result2
+----
+
+**License-update** (Make Idempotent):
+[source,ats]
+----
+(* Add idempotency check *)
+fun license_update_idempotent(repo: string, new_license: string): bool =
+  let current_license = detect_license(repo)
+  in if current_license == new_license
+     then skip_operation(repo)  (* Already updated *)
+     else execute_license_update(repo, new_license)
+----
+
+**Git-sync** (Make Smarter):
+[source,ats]
+----
+(* Skip if no changes *)
+fun git_sync_idempotent(repo: string, message: string): operation_result =
+  if has_uncommitted_changes(repo) then
+    execute_git_sync(repo, message)
+  else
+    skip_with_message("No changes to commit")
+----
+
+=== 1.3 Crash Learning System
+
+==== Failure Pattern Database
+
+**Structure**:
+[source,scheme]
+----
+(define crash-database
+  '((operation-id "license-update-20260206-143522")
+    (crashed-at "2026-02-06T14:35:45Z")
+    (repo-path "/path/to/problematic-repo")
+    (error-type "permission-denied")
+    (error-message "Cannot write to LICENSE: Permission denied")
+    (recovery-action "skip-repo")
+    (occurred-count 3)))
+----
+
+**Learning Rules**:
+1. Track failure patterns per operation
+2. Identify problematic repositories
+3. Suggest pre-flight checks
+4. Auto-skip known-bad repos (with warning)
+
+**Implementation**:
+- `src/ats2/learning/failure_db.dats` (200 lines)
+- `~/.local/share/repo-batcher/failures.db` (SQLite)
+- Analysis tool: `repo-batcher analyze-failures`
+
+=== 1.4 Pre-flight Validation
+
+**Before any operation**:
+1. Check disk space (need 2x backup space)
+2. Verify write permissions
+3. Detect merge conflicts (git-sync)
+4. Validate file existence (file-replace)
+5. Check repo cleanliness (git status)
+
+**Implementation**:
+[source,ats]
+----
+datatype validation_result =
+  | ValidationPassed of ()
+  | ValidationFailed of (error_code, error_message, suggested_fix)
+
+fun validate_before_operation(
+  operation: operation_type,
+  repos: list(string)
+): list(validation_result)
+----
+
+**Files**:
+- `src/ats2/validation/preflight.dats` (300 lines)
+- `src/v/validation/checks.v` (200 lines)
+
+---
+
+== Phase 2: Intelligent Operations (v1.5)
+
+**Timeline**: 2-3 weeks
+**Priority**: MEDIUM
+**Goal**: Learn from execution patterns and optimize
+
+=== 2.1 Operation Telemetry
+
+**Metrics to Track**:
+- Operation duration per repo
+- Success/failure rates
+- Disk I/O patterns
+- Memory usage
+- Parallel worker efficiency
+
+**Storage**:
+- `~/.local/share/repo-batcher/telemetry.db` (SQLite)
+- `repo-batcher stats` command for analysis
+
+**Visualization**:
+```
+repo-batcher stats --operation license-update
+
+License Update Statistics (last 30 days)
+========================================
+Total runs:        47
+Success rate:      98.3%
+Avg duration:      2.4s per repo
+Slowest repo:      formdb (12.3s)
+Failed repos:      legacy-project (permission denied)
+
+Recommendations:
+  • Consider excluding legacy-project (3 failures)
+  • formdb is 5x slower than average (investigate)
+```
+
+=== 2.2 Smart Repo Prioritization
+
+**Learning Algorithm**:
+1. Track which repos fail most often
+2. Track which repos are slowest
+3. Track which repos have most conflicts
+4. Prioritize reliable/fast repos first
+5. Group similar repos for batch processing
+
+**Example**:
+```
+# Automatic grouping
+Group 1: MCP servers (clean, fast)     → Process first
+Group 2: Libraries (moderate)          → Process second
+Group 3: Legacy projects (slow/risky)  → Process last with extra caution
+```
+
+=== 2.3 Adaptive Parallelism
+
+**Dynamic Worker Scaling**:
+- Start with 4 workers
+- Monitor CPU/memory usage
+- Scale up to 8 if system has headroom
+- Scale down if memory pressure detected
+- Per-repo time budget (kill stragglers)
+
+**Implementation**:
+[source,v]
+----
+pub fn adaptive_worker_pool(repos []string) WorkerPool {
+  mut workers := 4
+
+  for {
+    cpu_usage := get_cpu_usage()
+    mem_usage := get_memory_usage()
+
+    if cpu_usage < 60 && mem_usage < 70 && workers < 8 {
+      workers++
+    } else if cpu_usage > 90 || mem_usage > 85 {
+      workers = max(2, workers - 1)
+    }
+
+    time.sleep(5 * time.second)
+  }
+}
+----
+
+=== 2.4 GitHub Settings Operation
+
+**Purpose**: Bulk GitHub repository configuration management
+
+**Timeline**: 4 weeks
+**Priority**: HIGH (120x time savings)
+**Design**: link:docs/GITHUB-SETTINGS-OPERATION.adoc[Complete Design Document]
+
+==== Settings Categories
+
+**Repository Features**:
+- `has_issues`, `has_wiki`, `has_projects`, `has_downloads`
+
+**Merge Settings**:
+- `allow_squash_merge`, `allow_merge_commit`, `allow_rebase_merge`
+- `delete_branch_on_merge`, `allow_auto_merge`
+
+**Security Settings**:
+- `visibility` (public/private/internal)
+- `dependabot_alerts`, `dependabot_security_updates`
+- `secret_scanning`, `secret_scanning_push_protection`
+- `private_vulnerability_reporting`
+
+**Branch Protection**:
+- `required_pull_request_reviews` (number of approvers)
+- `dismiss_stale_reviews`, `require_code_owner_reviews`
+- `required_status_checks` (CI/CD checks)
+- `enforce_admins`, `require_signed_commits`
+- `require_linear_history`, `allow_force_pushes`
+
+**Topics/Labels**:
+- Add/remove repository topics (tags)
+- Manage issue labels
+
+==== Usage Examples
+
+[source,bash]
+----
+# Security hardening across all repos
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --set branch-protection=true \
+  --set secret-scanning=true \
+  --set require-signed-commits=true
+
+# Standardize MCP servers
+repo-batcher github-settings \
+  --targets "@pattern:poly-*-mcp" \
+  --config mcp-server-settings.toml \
+  --mode semi-auto
+
+# Make experimental repos private
+repo-batcher github-settings \
+  --targets "@topic:experimental" \
+  --set visibility=private \
+  --mode manual
+----
+
+==== Config File Format
+
+[source,toml]
+----
+# settings.toml - Repository configuration template
+
+[repository]
+has_issues = true
+has_wiki = false
+has_projects = true
+
+[merge]
+allow_squash_merge = true
+delete_branch_on_merge = true
+
+[security]
+visibility = "public"
+dependabot_alerts = true
+secret_scanning = true
+
+[branch_protection]
+branch = "main"
+required_reviews = 2
+required_status_checks = ["ci", "security-scan"]
+require_signed_commits = false
+
+[topics]
+add = ["mcp-server", "formally-verified"]
+remove = ["experimental"]
+----
+
+==== Implementation Phases
+
+**Week 1: Basic Settings** (50 lines ATS2 + 200 lines V)
+- Repository features (issues, wiki, projects)
+- Merge settings (squash, rebase, auto-delete)
+- TOML config parser
+- Dry-run support
+
+**Week 2: Security Settings** (100 lines ATS2 + 150 lines V)
+- Visibility management
+- Dependabot configuration
+- Secret scanning settings
+- Pre-flight validation
+
+**Week 3: Branch Protection** (150 lines ATS2 + 200 lines V)
+- Basic branch protection
+- Required reviews configuration
+- Required status checks
+- Signature requirements
+
+**Week 4: Advanced Features** (100 lines ATS2 + 150 lines V)
+- Topics/labels management
+- Rollback support
+- Idempotency checks
+- Integration tests
+
+==== Safety Features
+
+**Formal Verification** (ATS2):
+[source,ats]
+----
+(* Prove: public repos must have secret scanning *)
+extern
+praxi prove_public_requires_scanning:
+  {v: visibility}
+  (v == Public) -<prf> (secret_scanning == true)
+
+(* Prove: protected branches require valid checks *)
+datatype branch_protection(checks: list(string)) where length(checks) > 0
+----
+
+**Pre-flight Validation**:
+- Block dangerous setting combinations
+- Verify branches exist before protecting
+- Validate status checks exist
+- Check permissions before applying
+
+**Rollback Support**:
+- Backup current settings before changes
+- Automatic rollback on errors
+- Manual rollback by operation ID
+
+**Idempotency**:
+- Fetch current settings first
+- Compute diff
+- Only apply changed settings
+- Skip if already correct
+
+==== Time Savings
+
+[cols="2,2,2",options="header"]
+|===
+|Task |Manual (GitHub UI) |repo-batcher
+
+|Configure 565 repos
+|~10 hours
+|~5 minutes
+
+|Verify consistency
+|~3 hours
+|Automatic
+
+|Rollback changes
+|Manual undo
+|1 command
+
+|Audit current state
+|Manual checking
+|1 command
+|===
+
+**ROI**: 120x time savings (10 hours → 5 minutes)
+
+==== Integration with Existing Operations
+
+Complete workflow example:
+[source,bash]
+----
+# 1. Update workflows with SHA pinning
+repo-batcher workflow-update --targets "@all-repos"
+
+# 2. Enable branch protection for workflows
+repo-batcher github-settings \
+  --targets "@all-repos" \
+  --set branch-protection=true \
+  --require-status-checks="workflow-linter,security-scan"
+
+# 3. Audit SPDX compliance
+repo-batcher spdx-audit --targets "@all-repos"
+
+# 4. Update licenses where needed
+repo-batcher license-update \
+  --old "MIT" \
+  --new "PMPL-1.0-or-later" \
+  --targets "@non-compliant"
+
+# 5. Sync all changes
+repo-batcher git-sync \
+  --parallel 8 \
+  --commit-message "chore: security hardening"
+----
+
+==== Files to Create
+
+[cols="2,1,2",options="header"]
+|===
+|File |Lines |Purpose
+
+|`src/ats2/operations/github_settings.dats`
+|400
+|Core operation with proofs
+
+|`src/v/github/settings.v`
+|300
+|GitHub API integration
+
+|`src/v/github/branch_protection.v`
+|200
+|Branch protection logic
+
+|`src/v/parsers/settings_toml.v`
+|150
+|TOML config parser
+
+|`tests/github_settings_test.v`
+|200
+|Integration tests
+
+|**Total**
+|**1,250**
+|**Complete implementation**
+|===
+
+---
+
+== Phase 3: Advanced Operations (v2.0)
+
+**Timeline**: 1 month
+**Priority**: LOW
+**Goal**: Complete operation suite
+
+=== 3.1 New Operations
+
+==== dependency-update
+**Purpose**: Update dependencies across package managers
+
+**Supported**:
+- Cargo.toml (Rust)
+- package.json (Deno)
+- go.mod (Go)
+- Project.toml (Julia)
+- opam (OCaml)
+
+**Features**:
+- Semantic versioning awareness
+- Breaking change detection
+- Changelog parsing
+- Test-before-update
+
+==== readme-standardize
+**Purpose**: Ensure README files follow hyperpolymath standards
+
+**Checks**:
+- Required sections (Description, Installation, Usage, License)
+- Badge formatting
+- Documentation links
+- Table of contents
+- Code examples
+
+==== security-scan
+**Purpose**: Run security audits across repositories
+
+**Integration**:
+- Hypatia neurosymbolic scanning
+- TruffleHog for secrets
+- cargo audit for Rust
+- npm audit for JavaScript
+- SPDX license compliance
+
+**Output**: Unified security report
+
+=== 3.2 Custom Operation Templates
+
+**Template Language** (Scheme-based):
+[source,scheme]
+----
+(define-operation git-branch-cleanup
+  ((description "Remove merged branches")
+   (idempotent? #t)
+   (dry-run-default #t)
+
+   (steps
+    ((validate (git-repo? repo-path))
+     (execute (git-command repo-path
+                           "branch --merged"
+                           "| grep -v main"
+                           "| xargs git branch -d"))
+     (verify (git-branch-count-decreased?))))))
+----
+
+**Safety**:
+- Template validation with ATS2
+- Dry-run enforcement for first execution
+- User approval required
+- Rollback support
+
+---
+
+== Phase 4: Ecosystem Integration (v2.5)
+
+**Timeline**: 1-2 months
+**Priority**: LOW
+**Goal**: Integrate with hyperpolymath ecosystem
+
+=== 4.1 Hypatia Integration
+
+**Neurosymbolic Analysis**:
+- Pre-operation risk assessment
+- Post-operation verification
+- Anomaly detection
+- Predictive failure analysis
+
+**Example**:
+```
+repo-batcher license-update --hypatia-scan
+
+Hypatia Risk Assessment:
+  ⚠️  legacy-project: High risk (3 previous failures)
+  ✅ repo-batcher: Low risk (100% success rate)
+  ℹ️  formdb: Medium risk (slow but reliable)
+
+Proceed? [y/N]: _
+```
+
+=== 4.2 gitbot-fleet Integration
+
+**Bot Orchestration**:
+- rhodibot: PR creation for changes
+- echidnabot: Automated testing
+- sustainabot: Dependency updates
+- glambot: Documentation updates
+
+**Workflow**:
+1. repo-batcher makes changes
+2. Creates PR via rhodibot
+3. echidnabot runs tests
+4. Auto-merge if green
+5. glambot updates docs
+
+=== 4.3 robot-repo-automaton Integration
+
+**Automated Fixes**:
+- repo-batcher detects issues
+- robot-repo-automaton suggests fixes
+- Confidence threshold for auto-apply
+- Human review for low-confidence fixes
+
+---
+
+== Crash Handling Architecture
+
+=== Crash Detection
+
+**Mechanisms**:
+1. **PID file**: Check if process still running
+2. **Heartbeat**: Write timestamp every 10s
+3. **State file**: Atomic checkpoint writes
+4. **Lock file**: Prevent concurrent execution
+
+**Detection Logic**:
+[source,v]
+----
+pub fn detect_crashed_operation() ?OperationState {
+  // Check for stale lockfile
+  if lockfile_exists() && !process_running(lockfile_pid()) {
+    state := read_operation_state()?
+    return state
+  }
+  return none
+}
+----
+
+=== Recovery Strategies
+
+==== Per-Operation Recovery
+
+[cols="2,2,3",options="header"]
+|===
+|Operation |Recovery Strategy |Justification
+
+|license-update
+|**Resume from checkpoint**
+|Changes per repo are independent
+
+|git-sync
+|**Resume from checkpoint**
+|Each repo is atomic transaction
+
+|file-replace
+|**Resume from checkpoint**
+|File replacements are independent
+
+|workflow-update
+|**Resume from checkpoint**
+|Workflow updates are independent
+
+|spdx-audit
+|**Restart** (cheap)
+|Read-only, no side effects
+
+|custom
+|**User-defined**
+|Depends on template
+|===
+
+==== Resume Example
+
+```bash
+# Operation crashed halfway through
+$ repo-batcher license-update --targets "@all-repos" ...
+Processing 574 repositories...
+[143/574] CRASH
+
+# Auto-resume on next invocation
+$ repo-batcher license-update --targets "@all-repos" ...
+Detected incomplete operation: license-update-20260206
+  Completed: 143/574 repos
+  Last checkpoint: 2026-02-06T14:35:22Z
+Resume from checkpoint? [Y/n]: y
+Resuming from repo 144...
+[144/574] ✓ repo-144
+[145/574] ✓ repo-145
+...
+```
+
+=== Checkpoint Format
+
+**Write-Ahead Log**:
+[source,json]
+----
+{
+  "operation_id": "license-update-20260206-143000",
+  "operation_type": "license-update",
+  "start_time": "2026-02-06T14:30:00Z",
+  "last_checkpoint": "2026-02-06T14:35:22Z",
+  "parameters": {
+    "old_license": "MIT",
+    "new_license": "PMPL-1.0-or-later",
+    "backup": true,
+    "dry_run": false
+  },
+  "progress": {
+    "total_repos": 574,
+    "completed_repos": 143,
+    "failed_repos": 2,
+    "repos_completed": [
+      "/path/to/repo1",
+      "/path/to/repo2",
+      ...
+    ],
+    "repos_failed": [
+      {
+        "repo": "/path/to/bad-repo",
+        "error": "Permission denied"
+      }
+    ]
+  }
+}
+----
+
+**Location**: `~/.local/share/repo-batcher/checkpoints/{operation_id}.json`
+
+---
+
+== Idempotency Deep Dive
+
+=== Classification
+
+==== Type 1: Naturally Idempotent (Best)
+
+**Operations**: workflow-update, spdx-audit, file-replace
+
+**Property**: `f(f(x)) = f(x)`
+
+**Example** (workflow-update):
+```
+State 0: uses: actions/checkout@v4
+State 1: uses: actions/checkout@34e114... # v4  [First run]
+State 2: uses: actions/checkout@34e114... # v4  [Second run, no change]
+```
+
+**Guarantee**: Running operation multiple times produces same result
+
+==== Type 2: Conditionally Idempotent (Good)
+
+**Operations**: license-update, git-sync
+
+**Property**: `if already_done(x) then skip else f(x)`
+
+**Example** (license-update):
+```
+First run:  MIT → PMPL-1.0-or-later (changes made)
+Second run: PMPL-1.0-or-later → PMPL-1.0-or-later (skip, already correct)
+```
+
+**Required**:
+- Pre-check current state
+- Skip if already in target state
+- Log "already correct" message
+
+==== Type 3: Accumulating (Dangerous)
+
+**Operations**: git-sync (current behavior)
+
+**Property**: `f(f(x)) ≠ f(x)` (creates additional state)
+
+**Problem**:
+```
+First run:  Creates commit C1
+Second run: Creates commit C2 (duplicate!)
+```
+
+**Fix Required**:
+```v
+pub fn git_sync_idempotent(repo string, message string) {
+  // Check for uncommitted changes first
+  if !has_uncommitted_changes(repo) {
+    println('${repo}: No changes to commit (skipping)')
+    return
+  }
+
+  // Check if last commit has same message
+  last_commit_msg := get_last_commit_message(repo)
+  if last_commit_msg == message {
+    println('${repo}: Changes already committed')
+    return
+  }
+
+  // Proceed with git sync
+  execute_git_sync(repo, message)
+}
+----
+
+=== Idempotency Enforcement
+
+**ATS2 Type-Level Proof**:
+[source,ats]
+----
+(* Idempotency proof for workflow-update *)
+extern
+praxi prove_idempotent_workflow_update:
+  {repo: string}
+  {result1: string}
+  {result2: string}
+  (
+    execute_workflow_update(repo) == result1,
+    execute_workflow_update(result1) == result2
+  ) -<prf> result1 == result2
+----
+
+**Runtime Enforcement**:
+1. **Pre-check**: Always check current state before operation
+2. **Skip-if-done**: Skip operation if already in target state
+3. **Logging**: Log "skipped (already correct)" vs. "executed"
+4. **Testing**: Integration test runs operation twice, asserts identical results
+
+---
+
+== Implementation Priorities
+
+=== Immediate (This Week)
+1. ✅ Operation expansion complete
+2. ⬜ Idempotency fixes (license-update, git-sync)
+3. ⬜ Basic crash recovery (checkpoint system)
+
+=== Short-term (2 Weeks)
+4. ⬜ Failure pattern learning
+5. ⬜ Pre-flight validation
+6. ⬜ Comprehensive crash tests
+
+=== Medium-term (1 Month)
+7. ⬜ Operation telemetry
+8. ⬜ Smart repo prioritization
+9. ⬜ Adaptive parallelism
+10. ⬜ **GitHub settings operation** (bulk repo configuration - HIGH PRIORITY)
+
+=== Long-term (2+ Months)
+11. ⬜ Additional operations (dependency-update, readme-standardize)
+12. ⬜ Custom operation templates
+13. ⬜ Ecosystem integration (Hypatia, gitbot-fleet)
+
+---
+
+== Success Metrics
+
+=== Crash Resilience
+- ✅ 100% operations resume-able after crash
+- ✅ Zero data loss from crashes
+- ✅ < 5s resume overhead
+
+=== Idempotency
+- ✅ 100% of operations safe to run multiple times
+- ✅ No duplicate commits from git-sync
+- ✅ No unnecessary backups from repeated operations
+
+=== Learning
+- ✅ Identify problematic repos after 3 failures
+- ✅ Auto-skip known-bad repos with warning
+- ✅ Suggest pre-flight checks based on history
+
+=== Performance
+- ✅ Maintain 8x speedup over bash
+- ✅ Adaptive workers improve throughput 20%
+- ✅ Smart prioritization reduces failures 30%
+
+---
+
+== Conclusion
+
+This roadmap transforms repo-batcher from a **batch operation tool** into a **self-healing, learning system** that:
+
+1. **Never loses work** (crash recovery)
+2. **Learns from failures** (pattern database)
+3. **Self-optimizes** (adaptive parallelism)
+4. **Prevents mistakes** (idempotency guarantees)
+5. **Integrates with ecosystem** (Hypatia, gitbot-fleet)
+
+**Next Immediate Steps**:
+1. Fix git-sync idempotency (high priority)
+2. Fix license-update idempotency (high priority)
+3. Implement checkpoint system (crash recovery)
+4. Add failure pattern learning
+5. Build pre-flight validation
+
+With these improvements, repo-batcher becomes **production-grade infrastructure** for managing 574+ repositories with confidence.

@@ -1,0 +1,124 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+= Security Knowledge Pack
+:toc:
+:icons: font
+
+Knowledge base for GitHub workflow security analysis, designed for use with:
+
+* **Virtuoso Open Source** - RDF triple store and SPARQL engine
+* **Logtalk** - Object-oriented logic programming
+* **Qwen3 SLM** - Small language model for code augmentation
+
+== Directory Structure
+
+[source]
+----
+security-knowledge/
+├── logtalk/           # Logtalk objects for Prolog-based reasoning
+│   ├── loader.lgt     # Loader file
+│   └── security_errors.lgt  # Error catalog object
+├── virtuoso/          # Virtuoso/SPARQL files
+│   ├── security-ontology.ttl  # RDF ontology (Turtle format)
+│   └── queries.sparql # Example SPARQL queries
+└── scm/               # Scheme/Datalog files
+    └── error-catalog.scm  # Error catalog in SCM format
+----
+
+== Error Catalog
+
+=== Categories
+
+[cols="1,3"]
+|===
+| Category | Description
+
+| `workflow` | GitHub Actions workflow configuration issues
+| `security` | Security vulnerabilities or misconfigurations
+| `license` | SPDX licensing and attribution issues
+|===
+
+=== Severity Levels
+
+[cols="1,3"]
+|===
+| Severity | Description
+
+| `critical` | Must fix immediately - blocks CI or exposes vulnerabilities
+| `high` | Should fix soon - security risk or OpenSSF compliance issue
+| `medium` | Should fix - code quality or maintainability issue
+| `low` | Nice to fix - minor improvements
+|===
+
+=== Error IDs
+
+[cols="1,1,1,3"]
+|===
+| ID | Category | Severity | Description
+
+| ERR-WF-001 | workflow | medium | Duplicate CodeQL workflows
+| ERR-WF-002 | workflow | high | CodeQL language matrix mismatch
+| ERR-WF-006 | workflow | high | Invalid action SHA
+| ERR-SEC-001 | security | high | Unpinned GitHub Actions
+| ERR-SEC-002 | security | high | Missing workflow permissions
+| ERR-LIC-001 | license | medium | Missing SPDX header
+|===
+
+== Usage
+
+=== Logtalk
+
+[source,prolog]
+----
+?- logtalk_load('security-knowledge/logtalk/loader').
+?- security_error_catalog::get_critical_errors(Errors).
+?- security_error_catalog::get_sha_for_action('actions/checkout', 'v4.2.2', SHA).
+----
+
+=== Virtuoso
+
+[source,bash]
+----
+# Load ontology
+isql-vt -S 1111 -U dba -P password <<EOF
+SPARQL LOAD <file:///path/to/security-ontology.ttl> INTO GRAPH <urn:security>;
+EOF
+
+# Query
+isql-vt -S 1111 -U dba -P password <<EOF
+SPARQL
+PREFIX sec: <https://hyperpolymath.dev/ontology/security#>
+SELECT ?errorId ?label
+WHERE { ?e sec:hasErrorId ?errorId ; rdfs:label ?label }
+EOF
+----
+
+=== Qwen3 SLM Prompting
+
+Use the SCM error catalog as context for Qwen3 code generation:
+
+[source]
+----
+Given the security error catalog, fix ERR-SEC-001 in this workflow:
+
+```yaml
+uses: actions/checkout@v4
+```
+
+Expected output:
+```yaml
+uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+```
+----
+
+== SHA Reference (December 2025)
+
+[cols="2,1,3"]
+|===
+| Action | Version | SHA
+
+| actions/checkout | v4.2.2 | 11bd71901bbe5b1630ceea73d27597364c9af683
+| github/codeql-action/* | v3 | 662472033e021d55d94146f66f6058822b0b39fd
+| ossf/scorecard-action | v2.4.0 | 62b2cac7ed8198b15735ed49ab1e5cf35480ba46
+| webfactory/ssh-agent | v0.9.1 | a6f90b1f127823b31d4d4a8d96047790581349bd
+| editorconfig-checker/action-editorconfig-checker | main | 8d9ca9cf96953707b7299eaec419c6cfcd3a65ac
+|===

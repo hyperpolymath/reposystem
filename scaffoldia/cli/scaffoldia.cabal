@@ -1,0 +1,61 @@
+-- SPDX-License-Identifier: MPL-2.0
+cabal-version:      3.0
+name:               scaffoldia
+version:            0.1.0.0
+synopsis:           A developer-centred, modular repo scaffolding engine
+description:
+    Scaffoldia helps developers, educators, and teams generate idiomatic,
+    validated, and narratable project structures across languages, tools,
+    and a range of project themes and audience stances.
+
+    "Let us scaffold with clarity, and cultivate our own structure." - Voletaire
+
+license:            MPL-2.0
+license-file:       ../LICENSE
+author:             Hyperpolymath
+maintainer:         hyperpolymath@example.com
+copyright:          2026 Hyperpolymath
+category:           Development
+build-type:         Simple
+extra-doc-files:    ../README.adoc
+
+common warnings
+    ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates
+                 -Wincomplete-uni-patterns -Wmissing-export-lists
+                 -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+
+executable scaffoldia
+    import:           warnings
+    main-is:          scaffoldia.hs
+    other-modules:    Scaffoldia.Types
+                    , Scaffoldia.Registry
+                    , Scaffoldia.Nickel
+                    , Scaffoldia.Validation
+                    , Scaffoldia.RSR
+    build-depends:    base ^>=4.17
+                    , aeson ^>=2.2
+                    , bytestring ^>=0.11
+                    , containers ^>=0.6
+                    , directory ^>=1.3
+                    , filepath ^>=1.4
+                    , optparse-applicative ^>=0.18
+                    , process ^>=1.6
+                    , text ^>=2.0
+                    , yaml ^>=0.11
+    hs-source-dirs:   .
+    default-language: GHC2021
+    default-extensions:
+        OverloadedStrings
+        DeriveGeneric
+        RecordWildCards
+        LambdaCase
+
+test-suite scaffoldia-test
+    import:           warnings
+    type:             exitcode-stdio-1.0
+    main-is:          Test.hs
+    hs-source-dirs:   test
+    build-depends:    base ^>=4.17
+                    , scaffoldia
+                    , hspec ^>=2.11
+    default-language: GHC2021

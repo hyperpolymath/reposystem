@@ -1,0 +1,603 @@
+= Operations Guide
+:toc:
+// SPDX-License-Identifier: PMPL-1.0-or-later
+
+Complete guide to repo-batcher operations with examples.
+
+== Available Operations
+
+=== 1. License Update
+
+**Purpose**: Replace license headers and LICENSE files across repositories
+
+**Safety Guarantees** (enforced by ATS2 proofs):
+- Valid SPDX identifiers only
+- Backup required for destructive changes
+- Atomic per-repository (all changes or none)
+- Dry-run preview available
+
+**Command**:
+[source,bash]
+----
+repo-batcher license-update \
+  --old "AGPL-3.0" \
+  --new "PMPL-1.0-or-later" \
+  --targets "@all-repos" \
+  --backup \
+  --dry-run  # Remove to execute
+----
+
+**Parameters**:
+
+|===
+| Flag | Type | Required | Description
+
+| `--old`, `-o`
+| string
+| Yes
+| Old license SPDX identifier
+
+| `--new`, `-n`
+| string
+| Yes
+| New license SPDX identifier
+
+| `--targets`, `-t`
+| string
+| Yes
+| Target repositories (see <<Target Selection>>)
+
+| `--dry-run`, `-d`
+| bool
+| No
+| Preview changes without executing (default: false)
+
+| `--backup`, `-b`
+| bool
+| No
+| Create backups before changes (default: true)
+|===
+
+**What it updates**:
+- LICENSE file in repository root
+- SPDX headers in source files:
+  - `**/*.rs` (Rust)
+  - `**/*.v` (V)
+  - `**/*.dats` (ATS2)
+  - `**/*.idr` (Idris2)
+  - `**/*.zig` (Zig)
+  - `**/*.scm` (Scheme)
+  - `**/*.toml`, `**/*.yml`, `**/*.yaml` (Config)
+
+**Example output**:
+----
+License Update Operation
+  Old: AGPL-3.0
+  New: PMPL-1.0-or-later
+  Targets: @all-repos
+  Dry Run: false
+  Backup: true
+
+Executing formally verified license update...
+
+=== Batch Operation Results ===
+Success: 487
+Failure: 3
+Skipped: 12
+Total:   502
+----
+
+=== 2. Git Batch Sync
+
+**Purpose**: Perform `git add . && git commit && git push` across multiple repositories in parallel
+
+**Origin**: Ported from `sync_repos.sh` with formal verification
+
+**Safety Guarantees**:
+- Validates all targets are git repositories
+- Checks for conflicts before push
+- Reports detailed success/failure per repo
+- Parallel execution with configurable job count
+
+**Command**:
+[source,bash]
+----
+repo-batcher git-sync \
+  --parallel 4 \
+  --depth 2 \
+  --commit-message "chore: batch update" \
+  --dry-run  # Remove to execute
+----
+
+**Parameters**:
+
+|===
+| Flag | Type | Required | Default | Description
+
+| `--parallel`, `-p`
+| int
+| No
+| 4
+| Number of parallel jobs
+
+| `--depth`, `-D`
+| int
+| No
+| 2
+| Max depth for repository search
+
+| `--commit-message`, `-m`
+| string
+| No
+| "chore: batch update"
+| Git commit message
+
+| `--dry-run`, `-d`
+| bool
+| No
+| false
+| Preview without executing
+|===
+
+**Repository Discovery**:
+
+The operation scans for git repositories using:
+[source,bash]
+----
+find ~/Documents/hyperpolymath-repos \
+  -maxdepth 2 \
+  -name ".git" \
+  -type d
+----
+
+This matches the behavior of `sync_repos.sh`.
+
+**Example output**:
+----
+Git Batch Sync Operation (ported from sync_repos.sh)
+  Parallel Jobs: 4
+  Max Depth: 2
+  Commit Message: chore: batch update
+  Dry Run: false
+
+Executing formally verified git-sync...
+Scanning for repositories (find . -maxdepth 2 -name ".git")...
+
+--- Sync Summary ---
+Status              | Count
+--------------------|----------
+Fully Succeeded     | 450
+Failed/Partial      | 5
+Skipped             | 47
+Total Processed     | 502
+
+--- Failure Details ---
+  - Failed to push: repo-batcher (check remote, auth, conflicts)
+  - Failed to push: experimental-lang (check remote, auth, conflicts)
+----
+
+**Performance**:
+
+Based on sync_repos.sh benchmarks:
+
+|===
+| Parallel Jobs | Throughput | Notes
+
+| 1 (serial)
+| ~30 repos/min
+| Baseline
+
+| 4
+| ~120 repos/min
+| **Recommended**
+
+| 8
+| ~200 repos/min
+| For fast CPUs/networks
+
+| 16+
+| Diminishing returns
+| May hit rate limits
+|===
+
+=== 3. File Replace
+
+**Purpose**: Replace files across repositories with validation
+
+**Safety Guarantees**:
+- Validates replacement file exists
+- Backup required
+- No circular replacements (proven by ATS2)
+- Pattern matching with glob support
+
+**Command**:
+[source,bash]
+----
+repo-batcher file-replace \
+  --pattern ".github/workflows/old-ci.yml" \
+  --replacement templates/new-ci.yml \
+  --targets "@rsr-repos" \
+  --backup \
+  --dry-run
+----
+
+**Parameters**:
+
+|===
+| Flag | Type | Required | Description
+
+| `--pattern`, `-p`
+| string
+| Yes
+| File pattern to match (glob syntax)
+
+| `--replacement`, `-r`
+| string
+| Yes
+| Path to replacement file
+
+| `--targets`, `-t`
+| string
+| Yes
+| Target repositories
+
+| `--dry-run`, `-d`
+| bool
+| No
+| Preview changes (default: false)
+
+| `--backup`, `-b`
+| bool
+| No
+| Create backups (default: true)
+|===
+
+**Pattern Examples**:
+
+[source,bash]
+----
+# Single file
+--pattern "LICENSE"
+
+# Workflow files
+--pattern ".github/workflows/*.yml"
+
+# All Rust files
+--pattern "**/*.rs"
+
+# Specific filename anywhere
+--pattern "**/config.toml"
+----
+
+**Example output**:
+----
+File Replace Operation
+  Pattern: .github/workflows/old-ci.yml
+  Replacement: templates/new-ci.yml
+  Targets: @rsr-repos
+  Dry Run: false
+  Backup: true
+
+Executing formally verified file replace...
+
+=== Batch Operation Results ===
+Success: 123
+Failure: 0
+Skipped: 379
+Total:   502
+
+Message: Files replaced successfully
+----
+
+== Target Selection
+
+Multiple ways to specify target repositories:
+
+=== Explicit List
+
+[source,bash]
+----
+--targets "repo1,repo2,repo3"
+----
+
+=== All Repositories
+
+[source,bash]
+----
+--targets "@all-repos"
+----
+
+Scans: `~/Documents/hyperpolymath-repos/`
+
+=== Pattern Matching
+
+[source,bash]
+----
+--targets "@rsr-*"      # All RSR-compliant repos
+--targets "@lithoglyph-*"  # All lithoglyph repos
+----
+
+=== From File
+
+[source,bash]
+----
+--targets "$(cat repos.txt)"
+----
+
+Where `repos.txt` contains one repo path per line.
+
+=== Directory
+
+[source,bash]
+----
+--targets "/path/to/repos"
+----
+
+Scans specified directory for git repositories.
+
+== Operation Modes
+
+=== Dry Run (Safe Preview)
+
+**Always start with dry-run to preview changes!**
+
+[source,bash]
+----
+repo-batcher license-update \
+  --old "MIT" \
+  --new "PMPL-1.0-or-later" \
+  --targets "@all-repos" \
+  --dry-run
+----
+
+Output shows what *would* happen without making changes.
+
+=== Execute Mode
+
+Remove `--dry-run` to execute for real:
+
+[source,bash]
+----
+repo-batcher license-update \
+  --old "MIT" \
+  --new "PMPL-1.0-or-later" \
+  --targets "@all-repos" \
+  --backup  # Backups enabled
+----
+
+=== Interactive Mode (Future)
+
+Will prompt before each repository:
+
+[source,bash]
+----
+repo-batcher license-update \
+  --old "MIT" \
+  --new "PMPL-1.0-or-later" \
+  --targets "@all-repos" \
+  --interactive
+----
+
+== Watch Folder Mode
+
+Drop operation files for automatic execution.
+
+=== Starting Watch Daemon
+
+[source,bash]
+----
+# Start in background
+repo-batcher watch &
+
+# Or use justfile
+just watch
+----
+
+=== Creating Operation Files
+
+**License Update** (`watch/update-licenses.toml`):
+
+[source,toml]
+----
+operation = "license-update"
+old_license = "AGPL-3.0"
+new_license = "PMPL-1.0-or-later"
+targets = "@all-repos"
+dry_run = false
+backup = true
+----
+
+**Git Sync** (`watch/sync-all.toml`):
+
+[source,toml]
+----
+operation = "git-sync"
+parallel_jobs = 4
+max_depth = 2
+commit_message = "chore: automated batch update"
+dry_run = false
+----
+
+**File Replace** (`watch/update-workflows.toml`):
+
+[source,toml]
+----
+operation = "file-replace"
+pattern = ".github/workflows/old-ci.yml"
+replacement = "templates/new-ci.yml"
+targets = "@rsr-repos"
+dry_run = false
+backup = true
+----
+
+=== Execution
+
+Operations execute automatically when files appear in watch folder:
+
+[source,bash]
+----
+# Drop file
+cp templates/license-update.example.toml \
+   ~/.config/repo-batcher/watch/
+
+# Check logs
+tail -f ~/.local/share/repo-batcher/logs/latest.log
+----
+
+== Rollback
+
+Undo operations using backup information.
+
+=== Rollback Last Operation
+
+[source,bash]
+----
+repo-batcher rollback --last
+----
+
+=== Rollback Specific Operation
+
+[source,bash]
+----
+# List operations
+ls ~/.local/share/repo-batcher/logs/
+
+# Rollback specific
+repo-batcher rollback --log-id 20260206-143022
+----
+
+== Safety Features
+
+All operations include:
+
+- **Compile-time validation** (ATS2 proofs)
+- **Dry-run preview** (no filesystem changes)
+- **Automatic backups** (before destructive operations)
+- **Rollback support** (undo on failure)
+- **Atomic per-repo** (all changes or none)
+- **Detailed logging** (audit trail)
+
+== Performance Tips
+
+=== Parallel Jobs
+
+Adjust based on your hardware:
+
+[source,bash]
+----
+# Fast CPU + fast network
+repo-batcher git-sync --parallel 8
+
+# Slower system
+repo-batcher git-sync --parallel 2
+
+# Default (recommended)
+repo-batcher git-sync --parallel 4
+----
+
+=== Max Depth
+
+Limit repository search depth:
+
+[source,bash]
+----
+# Shallow (faster, misses nested repos)
+repo-batcher git-sync --depth 1
+
+# Default (good balance)
+repo-batcher git-sync --depth 2
+
+# Deep (slow, finds all repos)
+repo-batcher git-sync --depth 5
+----
+
+== Troubleshooting
+
+=== Operation Fails
+
+1. Check logs: `~/.local/share/repo-batcher/logs/latest.log`
+2. Run with `--dry-run` to preview
+3. Test on single repo first: `--targets "test-repo"`
+4. Verify SPDX identifiers: `repo-batcher list-ops`
+
+=== Git Sync Failures
+
+Common causes:
+- **No remote configured**: Set up remote first
+- **Authentication required**: Configure SSH keys or credentials
+- **Merge conflicts**: Resolve manually, then retry
+- **Network issues**: Check connectivity
+
+=== License Update Skips Files
+
+If files are skipped:
+- Old license not found in file
+- File not matching source patterns
+- File already has new license
+
+Check logs for details.
+
+== Examples
+
+=== Mass License Migration
+
+Replace AGPL-3.0 with PMPL-1.0-or-later across all repos:
+
+[source,bash]
+----
+# Preview first
+repo-batcher license-update \
+  --old "AGPL-3.0" \
+  --new "PMPL-1.0-or-later" \
+  --targets "@all-repos" \
+  --dry-run
+
+# Execute
+repo-batcher license-update \
+  --old "AGPL-3.0" \
+  --new "PMPL-1.0-or-later" \
+  --targets "@all-repos" \
+  --backup
+----
+
+=== Update Workflow Files
+
+Replace outdated CI workflow:
+
+[source,bash]
+----
+repo-batcher file-replace \
+  --pattern ".github/workflows/ci.yml" \
+  --replacement templates/new-ci.yml \
+  --targets "@all-repos" \
+  --backup
+----
+
+=== Daily Sync Routine
+
+Add to cron/systemd timer:
+
+[source,bash]
+----
+#!/bin/bash
+# ~/.local/bin/daily-repo-sync.sh
+
+cd ~/Documents/hyperpolymath-repos
+repo-batcher git-sync \
+  --parallel 4 \
+  --depth 2 \
+  --commit-message "chore: daily automated sync"
+
+# Email report (if failures)
+if [ $? -ne 0 ]; then
+  mail -s "repo-batcher: sync failures" user@example.com \
+    < ~/.local/share/repo-batcher/logs/latest.log
+fi
+----
+
+== Further Reading
+
+- link:../README.adoc[README] - Project overview
+- link:ARCHITECTURE.adoc[Architecture] - Design and implementation
+- link:../GETTING-STARTED.adoc[Getting Started] - Setup and first steps
+- link:../STATE.scm[State File] - Current project status

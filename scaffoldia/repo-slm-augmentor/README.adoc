@@ -1,0 +1,30 @@
+
+= Repo Slm Augmentor
+
+image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[MPL-2.0-or-later,link="https://opensource.org/licenses/MPL-2.0"]
+
+== License & Philosophy
+
+This project must declare **MPL-2.0-or-later** for platform/tooling compatibility.
+
+Philosophy: **Palimpsest**. The Palimpsest-MPL (PMPL) text is provided in `license/PMPL-1.0.txt`, and the canonical source is the palimpsest-license repository.
+// SPDX-License-Identifier: MPL-2.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+
+:toc: preamble
+:toclevels: 2
+:icons: font
+
+Repository augmentation tool using small language models.
+
+== Overview
+
+This project is part of the hyperpolymath ecosystem.
+
+== Status
+
+Under development.
+
+== License
+
+PMPL-1.0-or-later. See link:LICENSE[LICENSE].

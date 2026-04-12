@@ -1,0 +1,226 @@
+= asdf Plugin Templates
+:toc:
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+
+== Overview
+
+This directory contains Nickel templates for generating production-ready asdf plugins using Scaffoldia's aspect-oriented approach.
+
+== Template Files
+
+[cols="1,2,1"]
+|===
+|File |Purpose |Port
+
+|`ui-plugin.ncl`
+|SvelteKit/Vite dashboard with RBAC and audit logging
+|843
+
+|`security-plugin.ncl`
+|CVE scanning, VirusTotal, provenance tracking
+|844
+
+|`metaiconic-plugin.ncl`
+|Aspect-oriented config generation and artefact export
+|845
+|===
+
+== Usage
+
+=== Generate a UI Plugin
+
+[source,bash]
+----
+scaffoldia init \
+  --template asdf-plugin \
+  --config builder/templates/asdf-plugin/ui-plugin.ncl \
+  --output asdf-ui-plugin
+----
+
+This generates:
+
+* Full asdf plugin structure (`bin/`, `src/`, `cfg/`)
+* ReScript + Bun setup
+* SvelteKit UI components
+* Nickel production config
+* CI/CD workflows (.gitlab-ci.yml, .github/workflows/)
+* Documentation (docs/*.adoc)
+
+=== Generate a Security Plugin
+
+[source,bash]
+----
+scaffoldia init \
+  --template asdf-plugin \
+  --config builder/templates/asdf-plugin/security-plugin.ncl \
+  --output asdf-security-plugin
+----
+
+This generates:
+
+* ReScript modules for CVE scanning, VirusTotal, provenance
+* API endpoints for security checks
+* Custom asdf commands (`scan`, `check-cve`, `verify-provenance`)
+* Integration with NVD, MITRE, OSV databases
+
+=== Generate a Metaiconic Plugin
+
+[source,bash]
+----
+scaffoldia init \
+  --template asdf-plugin \
+  --config builder/templates/asdf-plugin/metaiconic-plugin.ncl \
+  --output asdf-metaiconic-plugin
+----
+
+This generates:
+
+* Nickel aspect definitions
+* Hooks for aspect injection
+* Artefact generators (wrangler.toml, Quadlet units, headers)
+* Custom asdf commands (`inject`, `export`, `validate`, `render`)
+
+== Customization
+
+=== Override Configuration Values
+
+Create a custom config that merges with the template:
+
+[source,nickel]
+----
+# my-ui-plugin.ncl
+let template = import "builder/templates/asdf-plugin/ui-plugin.ncl" in
+template & {
+  plugin_name = "my-custom-ui",
+  service.port = 8080,
+  rbac.default_role = 'admin,
+  security.csp = 'moderate,
+}
+----
+
+Then generate with your custom config:
+
+[source,bash]
+----
+scaffoldia init \
+  --template asdf-plugin \
+  --config my-ui-plugin.ncl \
+  --output my-custom-ui
+----
+
+=== Add Custom Aspects
+
+Extend the metaiconic plugin with custom aspects:
+
+[source,nickel]
+----
+# my-metaiconic.ncl
+let template = import "builder/templates/asdf-plugin/metaiconic-plugin.ncl" in
+template & {
+  aspects.enabled = [
+    "security-hardening",
+    "audit-provenance",
+    "licensing-palimpsest",
+    "provenance-tracker",
+    "custom-telemetry",
+    "custom-analytics"
+  ],
+}
+----
+
+== Generated Directory Structure
+
+After running `scaffoldia init`, you'll get:
+
+[source,plaintext]
+----
+asdf-ui-plugin/
+├── bin/
+│   ├── list-all          # Required asdf script
+│   ├── install           # Required asdf script
+│   ├── download          # Required asdf script
+│   ├── latest-stable     # Recommended asdf script
+│   ├── help.overview     # Recommended asdf script
+│   ├── help.deps         # Recommended asdf script
+│   ├── help.config       # Recommended asdf script
+│   └── help.links        # Recommended asdf script
+├── src/
+│   ├── lib/              # SvelteKit components
+│   ├── abi/              # Idris2 ABI (if FFI needed)
+│   └── main.res          # ReScript entry
+├── ffi/
+│   └── zig/              # Zig FFI (if needed)
+├── cfg/
+│   └── profiles/
+│       ├── production.ncl
+│       └── hardened.ncl
+├── docs/
+│   ├── usage.adoc
+│   └── api.adoc
+├── package.json
+├── bsconfig.json
+├── bunfig.toml
+├── wrangler.toml
+├── _routes.json
+├── _headers
+├── asdf-ui-plugin.container
+├── LICENSE
+├── SECURITY.md
+└── README.adoc
+----
+
+== Port Allocation
+
+**IMPORTANT:** Each plugin type uses a dedicated port to avoid conflicts when all three are installed:
+
+* 843: UI plugin (dashboard)
+* 844: Security plugin (scanning APIs)
+* 845: Metaiconic plugin (config generation, CLI-style)
+
+**Never reuse ports** - Users may install all three plugins simultaneously.
+
+== Integration Example
+
+When all three plugins are installed, they work together:
+
+[source,bash]
+----
+# Install all three plugins
+asdf plugin add asdf-ui-plugin https://gitlab.com/hyperpolymath/asdf-ui-plugin
+asdf plugin add asdf-security-plugin https://gitlab.com/hyperpolymath/asdf-security-plugin
+asdf plugin add asdf-metaiconic-plugin https://gitlab.com/hyperpolymath/asdf-metaiconic-plugin
+
+# Install latest versions
+asdf install asdf-ui-plugin latest
+asdf install asdf-security-plugin latest
+asdf install asdf-metaiconic-plugin latest
+
+# Use metaiconic to generate configs
+asdf exec asdf-metaiconic-plugin export --profile production --output wrangler.toml
+
+# Start UI dashboard (consumes security APIs)
+asdf exec asdf-ui-plugin serve --port 843
+
+# Run security scan
+asdf exec asdf-security-plugin scan --package nodejs --version 20.0.0
+----
+
+== Architecture Reference
+
+See link:../../../docs/asdf-plugin-architecture.adoc[asdf Plugin Architecture Guide] for detailed documentation on:
+
+* Three-repo separation strategy
+* Nickel aspect-oriented configuration
+* ReScript + Bun implementation patterns
+* asdf plugin requirements
+* Deployment targets (Cloudflare, Node, Podman)
+* Testing and CI/CD
+
+== Examples
+
+Real-world examples:
+
+* https://gitlab.com/hyperpolymath/asdf-ui-plugin[asdf-ui-plugin]
+* https://gitlab.com/hyperpolymath/asdf-security-plugin[asdf-security-plugin]
+* https://gitlab.com/hyperpolymath/asdf-metaiconic-plugin[asdf-metaiconic-plugin]

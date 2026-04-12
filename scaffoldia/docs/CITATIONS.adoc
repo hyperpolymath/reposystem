@@ -1,0 +1,36 @@
+= scaffoldia - Citation Guide
+:toc:
+
+== BibTeX
+
+[source,bibtex]
+----
+@software{scaffoldia_2025,
+  author = {Polymath, Hyper},
+  title = {scaffoldia},
+  year = {2025},
+  url = {https://github.com/hyperpolymath/scaffoldia},
+  license = {PMPL-1.0-or-later}
+}
+----
+
+== Harvard Style
+
+Polymath, H. (2025) _scaffoldia_ [Computer software]. Available at: https://github.com/hyperpolymath/scaffoldia
+
+== OSCOLA
+
+Hyper Polymath, 'scaffoldia' (2025) <https://github.com/hyperpolymath/scaffoldia>
+
+== MLA
+
+Polymath, Hyper. "scaffoldia." 2025, github.com/hyperpolymath/scaffoldia.
+
+== APA 7
+
+Polymath, H. (2025). _scaffoldia_ [Computer software]. GitHub. https://github.com/hyperpolymath/scaffoldia
+
+== See Also
+
+* link:../CITATION.cff[CITATION.cff]
+* link:../codemeta.json[codemeta.json]

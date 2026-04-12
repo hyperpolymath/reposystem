@@ -1,0 +1,323 @@
+= repo-batcher
+:toc:
+// SPDX-License-Identifier: PMPL-1.0-or-later
+
+**Formally verified batch operations for mass repository management**
+
+image:https://img.shields.io/badge/license-PMPL--1.0--or--later-blue.svg[License]
+image:https://img.shields.io/badge/status-alpha-orange.svg[Status]
+
+== What is repo-batcher?
+
+repo-batcher is a command-line tool for performing mass operations across multiple git repositories with formal correctness guarantees. It uses ATS2 dependent types to prove operation safety at compile-time and V for fast parallel execution.
+
+[quote]
+____
+Instead of running the same git operation across 500+ repositories by hand, define it once and let repo-batcher execute it safely in parallel.
+____
+
+== Key Features
+
+* **Formally Verified**: ATS2 dependent types prove operations are correct before execution
+* **Parallel Execution**: V coroutines process multiple repos simultaneously (4-8x faster than serial)
+* **Batch Operations**: Watch folder pattern for fire-and-forget mass operations
+* **Type Safe**: Invalid operations rejected at compile-time, not runtime
+* **Rollback Support**: Automatic backups and rollback for failed operations
+* **RSR Compliant**: Follows Rhodium Standard Repositories conventions
+
+== Use Cases
+
+=== License Updates
+
+Update all repository licenses from AGPL-3.0 to PMPL-1.0-or-later:
+
+[source,bash]
+----
+repo-batcher license-update \
+  --old "AGPL-3.0" \
+  --new "PMPL-1.0-or-later" \
+  --targets "@all-repos" \
+  --backup \
+  --dry-run
+----
+
+=== File Replacements
+
+Replace outdated workflow files across all repositories:
+
+[source,bash]
+----
+repo-batcher file-replace \
+  --pattern ".github/workflows/old-ci.yml" \
+  --replacement templates/new-ci.yml \
+  --targets "@rsr-repos"
+----
+
+=== Git Batch Sync
+
+Sync all repositories (commit + push) in parallel:
+
+[source,bash]
+----
+repo-batcher git-sync \
+  --parallel 4 \
+  --depth 2 \
+  --commit-message "chore: general update"
+----
+
+=== Template Merge
+
+Convert existing repos to template form while preserving content:
+
+[source,bash]
+----
+repo-batcher template-merge \
+  --targets "@all-repos" \
+  --workflows \
+  --scm-files \
+  --bot-directives \
+  --contractiles \
+  --preserve \
+  --dry-run
+----
+
+Adds:
+* 5 GitHub workflows (hypatia-scan, codeql, scorecard, quality, mirror)
+* 6 SCM files (META, ECOSYSTEM, STATE, CHECKLIST, ROADMAP, CHANGELOG)
+* 6 bot directives (rhodibot, echidnabot, sustainabot, glambot, seambot, finishbot)
+* Contractiles directory with README
+* justfile with default recipes
+* .editorconfig with standard settings
+
+=== Watch Folder Mode
+
+Drop an operation file for automatic execution:
+
+[source,toml]
+----
+# watch/update-author.toml
+operation = "file-replace"
+pattern = "Cargo.toml"
+replacement = "templates/author-fix.toml"
+targets = ["@all-repos"]
+backup = true
+----
+
+[source,bash]
+----
+repo-batcher watch &  # Start watch daemon
+# Operation executes automatically when file appears
+----
+
+== Architecture
+
+[source]
+----
+┌─────────────────────────────────────┐
+│  V CLI Layer                         │  Fast CLI, file watching, parallel execution
+│  (src/v/)                            │
+└──────────────┬──────────────────────┘
+               │ FFI
+┌──────────────▼──────────────────────┐
+│  ATS2 Core Logic                    │  Formally verified operations
+│  (src/ats2/)                        │  Dependent type proofs
+└──────────────┬──────────────────────┘
+               │ Optional FFI (via Zig bridge)
+┌──────────────▼──────────────────────┐
+│  Idris2 ABI Definitions             │  Interface specifications with proofs
+│  (src/abi/)                         │  (per RSR standard)
+└─────────────────────────────────────┘
+----
+
+See link:docs/ARCHITECTURE.adoc[Architecture Documentation] for details.
+
+== Installation
+
+=== Prerequisites
+
+* https://www.ats-lang.org/Downloads.html[ATS2] (for core logic)
+* https://github.com/vlang/v[V] (for CLI and execution)
+* Git 2.30+
+
+=== From Source
+
+[source,bash]
+----
+git clone https://github.com/hyperpolymath/repo-batcher
+cd repo-batcher
+make build
+sudo make install
+----
+
+=== Configuration
+
+Create `~/.config/repo-batcher/config.toml`:
+
+[source,toml]
+----
+[general]
+repos_dir = "~/Documents/hyperpolymath-repos"
+parallel_jobs = 4
+log_level = "info"
+
+[watch]
+enabled = true
+folder = "~/.config/repo-batcher/watch"
+check_interval = 30
+
+[operations]
+default_dry_run = true
+backup_enabled = true
+----
+
+== Quick Start
+
+[source,bash]
+----
+# List available operations
+repo-batcher list-ops
+
+# Dry run (preview changes without executing)
+repo-batcher license-update \
+  --old "MIT" \
+  --new "PMPL-1.0-or-later" \
+  --targets "repo1,repo2" \
+  --dry-run
+
+# Execute operation
+repo-batcher license-update \
+  --old "MIT" \
+  --new "PMPL-1.0-or-later" \
+  --targets "repo1,repo2"
+
+# Check logs
+cat ~/.local/share/repo-batcher/logs/latest.log
+----
+
+== Supported Operations
+
+|===
+| Operation | Description | Safety Guarantees
+
+| `license-update`
+| Replace license headers and LICENSE files
+| Valid SPDX IDs, proper formatting, backup required
+
+| `file-replace`
+| Replace files matching pattern
+| Backup required, no circular replacements
+
+| `git-sync`
+| Batch commit and push across repos
+| Valid repos, no conflicts, remote reachable
+
+| `workflow-update`
+| Update GitHub Actions workflows
+| Valid YAML, SHA pinning, CodeQL matrix validation
+
+| `wiki-setup`
+| Initialize wikis with first page
+| Creates Home.md to enable automation
+
+| `community-setup`
+| Deploy community health files
+| CODE_OF_CONDUCT, CONTRIBUTING, SECURITY, etc.
+
+| `templates-setup`
+| Deploy issue and PR templates
+| Bug report, feature request, documentation templates
+
+| `discussions-setup`
+| Enable and configure GitHub Discussions
+| Creates 5 default categories (read-only operation)
+
+| `pages-setup`
+| Enable and configure GitHub Pages
+| Configure source, branch, custom domains (remote)
+
+| `template-merge`
+| Convert repos to template form (preserves content)
+| Adds workflows, SCM files, bot directives, contractiles
+
+| `custom`
+| Execute custom operation from template
+| Template validation, dry-run enforced
+|===
+
+See link:docs/OPERATIONS.adoc[Operations Guide] for complete list.
+
+== Origin Story
+
+repo-batcher evolved from several bash scripts (`sync_repos.sh`, `robust_sync.sh`) used to manage 500+ hyperpolymath repositories. These scripts were fast but fragile—no type safety, manual error handling, and easy to accidentally break things at scale.
+
+The key insight: **mass repository operations need formal verification**. When you're updating licenses across hundreds of repos, you don't want to discover an edge case after processing 327 repositories.
+
+ATS2 provides dependent types to prove operations are correct *before* execution. V provides fast parallel execution without the complexity of Rust. Together, they make batch operations both safe and fast.
+
+== Comparison to Alternatives
+
+|===
+| Tool | Approach | Safety | Performance
+
+| **repo-batcher**
+| Formally verified operations
+| Compile-time proofs (ATS2)
+| Fast parallel (V coroutines)
+
+| GNU parallel + bash
+| Shell script parallelization
+| None (runtime errors)
+| Fast but fragile
+
+| Python/Ruby scripts
+| Interpreted scripting
+| Runtime type checking
+| Slower, no parallelism
+
+| Go batch tools
+| Compiled, goroutines
+| Runtime validation
+| Fast but no formal verification
+|===
+
+== Project Status
+
+**Alpha**: Core architecture complete, basic operations in development.
+
+See link:STATE.scm[State File] for current progress.
+
+=== Roadmap
+
+* [x] Phase 1: Core architecture and design
+* [ ] Phase 2: Basic operations (license, file, git-sync)
+* [ ] Phase 3: Watch system and parallel execution
+* [ ] Phase 4: Advanced operations and templates
+
+== Contributing
+
+See link:CONTRIBUTING.md[Contributing Guide].
+
+**Key areas needing help:**
+
+* ATS2 operation implementations with proofs
+* V FFI layer optimization
+* Operation templates
+* Integration with gitbot-fleet
+
+== Related Projects
+
+* https://github.com/hyperpolymath/gitvisor[gitvisor] - Repository visualization
+* https://github.com/hyperpolymath/rhodium-standard-repositories[rhodium-standard-repositories] - RSR standards
+* https://github.com/hyperpolymath/gitbot-fleet[gitbot-fleet] - Bot orchestration
+
+== License
+
+SPDX-License-Identifier: PMPL-1.0-or-later
+
+See link:LICENSE[LICENSE] file for full Palimpsest License text.
+
+== Author
+
+Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+Part of the https://hyperpolymath.github.io[hyperpolymath] ecosystem.

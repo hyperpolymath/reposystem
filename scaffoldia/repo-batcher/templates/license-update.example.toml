@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Example license update operation
+# Drop into watch/ folder for automatic execution
+
+[operation]
+type = "license-update"
+description = "Update all repos from AGPL-3.0 to PMPL-1.0-or-later"
+
+[parameters]
+old_license = "AGPL-3.0"
+new_license = "PMPL-1.0-or-later"
+
+[targets]
+# Use pattern matching
+selection = "@all-repos"
+
+# Or explicit list:
+# repos = ["repo1", "repo2", "repo3"]
+
+# Or from file:
+# file = "repos.txt"
+
+[options]
+dry_run = false
+backup = true
+backup_dir = "~/.local/share/repo-batcher/backups/license-update-20260206"
+
+[validation]
+# Ensure LICENSE file exists
+require_license_file = true
+
+# Update SPDX headers in source files
+update_source_headers = true
+
+# File patterns to update
+source_patterns = [
+    "**/*.rs",
+    "**/*.v",
+    "**/*.dats",
+    "**/*.idr",
+    "**/*.zig",
+    "**/*.scm",
+    "**/*.toml",
+    "**/*.yml",
+    "**/*.yaml"
+]
+
+[logging]
+log_file = "~/.local/share/repo-batcher/logs/license-update-20260206.log"
+verbose = true

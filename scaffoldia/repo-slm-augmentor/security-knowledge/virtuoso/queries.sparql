@@ -1,0 +1,80 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPARQL Queries for Security Knowledge Base
+# Use with Virtuoso Open Source
+
+PREFIX sec: <https://hyperpolymath.dev/ontology/security#>
+PREFIX gh: <https://hyperpolymath.dev/ontology/github#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+# =============================================================================
+# Query 1: Get all high-severity errors
+# =============================================================================
+
+SELECT ?errorId ?label ?autoFixable
+WHERE {
+  ?error sec:hasErrorId ?errorId ;
+         rdfs:label ?label ;
+         sec:hasSeverity sec:High ;
+         sec:isAutoFixable ?autoFixable .
+}
+
+# =============================================================================
+# Query 2: Get all auto-fixable errors
+# =============================================================================
+
+SELECT ?errorId ?label ?severity
+WHERE {
+  ?error sec:hasErrorId ?errorId ;
+         rdfs:label ?label ;
+         sec:hasSeverity ?sev ;
+         sec:isAutoFixable true .
+  ?sev rdfs:label ?severity .
+}
+
+# =============================================================================
+# Query 3: Get SHA for a specific action
+# =============================================================================
+
+SELECT ?action ?version ?sha
+WHERE {
+  ?pinnedAction gh:hasAction ?action ;
+                gh:hasVersion ?version ;
+                gh:hasSHA ?sha .
+  FILTER (?action = "actions/checkout")
+}
+
+# =============================================================================
+# Query 4: Get all pinned actions
+# =============================================================================
+
+SELECT ?action ?version ?sha
+WHERE {
+  ?pinnedAction a gh:PinnedAction ;
+                gh:hasAction ?action ;
+                gh:hasVersion ?version ;
+                gh:hasSHA ?sha .
+}
+ORDER BY ?action
+
+# =============================================================================
+# Query 5: Find workflow errors by category
+# =============================================================================
+
+SELECT ?errorId ?label
+WHERE {
+  ?error a sec:WorkflowError ;
+         sec:hasErrorId ?errorId ;
+         rdfs:label ?label .
+}
+
+# =============================================================================
+# Query 6: Get errors with fixes (for SLM prompting)
+# =============================================================================
+
+SELECT ?errorId ?label ?fixDesc
+WHERE {
+  ?error sec:hasErrorId ?errorId ;
+         rdfs:label ?label ;
+         sec:hasFix ?fix .
+  ?fix rdfs:comment ?fixDesc .
+}

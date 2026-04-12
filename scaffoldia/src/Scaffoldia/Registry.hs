@@ -94,6 +94,21 @@ emptyRegistry = Registry
 defaultEntries :: [RegistryEntry]
 defaultEntries =
   [ RegistryEntry
+      { entryId = "boj-cartridge"
+      , entryMetadata = TemplateMetadata
+          { metaName = "boj-cartridge"
+          , metaDescription = "BoJ server cartridge — MCP tool with formally verified ABI (Idris2 + Zig FFI + Nickel manifest + Deno adapter + PanLL panels)"
+          , metaVersion = "1.0.0"
+          , metaAuthor = "Jonathan D.A. Jewell"
+          , metaLicense = "PMPL-1.0-or-later"
+          , metaLanguages = []  -- Idris2 + Zig not in Language enum yet
+          , metaCategory = "cartridge"
+          , metaTags = ["boj", "cartridge", "mcp", "idris2", "zig", "formally-verified", "rsr-gold"]
+          }
+      , entryPath = "registry/boj"
+      , entryChecksum = ""
+      }
+  , RegistryEntry
       { entryId = "rust-cli"
       , entryMetadata = TemplateMetadata
           { metaName = "rust-cli"

@@ -389,6 +389,19 @@ repoKindPrompts _ = universalPrompts
 -- Provision Steps — the ordered post-mint sequence
 -- ═══════════════════════════════════════════════════════════════════════════
 
+-- | Default provision steps for kinds that just need GitHub + mirroring.
+defaultProvisionSteps :: [ProvisionStep]
+defaultProvisionSteps =
+  [ ProvisionStep CreateRemote "Create GitHub repo" (Just GitHubRepo)
+      (Just "gh repo create hyperpolymath/{{name}} --public --source . --push") True
+  , ProvisionStep ApplyRulesets "Apply branch protection rulesets" (Just GitHubRepo)
+      Nothing True
+  , ProvisionStep ConfigureMirroring "Set up forge mirroring" (Just GitHubMirroring)
+      Nothing True
+  , ProvisionStep SetSocialImage "Generate and upload social image" (Just SocialImage)
+      Nothing True
+  ]
+
 -- | Ordered list of provision steps for a repo kind.
 -- Steps run in order; idempotent steps can be safely re-run.
 repoKindProvisionSteps :: RepoKind -> [ProvisionStep]
@@ -426,19 +439,6 @@ repoKindProvisionSteps ProvenServer =
   , ProvisionStep ProvisionDatabase "Create VeriSimDB instance" (Just VeriSimDbInstance)
       Nothing True
   , ProvisionStep RegisterCi "Register Hypatia CI rules" (Just HypatiaRules)
-      Nothing True
-  , ProvisionStep SetSocialImage "Generate and upload social image" (Just SocialImage)
-      Nothing True
-  ]
-
--- | Default provision steps for kinds that just need GitHub + mirroring.
-defaultProvisionSteps :: [ProvisionStep]
-defaultProvisionSteps =
-  [ ProvisionStep CreateRemote "Create GitHub repo" (Just GitHubRepo)
-      (Just "gh repo create hyperpolymath/{{name}} --public --source . --push") True
-  , ProvisionStep ApplyRulesets "Apply branch protection rulesets" (Just GitHubRepo)
-      Nothing True
-  , ProvisionStep ConfigureMirroring "Set up forge mirroring" (Just GitHubMirroring)
       Nothing True
   , ProvisionStep SetSocialImage "Generate and upload social image" (Just SocialImage)
       Nothing True

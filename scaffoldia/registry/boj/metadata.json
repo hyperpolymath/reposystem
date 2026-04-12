@@ -1,0 +1,10 @@
+{
+  "metaName": "boj-cartridge",
+  "metaDescription": "BoJ server cartridge — MCP tool with formally verified ABI (Idris2 + Zig FFI + Nickel manifest + Deno adapter + PanLL panels)",
+  "metaVersion": "1.0.0",
+  "metaAuthor": "Jonathan D.A. Jewell",
+  "metaLicense": "PMPL-1.0-or-later",
+  "metaLanguages": [],
+  "metaCategory": "cartridge",
+  "metaTags": ["boj", "cartridge", "mcp", "idris2", "zig", "formally-verified", "rsr-gold"]
+}

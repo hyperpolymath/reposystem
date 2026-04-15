@@ -7,6 +7,8 @@
 # Usage: just <recipe>
 
 # Default recipe: show available commands
+import? "contractile.just"
+
 default:
     @just --list
 

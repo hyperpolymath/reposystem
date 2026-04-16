@@ -1,0 +1,36 @@
+= rpa-elysium - Citation Guide
+:toc:
+
+== BibTeX
+
+[source,bibtex]
+----
+@software{rpa-elysium_2026,
+  author = {Jewell, Jonathan D.A.},
+  title = {rpa-elysium},
+  year = {2026},
+  url = {https://github.com/hyperpolymath/rpa-elysium},
+  license = {PMPL-1.0-or-later}
+}
+----
+
+== Harvard Style
+
+Jewell, J.D.A. (2026) _rpa-elysium_ [Computer software]. Available at: https://github.com/hyperpolymath/rpa-elysium
+
+== OSCOLA
+
+Jonathan D.A. Jewell, 'rpa-elysium' (2026) <https://github.com/hyperpolymath/rpa-elysium>
+
+== MLA
+
+Jewell, Jonathan D.A. "rpa-elysium." 2026, github.com/hyperpolymath/rpa-elysium.
+
+== APA 7
+
+Jewell, J.D.A. (2026). _rpa-elysium_ [Computer software]. GitHub. https://github.com/hyperpolymath/rpa-elysium
+
+== See Also
+
+* link:../CITATION.cff[CITATION.cff]
+* link:../codemeta.json[codemeta.json]

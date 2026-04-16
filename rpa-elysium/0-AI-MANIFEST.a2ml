@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# 0-AI-MANIFEST.a2ml — Universal AI agent entry point for rpa-elysium
+
+## Repository Focus
+- `rpa-elysium` is a Rhodium Standard Repository (RSR).
+- Rust workspace with 3 crates: rpa-core, rpa-plugin, rpa-fs-workflow.
+- Obey Rhodium policies, maintain `.bot_directives/`, keep `.machine_readable/` authoritative.
+
+## Canonical File Locations
+- SCM/A2ML files: `.machine_readable/` ONLY (never root)
+- Rust source: `crates/` (workspace members)
+- ABI definitions: `src/abi/` (Idris2 + Ephapax)
+- FFI implementation: `ffi/zig/` (Zig)
+- PanLL panels: `panels/` (JSON panel definitions)
+- CI/CD workflows: `.github/workflows/`
+
+## Integration
+- Works standalone OR as a target for hybrid-automation-router (HAR)
+- Shares ABI types with HAR (proven-fsm, proven-queueconn)
+- HAR publishes events → rpa-elysium subscribes via proven-queueconn
+- Examples: `examples/`
+
+## Critical Invariants
+- NEVER create .machine_readable/6a2/STATE.a2ml, .machine_readable/6a2/META.a2ml, .machine_readable/6a2/ECOSYSTEM.a2ml in the repository root
+- NEVER use TypeScript, Node.js, npm, Go, or Python
+- NEVER use MIT license — this project is PMPL-1.0-or-later
+- All actions SHA-pinned in workflows
+- SPDX headers on all source files
+
+## Workflow
+1. Read `.machine_readable/6a2/STATE.a2ml` for blockers and next actions.
+2. Respect constraints in `.machine_readable/6a2/AGENTIC.a2ml` when tooling changes are requested.
+3. After edits, update STATE with outcomes and commit with a concise, imperative message.
+
+## Delivery Promises
+- Mention in summaries whether STATE, `contractiles/`, or `.bot_directives/` changed.
+- Keep this file in sync with the repository's status.

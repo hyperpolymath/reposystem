@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# ECOSYSTEM.a2ml — Ecosystem position and relationships
+
+[metadata]
+project = "rpa-elysium"
+ecosystem = "hyperpolymath"
+type = "standalone-tool"
+
+[position]
+category = "automation"
+purpose = "Robotic process automation toolkit"
+target-users = "developers, sysadmins, business process automation"
+
+[relationships]
+
+[relationships.reposystem]
+type = "sibling"
+description = "rpa-elysium follows reposystem governance patterns (contractiles, bot directives)"
+
+[relationships.developer-ecosystem]
+type = "consumer"
+description = "Uses Deno, ReScript, Gleam, Zig from developer-ecosystem tooling"
+
+[relationships.proven-servers]
+type = "potential-consumer"
+description = "May use proven-servers for formally verified networking primitives"
+
+[relationships.panll]
+type = "potential-consumer"
+description = "Management console could use PanLL for panel layout"
+
+[relationships.hypatia]
+type = "consumer"
+description = "Uses Hypatia for neurosymbolic CI/CD scanning"
+
+[relationships.hybrid-automation-router]
+type = "integration-target"
+description = "HAR routes events to rpa-elysium via proven-queueconn. Both share ABI types (proven-fsm, proven-queueconn). Either works standalone."
+
+[relationships.rhodium-standard-repositories]
+type = "implements"
+description = "RSR-certified repository following Rhodium standards"

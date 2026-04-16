@@ -1,0 +1,76 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# META.a2ml — Project meta-information and architecture decisions
+
+[metadata]
+project = "rpa-elysium"
+author = "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+license = "PMPL-1.0-or-later"
+standard = "RSR 2026"
+
+[architecture-decisions]
+
+[architecture-decisions.adr-001]
+title = "Rust core with WASM plugin system"
+status = "accepted"
+date = "2024-12-28"
+rationale = "Rust provides memory safety, performance, and WASM compilation. WASM sandbox enables safe third-party plugins."
+
+[architecture-decisions.adr-002]
+title = "Gleam for backend services"
+status = "accepted"
+date = "2024-12-28"
+rationale = "BEAM runtime provides fault tolerance and actor model. Gleam adds type safety. Job queue and event bus benefit from BEAM's distributed nature."
+
+[architecture-decisions.adr-003]
+title = "ReScript for management console"
+status = "accepted"
+date = "2024-12-28"
+rationale = "Type-safe React-compatible UI without TypeScript. Compiles to clean JS."
+
+[architecture-decisions.adr-004]
+title = "Idris2 ABI + Zig FFI standard"
+status = "accepted"
+date = "2026-03-16"
+rationale = "Dependent types prove interface correctness at compile-time. Zig provides zero-overhead C ABI compatibility. Follows hyperpolymath universal ABI/FFI standard."
+
+[architecture-decisions.adr-005]
+title = "Ship rpa-fs-workflow as standalone MVP"
+status = "accepted"
+date = "2026-03-16"
+rationale = "Filesystem automation CLI is functional now. Ship standalone, absorb into full framework later. Validates core architecture."
+
+[architecture-decisions.adr-006]
+title = "proven-servers integration (proven-fsm + proven-queueconn)"
+status = "accepted"
+date = "2026-03-17"
+rationale = "Formally verified state machine and queue types from proven-servers give compile-time guarantees for workflow transitions and event delivery. Tag values shared with HAR for interop."
+
+[architecture-decisions.adr-007]
+title = "Ephapax linear types for ownership safety"
+status = "accepted"
+date = "2026-03-17"
+rationale = "Linear types enforce single-use of events, transitions, and queue handles. Supplementary to Idris2 (not authoritative when they conflict). Enables gradual adoption via affine/linear dyadic design."
+
+[architecture-decisions.adr-008]
+title = "PanLL panels for monitoring dashboards"
+status = "accepted"
+date = "2026-03-17"
+rationale = "JSON panel definitions in panels/ enable integration with PanLL monitoring system. Two panels: fs-workflow (runtime) and plugin-status (sandbox)."
+
+[architecture-decisions.adr-009]
+title = "Event bus architecture — async pub/sub with lifecycle hooks"
+status = "accepted"
+date = "2026-03-17"
+rationale = "Async publish/subscribe event bus (rpa-events) decouples components and enables lifecycle hooks (pre/post execution callbacks). Supports error propagation through structured error types with recovery strategies. Enables future distributed event routing in Phase 7."
+
+[architecture-decisions.adr-010]
+title = "Resource pooling with semaphore-based allocation"
+status = "accepted"
+date = "2026-03-17"
+rationale = "Semaphore-based resource pooling (rpa-resources) provides bounded concurrency for shared resources (browser sessions, API connections, file handles). Prevents resource exhaustion under load while maintaining fairness. Integrates with rpa-scheduler for capacity-aware task scheduling."
+
+[development-practices]
+test-coverage-target = "80%"
+ci-pipelines = 17
+multi-forge = true
+forges = ["github", "gitlab", "bitbucket", "codeberg"]

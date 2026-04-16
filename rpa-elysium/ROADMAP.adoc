@@ -1,0 +1,796 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2024-2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+
+= RPA Elysium Development Roadmap
+:toc: macro
+:toclevels: 3
+:icons: font
+:source-highlighter: rouge
+
+A phased development plan for building RPA Elysium using the Hyperpolymath technology stack.
+
+toc::[]
+
+== Current Status
+
+[cols="1,3,1"]
+|===
+|Phase |Description |Status
+
+|*Phase 0*
+|Foundation & Infrastructure
+|✓ *COMPLETE*
+
+|*Phase 1*
+|Core Framework
+|✓ *COMPLETE*
+
+|*Phase 2*
+|Automation Modules
+|⚙ *NEXT*
+|===
+
+Phase 1 completed 2026-03-17. The repository contains project infrastructure, CI/CD workflows, and a Rust workspace with 8 crates. The bot framework core, scheduler, state management, event system, resource pooling, and configuration are all functional.
+
+---
+
+== Phase 0: Foundation & Infrastructure ✓
+
+*Status*: Complete
+
+=== Deliverables
+
+[%autowidth]
+|===
+|Component |Description |Status
+
+|Repository Structure
+|Standard project layout with documentation
+|✓ Done
+
+|CI/CD Pipelines
+|11 GitHub Actions workflows for quality, security, mirroring
+|✓ Done
+
+|Multi-Forge Distribution
+|Automatic sync to GitHub, GitLab, Bitbucket, Codeberg
+|✓ Done
+
+|Language Policy
+|Hyperpolymath Standard (CLAUDE.md)
+|✓ Done
+
+|Security Workflows
+|CodeQL, Scorecard, TruffleHog secret detection
+|✓ Done
+
+|Policy Enforcement
+|npm/bun blocker, Guix/Nix policy, RSR compliance
+|✓ Done
+
+|Issue Templates
+|Bug reports, feature requests, documentation, questions
+|✓ Done
+
+|Licensing
+|PMPL-1.0-or-later (MPL-2.0 fallback)
+|✓ Done
+|===
+
+---
+
+== Phase 1: Core Framework ✓
+
+*Status*: COMPLETE (2026-03-17)
+
+=== Objective
+
+Build the foundational bot framework in Rust that handles task scheduling, state management, and resource allocation.
+
+=== Deliverables
+
+==== 1.1 Project Scaffolding
+
+[%autowidth]
+|===
+|Task |Technology |Description
+
+|Rust workspace setup
+|Rust + Cargo
+|Multi-crate workspace structure
+
+|Deno configuration
+|Deno
+|deno.json with import maps
+
+|ReScript setup
+|ReScript
+|rescript.json for UI components
+
+|Gleam project
+|Gleam
+|gleam.toml for backend services
+
+|Build automation
+|justfile
+|Development, test, build commands
+
+|Guix packaging
+|Guix
+|guix.scm for reproducible builds
+
+|ABI/FFI scaffold
+|Idris2 + Zig
+|Formal type definitions and C-compatible FFI stubs
+
+|proven-fsm bindings
+|Idris2
+|Workflow state machine with transition proofs
+
+|proven-queueconn bindings
+|Idris2
+|Queue connector for HAR event subscription
+
+|Ephapax linear types
+|Ephapax
+|Compile-time ownership enforcement for events and transitions
+
+|PanLL monitoring panels
+|JSON
+|fs-workflow and plugin-status panels
+|===
+
+NOTE: All Phase 1.1 items are complete as of 2026-03-17.
+
+==== 1.2 Bot Core (Rust)
+
+[%autowidth]
+|===
+|Component |Description |Status
+
+|`rpa-core`
+|Core types, traits, and abstractions
+|✓ Done
+
+|`rpa-scheduler`
+|Task scheduling with cron-like expressions
+|✓ Done
+
+|`rpa-state`
+|Bot state management and persistence
+|✓ Done
+
+|`rpa-resources`
+|Resource allocation and pooling
+|✓ Done
+
+|`rpa-config`
+|Configuration loading (Nickel integration)
+|✓ Done
+|===
+
+==== 1.3 Event System
+
+[%autowidth]
+|===
+|Component |Description |Status
+
+|Event bus (`rpa-events`)
+|Async event dispatch and handling
+|✓ Done
+
+|Lifecycle hooks
+|Pre/post execution callbacks
+|✓ Done
+
+|Error propagation
+|Structured error types and recovery
+|✓ Done
+|===
+
+=== Acceptance Criteria
+
+* [x] Bot can be instantiated with configuration
+* [x] Tasks can be scheduled and executed
+* [x] State persists across restarts
+* [x] Events are emitted for all lifecycle stages
+* [ ] Unit test coverage > 80% (ongoing)
+
+---
+
+== Phase 2: Automation Modules
+
+*Status*: Planned
+
+=== Objective
+
+Implement the core automation capabilities for web, desktop, API, and document processing.
+
+=== Deliverables
+
+==== 2.1 Web Automation
+
+[%autowidth]
+|===
+|Component |Technology |Description
+
+|Browser driver
+|Rust (WebDriver)
+|CDP/WebDriver protocol implementation
+
+|Element selectors
+|Rust
+|CSS, XPath, text-based selection
+
+|Page actions
+|Rust
+|Click, type, scroll, wait, screenshot
+
+|Session management
+|Rust
+|Cookie/storage persistence
+|===
+
+==== 2.2 Desktop Automation
+
+[%autowidth]
+|===
+|Component |Technology |Description
+
+|Window management
+|Rust (platform APIs)
+|Find, focus, resize windows
+
+|Input simulation
+|Rust
+|Keyboard and mouse events
+
+|Screen capture
+|Rust
+|Screenshot and region capture
+
+|UI element detection
+|Rust + WASM
+|Accessibility API integration
+|===
+
+==== 2.3 API Integration
+
+[%autowidth]
+|===
+|Component |Technology |Description
+
+|HTTP client
+|Rust (reqwest)
+|REST API calls with retry logic
+
+|GraphQL client
+|Rust
+|Query/mutation execution
+
+|Authentication
+|Rust
+|OAuth2, API keys, JWT
+
+|Rate limiting
+|Rust
+|Configurable request throttling
+|===
+
+==== 2.4 Document Processing
+
+[%autowidth]
+|===
+|Component |Technology |Description
+
+|PDF handling
+|Rust
+|Read, extract text, fill forms
+
+|Excel/CSV
+|Rust
+|Read, write, transform spreadsheets
+
+|Email
+|Rust
+|SMTP send, IMAP receive
+
+|File operations
+|Rust
+|Copy, move, archive, watch
+|===
+
+=== Acceptance Criteria
+
+* [ ] Web automation works on Chrome, Firefox, Safari
+* [ ] Desktop automation works on Linux, macOS, Windows
+* [ ] API module handles common authentication patterns
+* [ ] Document processing covers PDF, Excel, CSV, Email
+* [ ] Integration tests for each module
+
+---
+
+== Phase 3: AI & Intelligence
+
+*Status*: Planned
+
+=== Objective
+
+Add intelligent capabilities for adaptive automation, OCR, and natural language processing.
+
+=== Deliverables
+
+==== 3.1 OCR Engine
+
+[%autowidth]
+|===
+|Component |Technology |Description
+
+|Text extraction
+|Rust + Tesseract
+|Image-to-text conversion
+
+|Layout analysis
+|Rust
+|Document structure detection
+
+|WASM compilation
+|Rust → WASM
+|Browser-based OCR
+|===
+
+==== 3.2 Form Recognition
+
+[%autowidth]
+|===
+|Component |Description
+
+|Field detection
+|Identify form fields in documents
+
+|Data extraction
+|Extract key-value pairs from forms
+
+|Template matching
+|Learn from example documents
+|===
+
+==== 3.3 Natural Language Processing
+
+[%autowidth]
+|===
+|Component |Description
+
+|Intent detection
+|Understand user automation requests
+
+|Entity extraction
+|Identify entities in text
+
+|Text generation
+|Generate reports and summaries
+|===
+
+==== 3.4 Adaptive Learning
+
+[%autowidth]
+|===
+|Component |Description
+
+|Element fingerprinting
+|Resilient element identification
+
+|Pattern recognition
+|Learn common automation patterns
+
+|Self-healing selectors
+|Auto-fix broken selectors
+|===
+
+=== Acceptance Criteria
+
+* [ ] OCR achieves > 95% accuracy on clean documents
+* [ ] Form recognition handles common invoice formats
+* [ ] NLP can parse natural language automation requests
+* [ ] Selectors self-heal when UI changes
+
+---
+
+== Phase 4: Management Console
+
+*Status*: Planned
+
+=== Objective
+
+Build a web-based management interface for designing workflows, monitoring bots, and viewing analytics.
+
+=== Deliverables
+
+==== 4.1 UI Foundation (ReScript)
+
+[%autowidth]
+|===
+|Component |Description
+
+|Component library
+|Reusable UI components
+
+|State management
+|Application state handling
+
+|Routing
+|Page navigation
+
+|API client
+|Backend communication
+|===
+
+==== 4.2 Workflow Designer
+
+[%autowidth]
+|===
+|Component |Description
+
+|Canvas
+|Drag-and-drop workflow canvas
+
+|Node palette
+|Available automation actions
+
+|Property editor
+|Configure action parameters
+
+|Workflow validation
+|Check workflow correctness
+
+|YAML export
+|Export as configuration
+|===
+
+==== 4.3 Monitoring Dashboard
+
+[%autowidth]
+|===
+|Component |Description
+
+|Bot status
+|Real-time bot health
+
+|Execution logs
+|Searchable log viewer
+
+|Alerts
+|Error notifications
+
+|Resource usage
+|CPU, memory, network metrics
+|===
+
+==== 4.4 Analytics
+
+[%autowidth]
+|===
+|Component |Description
+
+|Success rates
+|Execution success/failure stats
+
+|Performance metrics
+|Execution time analysis
+
+|Trend analysis
+|Historical performance
+
+|Report generation
+|Exportable reports
+|===
+
+==== 4.5 Access Control
+
+[%autowidth]
+|===
+|Component |Description
+
+|Authentication
+|User login/logout
+
+|Authorisation
+|Role-based permissions
+
+|Audit logging
+|Track user actions
+
+|Team management
+|Org structure
+|===
+
+=== Acceptance Criteria
+
+* [ ] Workflows can be designed visually
+* [ ] Bots can be monitored in real-time
+* [ ] Analytics provide actionable insights
+* [ ] RBAC properly restricts access
+
+---
+
+== Phase 5: Mobile & Marketplace
+
+*Status*: Future
+
+=== Objective
+
+Extend RPA Elysium with mobile management capabilities and a community marketplace.
+
+=== Deliverables
+
+==== 5.1 Mobile App
+
+[%autowidth]
+|===
+|Component |Technology |Description
+
+|Mobile UI
+|Tauri 2.0+ or Dioxus
+|iOS and Android app
+
+|Bot monitoring
+|Rust
+|View bot status on mobile
+
+|Notifications
+|Rust
+|Push alerts for errors
+
+|Quick actions
+|Rust
+|Start/stop bots remotely
+|===
+
+==== 5.2 Workflow Marketplace
+
+[%autowidth]
+|===
+|Component |Description
+
+|Workflow catalogue
+|Browse shared workflows
+
+|Publishing
+|Submit workflows for sharing
+
+|Versioning
+|Workflow version management
+
+|Reviews
+|Community ratings and feedback
+|===
+
+==== 5.3 Enterprise Features
+
+[%autowidth]
+|===
+|Component |Description
+
+|SSO integration
+|SAML, OIDC support
+
+|Multi-tenancy
+|Isolated customer environments
+
+|Advanced scheduling
+|Complex scheduling rules
+
+|SLA monitoring
+|Uptime and performance guarantees
+|===
+
+=== Acceptance Criteria
+
+* [ ] Mobile app available on iOS and Android
+* [ ] Marketplace has workflow submission and discovery
+* [ ] Enterprise SSO works with major providers
+* [ ] Multi-tenant isolation is complete
+
+---
+
+== Phase 6: Enterprise Platform
+
+*Status*: Future
+
+=== Objective
+
+Transform RPA Elysium into an enterprise-grade platform with multi-tenancy, compliance, and governance features.
+
+=== Deliverables
+
+[%autowidth]
+|===
+|Component |Description
+
+|Multi-tenancy
+|Isolated tenant environments with resource quotas, data segregation, and independent scaling
+
+|RBAC & Governance
+|Fine-grained role-based access control with policy-as-code enforcement and approval workflows
+
+|Audit & Compliance
+|Immutable audit trail, SOC2/GDPR/HIPAA compliance reports, and data retention policies
+
+|SLA Monitoring
+|Real-time SLA tracking with breach alerting, escalation chains, and uptime guarantees
+|===
+
+---
+
+== Phase 7: Distributed Execution
+
+*Status*: Future
+
+=== Objective
+
+Enable horizontal scaling across multiple nodes with intelligent work distribution.
+
+=== Deliverables
+
+[%autowidth]
+|===
+|Component |Description
+
+|Multi-node Clusters
+|Cluster formation and membership with automatic leader election and partition tolerance
+
+|Work Stealing
+|Adaptive load balancing where idle nodes steal tasks from overloaded peers
+
+|Geographic Routing
+|Route automations to nodes closest to target systems for latency-sensitive operations
+
+|Checkpoint & Recovery
+|Distributed state checkpointing with automatic failover and resumption from last checkpoint
+|===
+
+---
+
+== Phase 8: AI-Native Automation
+
+*Status*: Future
+
+=== Objective
+
+Integrate large language models and machine learning for intelligent workflow creation and self-healing automations.
+
+=== Deliverables
+
+[%autowidth]
+|===
+|Component |Description
+
+|LLM-Driven Workflow Generation
+|Natural language to workflow conversion — describe what you want automated, get a working workflow
+
+|Self-Healing Automations
+|Detect failures from UI changes, API drift, or data format shifts and automatically adapt selectors, schemas, and retry strategies
+
+|Anomaly Detection
+|Statistical and ML-based detection of unusual execution patterns, performance degradation, or data quality issues
+|===
+
+---
+
+== Phase 9: Marketplace & Ecosystem
+
+*Status*: Future
+
+=== Objective
+
+Build a community-driven ecosystem around RPA Elysium with shared workflows, plugins, and templates.
+
+=== Deliverables
+
+[%autowidth]
+|===
+|Component |Description
+
+|Workflow Marketplace
+|Publish, discover, and install automation workflows with versioning, ratings, and usage analytics
+
+|Plugin Store
+|Community-contributed WASM plugins with sandboxed execution, review process, and compatibility verification
+
+|Community Templates
+|Starter templates for common industries (finance, healthcare, logistics) with best-practice patterns
+
+|Connector Catalogue
+|Pre-built API connectors for popular SaaS platforms with automatic schema synchronisation
+|===
+
+---
+
+== Phase 10: Autonomous Operations
+
+*Status*: Future
+
+=== Objective
+
+Achieve fully autonomous operational intelligence where the system optimises itself continuously.
+
+=== Deliverables
+
+[%autowidth]
+|===
+|Component |Description
+
+|Self-Optimising Workflows
+|Runtime profiling and automatic restructuring of workflow steps to minimise execution time and resource usage
+
+|Predictive Scheduling
+|Forecast workload patterns and pre-allocate resources before demand spikes
+
+|Continuous Learning
+|Federated learning across deployments (with privacy guarantees) to improve element detection, error recovery, and scheduling heuristics
+
+|Proactive Maintenance
+|Predict automation breakage before it happens based on target system change patterns and proactively update workflows
+|===
+
+---
+
+== Technical Decisions
+
+=== Why These Technologies?
+
+[cols="1,3"]
+|===
+|Decision |Rationale
+
+|*Rust for core*
+|Performance, safety, WASM compilation, no GC pauses
+
+|*ReScript for UI*
+|Type safety, clean JS output, React compatibility
+
+|*Gleam for backend*
+|BEAM reliability, functional purity, actor model
+
+|*Deno for runtime*
+|Security-first, modern APIs, no node_modules
+
+|*Guix for packaging*
+|Reproducible builds, declarative configuration
+
+|*No Python/Node*
+|Avoid dependency hell, prefer compiled languages
+|===
+
+=== Architecture Principles
+
+1. *Modular* — Each component is independently deployable
+2. *Type-safe* — Strong typing at all layers
+3. *Observable* — Rich metrics, logs, and traces
+4. *Resilient* — Graceful degradation and recovery
+5. *Portable* — Runs on Linux, macOS, Windows
+6. *FOSS* — No proprietary dependencies
+
+---
+
+== Contributing
+
+Contributions are welcome once Phase 1 begins. Priority areas:
+
+1. Rust crate implementation
+2. ReScript component development
+3. Gleam service development
+4. Documentation and examples
+5. Testing and quality assurance
+
+See link:CONTRIBUTING.md[CONTRIBUTING.md] for guidelines.
+
+---
+
+== License
+
+This roadmap and the RPA Elysium project are licensed under PMPL-1.0-or-later.
+
+---
+
+_Last updated: 2026-03-17_

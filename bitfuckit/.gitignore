@@ -51,3 +51,13 @@ coverage/
 
 # Crash recovery artifacts
 ai-cli-crash-capture/
+target/
+node_modules/
+_build/
+deps/
+.elixir_ls/
+.cache/
+*.log
+*.tmp
+build/
+dist/

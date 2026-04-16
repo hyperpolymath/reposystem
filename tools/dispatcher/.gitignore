@@ -85,3 +85,11 @@ src/**/*.mjs
 
 # Test files
 test-plan.json
+target/
+node_modules/
+_build/
+deps/
+.elixir_ls/
+.cache/
+build/
+dist/

@@ -1,0 +1,9 @@
+[submodule "rpa-elysium"]
+	path = rpa-elysium
+	url = git@github.com:hyperpolymath/rpa-elysium.git
+[submodule "total-upgrade"]
+	path = total-upgrade
+	url = git@gitlab.com:hyperpolymath/total-upgrade.git
+[submodule "total-recall"]
+	path = total-recall
+	url = git@gitlab.com:hyperpolymath/total-recall.git

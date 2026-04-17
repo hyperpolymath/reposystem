@@ -42,9 +42,10 @@ pub mod filenames {
 
 /// Search order for locating a contractile file. The CLI tools check these
 /// directories in order, taking the first match:
-///   1. `./contractiles/<type>/`  (portable contract set)
-///   2. `./<type>/`               (top-level legacy location)
-///   3. `./`                      (repo root)
+///   1. `.machine_readable/contractiles/<type>/` (canonical estate layout — highest priority)
+///   2. `./contractiles/<type>/`                 (portable contract set)
+///   3. `./<type>/`                              (top-level legacy location)
+///   4. `./`                                     (repo root)
 pub fn find_contractile(filename: &str) -> Option<std::path::PathBuf> {
     // Derive the type subdirectory from the filename.
     // "Mustfile.a2ml" → "must", "Trustfile.a2ml" → "trust", etc.
@@ -55,9 +56,10 @@ pub fn find_contractile(filename: &str) -> Option<std::path::PathBuf> {
         .to_lowercase()
         .replace("file", "");
 
-    // Build candidate paths. The Intentfile has a legacy alias: the directory
-    // is called "lust" (future intent) not "intent", so we search both.
+    // Build candidate paths. Canonical estate layout (.machine_readable/contractiles/<verb>/)
+    // is searched first; legacy locations follow for backward compatibility.
     let mut candidates = vec![
+        format!(".machine_readable/contractiles/{}/{}", type_dir, filename),
         format!("contractiles/{}/{}", type_dir, filename),
         format!("{}/{}", type_dir, filename),
         filename.to_string(),
@@ -65,13 +67,13 @@ pub fn find_contractile(filename: &str) -> Option<std::path::PathBuf> {
 
     // Add legacy "lust" alias for Intentfile.
     if type_dir == "intent" {
-        candidates.insert(0, format!("contractiles/lust/{}", filename));
-        candidates.insert(1, format!("lust/{}", filename));
+        candidates.insert(1, format!("contractiles/lust/{}", filename));
+        candidates.insert(2, format!("lust/{}", filename));
     }
 
     // Adjustfile also lives in .machine_readable/ as ADJUST.contractile.
     if type_dir == "adjust" {
-        candidates.insert(0, ".machine_readable/ADJUST.contractile".to_string());
+        candidates.push(".machine_readable/ADJUST.contractile".to_string());
     }
 
     for candidate in &candidates {
@@ -82,4 +84,41 @@ pub fn find_contractile(filename: &str) -> Option<std::path::PathBuf> {
     }
 
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    /// Verify that find_contractile() resolves a Mustfile.a2ml placed at the
+    /// canonical estate path `.machine_readable/contractiles/must/Mustfile.a2ml`
+    /// without requiring an explicit --file flag.
+    #[test]
+    fn find_contractile_resolves_canonical_machine_readable_path() {
+        let tmp = tempfile::tempdir().expect("failed to create temp dir");
+        let canonical = tmp
+            .path()
+            .join(".machine_readable/contractiles/must");
+        fs::create_dir_all(&canonical).expect("failed to create canonical dir");
+        let mustfile = canonical.join("Mustfile.a2ml");
+        fs::write(&mustfile, "(must)").expect("failed to write Mustfile.a2ml");
+
+        // Change cwd to the temp dir so relative path resolution works.
+        let original_dir = std::env::current_dir().expect("no cwd");
+        std::env::set_current_dir(tmp.path()).expect("failed to chdir");
+
+        let result = find_contractile("Mustfile.a2ml");
+
+        std::env::set_current_dir(original_dir).expect("failed to restore cwd");
+
+        assert!(
+            result.is_some(),
+            "expected Mustfile.a2ml to be found in .machine_readable/contractiles/must/"
+        );
+        assert_eq!(
+            result.unwrap(),
+            std::path::PathBuf::from(".machine_readable/contractiles/must/Mustfile.a2ml")
+        );
+    }
 }

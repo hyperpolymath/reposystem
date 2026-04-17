@@ -1,10 +1,1 @@
-# SPDX-License-Identifier: PMPL-1.0
-# asdf tool versions for bitfuckit development
-
-# Ada/SPARK (via alire or system package)
-# Install: sudo dnf install gcc-gnat gprbuild
-
-# Nickel for config.ncl
-nickel 1.9.2
-
-# Optional: direnv for environment management
+just 1.36.0

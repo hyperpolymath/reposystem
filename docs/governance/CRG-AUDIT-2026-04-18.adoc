@@ -1,0 +1,915 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// Copyright (c) 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
+= reposystem — CRG Audit (2026-04-18)
+Jonathan D.A. Jewell
+2026-04-18
+:toc:
+:sectnums:
+
+== Scope and Standard
+
+Evaluates the `reposystem` monorepo against *Component Readiness
+Grades v2.0 (STRICT)*, 2026-03-30 revision. reposystem is
+self-declared *C* with a `TEST-NEEDS.md` scorecard headed
+"CRG Grade: C — ACHIEVED 2026-04-04" and a one-line `crg-grade = "C"`
+in STATE.a2ml. The audit checks the claim against on-disk evidence,
+estate dogfooding signal, and the v2.0 "honest D > dishonest B" clause.
+
+reposystem is explicitly named in the workspace MEMORY.md Monorepo
+Directory Map, so the audit treats it as a monorepo: the top-level
+crate (`Cargo.toml` → `reposystem`) is graded together with the 20+
+sibling subproject directories (`bitfuckit/`, `claim-forge/`,
+`avatar-fabrication-facility/`, `git-morph/`, `git-seo/`, `forge-ops/`,
+`gui/`, `tui/`, `scaffoldia/`, `stateful-artefacts/`, `total-recall/`,
+`total-upgrade/`, `recon-silly-ation/`, `rpa-elysium/`, `vexometer/`,
+`tools/`, etc.).
+
+- Standard: `developer-ecosystem/standards/component-readiness-grades/COMPONENT-READINESS-GRADES.md`
+- Template: `rsr-template-repo/docs/governance/CRG-AUDIT-TEMPLATE.adoc`
+- Calibration peer: `verification-ecosystem/proof-of-work/docs/governance/CRG-AUDIT-2026-04-18.adoc`
+- Self-declared grade (prior art):
+  * `.machine_readable/6a2/STATE.a2ml` `[metadata] crg-grade = "C"`,
+    `tests-passing = "112/112"`, last-updated 2026-04-04.
+  * `[project-context] completion-percentage = 65`,
+    `phase = "Testing & stabilization"`.
+  * `TEST-NEEDS.md`: "CRG Grade: C — ACHIEVED 2026-04-04",
+    declared total 112 tests across 8 files.
+- Audit date: 2026-04-18
+- Auditor: Jonathan D.A. Jewell
+
+Schema note: reposystem uses the *flat* `crg-grade = "C"` key under
+`[metadata]` — the same form HYP-S005 matches. No audit-trail
+(`crg-grade-previous`) or audit pointer (`crg-audit`) key present.
+
+The audit grades the repo *as-is today*, not aspirationally.
+
+== v2.0 Strictness Recap
+
+[cols="1,3,4"]
+|===
+| Grade | Release Stage | Hard Requirement (v2.0)
+
+| X | None             | Untested.
+| F | Reject           | Harmful, wasteful, or superseded.
+| E | Pre-alpha        | >=1 test, failures documented.
+| D | Alpha            | Test matrix + scope documented + *RSR compliance mandatory*.
+| C | Alpha-stable     | Dogfooded, CI green, *deep per-file + per-directory annotation*.
+| B | Beta             | 6+ *diverse* external targets, issues fed back.
+| A | Stable           | Real-world external feedback confirms value; no harm.
+|===
+
+Publication requires B+. Long alpha is discipline, not shame.
+
+== Evidence Inventory (verified 2026-04-18)
+
+=== Structural compliance (Grade D floor)
+
+[cols="2,1,3"]
+|===
+| Item | State | Source
+
+| RSR mandatory workflows (17+)
+| PRESENT (21 YAML files in `.github/workflows/`)
+| `.github/workflows/` — canonical workflows present (hypatia-scan,
+codeql, scorecard, scorecard-enforcer, rsr-antipattern, guix-nix-policy,
+rust-ci, mirror, instant-sync, secret-scanner, wellknown-enforcement,
+ts-blocker, npm-bun-blocker, workflow-linter, security-policy, quality,
+e2e, boj-build, cflite_batch, cflite_pr, dogfood-gate). One standard
+workflow missing: no `jekyll*.yml` (not applicable — no Pages site).
+
+| `.machine_readable/6a2/` canonical A2ML
+| PRESENT (STATE, META, ECOSYSTEM, AGENTIC, NEUROSYM, PLAYBOOK — all 6)
+| 105 lines *total* across the six files (STATE 25, META 9, ECOSYSTEM 10,
+AGENTIC 24, NEUROSYM 14, PLAYBOOK 23). *Five of six are schema skeletons
+with 10-25 lines each* — identical to the proof-of-work pattern.
+
+| `0-AI-MANIFEST.a2ml`
+| PRESENT (853 bytes)
+| Root
+
+| `README.adoc`, `EXPLAINME.adoc`, `CONTRIBUTING.md`, `SECURITY.md`,
+`MAINTAINERS.adoc`, `CODE_OF_CONDUCT.md`, `ROADMAP.adoc`,
+`PALIMPSEST.adoc`, `NOTICE`, `VERSION-ROADMAP.adoc`
+| PRESENT
+| Root. Plus three QUICKSTART-\{DEV,USER,MAINTAINER\}.adoc files and
+three ECOSYSTEM-\{EVIDENCE,MAP,STATUS\}.adoc files — above-average
+top-level doc coverage.
+
+| `docs/` orientation subtree
+| *minimal* — one substantive file (`docs/MUSTFILE-REFERENCE.md`) plus
+one manpage (`docs/reposystem.1`). No `docs/architecture/`,
+`docs/decisions/`, `docs/governance/` (until this audit),
+`docs/integration/`, `docs/specification/`, `docs/practice/`.
+| Notable contrast: the repo has substantial *root-level* docs
+(README.adoc 480 lines, ROADMAP.adoc 306 lines) but almost no
+`docs/`-tree content. Specs live in `spec/` (`CONCEPTS.adoc`,
+`DATA-MODEL.adoc`) rather than `docs/specification/`.
+
+| `LICENSE` + `LICENSES/` directory
+| PRESENT
+| Root
+
+| `guix.scm` + `flake.nix`
+| PRESENT (both, plus `flake.lock`)
+| Root
+
+| `.well-known/` (security.txt, ai.txt, humans.txt)
+| PRESENT (all three, plus `.well-known/groove/`)
+| `.well-known/`
+
+| SPDX headers on source
+| PRESENT on 23/23 top-level `src/**.rs`, `src/**.idr`, `src/**.ads` sampled
+| `grep -l SPDX src/` matches all 23 files including the Ada spec
+(`intervention.ads`) and Idris2 ABI (`abi/Types.idr`).
+
+| `Containerfile` (not `Dockerfile`)
+| PRESENT (`Containerfile` + `Containerfile.dev` at root; multiple
+`Containerfile` across subprojects). *Zero `Dockerfile` anywhere in tree*
+(depth-4 search).
+| Container policy met.
+
+| `Justfile` + `Mustfile` (no `Makefile`)
+| PRESENT; *zero `Makefile` at depth 4*.
+| RSR R-020 met.
+
+| Contractile trident
+| PRESENT at `.machine_readable/`: `INTENT.contractile` (72 lines),
+`TRUST.contractile` (80), `MUST.contractile` (91), `ADJUST.contractile`
+(126). Plus `.machine_readable/contractiles/` tree. Plus separate
+top-level `contractiles/` with `cli/`, `k9/`, `mustfile/`, `.flux/`
+subtrees. `bust` and `dust` verb files absent at
+`.machine_readable/` root.
+| Trident present; six-verb layout partial; two parallel contractile
+trees (one under `.machine_readable/`, one at root) is itself a
+layout drift worth untangling.
+
+| Remote
+| `origin → git@github.com:hyperpolymath/reposystem.git` + four mirror
+remotes (bitbucket, codeberg, gitlab, sourcehut).
+| `git remote -v`. GitHub-only push rule; the four mirrors should be
+driven by the downstream hub-and-spoke — presence is informational.
+
+| Monorepo `.git` hygiene
+| CLEAN — `find -maxdepth 3 -name '.git'` returns only the top-level
+`.git`. Zero nested `.git/` dirs across 20+ subprojects.
+| Per MEMORY.md monorepo rule: no `.git` dirs in monorepo subdirs.
+Prior de-submoduling work (`c016e9c chore: vendor submodules`,
+`77c7670 feat: add rpa-elysium, total-upgrade, total-recall as
+submodules`, `87995d9 chore: de-gitlink recon-silly-ation`) landed
+cleanly.
+
+| Merge-conflict markers
+| ZERO (depth-wide grep of `<<<<<<< HEAD` / `>>>>>>> ` returns 0)
+| Unlike neurophone; matches proof-of-work.
+
+|===
+
+*RSR compliance verdict*: **met — D-floor satisfied**. The structural
+shell is clean: workflows parse, Containerfile/Justfile/Mustfile trident
+present, SPDX uniform on sampled files, zero nested `.git/`, zero
+committed merge conflicts. D-floor *content* weakness: `docs/` tree is
+one reference file + one manpage; five of six 6a2 files are stubs.
+
+=== Banned-language sweep (policy honesty)
+
+Per CLAUDE.md language policy and MEMORY.md:
+
+[cols="2,1,3"]
+|===
+| Pattern | Hits | Notes
+
+| `.ts` files
+| *0*
+| Depth-4 scan excluding `node_modules/` / `dist-newstyle/`. Clean.
+
+| `package.json` runtime deps
+| 1 suspect at `recon-silly-ation/package.json`
+| *Declared dev-dep shim* ("ReScript dev-dependency shim. Primary
+runtime is Deno; this file exists only so pnpm can install the
+ReScript compiler toolchain for build verification"). Three more
+`package.json` files under `gui/lib/rescript-tea/`,
+`gui/lib/rescript-d3/`, `gui/lib/rescript-webapi/` are vendored
+ReScript library manifests, not runtime deps. Borderline — no ban
+breach, but the `recon-silly-ation/node_modules/` + `pnpm-lock.yaml`
+presence drift closer to the banned list than any other repo in the
+monorepo. Bun is absent.
+
+| `Dockerfile`
+| *0*
+| `Containerfile` policy met throughout.
+
+| `Makefile`
+| *0*
+| `Justfile` / `Mustfile` enforced.
+
+| `v.mod` / `vpkg.json` (V-lang detector per MEMORY.md)
+| *0*
+| No V-lang project manifests anywhere.
+
+| `.v` files (V-lang)
+| *1* — `api/v/reposystem.v`
+| **V-lang banned 2026-04-10.** Per memory rule "V sources MOVE, don't
+delete": ported V code belongs at
+`v-ecosystem/v-api-interfaces/v-reposystem/`. This file is a live
+banned-language artefact. Per the
+`feedback_v_lang_banned.md` rule the primary detector is `v.mod`
+(absent here), so this is a *single orphaned .v file* rather than a
+full V project, but it's still detectable drift. The boj-server
+cartridge sibling already has a `SIDELINED-reposystem_adapter.v.adoc`
+explaining the Zig replacement; the reposystem-side
+`api/v/reposystem.v` has not received the same treatment.
+
+| Go files
+| *0* at depth 4
+| Clean.
+
+| Python (general)
+| Not sampled exhaustively; no `requirements.txt`/`pyproject.toml` at
+root.
+| Not flagged.
+
+| Dangerous patterns (`believe_me`, `assert_total`, `Admitted`, `sorry`,
+`unsafeCoerce`, `Obj.magic`) in `src/`
+| *0*
+| Grep 2026-04-18 across `src/**.rs` + `src/**.idr` + `src/**.ads`.
+A similar sweep landed in `bbe47d6 fix(recon-silly-ation): eliminate
+Obj.magic, getUnsafe, getExn partial patterns` for the ReScript sibling.
+
+|===
+
+The one-file V-lang leftover at `api/v/reposystem.v` is the cleanest
+single-action policy-honesty finding and is listed under
+*Self-knowing violations* below.
+
+=== Code and proofs
+
+[cols="2,1,3"]
+|===
+| Item | Count | Notes
+
+| Top-level Rust source (`src/**.rs`)
+| 7 root modules + 11 in `src/commands/`
+| `src/lib.rs` 1294, `src/graph.rs` 655, `src/main.rs` 423,
+`src/scanner.rs` 391, `src/verisimdb.rs` 293, `src/config.rs` 36,
+`src/tui.rs` 11. Plus 11 `src/commands/*.rs` (apply, aspect,
+completions, config, edge, export, group, mod, plan, scan, scenario,
+slot, view, weak_links — fourteen actual files; EXPLAINME's claimed
+"14 commands" count matches).
+
+| Top-level Rust total LOC (root crate, excluding subprojects)
+| 3 103 LOC across `src/*.rs` (7 files), plus commands subdir (not
+separately counted here).
+| Largest is `src/lib.rs` at 1 294 LOC — dense for a library entry.
+
+| Idris2 ABI modules (`src/abi/**/*.idr`)
+| 1 file (`src/abi/Types.idr`)
+| Single module, SPDX-headered.
+
+| Zig FFI modules (`ffi/zig/src/*.zig`)
+| 1 file (`ffi/zig/src/reposystem_ffi.zig`, 33 LOC) + `build.zig`
+| FFI present but minimal.
+
+| Ada source
+| 1 spec (`src/intervention.ads`)
+| Ada smoke test via `tests/ada_smoke_test.sh` (shell-harnessed, not a
+gnat-compiled suite).
+
+| Subprojects with their own `Cargo.toml`
+| 8 direct (`tui/`, `gui/`, `forge-ops/`, `git-morph/`, `git-seo/`,
+`fuzz/`, plus `rpa-elysium/`, `tools/git-submodule-flush/`,
+`tools/gitmerge-paralleliser/`, `tools/merge-resolver/`) plus nested
+crates under `contractiles/cli/crates/{contractile,contractile-core}`.
+| ~12 Cargo crates in-monorepo. Only two (`tui`, `gui`) declare
+`reposystem = { path = ".." }` / `"../.."` as a real dependency;
+the others are siblings that use their own code and happen to share
+the workspace.
+
+| Subprojects with Deno / ReScript
+| 5 `deno.json` (tools/dispatcher, rpa-elysium, gui, recon-silly-ation,
+forge-ops). ReScript tree under `gui/lib/*` (vendored libs).
+| Polyglot monorepo: Rust core + Ada spec + Idris2 ABI + Zig FFI + Deno
+(for web/tool siblings) + ReScript (GUI).
+
+| `unsafe` in top-level `src/`
+| Not library-wide forbidden
+| Unlike proof-of-work, reposystem does not declare
+`#![forbid(unsafe_code)]` in `src/lib.rs` (verified: no `forbid(unsafe`
+in `src/`). This is a *missing* safety signal, not a breach — reposystem
+is a user-level CLI, not a proof-critical crate, and `gix` / `ratatui`
+pull in natural FFI — but at the C grade a conscious policy statement
+here would help.
+
+| `panic-attack assail` run record
+| Not cited in STATE, not in any audit log.
+| Pre-commit rule standing; running it on this workspace is routine
+follow-up, not a grading blocker.
+|===
+
+*File-vs-EXPLAINME discrepancy summary (CRITICAL finding).*
+`EXPLAINME.adoc`'s *File Map* (lines 39-65) lists 18 paths. On-disk:
+
+- *Exist*: `src/main.rs`, `web/`, `web/graph.js`, `spec/` (with
+  `CONCEPTS.adoc` + `DATA-MODEL.adoc`).
+- *MISSING (10 of 18)*: `src/importers/`, `src/importers/cargo.rs`,
+  `src/importers/package.rs`, `src/graph/` (directory — the actual
+  file is `src/graph.rs`), `src/graph/model.rs`, `src/graph/validation.rs`,
+  `src/aspects/`, `src/aspects/tagger.rs`, `src/scenarios/`,
+  `src/scenarios/manager.rs`, `src/export/`, `src/export/dot.rs`,
+  `src/export/json.rs`, `src/export/comparison.rs`, `src/cli/`,
+  `src/cli/ui.rs`.
+
+None of `importers/`, `aspects/`, `scenarios/`, `export/`, `cli/`
+exists as a directory. The actual code lives flat in `src/*.rs` +
+`src/commands/*.rs`. Every file *path* in the EXPLAINME File Map is
+wrong — this is not stylistic drift, it is a fabricated File Map.
+
+This is the *same pattern* flagged in the 2026-04-18 proof-of-work
+audit (10 of 16 paths wrong) and noted in the fireflag audit of the
+same day. The EXPLAINME-fabrication pattern has now appeared in three
+C-claimants on a single day, which is evidence of a systematic
+LLM-drift that the CRG audit rubric must penalise.
+
+`EXPLAINME.adoc`'s *"Dogfooted Across The Account"* table claims four
+integrations: `panic-attacker`, `januskey`, `proof-of-work`, `vql-ut`.
+
+- `panic-attacker` — claim: "Feeds assail findings into aspect weights".
+  Not substantiated in-tree (no aspect-weight pipeline file exists; the
+  aspect commands at `src/commands/aspect.rs` do not ingest assail JSON).
+- `januskey` — claim qualified with "Could track" (conditional, not a
+  dogfood).
+- `proof-of-work` — claim: "Z3 verifies scenario correctness". No Z3
+  dep in `Cargo.toml`; `src/commands/scenario.rs` does not call a Z3
+  bridge.
+- `vql-ut` — VQL was **renamed VCL 2026-04** per memory. Claim is stale
+  and no VQL or VCL symbol exists in the codebase.
+
+Zero of four dogfood claims in EXPLAINME is substantiated in-tree.
+This is the fabricated-annotation pattern seen in proof-of-work —
+same magnitude, same day.
+
+=== Test matrix — declared vs actual
+
+STATE.a2ml `[recent-changes]` and `TEST-NEEDS.md` declare:
+
+[cols="2,1,1,3"]
+|===
+| Suite | Declared | Grep-verifiable | Notes
+
+| Unit tests (inline)
+| 9 (graph 3, scanner 3, lib 3)
+| 9 (`src/scanner.rs` 5, `src/graph.rs` 4 — note this is 9 total but
+re-apportioned between the two files vs TEST-NEEDS's 3+3 split)
+| Count matches; internal apportionment wrong.
+
+| Invariants (`tests/invariants.rs`)
+| 50 "determinism, fidelity, round-trip properties"
+| *50* `#[test]` attributes. Clean match.
+| TEST-NEEDS header claims 50, grep confirms 50. Good-faith count.
+
+| E2E (`tests/e2e_test.rs`)
+| 20
+| *20* `#[test]` attributes. Clean match.
+|
+
+| Property-based (`tests/property_test.rs`)
+| 12
+| *12* `#[test]` attributes. Clean match.
+|
+
+| Aspect tests (`tests/aspect_test.rs`)
+| 14
+| *14* `#[test]` attributes. Clean match.
+|
+
+| CLI-integration (`tests/cli_integration.rs`)
+| 4
+| *4* `#[test]` attributes. Clean match.
+|
+
+| Hello-yard (`tests/hello_yard.rs`)
+| 3
+| *3* `#[test]` attributes. Clean match.
+|
+
+| Criterion benchmarks (`benches/reposystem_bench.rs`)
+| 6 suites
+| *Not grep-counted* (criterion groups, not `#[test]`)
+| 1 bench file; six criterion groups is plausible within a single file
+given the declared scope (construction, edges, export, forge ops,
+queries).
+
+| Ada smoke (`tests/ada_smoke_test.sh`)
+| 1 shell script
+| Present
+|
+
+| *Total tests declared* | *112* | *103 grep-verifiable `#[test]` /
+`#[tokio::test]` / `proptest!` attributes across 8 test files* + 9
+inline = *112* when adding inline tests. *Match*.
+| Unlike proof-of-work's 56% aspect-test overclaim, reposystem's test
+counts *reconcile exactly* against grep. The tests-passing "112/112"
+claim in STATE.a2ml is the single honest counting signal in the
+audit.
+|===
+
+Reconciliation: unit (9) + invariants (50) + e2e (20) + property (12) +
+aspect (14) + cli-integration (4) + hello-yard (3) = *112*. Plus 6
+criterion groups and 1 Ada shell test excluded from the v2.0 `#[test]`
+denominator. **Test counts are truthful.**
+
+CI coverage: `.github/workflows/rust-ci.yml` parses cleanly (SPDX
+header line 1, `on: pull_request: branches: ['**']` + `push:
+branches: [main, master]`, `if: hashFiles('Cargo.toml') != ''` gate,
+SHA-pinned `actions/checkout@34e114876…` (v4 legacy) and
+`dtolnay/rust-toolchain@4be9e76f…`). Note: pins are the legacy v4
+SHA, not the canonical 2026-04-17 v6.0.2. Rewrite is routine estate
+work, not a grade-affecting drift.
+
+Last green run date not cited in STATE. No CI badge in README. No
+`.hypatia/activity.jsonl`-style log in repo.
+
+=== Annotation depth
+
+v2.0 C requires **per-file and per-directory orientation** — and
+because reposystem is a *monorepo*, per-subproject READMEs are the
+key evidence. Findings:
+
+- Total README-family files at depth 3: *43*. Distribution:
+  * Top-level: `README.adoc` (480 lines — substantive).
+  * Subprojects with a `README.adoc`: `bitfuckit/`, `claim-forge/`,
+    `avatar-fabrication-facility/`, `total-recall/`, `total-upgrade/`,
+    `vexometer/`, `cookbooks/`, plus the second-level
+    `contractiles/{mustfile,k9,contractiles,.flux}/README.adoc`.
+  * Subprojects *without* a root README:
+    `git-morph/` has `README.adoc` (present), `git-seo/` (ABSENT at
+    the subproject root — verified), `forge-ops/` (ABSENT),
+    `gui/` (ABSENT), `tui/` (README lives only in `tui/legacy-ada/`),
+    `scaffoldia/` (ABSENT at root, only sub-READMEs),
+    `rpa-elysium/` (has own manifest but no user-facing README.adoc
+    verified here), `recon-silly-ation/` (README.adoc present —
+    confirmed).
+  * `tools/` subprojects: 4 of 7 have a README (dispatcher, hud,
+    reunify, rsr-certified); `gitmerge-paralleliser/`,
+    `git-submodule-flush/`, `merge-resolver/` do not.
+  * `stateful-artefacts/` has deep README coverage (7 READMEs including
+    a `README.template.md` and `README.rendered.md` pair — internally
+    well-annotated).
+
+- Per-subproject orientation coverage: Out of ~20 substantive
+  subprojects, roughly *12-14 carry a root README* (counting READMEs
+  at subproject root only). Coverage ≈ *60-70%*. That is *below* the
+  "deep per-file annotation" threshold for C (conventionally read as
+  ≥90% at per-unit level).
+
+- `docs/` at the top level is one reference file + one manpage. No
+  `docs/architecture/`, `docs/decisions/`, `docs/practice/`,
+  `docs/specification/`. Specs live at `spec/` (two files). The audit
+  dir `docs/governance/` did not exist before this audit created it.
+
+- `.machine_readable/6a2/` — five of six files are 10-25-line stubs.
+  Same template-drift as proof-of-work.
+
+- `EXPLAINME.adoc` File Map and Dogfood table are fabricated (see §4).
+  The authoritative per-file orientation document in the repo is
+  *factually wrong on 10 of 18 file paths*. That is worse than no
+  File Map.
+
+- README.adoc is substantive and covers Quick Start, Web UI, TUI,
+  architecture; it is the strongest single annotation in the repo.
+
+- `ROADMAP.adoc` is real (306 lines, fills the f/i staged plan, has
+  Current Status as of 2026-01-26, and populated MUST/SHOULD/COULD
+  checklists with checkmarks). Unlike proof-of-work, ROADMAP here is
+  *not* the template placeholder.
+
+- `VERSION-ROADMAP.adoc`, `ECOSYSTEM-{EVIDENCE,MAP,STATUS}.adoc`,
+  `PALIMPSEST.adoc`, `GRAPH-STRUCTURE.md`, `TOPOLOGY.md` — six further
+  substantive root docs. Root-level density is good; `docs/`-tree
+  density is thin.
+
+- ANCHOR.a2ml says `parents: ["org.hyperpolymath.boj-server"]`, `clade:
+  "unknown"`. CLADE.a2ml says `lineage.type = "monorepo"`,
+  `parent = "Monorepo — graph engine for repository ecosystem
+  management"`, `primary = "rm"` clade (repo-management). Unlike
+  proof-of-work these two *agree on the monorepo identity* (parent is
+  boj-server in ANCHOR; CLADE is the assigned clade-taxonomy entry,
+  not a lineage contradiction). Clean.
+
+Net: README spread at ~65% of subproject roots + thin `docs/` tree +
+fabricated EXPLAINME File Map collectively fail the C "deep per-file
+and per-directory annotation" clause, despite strong root-level docs.
+
+=== Dogfooding / home-stable evidence
+
+STATE.a2ml has *no* `[dogfooding-status]` section. No
+`docs/practice/DOGFOOD-LOG.adoc`. No ad-hoc dogfood table in ROADMAP.
+
+Real (substantiated) dogfood signals:
+
+- `boj-server/cartridges/reposystem-mcp/` exists as a **real BoJ
+  cartridge**: 442 LOC across `cartridge.json`, `mod.js` (55),
+  `abi/`, `adapter/reposystem_adapter.zig` (121), `ffi/
+  reposystem_ffi.zig` (43), `adapter/build.zig` (31), plus a
+  `SIDELINED-reposystem_adapter.v.adoc` documenting the V→Zig
+  migration. The cartridge declares four tools
+  (`reposystem_list_repos`, `reposystem_check_health`,
+  `reposystem_sync_mirrors`, `reposystem_run_audit`). This is a real
+  wiring site and counts toward dogfooding *for the boj-server
+  project*, but it does not verify end-to-end usage of the
+  reposystem CLI yet (no runtime log, no `activity.jsonl`,
+  `zig-out` is empty).
+- `graph.toml` at the reposystem root points at
+  `/var$REPOS_DIR/reposystem` as a scanned target — i.e. the
+  reposystem CLI is set up to scan its *own* monorepo. Self-scan is
+  the lightest possible dogfood; no output artefact is committed to
+  prove it has been run.
+- `fleet-ecosystem/hybrid-automation-router/.machine_readable/6a2/
+  ECOSYSTEM.a2ml` lists reposystem as `sibling-standard` with
+  relationship "Governance sibling — shares RSR compliance,
+  contractiles, bot directives". Sibling declaration, not usage.
+- `gui/Cargo.toml` and `tui/Cargo.toml` do use
+  `reposystem = { path = ".." }` / `"../.."` — two internal crates
+  depend on the library. This is workspace self-use, not
+  cross-project dogfooding.
+- Prior estate grep for "reposystem" as a `Cargo.toml` dep shows
+  zero out-of-monorepo consumers; the boj-server cartridge is via
+  adapter/FFI, not a Rust-crate dep.
+
+Unsubstantiated dogfood claims:
+
+- EXPLAINME's "Dogfooted Across The Account" table —
+  `panic-attacker` / `januskey` / `proof-of-work` / `vql-ut` — all
+  four claims are fabricated per §4. The proof-of-work EXPLAINME
+  audit's reciprocal claim ("reposystem — Models puzzle/solver as
+  provider/consumer graph") is also unsubstantiated on that side.
+  Circular fabricated cross-citation.
+
+- No playtest / play-log / usage-log / issue-tracker trail of *users
+  of reposystem*.
+
+Completion-percentage = 65 in STATE is honest about the repo being
+two-thirds built. The CRG C claim is inconsistent with a 65% phase
+under v2.0: C requires the product to be home-stable, not
+65%-implemented.
+
+v2.0 C requires *continuous* home-context use with no known failures.
+reposystem has *one* real dogfood site (the boj-server cartridge,
+stubs-and-adapters stage) and one self-scan target configured but
+not logged. That is the thinnest possible dogfood satisfying the
+letter of the requirement, and falls well short of the spirit.
+
+=== External validation (Grade B / A)
+
+No `[external-targets]`. No `[issues-fed-back]`. No `[field-signal]`.
+
+External-adjacent signals:
+
+- Mirror remotes configured (bitbucket, codeberg, gitlab, sourcehut)
+  — presence is not usage.
+- No GitHub issues, PRs, or discussion trail cited in STATE.
+- The boj-server reposystem-mcp cartridge would be the natural path
+  to B-grade external targets once the cartridge is wired to real
+  scan jobs and runs against multiple estate forges — not there yet.
+- `fleet-ecosystem/hybrid-automation-router` cites reposystem as
+  a *sibling-standard* governance relationship, which is an
+  internal-estate architectural citation, not a user.
+
+Per v2.0, reaching B requires *6+ diverse external targets* actually
+using the software with feedback fed back. reposystem is at *0*.
+
+=== HYP-S005 canary
+
+HYP-S005 is the estate-wide detector for "self-declared C while
+evidence supports E or D". It matches the *flat* `crg-grade = "C"`
+under `[metadata]` in STATE.a2ml.
+
+reposystem would trigger HYP-S005 on three independent signals:
+
+1. `EXPLAINME.adoc` File Map claims 18 source paths, 10 of which do
+   not exist on disk (no `src/{importers,aspects,scenarios,export,
+   cli}/` directories exist). This is a fabricated authoritative
+   annotation — the *pattern-of-the-day* across three C-claimants
+   (proof-of-work, fireflag, reposystem).
+2. `EXPLAINME.adoc` *"Dogfooted Across The Account"* table claims
+   four integrations of which *zero* are substantiated in-tree
+   (panic-attacker: no aspect-weight pipeline; januskey: conditional
+   "could track"; proof-of-work: no Z3 dep; vql-ut: VCL renamed, no
+   VQL symbols).
+3. Completion-percentage = 65 self-declared, combined with no
+   `[dogfooding-status]` and no `docs/practice/DOGFOOD-LOG.adoc`,
+   is inconsistent with home-stable C.
+
+Mitigating signals (why the demote is one-grade, not two):
+
+- Test counts are *exactly* reconcilable (112 declared = 112 grep).
+  This is unique in today's three C-claimant audits.
+- ROADMAP is real, populated, dated.
+- Zero merge-conflict markers, zero nested `.git/` dirs, clean
+  monorepo hygiene.
+- A real dogfood wiring site exists (boj-server/cartridges/
+  reposystem-mcp), albeit at stubs-and-adapters maturity.
+
+No HYP-S005 suppression comment is present in the repo and none is
+warranted.
+
+=== Self-knowing policy violations
+
+- **V-lang banned file**: `api/v/reposystem.v` is a single `.v` file
+  in a banned-language tree. Per the V-sources-MOVE rule, this
+  should be at `v-ecosystem/v-api-interfaces/v-reposystem/reposystem.v`.
+  One-action fix.
+- **Attribution in Cargo.toml**: `authors = ["Jonathan D.A. Jewell
+  <hyperpolymath>"]` — the email slot contains the literal string
+  "hyperpolymath", which is not a valid email address and violates
+  the author-attribution rule (should be
+  `6759885+hyperpolymath@users.noreply.github.com` for git or
+  `j.d.a.jewell@open.ac.uk` for package metadata). One-line fix.
+- **Template-drift on 6a2**: five of six files are 10-25-line
+  schema skeletons. Same pattern as proof-of-work and fireflag.
+- **Parallel contractile trees**: `.machine_readable/INTENT.contractile`
+  etc. *and* a root-level `contractiles/` tree exist in parallel.
+  Contractile-layout rule ("verb dir = ONE
+  `<Verb>file.a2ml` + ONE `<verb>.ncl` runner") wants a single
+  canonical location. The parallel tree is audit-actionable.
+- **Missing bust+dust verbs**: only four of the six contractile verbs
+  are present at `.machine_readable/` top level (INTENT, TRUST,
+  MUST, ADJUST). `bust`/`dust` are absent. The contractile-trident
+  invariant wants all six.
+- **Docs-tree thinness**: `docs/` has 2 files; spec lives at
+  `spec/`. Worth consolidating under `docs/specification/` at some
+  point.
+- **EXPLAINME.adoc fabrication**: the authoritative
+  orientation document has 10 of 18 file paths wrong and 4 of 4
+  dogfood claims unsubstantiated. See §4.
+
+== Grade x Evidence Matrix
+
+[cols="1,1,3,3"]
+|===
+| Grade | Met? | Evidence supporting | Evidence against / gaps
+
+| X
+| n/a
+| 103 `#[test]`-family attributes + 9 inline = 112 → not X
+| —
+
+| F
+| n/a
+| Not superseded; no harm signal. Real consumer wiring at
+boj-server cartridge.
+| —
+
+| E
+| ✓
+| 112 tests across 8 files, all declared passing; invariants suite
+is the largest single suite (50 tests); property / aspect / e2e
+suites present.
+| —
+
+| D
+| ✓ *(earned)*
+| Structural shell complete: 21 workflows parse, 6a2 layout, contractile
+trident (four of six verbs), Justfile + Mustfile + Containerfile,
+`.well-known/`, LICENSES dir, SPDX headers uniform on root source,
+fuzz scaffold at `fuzz/fuzz_targets/`, Idris2 ABI single module, Zig
+FFI single module, Ada spec + smoke harness, zero merge-conflicts,
+zero nested `.git`, monorepo de-submoduled cleanly (commits
+`c016e9c`, `77c7670`, `87995d9`). ROADMAP is real and populated.
+Test counts match grep exactly (112 = 112).
+| Cargo.toml author email drift ("hyperpolymath" as email);
+`api/v/reposystem.v` is a banned-language file needing MOVE; five of
+six 6a2 files are stubs. None drops the D-floor, but all are first
+things a C audit catches.
+
+| C
+| *✗*
+| Real Rust code (3 103 LOC at root, plus ~12 sibling crates); honest
+test-count reconciliation (112/112 declared = 112 grep); real boj-server
+cartridge wiring site at 442 LOC; clean monorepo git hygiene; real
+populated ROADMAP with dated milestones; six substantive
+root-level orientation docs (README, ROADMAP, EXPLAINME,
+ECOSYSTEM-{EVIDENCE,MAP,STATUS}, VERSION-ROADMAP).
+| *No `[dogfooding-status]` section.* *EXPLAINME.adoc File Map has 10
+of 18 source paths wrong* (no `importers/`, `aspects/`, `scenarios/`,
+`export/`, `cli/` directories). *Four of four dogfood-across-the-account
+claims are fabricated* (panic-attacker/januskey/proof-of-work/vql-ut).
+Per-subproject README coverage ~65% (below the C ≥90% threshold for
+"deep per-file annotation"). `docs/` tree is two files. 6a2 META /
+ECOSYSTEM / AGENTIC / NEUROSYM / PLAYBOOK are 10-25-line stubs.
+completion-percentage = 65 is self-declared half-to-two-thirds built.
+Only one real cross-project dogfood site (boj-server cartridge, at
+stubs-and-adapters maturity). No `#![forbid(unsafe_code)]` signal on
+the library (missing hygiene, not a breach).
+
+| B
+| ✗
+| —
+| Zero external targets. Zero issues-fed-back. Zero field signal.
+boj-server cartridge could route toward the first external target once
+the cartridge is run in anger across a second estate.
+
+| A
+| ✗
+| —
+| No field confirmation.
+|===
+
+== Verdict
+
+*Current CRG grade: **D (Alpha)**. Demote one grade from self-declared C.*
+
+Self-declared: *C*. Audited: *D*. One-grade honesty delta — same
+magnitude as the 2026-04-18 proof-of-work audit.
+
+Reasoning (one sentence): reposystem passes the D-floor cleanly (21
+workflows parse, SPDX uniform, zero dangerous patterns, honest 112-test
+reconciliation, monorepo git-hygiene clean, real ROADMAP), but fails
+the C clauses on three independent axes — no `[dogfooding-status]` and
+only one real cross-project dogfood site (the boj-server cartridge at
+stubs-and-adapters maturity); the authoritative `EXPLAINME.adoc` File
+Map fabricates ten source paths and the "Dogfooted Across The Account"
+table fabricates all four cross-project integrations; per-subproject
+README coverage is ~65% of ~20 subprojects and the `docs/` tree is two
+files, both below the C "deep per-file and per-directory annotation"
+threshold.
+
+The D grade is *earned, not conservative-by-default*, on three positive
+signals:
+
+1. **Honest test reconciliation** — uniquely among today's three
+   C-claimant audits, reposystem's declared 112 tests match the grep
+   count exactly (50 invariants + 20 e2e + 14 aspect + 12 property +
+   9 inline + 4 cli-integration + 3 hello-yard = 112). No overclaim.
+2. **Monorepo hygiene is clean** — zero nested `.git/`, zero
+   merge-conflict markers, de-submoduling landed across three tracked
+   commits (`c016e9c`, `77c7670`, `87995d9`), real polyglot layout
+   (Rust core + Ada spec + Idris2 ABI + Zig FFI + Deno siblings +
+   ReScript GUI), substantive ROADMAP with dated milestones.
+3. **Real dogfood wiring exists** at
+   `boj-server/cartridges/reposystem-mcp/` (442 LOC, four declared
+   MCP tools, V→Zig migration documented via SIDELINED). Not yet
+   end-to-end-exercised, but architecturally wired — further than
+   proof-of-work's four fabricated integrations and comparable to
+   fireflag's "seeded node" state.
+
+What blocks *immediate* promotion to C (do these first):
+
+. **Fix `EXPLAINME.adoc` File Map.** Delete the ten non-existent
+  directory entries (`importers/`, `aspects/`, `scenarios/`, `export/`,
+  `cli/` and their sub-files). Replace with the *actual* path
+  inventory: `src/lib.rs`, `src/main.rs`, `src/graph.rs`,
+  `src/scanner.rs`, `src/verisimdb.rs`, `src/config.rs`, `src/tui.rs`,
+  `src/commands/{apply,aspect,completions,config,edge,export,group,
+  plan,scan,scenario,slot,view,weak_links}.rs`, `src/abi/Types.idr`,
+  `src/intervention.ads`, `ffi/zig/src/reposystem_ffi.zig`, `web/`,
+  `spec/{CONCEPTS,DATA-MODEL}.adoc`.
+. **Fix or strike the "Dogfooted Across The Account" table**. Either
+  wire `panic-attacker` / `januskey` / `proof-of-work` / `vql-ut` in —
+  `Cargo.toml` deps + runtime paths + committed output artefacts — or
+  strike all four rows. VQL→VCL rename must be respected either way.
+. **Add `[dogfooding-status]` to `.machine_readable/6a2/STATE.a2ml`**
+  with at minimum two real entries: (a) boj-server/cartridges/
+  reposystem-mcp wiring, what the four MCP tools cover, last-run
+  date; (b) self-scan of the reposystem monorepo via `graph.toml`,
+  with a committed JSON export artefact to prove the pipe runs.
+. **Add per-subproject READMEs** for the 6-8 subprojects currently
+  without one: `git-seo/`, `forge-ops/`, `gui/`, `tui/` (root, not
+  just `tui/legacy-ada/`), `scaffoldia/` (root),
+  `tools/{gitmerge-paralleliser,git-submodule-flush,merge-resolver}/`.
+  Target ≥90% per-subproject README coverage.
+. **Populate the five stub 6a2 files** — META / ECOSYSTEM / AGENTIC
+  / NEUROSYM / PLAYBOOK are 10-25-line skeletons. Even 50 lines each
+  with real content beats a stub.
+. **MOVE `api/v/reposystem.v`** to
+  `developer-ecosystem/v-ecosystem/v-api-interfaces/v-reposystem/`
+  per the V-sources-MOVE rule, leaving a `SIDELINED-api-v.adoc` in
+  `api/v/` pointing at the Zig replacement at
+  `ffi/zig/src/reposystem_ffi.zig` and the boj-server cartridge.
+. **Fix Cargo.toml author email** — currently
+  `"Jonathan D.A. Jewell <hyperpolymath>"`. Replace with
+  `j.d.a.jewell@open.ac.uk` per the author-attribution rule.
+. **Consolidate the contractile layout** — pick one location
+  (`.machine_readable/` or root `contractiles/`), merge the other
+  into it. Add the missing `BUST.contractile` and `DUST.contractile`
+  so all six verbs are present.
+. **Populate `docs/architecture/`, `docs/practice/`,
+  `docs/specification/` (move `spec/*.adoc` here)**, even as
+  single-page stubs, to give the `docs/` tree minimal orientation
+  surface.
+. **Declare `#![forbid(unsafe_code)]` in `src/lib.rs`** if the
+  library is unsafe-free in practice, as an explicit hygiene
+  signal. If FFI prevents a global forbid, scope it to specific
+  modules.
+
+What blocks promotion to B (after C):
+
+. Zero external targets. Need 6+ diverse. Natural candidates:
+  (a) boj-server running reposystem-mcp cartridge end-to-end against
+  the hyperpolymath estate; (b) fleet-ecosystem/
+  hybrid-automation-router consuming reposystem's ecosystem graph
+  (already declares sibling-standard); (c) natsci-studio /
+  neurophone / boj-server / panic-attacker repos run through
+  reposystem-scan with stored aspect weights.
+. No external-contributor flow. Dependabot / CI PRs don't count.
+. Need a committed log of actual scan runs — even one per month —
+  demonstrating the pipe is exercised, with issues-fed-back closed
+  against real findings.
+
+== Notes on Non-Negotiables Respected by this Audit
+
+- Honest 112/112 test reconciliation is respected as a real positive
+  signal — the scorecard is not inflated.
+- The boj-server/cartridges/reposystem-mcp cartridge is treated as a
+  real dogfood site at its current stubs-and-adapters maturity,
+  not downgraded.
+- Monorepo de-submoduling work (`c016e9c`, `77c7670`, `87995d9`) is
+  respected as completed estate-hygiene work.
+- `recon-silly-ation/package.json` is treated as an acknowledged
+  pnpm dev-dep shim (per its own file comment), not flagged as a
+  runtime breach.
+- The EXPLAINME-fabrication pattern is graded as a C-blocker, not
+  a D-dropper, consistent with the 2026-04-18 proof-of-work and
+  fireflag audits.
+- HYP-S005 would flag this repo on the `[metadata] crg-grade = "C"`
+  rule. No suppression warranted.
+- Standing rules respected: PMPL-1.0-or-later SPDX throughout,
+  GitHub-only push origin (mirrors informational), Rust (+ Ada +
+  Idris2 + Zig ABI/FFI stack) per policy.
+
+== STATE.a2ml update recommendation
+
+Recommended (do NOT execute as part of this audit) — edit
+`.machine_readable/6a2/STATE.a2ml`:
+
+[source,toml]
+----
+[metadata]
+project = "reposystem"
+version = "0.1.0"
+last-updated = "2026-04-18"
+status = "active"
+crg-grade = "D"                # was "C"
+crg-grade-previous = "C"       # audit trail
+crg-audit = "docs/governance/CRG-AUDIT-2026-04-18.adoc"
+crg-next-target = "C"
+tests-passing = "112/112"      # honest — keep
+
+[project-context]
+name = "reposystem"
+completion-percentage = 55     # was 65 — better matches C-blockers
+phase = "D-earned; C-lift needs EXPLAINME fix, dogfood log, per-subproject READMEs, 6a2 content, V-file MOVE."
+
+[test-coverage]                # new explicit block
+unit-tests-inline = 9           # graph + scanner + lib
+invariants-suite = 50           # tests/invariants.rs
+e2e-suite = 20                  # tests/e2e_test.rs
+property-suite = 12             # tests/property_test.rs
+aspect-suite = 14               # tests/aspect_test.rs
+cli-integration = 4             # tests/cli_integration.rs
+hello-yard = 3                  # tests/hello_yard.rs
+total = 112                     # reconciles (50+20+14+12+9+4+3)
+criterion-bench-groups = 6      # benches/reposystem_bench.rs — not counted in total
+ada-smoke = 1                   # tests/ada_smoke_test.sh — shell harness, not counted
+
+[dogfooding-status]             # new block
+boj-cartridge = { site = "boj-server/cartridges/reposystem-mcp", status = "stubs-and-adapters", tools = 4, last-run = "not yet" }
+self-scan = { site = "graph.toml", target = "/var/mnt/eclipse/repos/reposystem", status = "configured", last-export = "not committed" }
+
+[blockers]
+explainme-filemap-drift = "10 of 18 paths in EXPLAINME.adoc File Map do not exist; 5 claimed source directories (importers/, aspects/, scenarios/, export/, cli/) are fictional."
+explainme-dogfood-fabrication = "4 of 4 cross-project dogfood claims unsubstantiated (panic-attacker, januskey, proof-of-work, vql-ut). VQL was renamed VCL 2026-04."
+dogfood-log-missing = "No committed scan-output artefact. boj-cartridge and self-scan configured but not exercised."
+readme-coverage-gap = "~65% of subprojects have a root README; target ≥90% for C."
+v-lang-leftover = "api/v/reposystem.v is a banned-language orphan; should MOVE to v-ecosystem/v-api-interfaces/v-reposystem/."
+cargo-toml-author-email = "'hyperpolymath' is not an email; replace with j.d.a.jewell@open.ac.uk."
+6a2-stubs = "META (9), ECOSYSTEM (10), AGENTIC (24), NEUROSYM (14), PLAYBOOK (23) are schema skeletons, not content."
+contractile-layout-drift = "Parallel contractile trees at .machine_readable/ and root contractiles/; bust+dust verbs absent."
+docs-tree-thin = "docs/ has 2 files; spec/ lives outside docs/specification/."
+----
+
+Demote target: *D*. Route-to-C is the ten-item fix list above.
+
+== Related Files
+
+- `.machine_readable/6a2/STATE.a2ml` — authoritative self-declared
+  state; recommend demote C→D with notes citing this audit.
+- `TEST-NEEDS.md` — declared 112 tests; *correctly reconciled* with
+  grep (keep as reference for honest counting).
+- `EXPLAINME.adoc` — File Map (10/18 paths fabricated) and
+  "Dogfooted Across The Account" table (4/4 fabricated) are the
+  single-largest C-blockers. Full rewrite needed.
+- `ROADMAP.adoc` — real, populated, dated (unlike proof-of-work);
+  no audit action.
+- `api/v/reposystem.v` — banned-language file to MOVE.
+- `Cargo.toml` L9 — author email drift to fix.
+- `boj-server/cartridges/reposystem-mcp/` — real dogfood site;
+  should be cited in a new `[dogfooding-status]` block.
+- `developer-ecosystem/standards/docs/proofs/spec-templates/T2-high/
+  reposystem.md` — reposystem has a T2-high spec-template entry
+  elsewhere in the estate; not cited here, but noted for future
+  traceability.
+- `docs/governance/CRG-LIFT-PLAN-2026-04-18.adoc` — *to be written*
+  if a C-lift sprint is scheduled.
+
+_End of audit._

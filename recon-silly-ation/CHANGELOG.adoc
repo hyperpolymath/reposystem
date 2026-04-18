@@ -38,7 +38,7 @@ and this project adheres to https://semver.org/spec/v2.0.0.html[Semantic Version
 - README.md → README.adoc (AsciiDoc format)
 - CLAUDE.md → CLAUDE.adoc (AsciiDoc format)
 - LICENSE updated to PMPL-1.0-or-later (Palimpsest)
-- Complete justfile rewrite for Deno/WASM/Podman
+- Complete Justfile rewrite for Deno/WASM/Podman
 - CI/CD updated for Deno + Rust + Podman
 
 === Removed

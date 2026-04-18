@@ -21,7 +21,7 @@ test_structure() {
     local errors=0
 
     # Check critical files
-    for file in README.adoc STATE.scm ECOSYSTEM.scm META.scm justfile; do
+    for file in README.adoc STATE.scm ECOSYSTEM.scm META.scm Justfile; do
         if [ ! -f "$BATCHER_DIR/$file" ]; then
             echo "✗ Missing: $file"
             ((errors++))

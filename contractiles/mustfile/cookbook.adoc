@@ -205,7 +205,7 @@ just docs
 
 === cookbook
 
-Regenerate this cookbook from justfile.
+Regenerate this cookbook from Justfile.
 
 [source,bash]
 ----

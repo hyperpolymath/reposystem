@@ -11,7 +11,7 @@
 |Component |Description |Status
 
 |RSR Compliance
-|Core RSR files (.editorconfig, justfile, STATE.scm, etc.)
+|Core RSR files (.editorconfig, Justfile, STATE.scm, etc.)
 |100%
 
 |Security Hardening

@@ -38,7 +38,7 @@ rpa-elysium/
 ├── .github/workflows/    # CI/CD pipelines (18 workflows)
 ├── .machine_readable/    # A2ML project metadata
 ├── contractiles/         # Governance contracts (K9, must/trust/dust)
-└── justfile              # Build automation
+└── Justfile              # Build automation
 ```
 
 ## Language Policy

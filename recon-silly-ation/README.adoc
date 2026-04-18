@@ -397,7 +397,7 @@ recon-silly-ation/
 ├── .github/workflows/       # CI/CD
 ├── Containerfile            # Podman build
 ├── podman-compose.yml       # Stack deployment
-├── justfile                 # Build automation
+├── Justfile                 # Build automation
 ├── deno.json                # Deno configuration
 └── LICENSE                  # PMPL-1.0-or-later
 ----
@@ -469,7 +469,7 @@ This project follows the *RSR (Rhodium Standard Repository)* framework for softw
 * ✅ Documentation (README, CONTRIBUTING, CHANGELOG, etc.)
 * ✅ Security (.well-known/security.txt, SECURITY.md)
 * ✅ Licensing (PMPL-1.0-or-later)
-* ✅ Build Reproducibility (flake.nix, justfile, Containerfile)
+* ✅ Build Reproducibility (flake.nix, Justfile, Containerfile)
 * ✅ Testing (tests/, CI/CD)
 * ✅ Community Governance (CODE_OF_CONDUCT, MAINTAINERS)
 * ✅ Offline-First (documented capabilities)

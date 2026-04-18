@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Circular dependency detection
 - Ada 2022 implementation with GNAT project file
 - Templates for Ada packages and Elixir modules
-- justfile with 40+ recipes
+- Justfile with 40+ recipes
 - GitHub Actions workflows (CodeQL, Scorecard, quality checks)
 - GitLab CI/CD pipeline
 

@@ -17,7 +17,7 @@ This project transforms the bash scripts (`sync_repos.sh`, `robust_sync.sh`) int
 * [x] ATS2 operation type definitions with dependent types (link:src/ats2/operations/types.dats[types.dats])
 * [x] V CLI skeleton with all commands (link:src/v/main.v[main.v])
 * [x] Checkpoint files (STATE.scm, ECOSYSTEM.scm, META.scm)
-* [x] Build system (justfile)
+* [x] Build system (Justfile)
 * [x] Configuration templates
 * [x] Operation templates
 
@@ -180,7 +180,7 @@ Sync all repos in parallel:
 
 [source,bash]
 ----
-# Using justfile recipe
+# Using Justfile recipe
 just git-sync 4 2
 
 # Or directly:

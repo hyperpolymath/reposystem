@@ -293,7 +293,7 @@ end Forge_API;
 === Current State
 
 * Manual testing only
-* Smoke tests in justfile
+* Smoke tests in Justfile
 * No automated unit tests
 
 === Planned

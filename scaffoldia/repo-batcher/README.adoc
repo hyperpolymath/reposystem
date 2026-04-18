@@ -86,7 +86,7 @@ Adds:
 * 6 SCM files (META, ECOSYSTEM, STATE, CHECKLIST, ROADMAP, CHANGELOG)
 * 6 bot directives (rhodibot, echidnabot, sustainabot, glambot, seambot, finishbot)
 * Contractiles directory with README
-* justfile with default recipes
+* Justfile with default recipes
 * .editorconfig with standard settings
 
 === Watch Folder Mode

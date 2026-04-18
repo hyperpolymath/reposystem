@@ -216,7 +216,7 @@ rpa-elysium/
 ├── LICENSE               # PMPL-1.0-or-later
 ├── README.adoc           # This file
 ├── ROADMAP.adoc          # Development roadmap
-└── justfile              # Build automation
+└── Justfile              # Build automation
 ----
 
 == Multi-Forge Distribution

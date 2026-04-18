@@ -48,7 +48,7 @@ repo-batcher is production-ready with 11 batch operations + safety system coveri
 * [x] 6 SCM files (META, ECOSYSTEM, STATE, CHECKLIST, ROADMAP, CHANGELOG)
 * [x] 6 bot directives (rhodibot, echidnabot, sustainabot, glambot, seambot, finishbot)
 * [x] Contractiles directory creation
-* [x] justfile and .editorconfig templates
+* [x] Justfile and .editorconfig templates
 * [x] Full safety integration
 * [x] 8,059+ verified lines
 

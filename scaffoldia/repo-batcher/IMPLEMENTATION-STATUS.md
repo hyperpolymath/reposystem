@@ -14,7 +14,7 @@
 - [x] ATS2 operation type definitions with dependent types
 - [x] V CLI with full command structure
 - [x] ATS2-V FFI bridge via C exports
-- [x] Build system (justfile)
+- [x] Build system (Justfile)
 - [x] Configuration system
 - [x] Documentation (Architecture, Operations Guide, Getting Started)
 

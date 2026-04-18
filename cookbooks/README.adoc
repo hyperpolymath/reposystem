@@ -34,7 +34,7 @@ just --list
 # Run a cookbook recipe
 just -f cookbooks/scan.just scan-deep
 
-# Import into main justfile
+# Import into main Justfile
 import 'cookbooks/scan.just'
 ----
 

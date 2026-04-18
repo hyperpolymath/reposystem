@@ -389,7 +389,7 @@ Drop operation files for automatic execution.
 # Start in background
 repo-batcher watch &
 
-# Or use justfile
+# Or use Justfile
 just watch
 ----
 

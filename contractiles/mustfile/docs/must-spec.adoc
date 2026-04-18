@@ -119,7 +119,7 @@ must_have = [
 
 # Files that MUST NOT exist (violations)
 must_not_have = [
-    "Makefile",              # Banned: use justfile
+    "Makefile",              # Banned: use Justfile
     "Dockerfile",            # Banned: use Containerfile
     ".env",                  # Banned: secrets in repo
     "node_modules/",         # Banned: vendored deps

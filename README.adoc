@@ -446,7 +446,7 @@ reposystem/
 ├── .machine_readable/6a2/NEUROSYM.a2ml         # Neural-symbolic integration
 ├── ROADMAP.adoc         # f/i staged plan
 ├── Mustfile             # Build recipes
-└── justfile             # Development tasks
+└── Justfile             # Development tasks
 ----
 
 == Related Projects

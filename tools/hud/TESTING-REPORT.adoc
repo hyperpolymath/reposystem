@@ -341,7 +341,7 @@ end Fetch_Repositories;
 
 *Severity*: MEDIUM
 
-*Description*: The justfile references a test project file that does not exist:
+*Description*: The Justfile references a test project file that does not exist:
 
 [source,makefile]
 ----

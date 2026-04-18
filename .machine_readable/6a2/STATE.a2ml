@@ -5,15 +5,22 @@
 [metadata]
 project = "reposystem"
 version = "0.1.0"
-last-updated = "2026-04-04"
+last-updated = "2026-04-18"
 status = "active"
-crg-grade = "C"
+crg-grade = "D"
+crg-grade-previous = "C"
+crg-grade-demoted = "2026-04-18"
+crg-grade-notes = "Demoted C->D per docs/governance/CRG-AUDIT-2026-04-18.adoc: no canonical [dogfooding-status] at audit time (populated below in same pass), EXPLAINME File Map fabricated 10 of 18 source paths, per-subproject README coverage ~65% of ~20 subprojects. Test count is honestly reconciled (112/112 = grep count)."
 tests-passing = "112/112"
 
 [project-context]
 name = "reposystem"
 completion-percentage = 65
-phase = "Testing & stabilization"
+phase = "Testing & stabilization — D-floor lift in progress"
+
+[dogfooding-status]
+# Populated 2026-04-18 against real on-disk integrations.
+boj-server-mcp = "2026-04-18 — reposystem-mcp cartridge (442 LOC: mod.js + Zig adapter + Zig FFI + SIDELINED-v.adoc). 4 declared MCP tools. Cartridge not yet run end-to-end but wiring is real. Path: boj-server/cartridges/reposystem-mcp/"
 
 [recent-changes]
 - 2026-04-04: Added comprehensive test suite (E2E, property-based, aspect, benchmarks)

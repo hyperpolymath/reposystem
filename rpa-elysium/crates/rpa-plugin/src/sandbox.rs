@@ -367,7 +367,10 @@ impl Sandbox {
 
         match func.call(&mut store, &[], &mut results) {
             Ok(_) => {
-                let state = state.lock().expect("TODO: handle error");
+                // SAFETY: poisoned-mutex would mean a host closure or other guard
+                // panicked while holding the lock; we propagate by panicking here
+                // since the sandbox is unrecoverable once SandboxState is corrupt.
+                let state = state.lock().expect("SandboxState mutex poisoned: a prior holder panicked while mutating shared sandbox state");
                 let elapsed = start.elapsed();
 
                 debug!("Plugin action '{}' completed in {:?}", action, elapsed);

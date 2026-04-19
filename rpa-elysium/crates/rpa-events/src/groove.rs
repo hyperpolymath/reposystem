@@ -75,8 +75,11 @@ impl GrooveNotifyHook {
         self.probed.store(true, Ordering::Relaxed);
 
         let addr = format!("127.0.0.1:{}", BURBLE_PORT);
+        // INVARIANT: addr is `format!("127.0.0.1:{}", const BURBLE_PORT)` — a
+        // syntactically-valid IPv4 SocketAddr literal. Parse cannot fail.
+        let socket_addr = addr.parse().expect("BURBLE_PORT-derived SocketAddr literal must parse");
         let stream = match TcpStream::connect_timeout(
-            &addr.parse().expect("TODO: handle error"),
+            &socket_addr,
             CONNECT_TIMEOUT,
         ) {
             Ok(s) => s,
@@ -96,8 +99,11 @@ impl GrooveNotifyHook {
     /// Send a JSON message to Burble's groove endpoint.
     fn send_alert(&self, json: &str) {
         let addr = format!("127.0.0.1:{}", BURBLE_PORT);
+        // INVARIANT: addr is `format!("127.0.0.1:{}", const BURBLE_PORT)` — a
+        // syntactically-valid IPv4 SocketAddr literal. Parse cannot fail.
+        let socket_addr = addr.parse().expect("BURBLE_PORT-derived SocketAddr literal must parse");
         let mut stream = match TcpStream::connect_timeout(
-            &addr.parse().expect("TODO: handle error"),
+            &socket_addr,
             CONNECT_TIMEOUT,
         ) {
             Ok(s) => s,

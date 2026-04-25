@@ -7,3 +7,9 @@
 [submodule "total-recall"]
 	path = total-recall
 	url = git@gitlab.com:hyperpolymath/total-recall.git
+[submodule "git-scripts"]
+	path = git-scripts
+	url = git@github.com:hyperpolymath/git-scripts.git
+[submodule "git-reticulator"]
+	path = git-reticulator
+	url = git@github.com:hyperpolymath/git-reticulator.git

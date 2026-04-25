@@ -5,12 +5,12 @@
 [metadata]
 project = "reposystem"
 version = "0.1.0"
-last-updated = "2026-04-18"
+last-updated = "2026-04-25"
 status = "active"
 crg-grade = "D"
 crg-grade-previous = "C"
 crg-grade-demoted = "2026-04-18"
-crg-grade-notes = "Demoted C->D per docs/governance/CRG-AUDIT-2026-04-18.adoc: no canonical [dogfooding-status] at audit time (populated below in same pass), EXPLAINME File Map fabricated 10 of 18 source paths, per-subproject README coverage ~65% of ~20 subprojects. Test count is honestly reconciled (112/112 = grep count)."
+crg-grade-notes = "Demoted C->D per docs/governance/CRG-AUDIT-2026-04-18.adoc: fabricated EXPLAINME File Map + weak per-subproject README coverage. D→C blockers resolved 2026-04-25: EXPLAINME.adoc rewritten (15 fabricated paths removed, 31 verified-real paths added); 24 per-directory README.adoc files added across all subprojects and subdirectories. Dogfooding evidence populated 2026-04-18. Pending CI green to formally claim C."
 tests-passing = "112/112"
 
 [project-context]
@@ -30,3 +30,11 @@ boj-server-mcp = "2026-04-18 — reposystem-mcp cartridge (442 LOC: mod.js + Zig
 - Benchmarks: 6 criterion suites for construction, edges, export, queries
 - Ada smoke test: Syntax validation with gnat support
 - Total: 112 tests passing, all critical paths covered
+
+[session-history]
+# 2026-04-25: D→C blocker sweep. EXPLAINME.adoc rewritten (15 fabricated paths
+#             removed, 31 verified-real paths added). 24 per-directory README.adoc
+#             files added across all subprojects.
+# 2026-04-18: CRG audit — demoted C→D. Dogfooding evidence populated.
+# 2026-04-04: CRG C blitz. Comprehensive test suite added (E2E, property, aspect,
+#             benchmarks). 112 tests passing.

@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= schemas/
+CUE schema definitions validating configuration files and A2ML artefacts against their declared shapes.

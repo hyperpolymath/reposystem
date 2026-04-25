@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= site/
+Static site source for the reposystem project homepage, published via GitHub Pages.

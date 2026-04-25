@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= tui/
+Ratatui-based terminal UI crate providing interactive graph navigation, aspect overlay panels, and scenario comparison views.

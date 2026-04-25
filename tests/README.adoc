@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= tests/
+Integration and end-to-end test suite: CLI integration tests, aspect regression tests, e2e scenario tests, and Ada smoke tests.

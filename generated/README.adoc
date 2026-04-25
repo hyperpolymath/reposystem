@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= generated/
+Auto-generated artefacts (ABI headers, serialisation code, web assets). Do not edit files in this directory by hand; regenerate via `just generate`.

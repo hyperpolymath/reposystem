@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= hooks/
+CI validation scripts invoked by GitHub Actions: SPDX header checks, SHA-pin enforcement, CodeQL permission validation, and SPDX header linting.

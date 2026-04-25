@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= configs/
+Per-environment Nickel configuration overrides applied on top of the base `config/` definitions.

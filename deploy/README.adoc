@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= deploy/
+Deployment manifests and Stapeln container configurations for releasing reposystem to production environments.

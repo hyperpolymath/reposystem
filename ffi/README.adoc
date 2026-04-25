@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= ffi/
+Zig FFI implementation providing C-ABI bindings for the reposystem graph engine, following the Idris2-ABI + Zig-FFI architecture standard.

@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= tools/
+Developer tooling sub-projects: dispatcher (task orchestration), gitmerge-paralleliser, git-submodule-flush, hud (status overlay), and merge-resolver.

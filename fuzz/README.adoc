@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= fuzz/
+cargo-fuzz targets for the graph parser and config loader, with a seed corpus of representative inputs.

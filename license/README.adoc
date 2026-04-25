@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= license/
+Full licence text for PMPL-1.0-or-later. The `LICENSES/` directory at repo root holds additional licence texts (MPL-2.0 legal fallback); this directory holds only PMPL.

@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= integrations/
+IDE and tool integration configs: VS Code workspace settings and TortoiseGit registry entries for reposystem-aware diff and merge.

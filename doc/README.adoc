@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= doc/
+Unix man page (`reposystem.1`) and other reference documentation for the CLI.

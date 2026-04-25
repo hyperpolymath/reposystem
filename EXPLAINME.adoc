@@ -38,30 +38,42 @@ The README makes claims. This file backs them up.
 
 == File Map
 
+NOTE: Paths verified against actual repository tree. Fabricated paths from an earlier draft have been removed.
+
 [cols="1,3"]
 |===
 | Path | Purpose
 
-| `src/main.rs` | CLI entry: scan, list, view, export, group, edge, tag, scenario commands
-| `src/importers/` | Repository discovery: Cargo.toml, package.json, go.mod parsers
-| `src/importers/cargo.rs` | Extracts deps from Cargo.lock/Cargo.toml
-| `src/importers/package.rs` | Extracts deps from package.json, yarn.lock, pnpm-lock.yaml
-| `src/graph/` | Core data model: Node (repo), Edge (dependency), Aspect (concern), Scenario
-| `src/graph/model.rs` | Struct definitions: Graph, Node, Edge, Aspect, AspecTag, Weight
-| `src/graph/validation.rs` | Detects circular dependencies, orphaned nodes, trust violations
-| `src/aspects/` | Aspect tagging: security, reliability, supply-chain concern weights
-| `src/aspects/tagger.rs` | Applies weights to nodes/edges based on aspect rules
-| `src/scenarios/` | Scenario management: create, diff, apply, rollback
-| `src/scenarios/manager.rs` | Stores scenarios, computes diffs, aggregates aspect deltas
-| `src/export/` | Exporters: DOT, JSON, SVG, comparison reports
-| `src/export/dot.rs` | Graphviz DOT output
-| `src/export/json.rs` | JSON serialization for web UI
-| `src/export/comparison.rs` | Side-by-side scenario diffs with metric deltas
-| `src/cli/` | Rust TUI: interactive graph view, group filtering, aspect overlays
-| `src/cli/ui.rs` | Ratatui-based terminal interface (panels: groups, graph, aspects)
-| `web/` | Web UI: static HTML/CSS/JavaScript (no build step)
-| `web/graph.js` | Force-directed layout, ER mode, annotations, accessibility
-| `spec/` | Formal specifications: DATA-MODEL.adoc, CONCEPTS.adoc
+| `src/main.rs` | CLI entry point: scan, list, view, export, group, edge, tag, scenario commands
+| `src/lib.rs` | Library crate root; re-exports public API
+| `src/graph.rs` | Core graph data model: Node (repo), Edge (dependency), Aspect (concern), Scenario
+| `src/scanner.rs` | Repository discovery: reads Cargo.toml, package.json, graph.toml to populate the graph
+| `src/config.rs` | Configuration parsing (Nickel/TOML)
+| `src/tui.rs` | Ratatui-based terminal interface (panels: groups, graph, aspects)
+| `src/verisimdb.rs` | VeriSimDB integration for temporal aspect tracking and query
+| `src/intervention.ads` | Ada specification stub for safety-critical intervention hooks
+| `src/abi/Types.idr` | Idris2 ABI type definitions (Idris2-ABI + Zig-FFI architecture)
+| `src/commands/` | One file per CLI subcommand: scan, view, export, group, edge, tag, scenario, aspect, apply, plan, slot, weak_links, completions, config
+| `web/` | Static web UI: HTML/CSS/JS, no build step required
+| `web/index.html` | Single-page app shell
+| `web/app.js` | Force-directed graph layout, ER mode, aspect overlays, accessibility
+| `web/styles.css` | UI stylesheet
+| `web/export.json` | Sample export for offline exploration
+| `spec/` | Formal specifications
+| `spec/DATA-MODEL.adoc` | Graph node/edge/aspect schema and invariants
+| `spec/CONCEPTS.adoc` | Vocabulary and conceptual model
+| `tui/` | Standalone Ratatui TUI crate (legacy Ada UI under `tui/legacy-ada/`)
+| `gui/` | ReScript + Deno web GUI sub-project
+| `ffi/zig/` | Zig FFI implementation (C-ABI bindings)
+| `tests/` | Integration and end-to-end tests
+| `benches/` | Criterion benchmarks
+| `fuzz/` | cargo-fuzz targets and seed corpus
+| `hooks/` | CI validation scripts (SPDX, SHA-pin, CodeQL permissions)
+| `scripts/` | Maintenance scripts (gitlink-drift.jl, install-desktop.sh)
+| `config/` | Nickel workspace config (reposystem.ncl, contracts.ncl)
+| `schemas/` | CUE schema definitions
+| `doc/` | Unix man page (reposystem.1)
+| `docs/` | User documentation and governance policy
 |===
 
 == Dogfooted Across The Account

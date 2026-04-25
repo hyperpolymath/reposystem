@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= api/
+Public interface definitions for the reposystem graph engine, exported as a stable Rust API for external consumers and integration tests.

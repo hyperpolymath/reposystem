@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= gui/
+ReScript + Deno web GUI providing a force-directed graph view of repository relationships with aspect overlays and scenario comparison panels.

@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= config/
+Nickel configuration files for the reposystem workspace: `reposystem.ncl` (main config) and `contracts.ncl` (validation contracts).

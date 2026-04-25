@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= scripts/
+Maintenance scripts: `gitlink-drift.jl` detects submodule drift across the estate; `install-desktop.sh` registers the reposystem desktop launcher.

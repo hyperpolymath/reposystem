@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= spec/
+Formal specifications: `DATA-MODEL.adoc` (graph node/edge/aspect schema) and `CONCEPTS.adoc` (vocabulary and invariants for the reposystem model).

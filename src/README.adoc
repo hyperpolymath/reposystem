@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= src/
+Rust source for the reposystem CLI and library: entry point (`main.rs`), graph model (`graph.rs`), scanner (`scanner.rs`), TUI (`tui.rs`), VeriSimDB integration (`verisimdb.rs`), and subcommands under `commands/`.

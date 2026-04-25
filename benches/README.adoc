@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= benches/
+Criterion benchmark suite measuring graph traversal, aspect aggregation, and scenario diff performance against target thresholds.

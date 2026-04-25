@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= docs/
+User-facing documentation: governance policy, Mustfile reference, and contributor guides.

@@ -53,6 +53,66 @@ let base = import "../_base.ncl" in
           status | [| 'declared, 'drilled, 'verified, 'failing |] | default = 'declared,
           notes | String | optional,
         },
+
+    # alert_remediations — discovered (CI/CD/scanner-emitted) failure patterns.
+    # Sibling to failure_modes (which is for injected/operational failures).
+    # Fix-It-style entries: rich human diagnosis + machine-actionable remediation.
+    # Consumed by `contractile bust diagnose <id>` (rendering) and
+    # `contractile bust remediate <id>` (apply, --dry-run by default).
+    # See EXTENSION-PROPOSAL-2026-04-28.adoc for full motivation and adoption path.
+    alert_remediations
+      | Array {
+          id | String,                       # e.g. "scorecard.token-permissions.no-toplevel"
+          title | String,
+          severity | [| 'low, 'medium, 'high, 'critical |],
+          emitted_by | Array String,         # ["scorecard", "cargo-audit", "dependabot", "codeql", ...]
+
+          fingerprint | {
+            source | String,
+            rule_id | String,
+            message_regex | String | optional,
+          },
+
+          diagnosis | {
+            short | String,
+            root_cause | String,
+            why_humans_stuck | String | optional,
+            class | [|
+              'config_drift, 'dep_advisory, 'unmaintained_dep,
+              'missing_workflow, 'missing_policy, 'code_defect,
+              'permission_misconfig, 'expected_after_repo_creation
+            |],
+          },
+
+          remediation | {
+            preferred_strategy | [| 'auto_pr, 'cli_command, 'manual_only, 'config_change |],
+            human_steps | Array String,
+            machine_runner | String | optional,
+            auto_safe | Bool | default = false,
+            needs_review_when | Array String | optional,
+            side_effects | Array String | optional,
+          },
+
+          verification | {
+            post_fix_check | String,
+            expected_state | String,
+            ci_check_to_watch | String | optional,
+          },
+
+          preemption | {
+            template_addition | Array String | optional,
+            template_config | Array String | optional,
+            prevents_recurrence | Bool | default = false,
+            back_ratchet_target | [| 'all_repos, 'rust_only, 'js_only, 'agda_only, 'opt_in |] | optional,
+          },
+
+          references | Array String | optional,
+          last_seen | String | optional,        # ISO date
+          dismissed | Bool | default = false,
+          dismissed_until | String | optional,  # ISO date for time-bound dismissals
+          notes | String | optional,
+        }
+      | default = [],
   },
 
   # Runner behaviour — inherits from base.run_defaults.

@@ -30,7 +30,7 @@ globset = "0.4"
 ignore = "0.4"
 
 # Git (for history filtering)
-gix = { version = "0.78", default-features = false, features = ["max-performance-safe"] }
+gix = { version = "0.83", default-features = false, features = ["max-performance-safe"] }
 
 # Error handling
 anyhow = "1.0"

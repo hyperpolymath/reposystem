@@ -15,7 +15,7 @@ This project transforms the bash scripts (`sync_repos.sh`, `robust_sync.sh`) int
 * [x] Project structure from RSR template
 * [x] Architecture documentation (link:docs/ARCHITECTURE.adoc[ARCHITECTURE.adoc])
 * [x] ATS2 operation type definitions with dependent types (link:src/ats2/operations/types.dats[types.dats])
-* [x] V CLI skeleton with all commands (link:src/v/main.v[main.v])
+* [x] Zig FFI layer (link:ffi/zig/src/main.zig[main.zig])
 * [x] Checkpoint files (STATE.scm, ECOSYSTEM.scm, META.scm)
 * [x] Build system (Justfile)
 * [x] Configuration templates
@@ -30,7 +30,7 @@ This project transforms the bash scripts (`sync_repos.sh`, `robust_sync.sh`) int
 
 === 📋 To Do
 
-* [ ] ATS2-V FFI bridge
+* [ ] ATS2-Zig FFI bridge
 * [ ] Watch folder monitoring
 * [ ] Parallel execution engine
 * [ ] Rollback system
@@ -45,10 +45,8 @@ This project transforms the bash scripts (`sync_repos.sh`, `robust_sync.sh`) int
 # ATS2 (formal verification)
 # Download from: http://www.ats-lang.org/Downloads.html
 
-# V (CLI and execution)
-git clone https://github.com/vlang/v
-cd v && make
-sudo ./v symlink
+# Zig (FFI and execution)
+# Download from: https://ziglang.org/download/
 ----
 
 === 2. Build repo-batcher
@@ -94,12 +92,8 @@ repo-batcher/
 │   │   ├── operations/    # Operation types with proofs
 │   │   ├── validation/    # Validation logic
 │   │   └── batch/         # Batch execution engine
-│   ├── v/                 # V CLI layer
-│   │   ├── cli/           # Command-line interface
-│   │   ├── watcher/       # Watch folder monitoring
-│   │   └── executor/      # Parallel execution
-│   ├── abi/               # Idris2 ABI (if needed for FFI)
-│   └── ffi/zig/           # Zig FFI bridge (if needed)
+│   └── abi/               # Idris2 ABI (if needed for FFI)
+├── ffi/zig/               # Zig FFI layer (execution + bridge)
 ├── templates/             # Operation and config templates
 ├── watch/                 # Drop folder for batch operations
 └── docs/                  # Architecture and operations guide
@@ -120,16 +114,15 @@ Key types defined in `src/ats2/operations/types.dats`:
 * `git_sync_op` - Proves repos are valid git repositories
 * `batch_result` - Tracks success/failure with dependent types
 
-=== V CLI Layer (src/v/)
+=== Zig FFI Layer (ffi/zig/)
 
-Provides **fast parallel execution** with simple interface:
+Provides **fast parallel execution** with a simple interface:
 
-* **CLI commands**: Intuitive command structure
-* **Parallel execution**: V coroutines for multi-repo operations
+* **Parallel execution**: Zig for multi-repo operations
 * **Watch daemon**: Automatic operation processing
 * **FFI to ATS2**: Calls formally verified core
 
-Available commands in `src/v/main.v`:
+Available commands:
 
 * `list-ops` - Show available operations
 * `license-update` - Update licenses across repos

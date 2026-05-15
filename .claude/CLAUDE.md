@@ -43,6 +43,7 @@ The following files in `.machine_readable/` contain structured project metadata:
 | Bun | Deno |
 | pnpm/yarn | Deno |
 | Go | Rust |
+| V (vlang) | Zig/Rust |
 | Python | Julia/Rust/ReScript |
 | Java/Kotlin | Rust/Tauri/Dioxus |
 | Swift | Tauri/Dioxus |

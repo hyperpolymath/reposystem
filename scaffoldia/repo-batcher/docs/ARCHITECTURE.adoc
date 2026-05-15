@@ -415,7 +415,7 @@ See `STATE.scm` for detailed milestones.
 ----
 # Install dependencies
 # ATS2: http://www.ats-lang.org/Downloads.html
-# V: https://github.com/vlang/v
+# Zig: https://ziglang.org/download/
 
 # Build
 cd ~/Documents/hyperpolymath-repos/repo-batcher

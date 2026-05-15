@@ -35,14 +35,17 @@ regedit /s integrations/tortoisegit/bitfuckit-context-menu.reg
 
 === git-cola
 
-git-cola supports custom actions in its config.
+git-cola reads `guitool.*` entries from git config and lists them in its
+Actions menu (no plugin code required).
 
 *Install integration:*
 [source,bash]
 ----
-mkdir -p ~/.config/git-cola
-cp integrations/git-cola/actions.py ~/.config/git-cola/
+git config --global include.path "$(pwd)/integrations/git-cola/guitool.config"
 ----
+
+Or copy the `[guitool "..."]` sections from `integrations/git-cola/guitool.config`
+into `~/.gitconfig`.
 
 === Gittyup
 

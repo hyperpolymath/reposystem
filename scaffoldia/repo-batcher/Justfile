@@ -10,15 +10,15 @@ build:
     @echo "Building repo-batcher..."
     # Compile ATS2 core
     cd src/ats2 && patscc -o ../../build/librepobatcher.a operations/*.dats
-    # Compile V CLI
-    v -prod -o build/repo-batcher src/v/main.v
-    @echo "Build complete: build/repo-batcher"
+    # Build Zig FFI layer
+    cd ffi/zig && zig build -Doptimize=ReleaseSafe
+    @echo "Build complete"
 
 # Build in development mode (faster, less optimized)
 build-dev:
     @echo "Building repo-batcher (dev mode)..."
-    v -o build/repo-batcher src/v/main.v
-    @echo "Build complete: build/repo-batcher"
+    cd ffi/zig && zig build
+    @echo "Build complete"
 
 # Run smoke test (structure validation, no build required)
 test-smoke:
@@ -28,8 +28,7 @@ test-smoke:
 # Run tests
 test:
     @echo "Running tests..."
-    # V integration tests
-    v run tests/integration_test.v
+    cd ffi/zig && zig build test && zig build test-integration
     @echo ""
     @echo "All tests passed!"
 
@@ -67,15 +66,12 @@ uninstall:
 
 # Format code
 fmt:
-    # V has built-in formatter
-    v fmt -w src/v/
+    zig fmt ffi/zig/src/ ffi/zig/test/
 
 # Check code quality
 check:
     @echo "Checking ATS2 code..."
     patsopt -tc -d src/ats2/operations/*.dats
-    @echo "Checking V code..."
-    v vet src/v/
 
 # Create example config
 setup-config:

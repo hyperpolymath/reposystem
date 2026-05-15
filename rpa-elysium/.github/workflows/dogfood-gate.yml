@@ -136,7 +136,7 @@ jobs:
             -type f \( -name '*.rs' -o -name '*.ex' -o -name '*.exs' -o -name '*.res' \
               -o -name '*.js' -o -name '*.ts' -o -name '*.json' -o -name '*.toml' \
               -o -name '*.yml' -o -name '*.yaml' -o -name '*.md' -o -name '*.adoc' \
-              -o -name '*.idr' -o -name '*.zig' -o -name '*.v' -o -name '*.jl' \
+              -o -name '*.idr' -o -name '*.zig' -o -name '*.jl' \
               -o -name '*.gleam' -o -name '*.hs' -o -name '*.ml' -o -name '*.sh' \) \
             -exec grep -Prl "$PATTERNS" {} \; > /tmp/empty-lint-results.txt 2>/dev/null
           EL_EXIT=$?
@@ -203,13 +203,13 @@ jobs:
           fi
 
           # Check for Groove endpoint code (Rust, Elixir, Zig, V)
-          if grep -rl 'well-known/groove' --include='*.rs' --include='*.ex' --include='*.zig' --include='*.v' --include='*.res' . 2>/dev/null | head -1 | grep -q .; then
+          if grep -rl 'well-known/groove' --include='*.rs' --include='*.ex' --include='*.zig' --include='*.res' . 2>/dev/null | head -1 | grep -q .; then
             HAS_GROOVE_CODE="true"
           fi
 
           # Check if this repo likely serves HTTP (has server/listener code)
           HAS_SERVER="false"
-          if grep -rl 'TcpListener\|Bandit\|Plug.Cowboy\|httpz\|vweb\|axum::serve\|actix_web' --include='*.rs' --include='*.ex' --include='*.zig' --include='*.v' . 2>/dev/null | head -1 | grep -q .; then
+          if grep -rl 'TcpListener\|Bandit\|Plug.Cowboy\|httpz\|vweb\|axum::serve\|actix_web' --include='*.rs' --include='*.ex' --include='*.zig' . 2>/dev/null | head -1 | grep -q .; then
             HAS_SERVER="true"
           fi
 

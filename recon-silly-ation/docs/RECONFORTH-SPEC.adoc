@@ -478,7 +478,7 @@ Define new words with `:` and `;`:
   bundle-docs
   [ doc-path ".ts" str-ends? ] filter
   count 0 >
-  [ "TypeScript files detected - use ReScript instead" error! ] when ;
+  [ "TypeScript files detected - use AffineScript instead" error! ] when ;
 
 : enforce-rsr  ( bundle -- errors )
   dup check-spdx-headers

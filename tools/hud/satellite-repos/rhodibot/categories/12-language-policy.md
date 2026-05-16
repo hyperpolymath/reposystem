@@ -25,7 +25,7 @@
 - Julia - Scientific computing
 
 **Forbidden:**
-- TypeScript - Use ReScript instead
+- TypeScript - Use AffineScript instead
 - Python - Only for Salt configs and ML training scripts
 - Go - Design philosophy conflicts
 - Java/C# - Enterprise complexity

@@ -217,7 +217,7 @@ let checkBannedLanguages = `
     bundle-docs [ is-typescript? ] filter list-len nip ;
 
   dup count-typescript 0 >
-  [ "TypeScript files detected - use ReScript instead per RSR" error! ]
+  [ "TypeScript files detected - use AffineScript instead per RSR" error! ]
   when
 `
 

@@ -16,6 +16,23 @@ serde-wasm-bindgen = "0.6"
 thiserror = "2.0"
 js-sys = "0.3"
 
+# --- Real cryptography (security.rs) ---
+# Audited / community-reviewed pure-Rust RustCrypto crates. Pinned to
+# patch-stable releases. ml-dsa/ml-kem are the pure-Rust FIPS 204/203
+# implementations (used instead of C-backed pqcrypto-* because this is a
+# wasm32-unknown-unknown cdylib where PQClean C cannot be linked).
+sha3 = "=0.10.9"
+blake3 = "=1.8.5"
+argon2 = "=0.5.3"
+chacha20poly1305 = "=0.10.1"
+hkdf = "=0.12.4"
+rand_chacha = "=0.3.1"
+rand_core = "=0.6.4"
+hex = "=0.4.3"
+ml-dsa = "=0.0.4"
+ml-kem = "=0.2.3"
+getrandom = "0.2"
+
 # formatrix-docs integration (local path for development)
 # formatrix-core = { path = "../../formatrix-docs/crates/formatrix-core" }
 
@@ -23,6 +40,11 @@ js-sys = "0.3"
 comrak = "0.49"          # Markdown (GFM)
 jotdown = "0.7"          # Djot
 orgize = "0.9"           # Org-mode
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+# On wasm32-unknown-unknown getrandom needs the JS entropy backend so
+# the CSPRNG used for ML-DSA / ML-KEM key generation has a real source.
+getrandom = { version = "0.2", features = ["js"] }
 
 [profile.release]
 opt-level = "z"     # Optimize for size

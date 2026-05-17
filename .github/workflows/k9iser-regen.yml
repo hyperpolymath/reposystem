@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Triggers central K9-contract regeneration via boj-server's k9iser-mcp
+# cartridge, so generated/k9iser/*.k9 are produced centrally instead of
+# being run ad hoc and hand-committed (the drift that broke Dogfood Gate
+# estate-wide — hyperpolymath/k9iser#8). Mirrors boj-build.yml.
+# Fire-and-forget until the BoJ REST runtime ships (Elixir rewrite).
+name: K9iser Regen Trigger
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  trigger-k9iser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Detect k9iser manifest
+        id: detect
+        run: |
+          if [ -f k9iser.toml ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; fi
+      - name: Trigger BoJ Server (k9iser-mcp)
+        if: steps.detect.outputs.present == 'true'
+        run: |
+          curl -X POST "http://boj-server.local:7700/cartridges/k9iser-mcp/invoke" -H "Content-Type: application/json" -d "{\"repo\": \"${{ github.repository }}\", \"branch\": \"${{ github.ref_name }}\", \"tool\": \"k9_generate\"}"
+        continue-on-error: true

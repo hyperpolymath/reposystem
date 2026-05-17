@@ -477,7 +477,7 @@ See link:ROADMAP.adoc[ROADMAP.adoc] for the detailed development roadmap.
 
 == Contributing
 
-See link:CONTRIBUTING.md[CONTRIBUTING.md] for contribution guidelines.
+See link:CONTRIBUTING.adoc[CONTRIBUTING.md] for contribution guidelines.
 
 We follow the RSR Tri-Perimeter Contribution Framework:
 

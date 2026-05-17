@@ -322,7 +322,7 @@ This roadmap is a living document. To propose changes:
 3. Reference any related RSR framework requirements
 4. Discuss in the issue before submitting PRs
 
-See link:CONTRIBUTING.md[CONTRIBUTING.md] for contribution guidelines.
+See link:CONTRIBUTING.adoc[CONTRIBUTING.md] for contribution guidelines.
 
 ---
 

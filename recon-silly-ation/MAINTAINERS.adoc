@@ -1,4 +1,120 @@
 // SPDX-License-Identifier: PMPL-1.0-or-later
+
+== Maintainers
+
+This document lists the maintainers of the recon-silly-ation project and describes the governance model.
+
+=== Current Maintainers
+
+==== Project Lead
+
+* *Hyperpolymath* - @Hyperpolymath
+** Role: Project founder, architecture, RSR compliance
+** Email: j.d.a.jewell@open.ac.uk
+** Timezone: UTC
+** Available: Weekdays, asynchronous communication preferred
+
+=== Maintainer Responsibilities
+
+Maintainers are responsible for:
+
+[arabic]
+. *Code Review* - Review and merge pull requests
+. *Issue Triage* - Label and prioritize issues
+. *Release Management* - Version releases and changelogs
+. *Security* - Handle security vulnerabilities
+. *Community* - Foster welcoming environment
+. *Documentation* - Keep docs up-to-date
+. *RSR Compliance* - Maintain framework standards
+. *TPCF Governance* - Uphold perimeter policies
+
+=== Governance Model
+
+==== TPCF Perimeter 3: Community Sandbox
+
+This project operates under *Tri-Perimeter Contribution Framework (TPCF) Perimeter 3*:
+
+* *Open Contribution* - All community members can contribute
+* *Graduated Trust* - Maintainers review all changes before merge
+* *Transparent Process* - All discussions in public (GitHub issues/PRs)
+* *Consensus-Based* - Major decisions require maintainer agreement
+* *Reversibility* - All changes can be reverted if issues arise
+
+==== Decision-Making Process
+
+[arabic]
+. *Routine Changes* - Any maintainer can approve and merge
+. *Significant Changes* - Requires 2 maintainer approvals
+. *Breaking Changes* - Requires all active maintainer approvals
+. *Governance Changes* - Requires community discussion {plus} maintainer consensus
+
+=== Becoming a Maintainer
+
+We welcome new maintainers! The process:
+
+[arabic]
+. *Contribute Regularly* - Demonstrate sustained engagement (3{plus} months)
+. *Show Expertise* - Deep understanding of codebase and architecture
+. *Build Trust* - History of helpful reviews and community support
+. *Nomination* - Existing maintainer nominates you
+. *Consensus* - All maintainers must agree
+. *Onboarding* - 1-month shadowing period
+
+=== Maintainer Expectations
+
+==== Time Commitment
+
+* *Minimum*: 2 hours/week for review and triage
+* *Releases*: 4 hours/month for release management
+* *Communication*: Respond to mentions within 1 week
+
+==== Skills Required
+
+* *Technical*: Proficiency in Deno, ReScript, Rust, or Haskell
+* *Review*: Ability to provide constructive code review
+* *Communication*: Clear, kind, professional communication
+* *RSR Knowledge*: Understanding of framework principles
+
+==== Stepping Down
+
+Maintainers may step down at any time by:
+
+[arabic]
+. Notifying other maintainers
+. Transferring responsibilities
+. Updating this document
+. (Optional) Transitioning to emeritus status
+
+=== Emeritus Maintainers
+
+Former maintainers who remain available for consultation:
+
+* (None yet - project is young!)
+
+=== Contact
+
+* *General Questions*: GitHub Discussions
+* *Security Issues*: j.d.a.jewell@open.ac.uk (see SECURITY.md)
+* *CoC Violations*: j.d.a.jewell@open.ac.uk (see CODE++_++OF++_++CONDUCT.md)
+* *Maintainer Team*: j.d.a.jewell@open.ac.uk
+
+=== Acknowledgments
+
+Thank you to all contributors and community members who make this project possible!
+
+'''''
+
+*Last Updated*: 2025-11-22
+*RSR Compliance*: Silver Tier Target
+*TPCF Perimeter*: 3 (Community Sandbox)
+
+////
+Appendix preserved verbatim from the legacy .adoc during the
+Item 11 .md/.adoc consolidation (Day 10 lossy-tail). 39 legacy-only
+content tokens were not present in the converted Markdown source;
+retained here so nothing is lost. Reviewer may de-duplicate prose.
+////
+
 = Maintainers
 :toc: preamble
 

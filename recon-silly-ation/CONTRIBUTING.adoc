@@ -293,7 +293,7 @@ We prioritize *emotional safety* and *reversibility*:
 
 * Check link:docs/FAQ.adoc[] (if exists)
 * Ask in GitHub Discussions
-* Contact maintainers: see link:MAINTAINERS.md[]
+* Contact maintainers: see link:MAINTAINERS.adoc[]
 * Read link:CLAUDE.adoc[] for AI assistant context
 
 == Thank You!

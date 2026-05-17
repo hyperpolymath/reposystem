@@ -373,7 +373,7 @@ When using Reposystem, we recommend:
 - [Our PGP Public Key]({{PGP_KEY_URL}})
 - [Security Advisories](https://github.com/hyperpolymath/reposystem/security/advisories)
 - [Changelog](CHANGELOG.md)
-- [Contributing Guidelines](CONTRIBUTING.md)
+- [Contributing Guidelines](CONTRIBUTING.adoc)
 - [CVE Database](https://cve.mitre.org/)
 - [CVSS Calculator](https://www.first.org/cvss/calculator/3.1)
 

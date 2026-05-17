@@ -204,4 +204,4 @@ We follow the RSR Tri-Perimeter Contribution Framework (TPCF):
 - 🧠 **Perimeter 2 (Expert)**: New compliance checks, adapters
 - 🌱 **Perimeter 3 (Community)**: Documentation, tests, proposals
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for details.
+See [CONTRIBUTING.md](../CONTRIBUTING.adoc) for details.

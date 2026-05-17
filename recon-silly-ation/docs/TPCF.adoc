@@ -225,7 +225,7 @@ Automated gates:
 
 === Governance
 
-See link:../MAINTAINERS.md[] for:
+See link:../MAINTAINERS.adoc[] for:
 - Current maintainers
 - Decision-making process
 - Becoming a maintainer
@@ -255,14 +255,14 @@ Potential additions:
 
 * link:../CONTRIBUTING.adoc[Contributing Guidelines]
 * link:../CODE_OF_CONDUCT.md[Code of Conduct]
-* link:../MAINTAINERS.md[Maintainers & Governance]
+* link:../MAINTAINERS.adoc[Maintainers & Governance]
 * link:RSR-COMPLIANCE-AUDIT.adoc[RSR Compliance Audit]
 
 == Questions?
 
 * GitHub Discussions
 * Email: j.d.a.jewell@open.ac.uk
-* See link:../MAINTAINERS.md[Maintainers]
+* See link:../MAINTAINERS.adoc[Maintainers]
 
 ---
 

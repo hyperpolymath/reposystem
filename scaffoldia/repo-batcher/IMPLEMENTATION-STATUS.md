@@ -1,15 +1,25 @@
 # repo-batcher Implementation Status
 
-> **⚠ Accurate state (reposystem#56, verified 2026-05-18).** This dated (2026-02-06)
-> doc is **fiction, not status**: every `src/v/…` / "V CLI" / "complete" entry below
-> describes code that **was never committed** — git history contains no `src/v/`, no V
-> ever existed. Real source = an ATS2 verified core + an **unimplemented** Zig FFI
-> template stub (does not bind the ATS2 ABI, does not build). **The tool is not
-> functional.** Retained only as a historical planning artifact. See reposystem#56.
+> **✅ Accurate state (reposystem#56, verified 2026-05-18; PR #59 merged, commit `4c2d29f`).**
+> repo-batcher is **built and functional**. Layers L1–L8 were delivered from
+> scratch and each independently fiction-reviewed from a clean clone:
+> ATS2 verified core (L1–L4, `just tc-ats2`=0), self-contained C-export
+> archive (L5, `just ats2-lib`=0; `ATS_DYNLOADFLAG 0` link fix), Idris2 typed
+> ABI with machine-checked theorems (L6, `just abi-check`=0), a real Zig
+> 0.15.2 CLI binding the genuine ATS2 C ABI and `patscc`-linked (L7), and a
+> fixture-backed end-to-end gate (L8, `just e2e`=0: real temp git repo,
+> dry-run byte-identical, real on-disk mutation via the ATS2 core, audit).
+>
+> **The 2026-02-06 body below is fiction, not status** — every `src/v/…` /
+> "V CLI" entry describes code **never committed** (no `src/v/` in git history,
+> no V ever; the CLI/FFI layer is Zig per the estate standard). It is retained
+> only as a historical planning artifact. Remaining proof-debt (assume-equal
+> witness abstypes, one audited `$UNSAFE` boundary) is honestly labelled
+> in-source. Tracking issue reposystem#56 is **CLOSED-COMPLETED**.
 
-**Date**: 2026-02-06
-**Version**: 0.1.0 Alpha
-**Status**: Core operations implemented, ready for testing
+**Date**: 2026-02-06 (historical body; superseded — see banner)
+**Version**: 0.1.0
+**Status**: L1–L8 built & fiction-reviewed; PR #59 merged 2026-05-18
 
 ---
 

@@ -5,13 +5,15 @@
 
 [IMPORTANT]
 ====
-*Accurate state (reposystem#56, verified 2026-05-18).* The "V CLI / coroutine
-layer" described below *was never implemented* — git history contains no
-`src/v/`. The real source is an ATS2 verified core + a Zig FFI layer that is
-currently an *unimplemented RSR template stub* (does not bind the ATS2 ABI,
-does not build). No V ever existed. Treat every "V" reference here as an
-*un-built historical plan*, not shipped code or the target architecture.
-The real Zig FFI/CLI is greenfield work — reposystem#56.
+*Accurate state (reposystem#56, verified 2026-05-18; PR #59 merged, commit
+`4c2d29f`).* The "V CLI / coroutine layer" described below *was never
+implemented* — git history contains no `src/v/`, no V ever existed. The real,
+*built* architecture is an ATS2 verified core (L1–L4) + a self-contained
+C-export archive (L5) + an Idris2 typed ABI with machine-checked theorems
+(L6) + a Zig 0.15.2 CLI binding the genuine ATS2 C ABI, `patscc`-linked (L7),
+behind a fixture-backed `just e2e` gate (L8). Treat every "V" reference here
+as an *un-built historical plan*, not shipped code; the CLI/FFI layer is Zig
+per the estate API/FFI standard. reposystem#56 is CLOSED-COMPLETED.
 ====
 
 == Overview
@@ -29,7 +31,7 @@ Key principles:
 
 * **Formal Verification**: ATS2 dependent types prove operation correctness at compile-time
 * **Type Safety**: Operations validated before execution, preventing destructive errors
-* **Parallel Execution**: _(planned, not implemented)_ multi-repository concurrency would live in the Zig FFI/CLI layer — currently an unbuilt stub (reposystem#56). No V was ever used.
+* **Parallel Execution**: _(Phase 3, not yet implemented)_ multi-repository concurrency will live in the Zig FFI/CLI layer (now built — L7); parallelism itself is future work (reposystem#56 Phase 3). No V was ever used.
 * **Batch Processing**: Watch folder pattern separates operation definition from execution
 * **Rollback Safety**: All operations support dry-run and rollback mechanisms
 
@@ -40,8 +42,8 @@ Key principles:
 [source]
 ----
 ┌─────────────────────────────────────┐
-│  Zig FFI/CLI Layer  [NOT IMPLEMENTED] │  intended: CLI, file watching, parallel exec
-│  (ffi/zig/ — template stub only)      │  (reposystem#56; no src/v/ ever existed)
+│  Zig FFI/CLI Layer  [IMPLEMENTED L7]  │  CLI built; binds ATS2 C ABI, patscc-linked
+│  (ffi/zig/ + src/ats2/ffi/cli_root)   │  (reposystem#56 PR#59; no src/v/ ever existed)
 └──────────────┬──────────────────────┘
                │ FFI
 ┌──────────────▼──────────────────────┐
@@ -66,7 +68,7 @@ Key principles:
 
 | **Zig** (FFI/CLI — *not yet implemented*, reposystem#56)
 | CLI interface, file watching, parallel execution
-| *No V was ever used* (despite older prose). The CLI/FFI layer is intended to be Zig (estate API/FFI standard) but currently exists only as an unsubstituted RSR template stub that does not bind the ATS2 ABI and does not build. Greenfield implementation tracked in reposystem#56.
+| *No V was ever used* (despite older prose). The CLI/FFI layer is Zig (estate API/FFI standard), implemented in L7: it binds the genuine ATS2 C ABI and is `patscc`-linked into a working binary, fixture-gated by `just e2e` (L8). Delivered in reposystem#56 PR #59 (merged 2026-05-18, `4c2d29f`).
 
 | **Idris2**
 | ABI definitions (per RSR standard)

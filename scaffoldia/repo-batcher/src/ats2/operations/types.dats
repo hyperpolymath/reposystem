@@ -1,261 +1,115 @@
 (*
 ** SPDX-License-Identifier: PMPL-1.0-or-later
 **
-** Operation type definitions with dependent type proofs
-** for formally verified batch repository operations
+** Operation type definitions - IMPLEMENTATION (real Postiats 0.4.2)
+**
+** Verified: `patsopt -tc -s operations/types.sats -d operations/types.dats`
+** plus the string_utils dependency (-IATS ../). Witness abstypes are
+** `assume`d equal to `string`; the only constructors are the validators.
 *)
 
 #include "share/atspre_define.hats"
 #include "share/atspre_staload.hats"
 
-staload "libats/SATS/stringbuf.sats"
+staload "./types.sats"
+staload "../utils/string_utils.sats"
 
-(* ========== String validation proofs ========== *)
+assume spdx_id         = string
+assume nonempty_string = string
+assume existing_path   = string
+assume git_repo        = string
 
-(* Proof that a string is non-empty *)
-abstype nonempty_string(s:string) = string
+(* ========== SPDX license set ========== *)
+(* Common SPDX identifiers; full list at https://spdx.org/licenses/ *)
 
-(* Proof that a string is a valid SPDX identifier *)
-abstype spdx_id(s:string) = string
+fn spdx_list (): List0(string) =
+  $list{string}(
+    "PMPL-1.0-or-later", "MIT", "Apache-2.0",
+    "GPL-3.0-only", "GPL-3.0-or-later",
+    "LGPL-3.0-only", "LGPL-3.0-or-later",
+    "BSD-2-Clause", "BSD-3-Clause", "ISC",
+    "MPL-2.0", "AGPL-3.0-only", "Unlicense", "0BSD"
+  )
 
-(* Proof that a path exists *)
-abstype existing_path(p:string) = string
+implement is_valid_spdx(s) = let
+  fun mem (xs: List0(string)): bool =
+    case+ xs of
+    | list_nil() => false
+    | list_cons(x, rest) => if x = s then true else mem(rest)
+in
+  if string_is_empty(s) then false else mem(spdx_list())
+end
 
-(* Proof that a path is a valid git repository *)
-abstype git_repo(p:string) = string
+(* ========== Smart constructors ========== *)
 
-(* ========== Repository target ========== *)
+implement validate_spdx_id(s) =
+  if is_valid_spdx(s) then Some(s) else None()
 
-datatype repo_target =
-  | RepoList of List0(string)                      (* Explicit list of repos *)
-  | RepoFile of string                             (* Path to file containing repo list *)
-  | RepoPattern of string                          (* Pattern matching (@all-repos, @rsr-*) *)
-  | RepoDirectory of string                        (* Scan directory for repos *)
+implement validate_nonempty(s) =
+  if string_is_nonempty(s) then Some(s) else None()
 
-(* ========== Operation types ========== *)
+(* Filesystem existence is an EFFECT, not a pure proof. We do not pretend
+** otherwise: this calls `test -e` via the shell and trusts its exit code.
+** The witness only certifies "test -e succeeded at construction time". *)
+implement validate_path_exists(p) = let
+  val cmd = string_append("test -e ", p)
+  val rc  = $extfcall(int, "system", $UNSAFE.strptr2string(cmd))
+  val ()  = strptr_free(cmd)
+in
+  if rc = 0 then Some(p) else None()
+end
 
-datatype operation_result =
-  | OpSuccess of string                            (* Success message *)
-  | OpFailure of string                            (* Error message *)
-  | OpSkipped of string                            (* Skipped with reason *)
+implement validate_git_repo(p) = let
+  val gp  = string_append(p, "/.git")
+  val cmd = string_append("test -d ", $UNSAFE.strptr2string(gp))
+  val ()  = strptr_free(gp)
+  val rc  = $extfcall(int, "system", $UNSAFE.strptr2string(cmd))
+  val ()  = strptr_free(cmd)
+in
+  if rc = 0 then Some(p) else None()
+end
 
-datatype backup_policy =
-  | NoBackup                                       (* No backup required *)
-  | RequireBackup of string                        (* Backup to specified directory *)
-  | AutoBackup                                     (* Automatic backup location *)
+(* ========== Witness projections ========== *)
 
-datatype operation_mode =
-  | DryRun                                         (* Preview only, no changes *)
-  | Execute                                        (* Execute for real *)
-  | Interactive                                    (* Prompt before each repo *)
+implement spdx_unwrap(x)     = x
+implement nonempty_unwrap(x) = x
+implement path_unwrap(x)     = x
+implement gitrepo_unwrap(x)  = x
 
-(*
-** License Update Operation
-** Replaces license headers and LICENSE files across repositories
-**
-** Invariants (enforced by dependent types):
-** - old_license must be a valid SPDX identifier
-** - new_license must be a valid SPDX identifier
-** - backup_dir must exist if backup is required
-*)
-datatype license_update_op(
-  old:string, new:string
-) =
-  | LicenseUpdate(old, new) of (
-      spdx_id(old),                                (* Validated old license *)
-      spdx_id(new),                                (* Validated new license *)
-      backup_policy,                               (* Backup strategy *)
-      operation_mode                               (* Execution mode *)
-    )
+(* ========== Result helpers ========== *)
 
-(*
-** File Replace Operation
-** Replaces files matching a pattern with new content
-**
-** Invariants:
-** - pattern must be a non-empty string
-** - replacement_path must exist
-** - No circular replacements (file A → file B → file A)
-*)
-datatype file_replace_op(
-  pattern:string, replacement:string
-) =
-  | FileReplace(pattern, replacement) of (
-      nonempty_string(pattern),                    (* Valid pattern *)
-      existing_path(replacement),                  (* Replacement file exists *)
-      backup_policy,                               (* Backup strategy *)
-      operation_mode                               (* Execution mode *)
-    )
+implement result_message(r) =
+  case+ r of
+  | OpSuccess(m) => m
+  | OpFailure(m) => m
+  | OpSkipped(m) => m
 
-(*
-** Git Batch Sync Operation
-** Performs git add, commit, and push across multiple repos
-**
-** Invariants:
-** - All targets must be valid git repositories
-** - Commit message must be non-empty
-** - Remote must be reachable (checked at runtime)
-*)
-datatype git_sync_op(
-  msg:string
-) =
-  | GitBatchSync(msg) of (
-      nonempty_string(msg),                        (* Valid commit message *)
-      int,                                         (* Parallel job count *)
-      int,                                         (* Max depth for repo search *)
-      operation_mode                               (* Execution mode *)
-    )
+implement result_is_ok(r) =
+  case+ r of
+  | OpSuccess _ => true
+  | _ => false
 
-(*
-** Workflow Update Operation
-** Updates GitHub Actions workflow files with validation
-**
-** Invariants:
-** - workflow_file must exist
-** - action_sha must be a valid git commit hash (40 hex chars)
-** - YAML must be valid (checked at runtime)
-*)
-datatype workflow_update_op(
-  file:string, action:string, sha:string
-) =
-  | WorkflowUpdate(file, action, sha) of (
-      existing_path(file),                         (* Workflow file exists *)
-      nonempty_string(action),                     (* Action name *)
-      nonempty_string(sha),                        (* Valid SHA *)
-      backup_policy,                               (* Backup strategy *)
-      operation_mode                               (* Execution mode *)
-    )
-
-(*
-** Custom Operation
-** Executes operation from template file
-**
-** Invariants:
-** - template_path must exist
-** - template must be valid TOML (checked at runtime)
-*)
-datatype custom_op(
-  template:string
-) =
-  | CustomOp(template) of (
-      existing_path(template),                     (* Template exists *)
-      List0(@(string, string)),                    (* Arguments *)
-      operation_mode                               (* Execution mode *)
-    )
-
-(*
-** Unified operation type
-** Tagged union of all operation types
-*)
-datatype batch_operation =
-  | OpLicenseUpdate of [old:string, new:string] license_update_op(old, new)
-  | OpFileReplace of [pat:string, repl:string] file_replace_op(pat, repl)
-  | OpGitSync of [msg:string] git_sync_op(msg)
-  | OpWorkflowUpdate of [file:string, action:string, sha:string]
-      workflow_update_op(file, action, sha)
-  | OpCustom of [tmpl:string] custom_op(tmpl)
-
-(* ========== Operation context ========== *)
-
-typedef operation_context = @{
-  targets = repo_target,                           (* Target repositories *)
-  dry_run = bool,                                  (* Preview mode *)
-  parallel_jobs = int,                             (* Number of parallel workers *)
-  log_path = string,                               (* Log file path *)
-  backup_dir = string                              (* Backup directory *)
+implement empty_batch(msg) = @{
+  success_count = 0,
+  failure_count = 0,
+  skipped_count = 0,
+  message = msg
 }
 
-(* ========== Operation result with proofs ========== *)
-
-typedef batch_result = @{
-  success_count = [n:nat] int(n),                  (* Number of successful operations *)
-  failure_count = [n:nat] int(n),                  (* Number of failed operations *)
-  skipped_count = [n:nat] int(n),                  (* Number of skipped operations *)
-  results = List0(operation_result),               (* Detailed results *)
-  rollback_info = Option(string)                   (* Rollback information if needed *)
-}
-
-(* ========== Validation functions ========== *)
-
-(*
-** Validates that a string is a valid SPDX identifier
-** Returns Some(spdx_id) if valid, None otherwise
-*)
-fun validate_spdx_id(s: string): Option(spdx_id(s))
-
-(*
-** Validates that a path exists on filesystem
-** Returns Some(existing_path) if valid, None otherwise
-*)
-fun validate_path_exists(p: string): Option(existing_path(p))
-
-(*
-** Validates that a path is a git repository
-** Returns Some(git_repo) if valid, None otherwise
-*)
-fun validate_git_repo(p: string): Option(git_repo(p))
-
-(*
-** Validates that a string is non-empty
-** Returns Some(nonempty_string) if valid, None otherwise
-*)
-fun validate_nonempty(s: string): Option(nonempty_string(s))
-
-(* ========== Operation constructors with validation ========== *)
-
-(*
-** Creates a license update operation with validation
-** Returns None if validation fails
-*)
-fun make_license_update_op(
-  old: string,
-  new: string,
-  backup: backup_policy,
-  mode: operation_mode
-): Option([old:string, new:string] license_update_op(old, new))
-
-(*
-** Creates a file replace operation with validation
-** Returns None if validation fails
-*)
-fun make_file_replace_op(
-  pattern: string,
-  replacement: string,
-  backup: backup_policy,
-  mode: operation_mode
-): Option([pat:string, repl:string] file_replace_op(pat, repl))
-
-(*
-** Creates a git sync operation with validation
-** Returns None if validation fails
-*)
-fun make_git_sync_op(
-  msg: string,
-  parallel: int,
-  depth: int,
-  mode: operation_mode
-): Option([msg:string] git_sync_op(msg))
-
-(* ========== Operation execution ========== *)
-
-(*
-** Executes a batch operation across target repositories
-** Returns batch_result with detailed success/failure information
-**
-** Proof obligations:
-** - If mode is DryRun, no filesystem changes are made
-** - If backup is required, backups are created before any changes
-** - Operation is atomic per repository (all changes or none)
-*)
-fun execute_batch_operation(
-  op: batch_operation,
-  ctx: operation_context
-): batch_result
-
-(*
-** Rolls back a batch operation using rollback information
-** Returns true if rollback succeeded, false otherwise
-*)
-fun rollback_batch_operation(
-  rollback_info: string
-): bool
+implement batch_add(acc, r) =
+  case+ r of
+  | OpSuccess _ => @{
+      success_count = acc.success_count + 1,
+      failure_count = acc.failure_count,
+      skipped_count = acc.skipped_count,
+      message = acc.message }
+  | OpFailure _ => @{
+      success_count = acc.success_count,
+      failure_count = acc.failure_count + 1,
+      skipped_count = acc.skipped_count,
+      message = acc.message }
+  | OpSkipped _ => @{
+      success_count = acc.success_count,
+      failure_count = acc.failure_count,
+      skipped_count = acc.skipped_count + 1,
+      message = acc.message }

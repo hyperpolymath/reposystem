@@ -1,37 +1,55 @@
 # SPDX-License-Identifier: PMPL-1.0-or-later
 # STATE.a2ml — Project state checkpoint
-# Updated 2026-04-04 — CRG C test suite complete
+# Updated 2026-05-18 — repo-batcher #56 L1–L8 built/verified; docs-truth synced
+#
+# INTEGRITY NOTE (2026-05-18 full refresh): factually-derivable fields are
+# updated. Governance fields are NOT fabricated: `crg-grade` changes only via
+# the formal docs/governance/CRG-AUDIT-*.adoc process (not self-assessed);
+# `tests-passing` is the 2026-04-04 baseline and is explicitly marked not
+# re-run post-#56; `completion-percentage` carries an inline derivation basis
+# (coarse — no formal rubric exists in this file).
 
 [metadata]
 project = "reposystem"
 version = "0.1.0"
-last-updated = "2026-04-25"
+last-updated = "2026-05-18"
 status = "active"
 crg-grade = "D"
 crg-grade-previous = "C"
 crg-grade-demoted = "2026-04-18"
-crg-grade-notes = "Demoted C->D per docs/governance/CRG-AUDIT-2026-04-18.adoc: fabricated EXPLAINME File Map + weak per-subproject README coverage. D→C blockers resolved 2026-04-25: EXPLAINME.adoc rewritten (15 fabricated paths removed, 31 verified-real paths added); 24 per-directory README.adoc files added across all subprojects and subdirectories. Dogfooding evidence populated 2026-04-18. Pending CI green to formally claim C."
-tests-passing = "112/112"
+crg-grade-notes = "Demoted C->D per docs/governance/CRG-AUDIT-2026-04-18.adoc: fabricated EXPLAINME File Map + weak per-subproject README coverage. D→C blockers resolved 2026-04-25: EXPLAINME.adoc rewritten (15 fabricated paths removed, 31 verified-real paths added); 24 per-directory README.adoc files added. Dogfooding evidence populated 2026-04-18. 2026-05-18: the scaffoldia/repo-batcher subproject — a prior weak-coverage area — was built from scratch (L1–L8, ATS2 core + Idris2 ABI + patscc-linked Zig CLI, fixture-gated `just e2e`) and independently fiction-reviewed (PR #59, commit 4c2d29f, issue #56 CLOSED-COMPLETED), and its status docs corrected from the inverse anti-fiction defect (PR #61). This strengthens a future C claim but does NOT itself change the grade: a D→C move still requires a fresh formal CRG audit (docs/governance/CRG-AUDIT) plus CI green — not self-assessed here."
+tests-passing = "112/112 (2026-04-04 baseline; NOT re-run post-#56 — treat as stale until a fresh suite run)"
 
 [project-context]
 name = "reposystem"
-completion-percentage = 65
-phase = "Testing & stabilization — D-floor lift in progress"
+# Coarse estimate, no formal rubric in this file. Basis for +3 vs the
+# 2026-04-25 value of 65: the scaffoldia/repo-batcher subproject moved from
+# "unimplemented Zig stub, non-functional" to "L1–L8 built, fiction-reviewed,
+# end-to-end fixture-gated" — one of ~10 scaffoldia/ + major subprojects.
+completion-percentage = 68
+phase = "Testing & stabilization — D-floor lift in progress; repo-batcher subproject built & verified (#56)"
 
 [dogfooding-status]
 # Populated 2026-04-18 against real on-disk integrations.
 boj-server-mcp = "2026-04-18 — reposystem-mcp cartridge (442 LOC: mod.js + Zig adapter + Zig FFI + SIDELINED-v.adoc). 4 declared MCP tools. Cartridge not yet run end-to-end but wiring is real. Path: boj-server/cartridges/reposystem-mcp/"
+repo-batcher = "2026-05-18 — scaffoldia/repo-batcher: real `just e2e` ran against a fresh temp git repo (dry-run byte-identical, real on-disk mutation via the ATS2 core, spdx-audit) — exit 0. patscc-linked binary genuinely exercises the ATS2 C ABI. Path: scaffoldia/repo-batcher/"
 
 [recent-changes]
+- 2026-05-18: repo-batcher #56 from-scratch build-out — L1–L4 ATS2 core (just tc-ats2=0), L5 self-contained C archive (ATS_DYNLOADFLAG 0 link fix, just ats2-lib=0), L6 Idris2 typed ABI w/ machine-checked theorems (just abi-check=0), L7 patscc-linked Zig CLI binding the genuine ATS2 C ABI, L8 fixture-backed just e2e=0. Independently fiction-reviewed from a clean clone. PR #59 merged (4c2d29f); issue #56 CLOSED-COMPLETED.
+- 2026-05-18: docs-truth — README/IMPLEMENTATION-STATUS/ARCHITECTURE corrected from the inverse anti-fiction defect ("still a stub") to the verified L1–L8 reality (PR #61). "No V ever" retained as true history.
 - 2026-04-04: Added comprehensive test suite (E2E, property-based, aspect, benchmarks)
 - E2E tests: 20 tests covering CLI smoke, scan operations, config, security
 - Property tests: 12 tests for determinism, consistency, graph properties
 - Aspect tests: 14 tests for security, error handling, performance
 - Benchmarks: 6 criterion suites for construction, edges, export, queries
 - Ada smoke test: Syntax validation with gnat support
-- Total: 112 tests passing, all critical paths covered
+- Total: 112 tests passing (2026-04-04 baseline; see tests-passing staleness note)
 
 [session-history]
+# 2026-05-18: repo-batcher #56 built L1–L8 + fiction-reviewed (PR #59, 4c2d29f;
+#             #56 CLOSED-COMPLETED). Docs-truth follow-up PR #61 merged.
+#             STATE.a2ml full refresh — factual fields updated; CRG grade and
+#             test count NOT fabricated (formal audit / re-run still required).
 # 2026-04-25: D→C blocker sweep. EXPLAINME.adoc rewritten (15 fabricated paths
 #             removed, 31 verified-real paths added). 24 per-directory README.adoc
 #             files added across all subprojects.

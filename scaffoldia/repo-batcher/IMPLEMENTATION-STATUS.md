@@ -1,5 +1,11 @@
 # repo-batcher Implementation Status
 
+> **⚠ V→Zig port pending (reposystem#56).** This is a dated (2026-02-06) status
+> snapshot. Every `src/v/…` / "V CLI" entry below describes a **legacy V layer**.
+> V is **banned estate-wide**; the ATS2 verified core is retained and the V
+> CLI/FFI layer is being ported to Zig. Entries are historical/transitional, not
+> the target architecture. See reposystem#53 (decision) / reposystem#56 (port).
+
 **Date**: 2026-02-06
 **Version**: 0.1.0 Alpha
 **Status**: Core operations implemented, ready for testing

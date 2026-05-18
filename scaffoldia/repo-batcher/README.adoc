@@ -7,9 +7,18 @@
 image:https://img.shields.io/badge/license-PMPL--1.0--or--later-blue.svg[License]
 image:https://img.shields.io/badge/status-alpha-orange.svg[Status]
 
+[IMPORTANT]
+====
+*V→Zig port pending (reposystem#56).* The CLI / parallel-execution layer
+is currently implemented in *V, which is banned estate-wide*. The ATS2
+verified core is retained; the V layer is being ported to Zig. References
+to "V" / `src/v/` in this and sibling docs are *legacy/transitional*, not
+the target architecture. See reposystem#53 (decision) and reposystem#56 (port).
+====
+
 == What is repo-batcher?
 
-repo-batcher is a command-line tool for performing mass operations across multiple git repositories with formal correctness guarantees. It uses ATS2 dependent types to prove operation safety at compile-time and V for fast parallel execution.
+repo-batcher is a command-line tool for performing mass operations across multiple git repositories with formal correctness guarantees. It uses ATS2 dependent types to prove operation safety at compile-time. The CLI / parallel-execution layer is currently V; V is banned estate-wide and is being ported to Zig (see reposystem#56) — the ATS2 verified core is unaffected.
 
 [quote]
 ____

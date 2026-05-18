@@ -3,6 +3,15 @@
 :toclevels: 3
 // SPDX-License-Identifier: PMPL-1.0-or-later
 
+[IMPORTANT]
+====
+*V→Zig port pending (reposystem#56).* The "V" CLI / coroutine layer
+described below is *legacy*. V is banned estate-wide; the ATS2 verified
+core is retained and the V layer is being ported to Zig. Treat every "V"
+reference here as transitional, not the target architecture.
+See reposystem#53 (decision) / reposystem#56 (port).
+====
+
 == Overview
 
 repo-batcher is a formally verified batch operation tool for mass repository management. It provides type-safe operations across multiple git repositories with compile-time correctness guarantees.
@@ -18,7 +27,7 @@ Key principles:
 
 * **Formal Verification**: ATS2 dependent types prove operation correctness at compile-time
 * **Type Safety**: Operations validated before execution, preventing destructive errors
-* **Parallel Execution**: V coroutines enable efficient multi-repository processing
+* **Parallel Execution**: coroutines enable efficient multi-repository processing (currently V — legacy, being ported to Zig per reposystem#56; V is banned estate-wide)
 * **Batch Processing**: Watch folder pattern separates operation definition from execution
 * **Rollback Safety**: All operations support dry-run and rollback mechanisms
 
@@ -53,9 +62,9 @@ Key principles:
 | Core batch operation logic with dependent type proofs
 | Theorem-proving capabilities ensure operation correctness. Prevents file overwrites, invalid replacements, git errors.
 
-| **V**
+| **V** (legacy → Zig, reposystem#56)
 | CLI interface, file watching, parallel execution
-| Fast compilation, simple C FFI, lightweight coroutines for parallel processing.
+| *V is banned estate-wide.* This layer is being ported to Zig (chosen for the estate API/FFI standard); the rationale below is the original V justification, retained for history: fast compilation, simple C FFI, lightweight coroutines for parallel processing.
 
 | **Idris2**
 | ABI definitions (per RSR standard)

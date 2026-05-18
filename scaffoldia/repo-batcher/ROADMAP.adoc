@@ -1,6 +1,15 @@
 // SPDX-License-Identifier: PMPL-1.0-or-later
 = repo-batcher Roadmap
 
+[IMPORTANT]
+====
+*V→Zig port pending (reposystem#56).* Completed milestones below were
+delivered on a *V* CLI/FFI layer. V is banned estate-wide; the ATS2
+verified core is retained and the V layer is being ported to Zig. The
+"✅ V CLI layer" / "FFI bridge (ATS2 ↔ V)" entries are historical record,
+not the target architecture. See reposystem#53 (decision) / reposystem#56 (port).
+====
+
 == Current Status
 
 **Version 1.0.0 - Production Ready** ✅

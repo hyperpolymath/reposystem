@@ -70,9 +70,16 @@ ats2-lib: tc-ffi
 
 # ---- Idris2 ABI (Layer 6) ----
 
+# The estate idris2 0.8.0 is a relocated Chez install; its baked
+# package prefix points at a non-existent ~/.asdf path. Idris2's
+# documented relocation override is IDRIS2_PREFIX, which makes it
+# resolve its OWN bundled stdlib at $PREFIX/idris2-0.8.0/*-0.8.0.
+# No .ttc is hand-located or staged.
+idris2_home := "/home/hyperpolymath/dev/tools/provers/idris2/0.8.0"
+
 abi-check:
     cd {{justfile_directory()}}/src/abi && \
-        {{justfile_directory()}}/../../../dev/tools/provers/idris2/0.8.0/bin/idris2 --check Abi.idr
+        IDRIS2_PREFIX={{idris2_home}} {{idris2_home}}/bin/idris2 --check Abi.idr
     @echo "abi-check: Idris2 ABI contract typechecks"
 
 # ---- Zig CLI (Layer 7) ----

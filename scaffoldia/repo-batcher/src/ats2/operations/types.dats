@@ -3,16 +3,17 @@
 **
 ** Operation type definitions - IMPLEMENTATION (real Postiats 0.4.2)
 **
-** Verified: `patsopt -tc -s operations/types.sats -d operations/types.dats`
-** plus the string_utils dependency (-IATS ../). Witness abstypes are
-** `assume`d equal to `string`; the only constructors are the validators.
+** CANONICAL BUILD: invoked from src/ats2 root via the Justfile with
+** `-IATS .` so that root-relative staload paths resolve regardless of
+** the compiler's CWD. Witness abstypes are `assume`d equal to `string`;
+** the only constructors are the validators.
 *)
 
 #include "share/atspre_define.hats"
 #include "share/atspre_staload.hats"
 
-staload "./types.sats"
-staload "../utils/string_utils.sats"
+staload "operations/types.sats"
+staload "utils/string_utils.sats"
 
 assume spdx_id         = string
 assume nonempty_string = string

@@ -2,78 +2,133 @@
 # SPDX-License-Identifier: PMPL-1.0-or-later
 # SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 #
-# fix-stale-submodule-urls.sh — repair submodule entries that sync-aggregator
-# left as `warn ... (update failed)`, where the cause is a renamed/deleted
-# GitHub repo whose .gitmodules URL is now stale.
+# fix-stale-submodule-urls.sh — classify and (optionally) remediate the
+# submodule entries that sync-aggregator left as `warn ... (update failed)`.
 #
-# For each warned submodule it asks the GitHub API for the canonical name
-# (the API follows rename redirects). If the canonical owner/name differs from
-# what .gitmodules records, it rewrites submodule.<name>.url to the canonical
-# SSH URL and runs `git submodule sync`. Deleted repos (API 404) are reported,
-# not touched.
+# Empirically the warns fall into FOUR classes, not one:
 #
-# DRY-RUN by default. --apply writes .gitmodules + `git submodule sync`.
-# Does NOT commit or push (sync-aggregator owns that). Run only AFTER
-# sync-aggregator has finished (it must hold no git lock on the aggregator).
+#   RENAMED      GitHub repo renamed; .gitmodules URL stale. The API (which
+#                follows rename redirects) returns a different canonical name.
+#                Remediation: rewrite submodule.<sec>.url.  (--apply-renames)
+#   NONEXISTENT  No such repo (API 404). The estate .gitmodules over-declares
+#                repos that were never created. URL is already basename-correct
+#                so a rewrite cannot help. Remediation: prune the declaration.
+#                (--prune-nonexistent — destructive, separately gated)
+#   WIKI         A `.wikis/<repo>.wiki` entry whose base repo lacks an enabled
+#                wiki. Not a code repo; cannot be rewritten. Remediation:
+#                prune.  (rolled into --prune-nonexistent, labelled WIKI)
+#   TRANSIENT    Repo exists and the URL is already canonical — a fetch blip.
+#                Remediation: just re-run sync-aggregator.  (no action here)
 #
-# Usage: fix-stale-submodule-urls.sh [--apply] [--log FILE] [AGG_DIR]
+# DRY-RUN by default: prints the classified plan only. Nothing is committed or
+# pushed (sync-aggregator owns that). Refuses to run while sync-aggregator is
+# still active (git-lock contention on the aggregator).
+#
+# Usage:
+#   fix-stale-submodule-urls.sh [--log FILE] [AGG_DIR]            # classify only
+#   fix-stale-submodule-urls.sh --apply-renames [...]             # rewrite URLs
+#   fix-stale-submodule-urls.sh --prune-nonexistent [...]         # remove decls
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-apply=no; LOG=/tmp/sync-aggregator.log; AGG=""
+apply_renames=no; prune=no; LOG=/tmp/sync-aggregator.log; AGG=""; OWNER=hyperpolymath
 while [ $# -gt 0 ]; do
   case "$1" in
-    --apply) apply=yes ;;
-    --log)   LOG=$2; shift ;;
-    --*)     echo "unknown flag $1" >&2; exit 2 ;;
-    *)       AGG=$1 ;;
+    --apply-renames)     apply_renames=yes ;;
+    --prune-nonexistent) prune=yes ;;
+    --log)               LOG=$2; shift ;;
+    --owner)             OWNER=$2; shift ;;
+    --*)                 echo "unknown flag $1" >&2; exit 2 ;;
+    *)                   AGG=$1 ;;
   esac
   shift
 done
 AGG=${AGG:-"$ROOT/../repos-monorepo"}
 [ -d "$AGG/.git" ] || { echo "not a git repo: $AGG" >&2; exit 1; }
-[ -f "$LOG" ] || { echo "no sync log: $LOG" >&2; exit 1; }
-
-# Refuse to run while sync-aggregator still holds the aggregator.
-if pgrep -f 'sync-aggregator.sh' >/dev/null 2>&1; then
-  echo "refusing: sync-aggregator.sh still running (git lock contention)." >&2
+[ -f "$LOG" ]      || { echo "no sync log: $LOG" >&2; exit 1; }
+if pgrep -f 'sync-aggregator\.sh' >/dev/null 2>&1; then
+  echo "refusing: sync-aggregator.sh still running (git-lock contention)." >&2
   exit 3
 fi
 
 warned=$(grep -E '^[[:space:]]+warn ' "$LOG" | awk '{print $2}' | sort -u)
-[ -n "$warned" ] || { echo "no warned submodules in $LOG — nothing to fix."; exit 0; }
+[ -n "$warned" ] || { echo "no warned submodules in $LOG — nothing to do."; exit 0; }
 
-echo "warned submodules: $(echo "$warned" | tr '\n' ' ')"
-echo "mode: $([ $apply = yes ] && echo APPLY || echo dry-run)"
+# path -> .gitmodules section name (handles slashes and leading-dot paths)
+section_for() {
+  git -C "$AGG" config -f .gitmodules --get-regexp '\.path$' \
+    | awk -v P="$1" '$2==P{ sub(/\.path$/,"",$1); print $1 }'
+}
+
+n_ren=0; n_non=0; n_wiki=0; n_tr=0
+plan=$(mktemp); trap 'rm -f "$plan"' EXIT
+
+echo "warned: $(echo "$warned" | wc -l | tr -d ' ') entries   mode: renames=$apply_renames prune=$prune"
 echo
 
-owner=hyperpolymath
-for name in $warned; do
-  cur=$(git -C "$AGG" config -f .gitmodules --get "submodule.$name.url" 2>/dev/null || echo "")
-  canon=$(gh api "repos/$owner/$name" -q .full_name 2>/dev/null || echo "")
+for path in $warned; do
+  sec=$(section_for "$path")
+  [ -n "$sec" ] || { echo "  ??? $path — no .gitmodules section (skipped)"; continue; }
+  cururl=$(git -C "$AGG" config -f .gitmodules --get "$sec.url" 2>/dev/null || echo "")
+
+  case "$path" in
+    *.wiki)
+      base=$(basename "$path" .wiki)
+      hw=$(gh api "repos/$OWNER/$base" -q '.has_wiki' 2>/dev/null || echo "404")
+      if [ "$hw" = "404" ]; then
+        echo "  WIKI(no-repo)  $path — base repo $OWNER/$base gone; PRUNE"
+      else
+        echo "  WIKI           $path — base repo exists, wiki clone failed; PRUNE (wikis aren't tracked content)"
+      fi
+      n_wiki=$((n_wiki+1)); echo "PRUNE $sec" >> "$plan"; continue ;;
+  esac
+
+  repo=$(basename "$path")
+  canon=$(gh api "repos/$OWNER/$repo" -q .full_name 2>/dev/null || echo "")
   if [ -z "$canon" ]; then
-    echo "  DELETED?  $name — GitHub API 404 (no canonical repo). Manual decision needed."
-    continue
+    echo "  NONEXISTENT    $path — $OWNER/$repo: API 404 (over-declared); PRUNE"
+    n_non=$((n_non+1)); echo "PRUNE $sec" >> "$plan"; continue
   fi
   newurl="git@github.com:$canon.git"
-  if [ "$cur" = "$newurl" ]; then
-    echo "  TRANSIENT $name — URL already canonical ($cur). Re-run sync-aggregator; likely a fetch blip."
-    continue
+  if [ "$cururl" = "$newurl" ]; then
+    echo "  TRANSIENT      $path — exists, URL canonical; re-run sync-aggregator"
+    n_tr=$((n_tr+1)); continue
   fi
-  echo "  RENAMED   $name: $cur  ->  $newurl"
-  if [ "$apply" = yes ]; then
-    git -C "$AGG" config -f .gitmodules "submodule.$name.url" "$newurl"
-    git -C "$AGG" submodule sync -- "$name" >/dev/null 2>&1 || true
-    git -C "$AGG" submodule update --init --remote -- "$name" >/dev/null 2>&1 \
-      && echo "            fixed + fetched" \
-      || echo "            url rewritten but fetch still failed — inspect manually"
-  fi
+  echo "  RENAMED        $path: $cururl -> $newurl"
+  n_ren=$((n_ren+1)); echo "RENAME $sec $newurl" >> "$plan"
 done
 
 echo
-if [ "$apply" = yes ]; then
-  echo "Done. .gitmodules updated (NOT committed). Re-run: just sync-aggregator --push"
-  echo "Then regenerate the manifest: just repos-manifest"
+echo "summary: RENAMED=$n_ren  NONEXISTENT=$n_non  WIKI=$n_wiki  TRANSIENT=$n_tr"
+echo
+
+did=no
+if [ "$apply_renames" = yes ] && [ "$n_ren" -gt 0 ]; then
+  echo "-- applying RENAME rewrites --"
+  while read -r op sec val; do
+    [ "$op" = RENAME ] || continue
+    git -C "$AGG" config -f .gitmodules "$sec.url" "$val"
+    git -C "$AGG" submodule sync -- "$(echo "$sec" | sed 's/^submodule\.//')" >/dev/null 2>&1 || true
+    echo "  rewrote $sec.url -> $val"
+  done < "$plan"
+  did=yes
+fi
+if [ "$prune" = yes ] && [ $((n_non+n_wiki)) -gt 0 ]; then
+  echo "-- pruning NONEXISTENT/WIKI declarations from .gitmodules --"
+  while read -r op sec _; do
+    [ "$op" = PRUNE ] || continue
+    git -C "$AGG" config -f .gitmodules --remove-section "$sec" >/dev/null 2>&1 \
+      && echo "  pruned $sec" || echo "  (already absent) $sec"
+  done < "$plan"
+  did=yes
+fi
+
+echo
+if [ "$did" = yes ]; then
+  echo "Done. .gitmodules edited (NOT committed). Next:"
+  echo "  just sync-aggregator --push   # pick up fixes, regenerate artifact"
+  echo "  just repos-manifest           # propagate to repos.toml"
 else
-  echo "Dry-run only. Re-run with --apply to rewrite .gitmodules."
+  echo "Dry-run only. Re-run with --apply-renames and/or --prune-nonexistent."
+  echo "(--prune-nonexistent is destructive: it removes .gitmodules sections.)"
 fi

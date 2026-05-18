@@ -68,6 +68,31 @@ artifact never drifts.
 just aggregator-drift           # classify gitlink drift across the estate (A2ML)
 ----
 
+== Warned submodules after a sync
+
+`sync-aggregator` leaves un-fetchable submodules as `warn ... (left as-is)`
+rather than aborting. `scripts/fix-stale-submodule-urls.sh` classifies them
+into four classes and remediates only on explicit, separately-gated flags:
+
+[cols="1,3,2",options="header"]
+|===
+| Class | Cause | Remediation
+| `RENAMED`     | Repo renamed; `.gitmodules` URL stale (API redirect resolves elsewhere). | `--apply-renames` rewrites the URL.
+| `NONEXISTENT` | `.gitmodules` over-declares a repo that was never created (API 404). URL is already basename-correct, so a rewrite cannot help. | `--prune-nonexistent` removes the declaration (*destructive*).
+| `WIKI`        | `.wikis/<repo>.wiki` entry with no enabled wiki — not tracked content. | `--prune-nonexistent` (labelled `WIKI`).
+| `TRANSIENT`   | Repo exists and URL is canonical — a fetch blip. | Re-run `just sync-aggregator`.
+|===
+
+[source,sh]
+----
+sh scripts/fix-stale-submodule-urls.sh                       # classify (dry-run)
+sh scripts/fix-stale-submodule-urls.sh --apply-renames       # safe: URL rewrites
+sh scripts/fix-stale-submodule-urls.sh --prune-nonexistent   # destructive: prune
+----
+
+It refuses to run while `sync-aggregator` holds the aggregator git lock, and
+never commits/pushes — re-run `just sync-aggregator --push` afterwards.
+
 == Migration status
 
 . [x] Rule declared (this document).

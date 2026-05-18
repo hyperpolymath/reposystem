@@ -1,9 +1,10 @@
 # 🚀 repo-batcher: Operations Expansion Summary
 
-> **⚠ V→Zig port pending (reposystem#56).** This document references a **legacy V**
-> CLI/FFI layer. V is banned estate-wide; the ATS2 verified core is retained and the
-> V layer is being ported to Zig. All "V" / `src/v/` references here are
-> historical/transitional, not the target architecture. See reposystem#53 / #56.
+> **⚠ Accurate state (reposystem#56, verified 2026-05-18).** The "Operations Expansion"
+> / "V" / "Production Ready" claims here **were never committed** — git history has no
+> `src/v/`; no V ever existed. Real source = an ATS2 verified core + an **unimplemented**
+> Zig FFI template stub. This file is an **un-built historical plan, not shipped code**;
+> the tool is not functional. See reposystem#56.
 
 **Date**: 2026-02-06 (Session 5)
 **Version**: 0.9.0 → Production Ready

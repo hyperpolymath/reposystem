@@ -60,6 +60,19 @@ section_for() {
     | awk -v P="$1" '$2==P{ sub(/\.path$/,"",$1); print $1 }'
 }
 
+# Canonical "owner/name" for a repo, following rename redirects. Empty if the
+# repo does not exist. NOTE: `gh api` writes the error JSON body to STDOUT on
+# 4xx, so a bare capture would yield `{"message":"Not Found"...}` and be
+# mistaken for a value. We therefore STRICTLY validate the result shape.
+canon_name() {
+  _c=$(gh api "repos/$OWNER/$1" --jq '.full_name' 2>/dev/null || true)
+  case "$_c" in
+    */*) printf '%s' "$_c" | grep -Eq '^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$' \
+           && printf '%s' "$_c" || printf '' ;;
+    *)   printf '' ;;
+  esac
+}
+
 n_ren=0; n_non=0; n_wiki=0; n_tr=0
 plan=$(mktemp); trap 'rm -f "$plan"' EXIT
 
@@ -74,8 +87,7 @@ for path in $warned; do
   case "$path" in
     *.wiki)
       base=$(basename "$path" .wiki)
-      hw=$(gh api "repos/$OWNER/$base" -q '.has_wiki' 2>/dev/null || echo "404")
-      if [ "$hw" = "404" ]; then
+      if [ -z "$(canon_name "$base")" ]; then
         echo "  WIKI(no-repo)  $path — base repo $OWNER/$base gone; PRUNE"
       else
         echo "  WIKI           $path — base repo exists, wiki clone failed; PRUNE (wikis aren't tracked content)"
@@ -84,7 +96,7 @@ for path in $warned; do
   esac
 
   repo=$(basename "$path")
-  canon=$(gh api "repos/$OWNER/$repo" -q .full_name 2>/dev/null || echo "")
+  canon=$(canon_name "$repo")
   if [ -z "$canon" ]; then
     echo "  NONEXISTENT    $path — $OWNER/$repo: API 404 (over-declared); PRUNE"
     n_non=$((n_non+1)); echo "PRUNE $sec" >> "$plan"; continue

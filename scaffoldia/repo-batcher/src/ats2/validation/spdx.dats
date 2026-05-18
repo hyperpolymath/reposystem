@@ -1,133 +1,93 @@
 (*
 ** SPDX-License-Identifier: PMPL-1.0-or-later
 **
-** SPDX license identifier validation
-** Validates license identifiers against SPDX specification
+** SPDX license-identifier validation - IMPLEMENTATION (real Postiats 0.4.2)
+**
+** CANONICAL BUILD: from src/ats2 with `-IATS .`.
+** Reuses Layer-1 string idioms (length-indexed string(n), proven
+** indexing) and Layer-2 is_valid_spdx. No `+` string operator (that is
+** not valid ATS2; all concatenation is string_append -> Strptr1).
 *)
 
+#define ATS_DYNLOADFLAG 0 // L5 link-completeness: self-contained static-lib TU; sound here (no effectful top-level vals), no runtime dynload needed
 #include "share/atspre_define.hats"
 #include "share/atspre_staload.hats"
 
-staload "../operations/types.dats"
+staload "operations/types.sats"
+staload "utils/string_utils.sats"
+staload "validation/spdx.sats"
 
-(* ========== SPDX License List ========== *)
+(* CODEGEN NOTE: a stack `@[char][2]` cast-to-string typechecks but
+** triggers a Postiats 0.4.2 codegen INTERROR (see the matching note in
+** utils/string_utils.dats). The ATS open-comment digraph cannot appear
+** as a single string literal either (comments nest — see spdx.sats).
+** So we keep two SEPARATE single-char literals "(" and "*" (each safe
+** in isolation) and append them at runtime. Sound, codegen-safe. *)
 
-(*
-** Common SPDX license identifiers
-** Full list: https://spdx.org/licenses/
-*)
-val common_spdx_licenses = @[
-  "PMPL-1.0-or-later",
-  "MIT",
-  "Apache-2.0",
-  "GPL-3.0-only",
-  "GPL-3.0-or-later",
-  "LGPL-3.0-only",
-  "LGPL-3.0-or-later",
-  "BSD-2-Clause",
-  "BSD-3-Clause",
-  "ISC",
-  "MPL-2.0",
-  "AGPL-3.0-only",
-  "PMPL-1.0-or-later",
-  "Unlicense",
-  "0BSD"
-] : List0(string)
+(* SPDX short-form id character class: A-Z a-z 0-9 . + - *)
+fn is_spdx_char (c: char): bool =
+  (c >= 'A' andalso c <= 'Z') orelse
+  (c >= 'a' andalso c <= 'z') orelse
+  (c >= '0' andalso c <= '9') orelse
+  c = '.' orelse c = '+' orelse c = '-'
 
-(*
-** Validates if a string is a valid SPDX identifier
-** Returns true if valid, false otherwise
-*)
-fun is_valid_spdx(s: string): bool = let
-  fun check_list(licenses: List0(string)): bool =
-    case+ licenses of
-    | list_nil() => false
-    | list_cons(lic, rest) =>
-        if s = lic then true
-        else check_list(rest)
+implement spdx_wellformed (s0) = let
+  val s = g1ofg0(s0)
+  val n = string_length(s)
+  fun loop {sl:int} {i:nat | i <= sl} .<sl-i>.
+    (s: string(sl), i: size_t(i), sl: size_t(sl)): bool =
+    if i >= sl then true
+    else if is_spdx_char(s[i]) then loop(s, succ(i), sl)
+    else false
 in
-  if string_is_empty(s) then false
-  else check_list(common_spdx_licenses)
+  if sz2i(n) = 0 then false else loop(s, i2sz(0), n)
 end
 
-(*
-** Validates SPDX identifier and returns proof type
-** Returns Some(spdx_id) if valid, None otherwise
-*)
-implement validate_spdx_id(s) =
-  if is_valid_spdx(s) then Some(s)
-  else None()
+implement spdx_acceptable (s) =
+  if is_valid_spdx(s) then true else spdx_wellformed(s)
 
-(*
-** Extracts SPDX identifier from header line
-** Format: "// SPDX-License-Identifier: MIT"
-** Returns extracted license or empty string
-*)
-fun extract_spdx_from_header(line: string): string = let
-  val prefix = "SPDX-License-Identifier:"
-  val idx = string_index_of(line, prefix)
+(* ATS2 has no string-literal patterns; dispatch by `=` on `string`.
+** The ATS-family prefix is assembled char-wise (lp then star) so the
+** source never contains the literal ATS open-comment digraph (see the
+** spdx.sats note: Postiats 0.4.2 block comments nest, so that digraph
+** even inside a string literal opens a comment). All arms yield a
+** fresh Strptr1; string0_copy on the static arms keeps one uniform
+** ownership story (caller frees exactly once). *)
+implement comment_prefix_for_ext(ext) = let
+  (* "(" then "*" as two separate literals (never the digraph). *)
+  val st = string_append("(", "*")
 in
-  if idx >= 0 then let
-    val start = idx + string_length(prefix)
-    val rest = string_suffix(line, start)
-    val trimmed = string_trim(rest)
+  if ext = ".dats" then st
+  else if ext = ".sats" then st
+  else if ext = ".hats" then st
+  else let
+    val () = strptr_free(st)
   in
-    trimmed
+    if ext = ".rs" then string0_copy("//")
+    else if ext = ".zig" then string0_copy("//")
+    else if ext = ".idr" then string0_copy("--")
+    else if ext = ".scm" then string0_copy(";;")
+    else if ext = ".toml" then string0_copy("#")
+    else if ext = ".yml" then string0_copy("#")
+    else if ext = ".yaml" then string0_copy("#")
+    else if ext = ".sh" then string0_copy("#")
+    else if ext = ".just" then string0_copy("#")
+    else if ext = ".md" then string0_copy("<!--")
+    else if ext = ".adoc" then string0_copy("//")
+    else string0_copy("#")
   end
-  else ""
 end
 
-(*
-** Checks if a file contains SPDX header
-** Returns Some(license) if found, None otherwise
-*)
-fun find_spdx_in_file(path: string): Option(string) = let
-  val file = fileref_open_opt(path, file_mode_r)
+(* Header line built by chained string_append; each intermediate
+** Strptr1 is freed exactly once. NOTE: the binder is `cpfx`, never
+** `prefix` — `prefix` is a reserved ATS2 keyword (fixity declarations)
+** and using it as an identifier is a hard parse error in Postiats
+** 0.4.2 (root-caused by minimal bisection). Same applies estate-wide
+** to `infix`/`infixl`/`infixr`/`postfix`. *)
+implement make_spdx_header(license, cpfx) = let
+  val p1 = string_append(cpfx, " SPDX-License-Identifier: ")
+  val p2 = strptr_append_str(p1, license)
+  val p3 = strptr_append_str(p2, "\n")
 in
-  case+ file of
-  | ~Some_vt(f) => let
-      fun loop(): Option(string) = let
-        val line = fileref_get_line_string(f)
-      in
-        if string_is_empty(line) then None()
-        else let
-          val spdx = extract_spdx_from_header(line)
-        in
-          if string_is_empty(spdx) then loop()
-          else Some(spdx)
-        end
-      end
-      val result = loop()
-      val () = fileref_close(f)
-    in
-      result
-    end
-  | ~None_vt() => None()
+  p3
 end
-
-(*
-** Generates SPDX header for given license and comment style
-** comment_style: "//", "#", "--", etc.
-*)
-fun generate_spdx_header(license: string, comment_style: string): string =
-  comment_style + " SPDX-License-Identifier: " + license + "\n"
-
-(*
-** Determines comment style for file extension
-** Returns comment prefix ("//", "#", "--", etc.)
-*)
-fun get_comment_style_for_ext(ext: string): string =
-  case+ ext of
-  | ".rs" => "//"
-  | ".v" => "//"
-  | ".dats" => "(*"
-  | ".sats" => "(*"
-  | ".idr" => "--"
-  | ".zig" => "//"
-  | ".scm" => ";;"
-  | ".toml" => "#"
-  | ".yml" => "#"
-  | ".yaml" => "#"
-  | ".md" => "<!--"
-  | ".adoc" => "//"
-  | _ => "//"  // Default to C-style

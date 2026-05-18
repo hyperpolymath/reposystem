@@ -1,0 +1,107 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= repo-batcher #56 — Resume Runbook for Layers 7–8
+:toc: macro
+:reproducible:
+
+Machine- and human-readable handoff. Authoritative resume point for
+`hyperpolymath/reposystem#56` after the L1–L6 + `$UNSAFE` remediation
+landed. Branch: `feat/repo-batcher-fullbuild-56`. PR: #59 (DRAFT — must
+stay draft until L7/L8 land AND are fiction-reviewed).
+
+toc::[]
+
+== State (verified, committed, pushed)
+
+[cols="1,3,1"]
+|===
+| Layer | What | Proof
+
+| L1 string_utils | real Postiats 0.4.2 | `just tc-ats2` exit 0
+| L2 types | cross-module regression fixed (root-relative staload, `-IATS .`) | `just tc-ats2` exit 0
+| effects / L3 spdx | real Postiats | `just tc-ats2` exit 0
+| L4 (6 operation modules) | real Postiats | `just tc-ats2` exit 0
+| L5 c_exports | C-export surface + archive | `just ats2-lib` exit 0 (`build/librepobatcher.a`)
+| L6 Idris2 ABI | typed ABI contract | `just abi-check` exit 0
+| `$UNSAFE` remediation | 55 ad-hoc casts → 15 in one audited PROOF-DEBT boundary; 6/10 modules `$UNSAFE`-free | commit `e07c207`, `just tc-ats2`+`just ats2-lib` exit 0
+|===
+
+Commits on branch: `09682ec`(L1) `872d8f8`(L2) `c1ba394`(fix+L3)
+`4bcb883`(L4) `cf9df0b`(L5) `91887a9`(L6) `e07c207`(`$UNSAFE` remediation).
+
+== Honest disclosure (do not overstate)
+
+The ATS2 stack *type-checks* under the canonical cross-module invocation.
+It is NOT machine-proven memory-safe: linear-memory safety rests on a
+single audited `$UNSAFE` combinator set — *hand-verified proof-debt*
+(copy-before-free / read-only borrow, freed-once, no escape). The audit
+contract is the `PROOF-DEBT` banner block in
+`src/ats2/utils/string_utils.sats` (+ `system_owned` in
+`operations/types.dats`, `sys_run_owned` in `operations/effects.dats`,
+`gh_setting_owned` in `operations/github_settings.dats`). Auditing
+repo-batcher memory safety == auditing ONLY those ~15 casts.
+
+== Canonical build invocation (the ONLY accepted proof)
+
+[source,sh]
+----
+cd scaffoldia/repo-batcher
+just tc-ats2      # full cross-module typecheck (CWD=src/ats2, -IATS .)
+just ats2-lib     # patscc -> build/librepobatcher.a
+just abi-check    # Idris2 ABI (IDRIS2_PREFIX override; see Justfile)
+----
+Per-file isolated `patsopt -tc` with `../`-relative staloads is FORBIDDEN
+(it masked the L2 regression). Capture exit codes directly:
+`just tc-ats2 ; echo "EXIT=$?"` — never pipe through `tail`/`head`
+(returns tail's exit, not the compiler's — this caused a false "verified"
+claim earlier).
+
+== Remaining work
+
+=== L7 — Zig FFI/CLI (`ffi/zig/`)  — THE genuine unknown
+
+Build `ffi/zig/build.zig` (Zig 0.15.2 — `addSharedLibrary` was REMOVED;
+use `addLibrary` + `.linkage`, or static lib + exe), `ffi/zig/src/main.zig`
+(real CLI linking `build/librepobatcher.a`), `ffi/zig/test/integration_test.zig`.
+
+Hard part: the ATS2 archive needs the Postiats *runtime* at link time.
+The C-export surface is `src/ats2/ffi/c_exports.dats` (compiled into the
+archive by `just ats2-lib`). The Zig link must also resolve the Postiats
+libats runtime — locate it via `$PATSHOME/ccomp/runtime` /
+`$PATSHOME/ccomp/atslib/lib` (discover `PATSHOME` through the `just`-spawned
+shell; system `patsopt` is at `/usr/bin`, so query
+`patsopt -d 2>/dev/null` env or `dirname $(command -v patsopt)`-relative).
+The archive was built with `-DATS_MEMALLOC_LIBC`, so link against libc
+malloc (no GC lib needed). Expect trial-and-error here; that is normal.
+
+Acceptance: `just zig-build` and `just zig-test` exit 0.
+
+=== L8 — end-to-end
+
+`just e2e` (recipe already drafted in `Justfile`: ats2-lib → zig build →
+run real `repo-batcher --version` + `repo-batcher validate-spdx MIT`).
+Acceptance: `just e2e` exit 0 AND the produced binary actually runs.
+
+=== Cleanup (trivial)
+
+`rm` / gitignore any `src/ats2/*_dats.{c,o}` and
+`src/ats2/validation/_probe*` scratch (none are committed; they appear in
+a build/probe working tree, not in this clone).
+
+== Environment hazards (cost prior agents hours)
+
+* *Sandbox path*: ONLY paths under `/home/hyperpolymath/dev/repos/`
+  persist across Bash tool calls. Clone the working tree there
+  (e.g. `/home/hyperpolymath/dev/repos/.rb56-work`), never `~/dev` or
+  `/tmp` (those roll back). Background sub-agents inherit this and ALSO
+  hit a Write/Edit lockout — prefer doing L7/L8 in the main session.
+* *`git checkout -- .` destroys uncommitted work*: commit/stash before
+  ANY tree-wide clean. (Reverted this remediation once; reapplied.)
+* Toolchains are permission-live: `patsopt`/`patscc` `/usr/bin` (0.4.2),
+  `idris2` `~/dev/tools/provers/idris2/0.8.0/bin`, `zig` 0.15.2, `just`.
+
+== Definition of done for #56
+
+L7 + L8 build and their proofs (`just zig-build`, `just zig-test`,
+`just e2e`) exit 0, captured directly; each fiction-reviewed (compile
+claim independently reproduced, no pseudo-code, proof-debt labelled);
+PR #59 body updated; THEN and only then PR #59 marked ready / merged.

@@ -5,23 +5,39 @@
 **Formally verified batch operations for mass repository management**
 
 image:https://img.shields.io/badge/license-PMPL--1.0--or--later-blue.svg[License]
-image:https://img.shields.io/badge/status-alpha-orange.svg[Status]
+image:https://img.shields.io/badge/status-built%20%26%20verified-brightgreen.svg[Status]
 
 [IMPORTANT]
 ====
-*Accurate state (reposystem#56, verified 2026-05-18).* repo-batcher source is
-an ATS2 verified core (real) + a Zig FFI/CLI layer that is currently an
-*unimplemented RSR template stub* (placeholder `{{project}}` code, stale build
-API, does not bind the ATS2 ABI, does not build). *No V implementation ever
-existed in source* — git history contains no `src/v/`. Any "V" / `src/v/*.v` /
-"V CLI" wording in this and sibling docs is an *un-built historical plan, not
-shipped code*. *The tool is not yet functional.* Implementing the real Zig
-FFI/CLI is greenfield work — reposystem#56.
+*Accurate state (reposystem#56, verified 2026-05-18; PR #59 merged, commit
+`4c2d29f`).* repo-batcher is *built and functional*. The from-scratch
+build-out delivered Layers 1–8, each independently fiction-reviewed from a
+clean clone:
+
+* L1–L4: real type-checked Postiats 0.4.2 ATS2 operation core (string utils,
+  types, effects, SPDX validation, six operations) — `just tc-ats2` exit 0.
+* L5: C-export surface compiled to a *self-contained* static archive
+  (`ATS_DYNLOADFLAG 0` link-completeness fix) — `just ats2-lib` exit 0.
+* L6: Idris2 0.8.0 typed ABI with machine-checked theorems — `just abi-check`
+  exit 0.
+* L7: a real Zig 0.15.2 CLI front-end that binds the genuine ATS2 C ABI (no
+  Zig reimplementation), linked by `patscc` (which owns the Postiats
+  prelude/libats/runtime/dynload bootstrap).
+* L8: a fixture-backed end-to-end gate — `just e2e` builds a real temp git
+  repo and asserts dry-run leaves it byte-identical, a real run genuinely
+  mutates on disk via the ATS2 core, and `spdx-audit` runs — exit 0.
+
+*No V implementation ever existed in source* — git history contains no
+`src/v/`. Any "V" / `src/v/*.v` / "V CLI" wording remaining in sibling docs
+is *un-built historical planning text, never shipped code* (the CLI/FFI layer
+is Zig, per the estate API/FFI standard). Remaining proof-debt (assume-equal
+witness abstypes, one audited `$UNSAFE` boundary) is honestly labelled
+in-source. Tracking issue reposystem#56 is CLOSED-COMPLETED.
 ====
 
 == What is repo-batcher?
 
-repo-batcher is intended to be a command-line tool for mass operations across many git repositories with compile-time correctness guarantees. *Current reality:* the ATS2 operation core (license-update, file-replace, git-sync, …) is implemented and dependently typed and exposes a C ABI; the Zig FFI/CLI driver that would make it usable is *not yet implemented* (an unbuilt template stub — reposystem#56), so there is no working end-to-end CLI yet. No V code exists or ever did.
+repo-batcher is a command-line tool for mass operations across many git repositories with compile-time correctness guarantees. *Current reality:* the ATS2 operation core (license-update, file-replace, git-sync, spdx-audit, …) is implemented and dependently typed and exposes a C ABI; the Zig FFI/CLI driver is implemented and `patscc`-linked, and the end-to-end CLI is functional and fixture-gated (`just e2e`). No V code exists or ever did.
 
 [quote]
 ____
@@ -294,14 +310,12 @@ ATS2 provides dependent types to prove operations are correct *before* execution
 
 == Project Status
 
-**Alpha**: Core architecture complete, basic operations in development.
-
-See link:STATE.scm[State File] for current progress.
+**Built & verified** (reposystem#56, PR #59 merged 2026-05-18): L1–L8 complete and fiction-reviewed; the ATS2 core, Idris2 ABI, and `patscc`-linked Zig CLI build and pass the fixture-backed `just e2e` gate.
 
 === Roadmap
 
 * [x] Phase 1: Core architecture and design
-* [ ] Phase 2: Basic operations (license, file, git-sync)
+* [x] Phase 2: Basic operations (license-update, file-replace, git-sync, spdx-audit) — ATS2 core + Zig CLI, fixture-gated
 * [ ] Phase 3: Watch system and parallel execution
 * [ ] Phase 4: Advanced operations and templates
 
@@ -312,7 +326,7 @@ See link:CONTRIBUTING.md[Contributing Guide].
 **Key areas needing help:**
 
 * ATS2 operation implementations with proofs
-* V FFI layer optimization
+* Zig FFI/CLI layer (Phase 3: watch system, parallel execution)
 * Operation templates
 * Integration with gitbot-fleet
 

@@ -22,6 +22,10 @@ there. It is regenerated, not maintained.
 
 * `repos.toml` — *generated* from `repos-monorepo/.gitmodules` by
   `scripts/gen-repos-manifest.sh`. Regenerate with `just repos-manifest`.
+  NOTE: `0-AI-MANIFEST.a2ml` prefers generated files out of source control;
+  `repos.toml` is a *deliberate exception* — it is the coordination index and
+  must be present on a fresh clone / in CI without a regeneration step. It
+  carries an SPDX header and is fully reproducible from the documented command.
 * `repos.groups.toml` — *hand-maintained*. Names the repo sets a cross-repo
   thread spans (epics). Survives manifest regeneration.
 

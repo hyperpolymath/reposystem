@@ -37,6 +37,13 @@ repo-batcher = "2026-05-18 — scaffoldia/repo-batcher: real `just e2e` ran agai
 [recent-changes]
 - 2026-05-18: repo-batcher #56 from-scratch build-out — L1–L4 ATS2 core (just tc-ats2=0), L5 self-contained C archive (ATS_DYNLOADFLAG 0 link fix, just ats2-lib=0), L6 Idris2 typed ABI w/ machine-checked theorems (just abi-check=0), L7 patscc-linked Zig CLI binding the genuine ATS2 C ABI, L8 fixture-backed just e2e=0. Independently fiction-reviewed from a clean clone. PR #59 merged (4c2d29f); issue #56 CLOSED-COMPLETED.
 - 2026-05-18: docs-truth — README/IMPLEMENTATION-STATUS/ARCHITECTURE corrected from the inverse anti-fiction defect ("still a stub") to the verified L1–L8 reality (PR #61). "No V ever" retained as true history.
+- 2026-05-18: Estate-aggregator organization landed (PR #63, branch feat/estate-aggregator-organization)
+- repos.toml (generated, 297 repos) + repos.groups.toml (hand-maintained epic index)
+- scripts/{gen-repos-manifest,thread,sync-aggregator,fix-stale-submodule-urls}.sh
+- Justfile: repos-manifest/thread/sync-aggregator/aggregator-drift recipes + fixed
+  pre-existing parse-breaking dedent in the doctor recipe
+- ESTATE-ORGANIZATION.adoc (linked from README) defines the source-of-truth rule:
+  flat clones authoritative, reposystem coordinates, repos-monorepo is generated
 - 2026-04-04: Added comprehensive test suite (E2E, property-based, aspect, benchmarks)
 - E2E tests: 20 tests covering CLI smoke, scan operations, config, security
 - Property tests: 12 tests for determinism, consistency, graph properties
@@ -50,6 +57,11 @@ repo-batcher = "2026-05-18 — scaffoldia/repo-batcher: real `just e2e` ran agai
 #             #56 CLOSED-COMPLETED). Docs-truth follow-up PR #61 merged.
 #             STATE.a2ml full refresh — factual fields updated; CRG grade and
 #             test count NOT fabricated (formal audit / re-run still required).
+# 2026-05-18: Estate-aggregator organization. One-source-of-truth rule (flat
+#             clones), repos.toml manifest + thread runner + generated
+#             repos-monorepo via sync-aggregator. PR #63. Pointer reconcile
+#             (sync-aggregator --push) executed; snif->snifs rename class found,
+#             fix-stale-submodule-urls.sh added. ml-dsa Dependabot bump queued.
 # 2026-04-25: D→C blocker sweep. EXPLAINME.adoc rewritten (15 fabricated paths
 #             removed, 31 verified-real paths added). 24 per-directory README.adoc
 #             files added across all subprojects.

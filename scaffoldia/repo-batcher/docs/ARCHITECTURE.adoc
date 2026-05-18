@@ -5,11 +5,13 @@
 
 [IMPORTANT]
 ====
-*V→Zig port pending (reposystem#56).* The "V" CLI / coroutine layer
-described below is *legacy*. V is banned estate-wide; the ATS2 verified
-core is retained and the V layer is being ported to Zig. Treat every "V"
-reference here as transitional, not the target architecture.
-See reposystem#53 (decision) / reposystem#56 (port).
+*Accurate state (reposystem#56, verified 2026-05-18).* The "V CLI / coroutine
+layer" described below *was never implemented* — git history contains no
+`src/v/`. The real source is an ATS2 verified core + a Zig FFI layer that is
+currently an *unimplemented RSR template stub* (does not bind the ATS2 ABI,
+does not build). No V ever existed. Treat every "V" reference here as an
+*un-built historical plan*, not shipped code or the target architecture.
+The real Zig FFI/CLI is greenfield work — reposystem#56.
 ====
 
 == Overview
@@ -27,7 +29,7 @@ Key principles:
 
 * **Formal Verification**: ATS2 dependent types prove operation correctness at compile-time
 * **Type Safety**: Operations validated before execution, preventing destructive errors
-* **Parallel Execution**: coroutines enable efficient multi-repository processing (currently V — legacy, being ported to Zig per reposystem#56; V is banned estate-wide)
+* **Parallel Execution**: _(planned, not implemented)_ multi-repository concurrency would live in the Zig FFI/CLI layer — currently an unbuilt stub (reposystem#56). No V was ever used.
 * **Batch Processing**: Watch folder pattern separates operation definition from execution
 * **Rollback Safety**: All operations support dry-run and rollback mechanisms
 
@@ -38,8 +40,8 @@ Key principles:
 [source]
 ----
 ┌─────────────────────────────────────┐
-│  V CLI Layer                         │  Fast CLI, file watching, parallel execution
-│  (src/v/)                            │
+│  Zig FFI/CLI Layer  [NOT IMPLEMENTED] │  intended: CLI, file watching, parallel exec
+│  (ffi/zig/ — template stub only)      │  (reposystem#56; no src/v/ ever existed)
 └──────────────┬──────────────────────┘
                │ FFI
 ┌──────────────▼──────────────────────┐
@@ -62,9 +64,9 @@ Key principles:
 | Core batch operation logic with dependent type proofs
 | Theorem-proving capabilities ensure operation correctness. Prevents file overwrites, invalid replacements, git errors.
 
-| **V** (legacy → Zig, reposystem#56)
+| **Zig** (FFI/CLI — *not yet implemented*, reposystem#56)
 | CLI interface, file watching, parallel execution
-| *V is banned estate-wide.* This layer is being ported to Zig (chosen for the estate API/FFI standard); the rationale below is the original V justification, retained for history: fast compilation, simple C FFI, lightweight coroutines for parallel processing.
+| *No V was ever used* (despite older prose). The CLI/FFI layer is intended to be Zig (estate API/FFI standard) but currently exists only as an unsubstituted RSR template stub that does not bind the ATS2 ABI and does not build. Greenfield implementation tracked in reposystem#56.
 
 | **Idris2**
 | ABI definitions (per RSR standard)

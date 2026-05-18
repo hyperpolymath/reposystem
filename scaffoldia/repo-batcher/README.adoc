@@ -9,16 +9,19 @@ image:https://img.shields.io/badge/status-alpha-orange.svg[Status]
 
 [IMPORTANT]
 ====
-*V→Zig port pending (reposystem#56).* The CLI / parallel-execution layer
-is currently implemented in *V, which is banned estate-wide*. The ATS2
-verified core is retained; the V layer is being ported to Zig. References
-to "V" / `src/v/` in this and sibling docs are *legacy/transitional*, not
-the target architecture. See reposystem#53 (decision) and reposystem#56 (port).
+*Accurate state (reposystem#56, verified 2026-05-18).* repo-batcher source is
+an ATS2 verified core (real) + a Zig FFI/CLI layer that is currently an
+*unimplemented RSR template stub* (placeholder `{{project}}` code, stale build
+API, does not bind the ATS2 ABI, does not build). *No V implementation ever
+existed in source* — git history contains no `src/v/`. Any "V" / `src/v/*.v` /
+"V CLI" wording in this and sibling docs is an *un-built historical plan, not
+shipped code*. *The tool is not yet functional.* Implementing the real Zig
+FFI/CLI is greenfield work — reposystem#56.
 ====
 
 == What is repo-batcher?
 
-repo-batcher is a command-line tool for performing mass operations across multiple git repositories with formal correctness guarantees. It uses ATS2 dependent types to prove operation safety at compile-time. The CLI / parallel-execution layer is currently V; V is banned estate-wide and is being ported to Zig (see reposystem#56) — the ATS2 verified core is unaffected.
+repo-batcher is intended to be a command-line tool for mass operations across many git repositories with compile-time correctness guarantees. *Current reality:* the ATS2 operation core (license-update, file-replace, git-sync, …) is implemented and dependently typed and exposes a C ABI; the Zig FFI/CLI driver that would make it usable is *not yet implemented* (an unbuilt template stub — reposystem#56), so there is no working end-to-end CLI yet. No V code exists or ever did.
 
 [quote]
 ____

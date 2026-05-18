@@ -414,14 +414,14 @@ doctor:
     check "git"               git       "2.40" 
     check "Rust (cargo)"      cargo     "1.80" 
     check "Zig"               zig       "0.13" 
-# Optional tools
-if command -v panic-attack >/dev/null 2>&1; then
-    echo "  [OK]   panic-attack — available"
-    PASS=$((PASS + 1))
-else
-    echo "  [WARN] panic-attack — not found (pre-commit scanner)"
-    WARN=$((WARN + 1))
-fi
+    # Optional tools
+    if command -v panic-attack >/dev/null 2>&1; then
+        echo "  [OK]   panic-attack — available"
+        PASS=$((PASS + 1))
+    else
+        echo "  [WARN] panic-attack — not found (pre-commit scanner)"
+        WARN=$((WARN + 1))
+    fi
     echo ""
     echo "  Result: $PASS passed, $FAIL failed, $WARN warnings"
     if [ "$FAIL" -gt 0 ]; then
@@ -447,3 +447,34 @@ crg-badge:
       D) color="orange" ;; E) color="red" ;; F) color="critical" ;; \
       *) color="lightgrey" ;; esac; \
     echo "[![CRG $$grade](https://img.shields.io/badge/CRG-$$grade-$$color?style=flat-square)](https://github.com/hyperpolymath/standards/tree/main/component-readiness-grades)"
+
+
+# ============================================================================
+# ESTATE AGGREGATOR (flat clones = source of truth; this is the coordination
+# layer; repos-monorepo is generated output). See ESTATE-ORGANIZATION.adoc.
+# ============================================================================
+
+# Regenerate repos.toml from the superproject .gitmodules (groups preserved).
+repos-manifest:
+    @sh scripts/gen-repos-manifest.sh
+    @echo "✓ repos.toml regenerated (epic groups live in repos.groups.toml)"
+
+# Fan a cross-repo thread over the flat clones. Each repo merges via its own PR.
+#   just thread resolve --kind julia
+#   just thread start standards-130 --repos echo-types,affinescript
+#   just thread pr standards-130 --refs standards#130
+#   just thread status standards-130 --repos echo-types,affinescript
+#   just thread land standards-130 --repos echo-types,affinescript --yes
+thread *ARGS:
+    @sh scripts/thread.sh {{ARGS}}
+
+# Regenerate repos-monorepo's submodule index from pushed clone HEADs.
+# DRY-RUN by default; pass --commit or --push.
+#   just sync-aggregator           # preview
+#   just sync-aggregator --push    # record + trigger Pages/mirror
+sync-aggregator *ARGS:
+    @sh scripts/sync-aggregator.sh {{ARGS}}
+
+# Drift alarm: classify submodule-gitlink drift across the estate (A2ML out).
+aggregator-drift:
+    @julia scripts/gitlink-drift.jl "$${REPOS_DIR:-$$HOME/dev/repos}/repos-monorepo"

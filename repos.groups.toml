@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+#
+# repos.groups.toml — HAND-MAINTAINED. Not generated; survives `just repos-manifest`.
+#
+# A "group" names a set of repos a cross-repo thread spans. The thread runner
+# (scripts/thread.sh) resolves --group <name> to this list, then operates on
+# the flat clones in $REPOS_DIR. Each repo still merges via its own normal PR;
+# this file is just the index of "what a thread touches".
+#
+# Add groups as epics arise. Example shape below — edit freely.
+
+[groups]
+
+# Epic example: an estate standards rollout touching a few repos.
+# standards-130 = ["echo-types", "affinescript", "standards"]
+
+# Convenience buckets (optional; the runner also accepts --kind julia etc.
+# resolved straight from repos.toml, so you only list a group here when the
+# membership is NOT derivable from `kind`).
+# proof-estate = ["echo-types", "affinescript", "my-lang", "gossamer"]

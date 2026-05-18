@@ -85,10 +85,8 @@ end
 ** to `infix`/`infixl`/`infixr`/`postfix`. *)
 implement make_spdx_header(license, cpfx) = let
   val p1 = string_append(cpfx, " SPDX-License-Identifier: ")
-  val p2 = string_append($UNSAFE.strptr2string(p1), license)
-  val () = strptr_free(p1)
-  val p3 = string_append($UNSAFE.strptr2string(p2), "\n")
-  val () = strptr_free(p2)
+  val p2 = strptr_append_str(p1, license)
+  val p3 = strptr_append_str(p2, "\n")
 in
   p3
 end

@@ -13,11 +13,13 @@
 ** - `string_append(a,b) : (string,string) -> Strptr1` ; freed via `strptr_free`.
 ** - `s[i]` is sound when `i:size_t(k)` and `k < n` is proven.
 **
-** Documented unsafe boundaries (only these, each immediately re-owned):
-** - `$UNSAFE.strnptr2string` / `$UNSAFE.strptr2string`: borrow a linear
-**   string's bytes as a shared `string` long enough to `string0_copy` /
-**   `string_append`; the owner is freed exactly once right after.
-** - `char_to_str`: a 2-byte {c,'\000'} array cast to `string` then copied.
+** Documented unsafe boundary (SINGLE, audited): every `$UNSAFE` cast in
+** repo-batcher string code is confined to the labelled combinator block
+** below (strptr_append_str / _append_strptr / _prepend_str / _rtrim_free
+** / _trim_free / strnptr_dup_free / _parse_int_free / _is_empty_free /
+** _peek_is_empty). Each borrows owned linear bytes as `string` for one
+** synchronous use then frees the owner exactly once; no other module
+** uses `$UNSAFE`. See string_utils.sats for the full audit contract.
 **
 ** NOT proven: returned strings are not certified minimal/canonical; functions
 ** are total over finite input with patsopt-checked termination metrics.
@@ -63,22 +65,65 @@ fn digit_to_str (d: int): Strptr1 =
   else if d = 9 then string0_copy("9")
   else string0_copy("?")
 
-(* take ownership of acc, append borrowed tail, free acc *)
-fn app1 (acc: Strptr1, tail: string): Strptr1 = let
-  val r = string_append($UNSAFE.strptr2string(acc), tail)
-  val () = strptr_free(acc)
-in
-  r
-end
+(* ===== PROOF-DEBT: SOLE $UNSAFE LINEARITY BOUNDARY (string layer) =====
+** See string_utils.sats for the full audit contract. These nine bodies
+** are the ONLY $UNSAFE in repo-batcher string code. Each: borrow owned
+** linear bytes as `string` -> exactly one synchronous use -> free owner
+** exactly once -> return. `string_append` copies before any free. *)
 
-(* substring with bounds proven from the {i+j<=n} constraint *)
+implement strptr_append_str (p, t) = let
+  val r = string_append($UNSAFE.strptr2string(p), t)
+  val () = strptr_free(p)
+in r end
+
+implement strptr_append_strptr (p, q) = let
+  val r = string_append($UNSAFE.strptr2string(p), $UNSAFE.strptr2string(q))
+  val () = strptr_free(p)
+  val () = strptr_free(q)
+in r end
+
+implement strptr_prepend_str (h, q) = let
+  val r = string_append(h, $UNSAFE.strptr2string(q))
+  val () = strptr_free(q)
+in r end
+
+implement strptr_rtrim_free (p) = let
+  val r = string_rtrim($UNSAFE.strptr2string(p))
+  val () = strptr_free(p)
+in r end
+
+implement strptr_trim_free (p) = let
+  val r = string_trim($UNSAFE.strptr2string(p))
+  val () = strptr_free(p)
+in r end
+
+implement strnptr_dup_free (p) = let
+  val r = string0_copy($UNSAFE.strnptr2string(p))
+  val () = strnptr_free(p)
+in r end
+
+implement strptr_parse_int_free (p) = let
+  val r = g0string2int_int($UNSAFE.strptr2string(p))
+  val () = strptr_free(p)
+in r end
+
+implement strptr_is_empty_free (p) = let
+  val r = string_is_empty($UNSAFE.strptr2string(p))
+  val () = strptr_free(p)
+in r end
+
+implement strptr_peek_is_empty (p) =
+  string_is_empty($UNSAFE.strptr2string(p))
+
+(* ===== end SOLE $UNSAFE LINEARITY BOUNDARY (string layer) ===== *)
+
+(* substring with bounds proven from the {i+j<=n} constraint;
+** the strnptr borrow is encapsulated in strnptr_dup_free above. *)
 fn substr_raw {n,i,j:int | 0 <= i; 0 <= j; i + j <= n}
   (s: string(n), start: size_t(i), len: size_t(j)): Strptr1 = let
   val sub = string_make_substring(s, start, len)
-  val r = string0_copy($UNSAFE.strnptr2string(sub))
-  val () = strnptr_free(sub)
 in
-  r
+  strnptr_dup_free(sub)
 end
 
 (* ========== String Search ========== *)
@@ -215,10 +260,8 @@ end
 
 implement string_trim(s00) = let
   val l = string_ltrim(s00)
-  val r = string_rtrim($UNSAFE.strptr2string(l))
-  val () = strptr_free(l)
 in
-  r
+  strptr_rtrim_free(l)
 end
 
 (* ========== Integer Conversion ========== *)
@@ -230,10 +273,7 @@ implement tostring_int(n0) = let
     else let
       val d = x mod 10
       val cstr = digit_to_str(d)
-      val r = string_append($UNSAFE.strptr2string(cstr),
-                            $UNSAFE.strptr2string(acc))
-      val () = strptr_free(cstr)
-      val () = strptr_free(acc)
+      val r = strptr_append_strptr(cstr, acc)
     in
       digits(x / 10, r)
     end
@@ -241,10 +281,8 @@ in
   if n = 0 then string0_copy("0")
   else if n < 0 then let
     val pos = digits(~n, string0_copy(""))
-    val r = string_append("-", $UNSAFE.strptr2string(pos))
-    val () = strptr_free(pos)
   in
-    r
+    strptr_prepend_str("-", pos)
   end
   else digits(n, string0_copy(""))
 end

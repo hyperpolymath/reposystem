@@ -16,46 +16,46 @@ staload "operations/effects.sats"
 staload "utils/string_utils.sats"
 staload "operations/github_settings.sats"   (* self: bind implements for patscc *)
 
-fn app (acc: Strptr1, tail: string): Strptr1 = let
-  val r = string_append($UNSAFE.strptr2string(acc), tail)
-  val () = strptr_free(acc)
-in
-  r
-end
+(* ===== PROOF-DEBT: SOLE $UNSAFE BOUNDARY (github_settings layer) =====
+** `gh_setting_owned` is the ONLY place `$UNSAFE` appears in this module.
+** It borrows an owned repo-name Strptr1 (a trimmed line) as a shared
+** `string`, passes it synchronously to `apply_github_setting` (which
+** copies it immediately via string_append), then frees the owner
+** exactly once; the borrowed view never escapes. Soundness is
+** HAND-VERIFIED (read-only borrow, freed-once, no escape), NOT
+** machine-proven. All other strings/effects here route through the
+** string_utils combinators and sys_run_owned. *)
+fn gh_setting_owned
+  (s: Strptr1, gh_flag: string, dry_run: bool): operation_result = let
+  val r = apply_github_setting($UNSAFE.strptr2string(s), gh_flag, dry_run)
+  val () = strptr_free(s)
+in r end
 
 implement apply_github_setting (repo, gh_flag, dry_run) = let
   val c0 = string_append("gh repo edit ", repo)
-  val c1 = app(c0, " ")
-  val c2 = app(c1, gh_flag)
+  val c1 = strptr_append_str(c0, " ")
+  val c2 = strptr_append_str(c1, gh_flag)
 in
   if dry_run then let
     val () = strptr_free(c2)
   in
     OpSkipped("github-settings: dry-run (gh not invoked)")
   end
-  else let
-    val rc = sys_run($UNSAFE.strptr2string(c2))
-    val () = strptr_free(c2)
-  in
-    if wexit_ok(rc) then OpSuccess("github-settings: gh repo edit applied")
-    else OpFailure("github-settings: gh repo edit failed")
-  end
+  else
+    if wexit_ok(sys_run_owned(c2))
+      then OpSuccess("github-settings: gh repo edit applied")
+      else OpFailure("github-settings: gh repo edit failed")
 end
 
 implement execute_github_settings (repo_list_path, gh_flag, dry_run) = let
   fun loop (fr: FILEref, acc: batch_result): batch_result = let
     val line = fileref_get_line_string(fr)
-    val s = string_trim($UNSAFE.strptr2string(line))
-    val () = strptr_free(line)
-    val empty = string_is_empty($UNSAFE.strptr2string(s))
+    val s = strptr_trim_free(line)
+    val empty = strptr_peek_is_empty(s)
   in
     if empty then let val () = strptr_free(s) in acc end
-    else let
-      val r = apply_github_setting($UNSAFE.strptr2string(s), gh_flag, dry_run)
-      val () = strptr_free(s)
-    in
-      loop(fr, batch_add(acc, r))
-    end
+    else
+      loop(fr, batch_add(acc, gh_setting_owned(s, gh_flag, dry_run)))
   end
   val f = fileref_open_opt(repo_list_path, file_mode_r)
 in

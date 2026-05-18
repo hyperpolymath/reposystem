@@ -17,12 +17,8 @@ staload "operations/effects.sats"
 staload "utils/string_utils.sats"
 staload "operations/license_update.sats"   (* self: bind implements for patscc *)
 
-fn app (acc: Strptr1, tail: string): Strptr1 = let
-  val r = string_append($UNSAFE.strptr2string(acc), tail)
-  val () = strptr_free(acc)
-in
-  r
-end
+(* No `$UNSAFE` in this module: ownership goes through the single
+** audited boundaries (string_utils combinators, sys_run_owned). *)
 
 fn istr (n: int): Strptr1 = tostring_int(n)
 
@@ -38,14 +34,11 @@ implement update_license_in_repo
     (* Optional backup: tar the repo into backup_dir. *)
     val () =
       if backup then let
-        val b0 = string_append("mkdir -p ", backup_dir)
-        val br = sys_run($UNSAFE.strptr2string(b0))
-        val () = strptr_free(b0)
+        val br = sys_run_owned(string_append("mkdir -p ", backup_dir))
         val t0 = string_append("tar czf ", backup_dir)
-        val t1 = app(t0, "/backup.tgz ")
-        val t2 = app(t1, repo)
-        val tr = sys_run($UNSAFE.strptr2string(t2))
-        val () = strptr_free(t2)
+        val t1 = strptr_append_str(t0, "/backup.tgz ")
+        val t2 = strptr_append_str(t1, repo)
+        val tr = sys_run_owned(t2)
       in
         ignoret(br); ignoret(tr)
       end
@@ -54,11 +47,10 @@ implement update_license_in_repo
     if dry_run then let
       (* Non-mutating: just list files that would change. *)
       val d0 = string_append("grep -rl 'SPDX-License-Identifier: ", repo)
-      val d1 = app(d0, "' ")
-      val d2 = app(d1, repo)
-      val d3 = app(d2, " 2>/dev/null >/dev/null")
-      val rc = sys_run($UNSAFE.strptr2string(d3))
-      val () = strptr_free(d3)
+      val d1 = strptr_append_str(d0, "' ")
+      val d2 = strptr_append_str(d1, repo)
+      val d3 = strptr_append_str(d2, " 2>/dev/null >/dev/null")
+      val rc = sys_run_owned(d3)
     in
       ignoret(rc);
       @{ success_count = 0, failure_count = 0, skipped_count = 1,
@@ -68,15 +60,14 @@ implement update_license_in_repo
       (* sed -i over files containing the old id. *)
       val s0 = string_append(
         "grep -rl 'SPDX-License-Identifier: ", old_spdx)
-      val s1 = app(s0, "' ")
-      val s2 = app(s1, repo)
-      val s3 = app(s2, " 2>/dev/null | xargs -r sed -i 's@SPDX-License-Identifier: ")
-      val s4 = app(s3, old_spdx)
-      val s5 = app(s4, "@SPDX-License-Identifier: ")
-      val s6 = app(s5, new_spdx)
-      val s7 = app(s6, "@g'")
-      val rc = sys_run($UNSAFE.strptr2string(s7))
-      val () = strptr_free(s7)
+      val s1 = strptr_append_str(s0, "' ")
+      val s2 = strptr_append_str(s1, repo)
+      val s3 = strptr_append_str(s2, " 2>/dev/null | xargs -r sed -i 's@SPDX-License-Identifier: ")
+      val s4 = strptr_append_str(s3, old_spdx)
+      val s5 = strptr_append_str(s4, "@SPDX-License-Identifier: ")
+      val s6 = strptr_append_str(s5, new_spdx)
+      val s7 = strptr_append_str(s6, "@g'")
+      val rc = sys_run_owned(s7)
     in
       if wexit_ok(rc) then @{
         success_count = 1, failure_count = 0, skipped_count = 0,
@@ -95,14 +86,11 @@ implement execute_license_update
   else if dry_run then let
     (* Non-mutating discovery walk. Build + run fully in this branch so
     ** no Strptr1 crosses an if-boundary (keeps linear typing simple). *)
-    val ds = istr(max_depth)
     val p0 = string_append("find ", base_dir)
-    val p1 = app(p0, " -maxdepth ")
-    val p2 = app(p1, $UNSAFE.strptr2string(ds))
-    val () = strptr_free(ds)
-    val p3 = app(p2, " -type d -name .git 2>/dev/null | sed 's@/.git$@@' >/dev/null")
-    val rc = sys_run($UNSAFE.strptr2string(p3))
-    val () = strptr_free(p3)
+    val p1 = strptr_append_str(p0, " -maxdepth ")
+    val p2 = strptr_append_strptr(p1, istr(max_depth))
+    val p3 = strptr_append_str(p2, " -type d -name .git 2>/dev/null | sed 's@/.git$@@' >/dev/null")
+    val rc = sys_run_owned(p3)
   in
     ignoret(rc);
     @{ success_count = 0, failure_count = 0, skipped_count = 1,
@@ -110,21 +98,18 @@ implement execute_license_update
   end
   else let
     (* One pipeline over discovered repos; per-repo tallies in files. *)
-    val ds = istr(max_depth)
     val p0 = string_append(
       "rm -f /tmp/.rb56_lu_ok /tmp/.rb56_lu_bad; find ", base_dir)
-    val p1 = app(p0, " -maxdepth ")
-    val p2 = app(p1, $UNSAFE.strptr2string(ds))
-    val () = strptr_free(ds)
-    val p3 = app(p2, " -type d -name .git 2>/dev/null | sed 's@/.git$@@' | while read R; do grep -rl 'SPDX-License-Identifier: ")
-    val a1 = app(p3, old_spdx)
-    val a2 = app(a1, "' \"$R\" 2>/dev/null | xargs -r sed -i 's@SPDX-License-Identifier: ")
-    val a3 = app(a2, old_spdx)
-    val a4 = app(a3, "@SPDX-License-Identifier: ")
-    val a5 = app(a4, new_spdx)
-    val a6 = app(a5, "@g' && echo \"$R\" >> /tmp/.rb56_lu_ok || echo \"$R\" >> /tmp/.rb56_lu_bad; done")
-    val rc = sys_run($UNSAFE.strptr2string(a6))
-    val () = strptr_free(a6)
+    val p1 = strptr_append_str(p0, " -maxdepth ")
+    val p2 = strptr_append_strptr(p1, istr(max_depth))
+    val p3 = strptr_append_str(p2, " -type d -name .git 2>/dev/null | sed 's@/.git$@@' | while read R; do grep -rl 'SPDX-License-Identifier: ")
+    val a1 = strptr_append_str(p3, old_spdx)
+    val a2 = strptr_append_str(a1, "' \"$R\" 2>/dev/null | xargs -r sed -i 's@SPDX-License-Identifier: ")
+    val a3 = strptr_append_str(a2, old_spdx)
+    val a4 = strptr_append_str(a3, "@SPDX-License-Identifier: ")
+    val a5 = strptr_append_str(a4, new_spdx)
+    val a6 = strptr_append_str(a5, "@g' && echo \"$R\" >> /tmp/.rb56_lu_ok || echo \"$R\" >> /tmp/.rb56_lu_bad; done")
+    val rc = sys_run_owned(a6)
   in
     if wexit_ok(rc) then @{
       success_count = 1, failure_count = 0, skipped_count = 0,

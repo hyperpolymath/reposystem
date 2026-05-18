@@ -16,24 +16,17 @@ staload "operations/effects.sats"
 staload "utils/string_utils.sats"
 staload "operations/spdx_audit.sats"   (* self: bind implements for patscc *)
 
-fn app (acc: Strptr1, tail: string): Strptr1 = let
-  val r = string_append($UNSAFE.strptr2string(acc), tail)
-  val () = strptr_free(acc)
-in
-  r
-end
+(* No `$UNSAFE` in this module: ownership goes through the single
+** audited boundaries (string_utils combinators, sys_run_owned). *)
 
 fn istr (n: int): Strptr1 = tostring_int(n)
 
 implement count_missing_spdx (base_dir, max_depth) = let
-  val ds = istr(max_depth)
   val c0 = string_append("find ", base_dir)
-  val c1 = app(c0, " -maxdepth ")
-  val c2 = app(c1, $UNSAFE.strptr2string(ds))
-  val () = strptr_free(ds)
-  val c3 = app(c2, " -type f \\( -name '*.dats' -o -name '*.sats' -o -name '*.rs' -o -name '*.zig' -o -name '*.idr' \\) 2>/dev/null | xargs -r grep -L 'SPDX-License-Identifier:' 2>/dev/null | wc -l > /tmp/.rb56_spdx_audit")
-  val rc = sys_run($UNSAFE.strptr2string(c3))
-  val () = strptr_free(c3)
+  val c1 = strptr_append_str(c0, " -maxdepth ")
+  val c2 = strptr_append_strptr(c1, istr(max_depth))
+  val c3 = strptr_append_str(c2, " -type f \\( -name '*.dats' -o -name '*.sats' -o -name '*.rs' -o -name '*.zig' -o -name '*.idr' \\) 2>/dev/null | xargs -r grep -L 'SPDX-License-Identifier:' 2>/dev/null | wc -l > /tmp/.rb56_spdx_audit")
+  val rc = sys_run_owned(c3)
 in
   if ~wexit_ok(rc) then ~1
   else let
@@ -43,10 +36,7 @@ in
     | ~Some_vt(fr) => let
         val line = fileref_get_line_string(fr)
         val () = fileref_close(fr)
-        val s = string_trim($UNSAFE.strptr2string(line))
-        val () = strptr_free(line)
-        val n = g0string2int_int($UNSAFE.strptr2string(s))
-        val () = strptr_free(s)
+        val n = strptr_parse_int_free(strptr_trim_free(line))
       in
         if n < 0 then 0 else n
       end

@@ -29,6 +29,13 @@ staload "operations/types.sats"
 ** normalise with `wexit_ok`. This is the ONLY shell entry point. *)
 fun sys_run (cmd: string): int
 
+(* Owns `cmd`: borrows it for one synchronous sys_run, frees it exactly
+** once, returns the status word. THE single audited $UNSAFE effect
+** boundary (impl in effects.dats; see its PROOF-DEBT banner). Every
+** operations module routes built command strings through this so no
+** operation module needs `$UNSAFE`. *)
+fun sys_run_owned (cmd: Strptr1): int
+
 (* True iff a system(3) status word denotes child exit code 0. *)
 fun wexit_ok (status: int): bool
 

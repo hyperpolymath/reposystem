@@ -50,3 +50,43 @@ fun string_is_whitespace(s: string): bool
 (* ========== String Comparison ========== *)
 
 fun string_equal_ci(s1: string, s2: string): bool
+
+(* ========================================================================
+** PROOF-DEBT: SOLE $UNSAFE LINEARITY BOUNDARY (string layer)
+** ------------------------------------------------------------------------
+** The IMPLEMENTATIONS of the functions below are the ONLY place
+** `$UNSAFE.strptr2string` / `$UNSAFE.strnptr2string` appears in the
+** repo-batcher string code. Each borrows an owned linear pointer's bytes
+** as a shared `string` for exactly ONE synchronous call, then frees the
+** owner exactly once; the borrowed view never escapes. Soundness is
+** HAND-VERIFIED, NOT machine-proven (ATS2's linear checker is switched
+** off inside an `$UNSAFE` cast):
+**   - append/prepend: `string_append` copies BOTH arguments into a fresh
+**     buffer before we `strptr_free` the owner — no use-after-free;
+**   - rtrim/trim: the borrowed value is consumed synchronously by a
+**     copying combinator before the owner is freed;
+**   - parse/empty/dup: read-only borrow, owner freed immediately after;
+**   - `strptr_peek_*` take `!Strptr1` (NON-consuming): pure read, no free,
+**     caller retains ownership.
+** Auditing repo-batcher string memory-safety == auditing ONLY this block.
+** Every other module is $UNSAFE-free and IS machine-linearity-checked.
+** ======================================================================== *)
+
+(* p ++ t; consumes and frees p; result owned by caller. *)
+fun strptr_append_str    (p: Strptr1, t: string): Strptr1
+(* p ++ q; consumes and frees BOTH; result owned by caller. *)
+fun strptr_append_strptr (p: Strptr1, q: Strptr1): Strptr1
+(* h ++ q; consumes and frees q; result owned by caller. *)
+fun strptr_prepend_str   (h: string, q: Strptr1): Strptr1
+(* rtrim(p); consumes and frees p. *)
+fun strptr_rtrim_free    (p: Strptr1): Strptr1
+(* trim(p); consumes and frees p. *)
+fun strptr_trim_free     (p: Strptr1): Strptr1
+(* copy(p); consumes and frees the strnptr p. *)
+fun strnptr_dup_free     (p: Strnptr1): Strptr1
+(* parse decimal int from p; consumes and frees p. *)
+fun strptr_parse_int_free (p: Strptr1): int
+(* emptiness of p; consumes and frees p. *)
+fun strptr_is_empty_free  (p: Strptr1): bool
+(* emptiness of p WITHOUT consuming it (caller still owns/frees p). *)
+fun strptr_peek_is_empty  (p: !Strptr1): bool

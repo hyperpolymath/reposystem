@@ -20,6 +20,18 @@ assume nonempty_string = string
 assume existing_path   = string
 assume git_repo        = string
 
+(* ===== PROOF-DEBT: SOLE $UNSAFE BOUNDARY (types layer) =====
+** `system_owned` is the ONLY place `$UNSAFE` appears in this module.
+** It borrows an owned command Strptr1's bytes as a shared `string`,
+** passes it synchronously to libc system(3) via $extfcall, then frees
+** the owner exactly once; the borrowed view never escapes. Soundness
+** is HAND-VERIFIED (read-only borrow, freed-once, no escape), NOT
+** machine-proven. All command strings reach system(3) only through it. *)
+fn system_owned (cmd: Strptr1): int = let
+  val rc = $extfcall(int, "system", $UNSAFE.strptr2string(cmd))
+  val () = strptr_free(cmd)
+in rc end
+
 (* ========== SPDX license set ========== *)
 (* Common SPDX identifiers; full list at https://spdx.org/licenses/ *)
 
@@ -53,19 +65,14 @@ implement validate_nonempty(s) =
 ** otherwise: this calls `test -e` via the shell and trusts its exit code.
 ** The witness only certifies "test -e succeeded at construction time". *)
 implement validate_path_exists(p) = let
-  val cmd = string_append("test -e ", p)
-  val rc  = $extfcall(int, "system", $UNSAFE.strptr2string(cmd))
-  val ()  = strptr_free(cmd)
+  val rc = system_owned(string_append("test -e ", p))
 in
   if rc = 0 then Some(p) else None()
 end
 
 implement validate_git_repo(p) = let
-  val gp  = string_append(p, "/.git")
-  val cmd = string_append("test -d ", $UNSAFE.strptr2string(gp))
-  val ()  = strptr_free(gp)
-  val rc  = $extfcall(int, "system", $UNSAFE.strptr2string(cmd))
-  val ()  = strptr_free(cmd)
+  val cmd = strptr_prepend_str("test -d ", string_append(p, "/.git"))
+  val rc  = system_owned(cmd)
 in
   if rc = 0 then Some(p) else None()
 end

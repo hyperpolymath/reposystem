@@ -15,9 +15,22 @@
 
 staload "operations/types.sats"
 staload "operations/effects.sats"
+staload "utils/string_utils.sats"
 
 implement sys_run (cmd) =
   $extfcall(int, "system", cmd)
+
+(* ===== PROOF-DEBT: SOLE $UNSAFE BOUNDARY (effects layer) =====
+** `sys_run_owned` is the ONLY place `$UNSAFE` appears in this module.
+** It borrows an owned command Strptr1's bytes as a shared `string`,
+** passes it synchronously to `sys_run` (libc system(3)), then frees the
+** owner exactly once; the borrowed view never escapes. Soundness is
+** HAND-VERIFIED (read-only borrow, freed-once, no escape), NOT
+** machine-proven. Every shell command built here runs through it. *)
+implement sys_run_owned (cmd) = let
+  val rc = sys_run($UNSAFE.strptr2string(cmd))
+  val () = strptr_free(cmd)
+in rc end
 
 (* POSIX: a normal child exit makes system()'s status word == 0 exactly
 ** when the exit code is 0 and no signal terminated the child (the low
@@ -30,30 +43,16 @@ implement sys_run (cmd) =
 implement wexit_ok (status) =
   if status < 0 then false else status = 0
 
-implement path_exists (p) = let
-  val cmd = string_append("test -e ", p)
-  val rc  = sys_run($UNSAFE.strptr2string(cmd))
-  val ()  = strptr_free(cmd)
-in
-  wexit_ok(rc)
-end
+implement path_exists (p) =
+  wexit_ok(sys_run_owned(string_append("test -e ", p)))
 
-implement dir_exists (p) = let
-  val cmd = string_append("test -d ", p)
-  val rc  = sys_run($UNSAFE.strptr2string(cmd))
-  val ()  = strptr_free(cmd)
-in
-  wexit_ok(rc)
-end
+implement dir_exists (p) =
+  wexit_ok(sys_run_owned(string_append("test -d ", p)))
 
 implement is_git_repo (p) = let
-  val gp  = string_append(p, "/.git")
-  val cmd = string_append("test -e ", $UNSAFE.strptr2string(gp))
-  val ()  = strptr_free(gp)
-  val rc  = sys_run($UNSAFE.strptr2string(cmd))
-  val ()  = strptr_free(cmd)
+  val cmd = strptr_prepend_str("test -e ", string_append(p, "/.git"))
 in
-  wexit_ok(rc)
+  wexit_ok(sys_run_owned(cmd))
 end
 
 (* ok_msg / fail_msg are caller-owned shared `string`s (typically string

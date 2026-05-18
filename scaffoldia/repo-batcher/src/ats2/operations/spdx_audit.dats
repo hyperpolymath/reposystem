@@ -8,6 +8,7 @@
 ** verified effects layer. No `+`, no `prefix` identifier.
 *)
 
+#define ATS_DYNLOADFLAG 0 // L5 link-completeness: self-contained static-lib TU; sound here (no effectful top-level vals), no runtime dynload needed
 #include "share/atspre_define.hats"
 #include "share/atspre_staload.hats"
 

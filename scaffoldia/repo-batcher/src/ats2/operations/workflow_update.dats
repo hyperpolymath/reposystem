@@ -14,6 +14,7 @@
 staload "operations/types.sats"
 staload "operations/effects.sats"
 staload "utils/string_utils.sats"
+staload "operations/workflow_update.sats"   (* self: bind implements for patscc *)
 
 fn app (acc: Strptr1, tail: string): Strptr1 = let
   val r = string_append($UNSAFE.strptr2string(acc), tail)

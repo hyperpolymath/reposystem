@@ -17,6 +17,7 @@
 staload "operations/types.sats"
 staload "operations/effects.sats"
 staload "utils/string_utils.sats"
+staload "operations/git_sync.sats"   (* self: bind implements for patscc *)
 
 (* acc:Strptr1 (owned) ++ tail:string -> Strptr1; frees acc. *)
 fn app (acc: Strptr1, tail: string): Strptr1 = let

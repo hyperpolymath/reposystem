@@ -16,14 +16,12 @@ staload "operations/types.sats"
 staload "utils/string_utils.sats"
 staload "validation/spdx.sats"
 
-(* Local: a 1-char {c,'\000'} buffer borrowed as string then owned-copied.
-** Same documented-unsafe idiom as utils/string_utils.dats:char_to_str
-** (re-declared locally because that one is a private fn, not exported). *)
-fn char_to_str (c: char): Strptr1 = let
-  val cs = $UNSAFE.cast{string}(@[char][2](c, '\000'))
-in
-  string0_copy(cs)
-end
+(* CODEGEN NOTE: a stack `@[char][2]` cast-to-string typechecks but
+** triggers a Postiats 0.4.2 codegen INTERROR (see the matching note in
+** utils/string_utils.dats). The ATS open-comment digraph cannot appear
+** as a single string literal either (comments nest — see spdx.sats).
+** So we keep two SEPARATE single-char literals "(" and "*" (each safe
+** in isolation) and append them at runtime. Sound, codegen-safe. *)
 
 (* SPDX short-form id character class: A-Z a-z 0-9 . + - *)
 fn is_spdx_char (c: char): bool =
@@ -55,14 +53,8 @@ implement spdx_acceptable (s) =
 ** fresh Strptr1; string0_copy on the static arms keeps one uniform
 ** ownership story (caller frees exactly once). *)
 implement comment_prefix_for_ext(ext) = let
-  (* ASCII 40 = open paren, 42 = star; built from codes so neither the
-  ** char literal for '(' nor the open-comment digraph appears in source. *)
-  val lp = char_to_str(int2char0(40))
-  val sp = char_to_str(int2char0(42))
-  val st = string_append($UNSAFE.strptr2string(lp),
-                         $UNSAFE.strptr2string(sp))
-  val () = strptr_free(lp)
-  val () = strptr_free(sp)
+  (* "(" then "*" as two separate literals (never the digraph). *)
+  val st = string_append("(", "*")
 in
   if ext = ".dats" then st
   else if ext = ".sats" then st

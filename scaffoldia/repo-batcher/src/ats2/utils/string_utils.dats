@@ -26,6 +26,11 @@
 #include "share/atspre_define.hats"
 #include "share/atspre_staload.hats"
 
+(* Self-staload its interface so separate `patscc -c` compilation
+** binds these implements (the `-tc -s` proof flag does not carry over
+** to compilation). Canonical: resolved via -IATS . from src/ats2. *)
+staload "utils/string_utils.sats"
+
 (* ---- internal helpers ---- *)
 
 fn is_ws (c: char): bool =
@@ -36,11 +41,27 @@ fn lower (c: char): char =
     then int2char0(char2int0(c) + 32)
     else c
 
-fn char_to_str (c: char): Strptr1 = let
-  val cs = $UNSAFE.cast{string}(@[char][2](c, '\000'))
-in
-  string0_copy(cs)
-end
+(* digit (0..9) -> a freshly owned 1-char string.
+**
+** PROOF-DEBT / CODEGEN NOTE: the previous `@[char][2](c,'\000')`
+** cast-to-string idiom TYPECHECKS but provokes a Postiats 0.4.2
+** codegen INTERROR (pats_ccomp_dynexp: HDEarrinit) — it cannot be
+** compiled by patscc. We therefore avoid stack-array char buffers
+** entirely and map each decimal digit to a static string literal,
+** which is fully codegen-safe. This is a sound, total replacement
+** for the only use char_to_str had (decimal rendering). *)
+fn digit_to_str (d: int): Strptr1 =
+  if d = 0 then string0_copy("0")
+  else if d = 1 then string0_copy("1")
+  else if d = 2 then string0_copy("2")
+  else if d = 3 then string0_copy("3")
+  else if d = 4 then string0_copy("4")
+  else if d = 5 then string0_copy("5")
+  else if d = 6 then string0_copy("6")
+  else if d = 7 then string0_copy("7")
+  else if d = 8 then string0_copy("8")
+  else if d = 9 then string0_copy("9")
+  else string0_copy("?")
 
 (* take ownership of acc, append borrowed tail, free acc *)
 fn app1 (acc: Strptr1, tail: string): Strptr1 = let
@@ -208,8 +229,7 @@ implement tostring_int(n0) = let
     if x = 0 then acc
     else let
       val d = x mod 10
-      val ch = int2char0(char2int0('0') + d)
-      val cstr = char_to_str(ch)
+      val cstr = digit_to_str(d)
       val r = string_append($UNSAFE.strptr2string(cstr),
                             $UNSAFE.strptr2string(acc))
       val () = strptr_free(cstr)

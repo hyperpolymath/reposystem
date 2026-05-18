@@ -92,14 +92,14 @@ for path in $warned; do
       else
         echo "  WIKI           $path — base repo exists, wiki clone failed; PRUNE (wikis aren't tracked content)"
       fi
-      n_wiki=$((n_wiki+1)); echo "PRUNE $sec" >> "$plan"; continue ;;
+      n_wiki=$((n_wiki+1)); echo "PRUNE $sec $path" >> "$plan"; continue ;;
   esac
 
   repo=$(basename "$path")
   canon=$(canon_name "$repo")
   if [ -z "$canon" ]; then
     echo "  NONEXISTENT    $path — $OWNER/$repo: API 404 (over-declared); PRUNE"
-    n_non=$((n_non+1)); echo "PRUNE $sec" >> "$plan"; continue
+    n_non=$((n_non+1)); echo "PRUNE $sec $path" >> "$plan"; continue
   fi
   newurl="git@github.com:$canon.git"
   if [ "$cururl" = "$newurl" ]; then
@@ -126,11 +126,16 @@ if [ "$apply_renames" = yes ] && [ "$n_ren" -gt 0 ]; then
   did=yes
 fi
 if [ "$prune" = yes ] && [ $((n_non+n_wiki)) -gt 0 ]; then
-  echo "-- pruning NONEXISTENT/WIKI declarations from .gitmodules --"
-  while read -r op sec _; do
+  echo "-- pruning NONEXISTENT/WIKI declarations (.gitmodules + tree + config) --"
+  while read -r op sec ppath; do
     [ "$op" = PRUNE ] || continue
-    git -C "$AGG" config -f .gitmodules --remove-section "$sec" >/dev/null 2>&1 \
-      && echo "  pruned $sec" || echo "  (already absent) $sec"
+    git -C "$AGG" config -f .gitmodules --remove-section "$sec" >/dev/null 2>&1 || true
+    # Untrack the orphan gitlink so tree and .gitmodules agree, drop any
+    # stale .git/config entry, and remove the (typically empty) placeholder.
+    git -C "$AGG" rm --cached --quiet -- "$ppath" >/dev/null 2>&1 || true
+    git -C "$AGG" config --remove-section "$sec" >/dev/null 2>&1 || true
+    [ -e "$AGG/$ppath" ] && rm -rf "$AGG/${ppath:?}" 2>/dev/null || true
+    echo "  pruned $ppath ($sec)"
   done < "$plan"
   did=yes
 fi

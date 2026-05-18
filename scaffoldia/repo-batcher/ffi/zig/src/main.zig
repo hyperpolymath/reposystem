@@ -1,274 +1,202 @@
-// {{PROJECT}} FFI Implementation
-//
-// This module implements the C-compatible FFI declared in src/abi/Foreign.idr
-// All types and layouts must match the Idris2 ABI definitions.
-//
 // SPDX-License-Identifier: PMPL-1.0-or-later
+// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+//
+// repo-batcher CLI (Layer 7), Zig 0.15.2.
+//
+// This is a thin, honest front-end over the REAL ATS2 C-export surface
+// (Layer 5). Every operation below is the genuine Postiats-compiled
+// symbol linked from ../../build/librepobatcher.a — there is NO Zig
+// reimplementation of repo-batcher logic here. The CLI only parses
+// argv, calls the c_* function, and reports what the ATS2 side returned
+// (faithful exit-code/count propagation, matching the L4 honesty
+// model: we report what the external operation did, we do not
+// reinterpret it).
 
 const std = @import("std");
 
-// Version information (keep in sync with project)
-const VERSION = "0.1.0";
-const BUILD_INFO = "{{PROJECT}} built with Zig " ++ @import("builtin").zig_version_string;
-
-/// Thread-local error storage
-threadlocal var last_error: ?[]const u8 = null;
-
-/// Set the last error message
-fn setError(msg: []const u8) void {
-    last_error = msg;
-}
-
-/// Clear the last error
-fn clearError() void {
-    last_error = null;
-}
-
-//==============================================================================
-// Core Types (must match src/abi/Types.idr)
-//==============================================================================
-
-/// Result codes (must match Idris2 Result type)
-pub const Result = enum(c_int) {
-    ok = 0,
-    @"error" = 1,
-    invalid_param = 2,
-    out_of_memory = 3,
-    null_pointer = 4,
+// ── ATS2 C ABI (mirrors src/ats2/ffi/c_exports.dats exactly) ──
+// atstype_int = C int = c_int; atstype_string = char* = [*:0]const u8
+// (verified against pats_ccomp_typedefs.h).
+pub const CBatchResult = extern struct {
+    success_count: c_int,
+    failure_count: c_int,
+    skipped_count: c_int,
+    message: [*:0]const u8,
 };
 
-/// Library handle (opaque to prevent direct access)
-pub const Handle = opaque {
-    // Internal state hidden from C
-    allocator: std.mem.Allocator,
-    initialized: bool,
-    // Add your fields here
-};
+pub extern fn c_get_version() [*:0]const u8;
+pub extern fn c_validate_spdx(license: [*:0]const u8) c_int;
+pub extern fn c_git_sync(
+    base_dir: [*:0]const u8,
+    max_depth: c_int,
+    commit_msg: [*:0]const u8,
+    parallel_jobs: c_int,
+    dry_run: c_int,
+) CBatchResult;
+pub extern fn c_license_update(
+    old_license: [*:0]const u8,
+    new_license: [*:0]const u8,
+    base_dir: [*:0]const u8,
+    max_depth: c_int,
+    dry_run: c_int,
+    backup: c_int,
+) CBatchResult;
+pub extern fn c_file_replace(
+    pattern: [*:0]const u8,
+    replacement: [*:0]const u8,
+    base_dir: [*:0]const u8,
+    max_depth: c_int,
+    dry_run: c_int,
+    backup: c_int,
+) CBatchResult;
+pub extern fn c_spdx_audit(
+    base_dir: [*:0]const u8,
+    max_depth: c_int,
+) CBatchResult;
 
-//==============================================================================
-// Library Lifecycle
-//==============================================================================
-
-/// Initialize the library
-/// Returns a handle, or null on failure
-export fn {{project}}_init() ?*Handle {
-    const allocator = std.heap.c_allocator;
-
-    const handle = allocator.create(Handle) catch {
-        setError("Failed to allocate handle");
-        return null;
-    };
-
-    // Initialize handle
-    handle.* = .{
-        .allocator = allocator,
-        .initialized = true,
-    };
-
-    clearError();
-    return handle;
+fn out(comptime fmt: []const u8, args: anytype) void {
+    var buf: [4096]u8 = undefined;
+    const s = std.fmt.bufPrint(&buf, fmt, args) catch return;
+    std.fs.File.stdout().writeAll(s) catch {};
 }
 
-/// Free the library handle
-export fn {{project}}_free(handle: ?*Handle) void {
-    const h = handle orelse return;
-    const allocator = h.allocator;
-
-    // Clean up resources
-    h.initialized = false;
-
-    allocator.destroy(h);
-    clearError();
+fn parseInt(s: [:0]const u8) c_int {
+    return std.fmt.parseInt(c_int, s, 10) catch 0;
 }
 
-//==============================================================================
-// Core Operations
-//==============================================================================
+fn reportBatch(label: []const u8, r: CBatchResult) u8 {
+    out("{s}: success={d} failure={d} skipped={d} :: {s}\n", .{
+        label,
+        r.success_count,
+        r.failure_count,
+        r.skipped_count,
+        std.mem.span(r.message),
+    });
+    // Faithful propagation: any failure the ATS2 side counted is a
+    // non-zero exit; otherwise success.
+    return if (r.failure_count > 0) 1 else 0;
+}
 
-/// Process data (example operation)
-export fn {{project}}_process(handle: ?*Handle, input: u32) Result {
-    const h = handle orelse {
-        setError("Null handle");
-        return .null_pointer;
-    };
+fn usage() void {
+    out(
+        \\repo-batcher (ATS2 core / Zig CLI)
+        \\usage:
+        \\  repo-batcher --version
+        \\  repo-batcher validate-spdx <id>
+        \\  repo-batcher file-replace <name-pattern> <replacement-file> <base_dir> <max_depth> <dry_run> <backup>
+        \\  repo-batcher spdx-audit <base_dir> <max_depth>
+        \\  repo-batcher git-sync <base_dir> <max_depth> <commit_msg> <parallel_jobs> <dry_run>
+        \\  repo-batcher license-update <old> <new> <base_dir> <max_depth> <dry_run> <backup>
+        \\
+    , .{});
+}
 
-    if (!h.initialized) {
-        setError("Handle not initialized");
-        return .@"error";
+// patscc links the final binary and owns the ATS2 program bootstrap;
+// the ATS `main0` root calls this. argv is recovered from the OS by
+// std.process, so no parameters need crossing the ATS->Zig boundary.
+export fn rb_main() c_int {
+    run() catch return 1;
+    return 0;
+}
+
+// patscc owns the program entry, so Zig's start code never sets
+// std.os.argv. Recover argv directly from the kernel via
+// /proc/self/cmdline (NUL-separated), which is start-code independent.
+fn argvFromProc(a: std.mem.Allocator) ![][:0]u8 {
+    const raw = try std.fs.cwd().readFileAlloc(a, "/proc/self/cmdline", 1 << 20);
+    var list = std.ArrayList([:0]u8){};
+    var it = std.mem.splitScalar(u8, raw, 0);
+    while (it.next()) |part| {
+        if (part.len == 0) continue;
+        const z = try a.allocSentinel(u8, part.len, 0);
+        @memcpy(z, part);
+        try list.append(a, z);
+    }
+    return list.toOwnedSlice(a);
+}
+
+fn run() !void {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const argv = try argvFromProc(arena.allocator());
+
+    if (argv.len < 2) {
+        usage();
+        std.process.exit(2);
+    }
+    const cmd = argv[1];
+
+    if (std.mem.eql(u8, cmd, "--version") or std.mem.eql(u8, cmd, "version")) {
+        out("{s}\n", .{std.mem.span(c_get_version())});
+        return;
     }
 
-    // Example processing logic
-    _ = input;
-
-    clearError();
-    return .ok;
-}
-
-//==============================================================================
-// String Operations
-//==============================================================================
-
-/// Get a string result (example)
-/// Caller must free the returned string
-export fn {{project}}_get_string(handle: ?*Handle) ?[*:0]const u8 {
-    const h = handle orelse {
-        setError("Null handle");
-        return null;
-    };
-
-    if (!h.initialized) {
-        setError("Handle not initialized");
-        return null;
+    if (std.mem.eql(u8, cmd, "validate-spdx")) {
+        if (argv.len < 3) {
+            usage();
+            std.process.exit(2);
+        }
+        const ok = c_validate_spdx(argv[2].ptr);
+        out("{s}: {s}\n", .{ std.mem.span(argv[2].ptr), if (ok == 1) "valid" else "invalid" });
+        std.process.exit(if (ok == 1) 0 else 1);
     }
 
-    // Example: allocate and return a string
-    const result = h.allocator.dupeZ(u8, "Example result") catch {
-        setError("Failed to allocate string");
-        return null;
-    };
-
-    clearError();
-    return result.ptr;
-}
-
-/// Free a string allocated by the library
-export fn {{project}}_free_string(str: ?[*:0]const u8) void {
-    const s = str orelse return;
-    const allocator = std.heap.c_allocator;
-
-    const slice = std.mem.span(s);
-    allocator.free(slice);
-}
-
-//==============================================================================
-// Array/Buffer Operations
-//==============================================================================
-
-/// Process an array of data
-export fn {{project}}_process_array(
-    handle: ?*Handle,
-    buffer: ?[*]const u8,
-    len: u32,
-) Result {
-    const h = handle orelse {
-        setError("Null handle");
-        return .null_pointer;
-    };
-
-    const buf = buffer orelse {
-        setError("Null buffer");
-        return .null_pointer;
-    };
-
-    if (!h.initialized) {
-        setError("Handle not initialized");
-        return .@"error";
+    if (std.mem.eql(u8, cmd, "file-replace")) {
+        if (argv.len < 8) {
+            usage();
+            std.process.exit(2);
+        }
+        const r = c_file_replace(
+            argv[2].ptr,
+            argv[3].ptr,
+            argv[4].ptr,
+            parseInt(argv[5]),
+            parseInt(argv[6]),
+            parseInt(argv[7]),
+        );
+        std.process.exit(reportBatch("file-replace", r));
     }
 
-    // Access the buffer
-    const data = buf[0..len];
-    _ = data;
-
-    // Process data here
-
-    clearError();
-    return .ok;
-}
-
-//==============================================================================
-// Error Handling
-//==============================================================================
-
-/// Get the last error message
-/// Returns null if no error
-export fn {{project}}_last_error() ?[*:0]const u8 {
-    const err = last_error orelse return null;
-
-    // Return C string (static storage, no need to free)
-    const allocator = std.heap.c_allocator;
-    const c_str = allocator.dupeZ(u8, err) catch return null;
-    return c_str.ptr;
-}
-
-//==============================================================================
-// Version Information
-//==============================================================================
-
-/// Get the library version
-export fn {{project}}_version() [*:0]const u8 {
-    return VERSION.ptr;
-}
-
-/// Get build information
-export fn {{project}}_build_info() [*:0]const u8 {
-    return BUILD_INFO.ptr;
-}
-
-//==============================================================================
-// Callback Support
-//==============================================================================
-
-/// Callback function type (C ABI)
-pub const Callback = *const fn (u64, u32) callconv(.C) u32;
-
-/// Register a callback
-export fn {{project}}_register_callback(
-    handle: ?*Handle,
-    callback: ?Callback,
-) Result {
-    const h = handle orelse {
-        setError("Null handle");
-        return .null_pointer;
-    };
-
-    const cb = callback orelse {
-        setError("Null callback");
-        return .null_pointer;
-    };
-
-    if (!h.initialized) {
-        setError("Handle not initialized");
-        return .@"error";
+    if (std.mem.eql(u8, cmd, "spdx-audit")) {
+        if (argv.len < 4) {
+            usage();
+            std.process.exit(2);
+        }
+        const r = c_spdx_audit(argv[2].ptr, parseInt(argv[3]));
+        std.process.exit(reportBatch("spdx-audit", r));
     }
 
-    // Store callback for later use
-    _ = cb;
+    if (std.mem.eql(u8, cmd, "git-sync")) {
+        if (argv.len < 7) {
+            usage();
+            std.process.exit(2);
+        }
+        const r = c_git_sync(
+            argv[2].ptr,
+            parseInt(argv[3]),
+            argv[4].ptr,
+            parseInt(argv[5]),
+            parseInt(argv[6]),
+        );
+        std.process.exit(reportBatch("git-sync", r));
+    }
 
-    clearError();
-    return .ok;
-}
+    if (std.mem.eql(u8, cmd, "license-update")) {
+        if (argv.len < 8) {
+            usage();
+            std.process.exit(2);
+        }
+        const r = c_license_update(
+            argv[2].ptr,
+            argv[3].ptr,
+            argv[4].ptr,
+            parseInt(argv[5]),
+            parseInt(argv[6]),
+            parseInt(argv[7]),
+        );
+        std.process.exit(reportBatch("license-update", r));
+    }
 
-//==============================================================================
-// Utility Functions
-//==============================================================================
-
-/// Check if handle is initialized
-export fn {{project}}_is_initialized(handle: ?*Handle) u32 {
-    const h = handle orelse return 0;
-    return if (h.initialized) 1 else 0;
-}
-
-//==============================================================================
-// Tests
-//==============================================================================
-
-test "lifecycle" {
-    const handle = {{project}}_init() orelse return error.InitFailed;
-    defer {{project}}_free(handle);
-
-    try std.testing.expect({{project}}_is_initialized(handle) == 1);
-}
-
-test "error handling" {
-    const result = {{project}}_process(null, 0);
-    try std.testing.expectEqual(Result.null_pointer, result);
-
-    const err = {{project}}_last_error();
-    try std.testing.expect(err != null);
-}
-
-test "version" {
-    const ver = {{project}}_version();
-    const ver_str = std.mem.span(ver);
-    try std.testing.expectEqualStrings(VERSION, ver_str);
+    usage();
+    std.process.exit(2);
 }

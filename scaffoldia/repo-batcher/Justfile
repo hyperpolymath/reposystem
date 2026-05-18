@@ -82,26 +82,34 @@ abi-check:
         IDRIS2_PREFIX={{idris2_home}} {{idris2_home}}/bin/idris2 --check Abi.idr
     @echo "abi-check: Idris2 ABI contract typechecks"
 
-# ---- Zig CLI (Layer 7) ----
+# ---- Zig CLI (Layer 7): patscc owns the final link ----
 
-zig-build: ats2-lib
+# `zig build` emits build/rb_cli.o (PIC, Zig front-end only). patscc
+# then links the ATS2 core (per-module *_dats.o from ats2-lib) +
+# ffi/cli_root.dats (the ATS2 program-bootstrap root) + rb_cli.o +
+# libatslib into the real binary. patscc MUST own this link: it injects
+# the Postiats prelude/libats/runtime/dynload bootstrap that a bare Zig
+# link cannot supply.
+cli: ats2-lib
     cd {{justfile_directory()}}/ffi/zig && zig build
+    cd {{ats2_root}} && patscc -DATS_MEMALLOC_LIBC -IATS . \
+        -o {{build_dir}}/repo-batcher \
+        ffi/cli_root.dats *_dats.o {{build_dir}}/rb_cli.o -latslib \
+        -Wl,-z,noexecstack
+    @echo "cli: {{build_dir}}/repo-batcher built (Zig CLI + real ATS2 core)"
 
-zig-test: ats2-lib
-    cd {{justfile_directory()}}/ffi/zig && zig build test
+# ---- Layer 8: fixture-backed end-to-end gate ----
 
-# ---- Layer 8: end-to-end ----
-
-# Build ATS2 lib -> build Zig CLI -> run the real binary smoke test.
-e2e: ats2-lib
-    cd {{justfile_directory()}}/ffi/zig && zig build
-    {{justfile_directory()}}/ffi/zig/zig-out/bin/repo-batcher --version
-    {{justfile_directory()}}/ffi/zig/zig-out/bin/repo-batcher validate-spdx MIT
-    @echo "e2e: real binary ran (version + spdx validation smoke)"
+# Real git-repo fixture: dry-run no-mutation + genuine on-disk mutation
+# + spdx-audit, all driven through the real binary. NOT a smoke test.
+e2e: cli
+    bash {{justfile_directory()}}/ffi/zig/test/fixture.sh {{build_dir}}/repo-batcher
+    {{build_dir}}/repo-batcher --version
+    @echo "e2e: fixture-backed integration gate passed"
 
 # Aggregate build.
-build: ats2-lib zig-build
-    @echo "build: ATS2 archive + Zig CLI built"
+build: ats2-lib cli
+    @echo "build: ATS2 archive + patscc-linked repo-batcher binary"
 
 clean:
     rm -rf {{build_dir}}

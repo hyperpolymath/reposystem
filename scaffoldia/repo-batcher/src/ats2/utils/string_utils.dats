@@ -1,331 +1,272 @@
 (*
 ** SPDX-License-Identifier: PMPL-1.0-or-later
 **
-** String Utility Functions
-** Core string manipulation helpers for batch operations
+** String Utility Functions - Implementation (real Postiats 0.4.2)
+**
+** Verified idioms (each probed against patsopt 0.4.2 before use here):
+** - `g1ofg0(s)` lifts `string` to length-indexed `string(n)`; `g1ofg0(x)`
+**   lifts `int` to `int(i)` so runtime comparison guards refine `i` in the
+**   static context (the standard sound Postiats bound-discharge idiom).
+** - `string_length : string(n) -> size_t(n)`.
+** - `string_make_substring : {i+j<=n}(string(n),size_t(i),size_t(j)) -> strnptr`
+**   bounds proven from refined ints; result freed with `strnptr_free`.
+** - `string_append(a,b) : (string,string) -> Strptr1` ; freed via `strptr_free`.
+** - `s[i]` is sound when `i:size_t(k)` and `k < n` is proven.
+**
+** Documented unsafe boundaries (only these, each immediately re-owned):
+** - `$UNSAFE.strnptr2string` / `$UNSAFE.strptr2string`: borrow a linear
+**   string's bytes as a shared `string` long enough to `string0_copy` /
+**   `string_append`; the owner is freed exactly once right after.
+** - `char_to_str`: a 2-byte {c,'\000'} array cast to `string` then copied.
+**
+** NOT proven: returned strings are not certified minimal/canonical; functions
+** are total over finite input with patsopt-checked termination metrics.
 *)
 
 #include "share/atspre_define.hats"
 #include "share/atspre_staload.hats"
 
+(* ---- internal helpers ---- *)
+
+fn is_ws (c: char): bool =
+  c = ' ' orelse c = '\t' orelse c = '\n' orelse c = '\r'
+
+fn lower (c: char): char =
+  if c >= 'A' andalso c <= 'Z'
+    then int2char0(char2int0(c) + 32)
+    else c
+
+fn char_to_str (c: char): Strptr1 = let
+  val cs = $UNSAFE.cast{string}(@[char][2](c, '\000'))
+in
+  string0_copy(cs)
+end
+
+(* take ownership of acc, append borrowed tail, free acc *)
+fn app1 (acc: Strptr1, tail: string): Strptr1 = let
+  val r = string_append($UNSAFE.strptr2string(acc), tail)
+  val () = strptr_free(acc)
+in
+  r
+end
+
+(* substring with bounds proven from the {i+j<=n} constraint *)
+fn substr_raw {n,i,j:int | 0 <= i; 0 <= j; i + j <= n}
+  (s: string(n), start: size_t(i), len: size_t(j)): Strptr1 = let
+  val sub = string_make_substring(s, start, len)
+  val r = string0_copy($UNSAFE.strnptr2string(sub))
+  val () = strnptr_free(sub)
+in
+  r
+end
+
 (* ========== String Search ========== *)
 
-(*
-** Finds index of needle in haystack
-** Returns -1 if not found, position >= 0 if found
-*)
-implement string_index_of(haystack, needle) = let
-  val haystack_len = string_length(haystack)
-  val needle_len = string_length(needle)
-
-  fun loop(i: int): int =
-    if i + needle_len > haystack_len then
-      ~1  // Not found
-    else let
-      val match = string_equal_at(haystack, i, needle)
-    in
-      if match then i
-      else loop(i + 1)
-    end
+implement string_index_of(haystack0, needle0) = let
+  val h = g1ofg0(haystack0)
+  val nd = g1ofg0(needle0)
+  val hn = string_length(h)
+  val nn = string_length(nd)
+  fun matchat
+    {hl,nl:int | hl >= 0; nl >= 0} {p:nat | p <= hl}
+    (h: string(hl), hl: size_t(hl), nd: string(nl), nl: size_t(nl),
+     p: size_t(p)): bool = let
+    fun go {j:nat | j <= nl} .<nl-j>. (j: size_t(j)): bool =
+      if j >= nl then true
+      else let
+        val hi = p + j
+      in
+        if hi >= hl then false
+        else if h[hi] <> nd[j] then false
+        else go(succ(j))
+      end
+  in
+    go(i2sz(0))
+  end
+  fun loop {hl,nl:int | hl >= 0; nl >= 0} {p:nat | p <= hl} .<hl-p>.
+    (h: string(hl), hl: size_t(hl), nd: string(nl), nl: size_t(nl),
+     p: size_t(p)): int =
+    if p + nl > hl then ~1
+    else if matchat(h, hl, nd, nl, p) then sz2i(p)
+    else if p >= hl then ~1
+    else loop(h, hl, nd, nl, succ(p))
 in
-  if needle_len = 0 then 0  // Empty needle found at position 0
-  else if needle_len > haystack_len then ~1  // Needle longer than haystack
-  else loop(0)
+  if sz2i(nn) = 0 then 0
+  else if nn > hn then ~1
+  else loop(h, hn, nd, nn, i2sz(0))
 end
 
-(*
-** Checks if haystack starts with needle at position i
-*)
-and string_equal_at(haystack: string, i: int, needle: string): bool = let
-  val needle_len = string_length(needle)
-
-  fun loop(j: int): bool =
-    if j >= needle_len then true
-    else if haystack[i + j] != needle[j] then false
-    else loop(j + 1)
-in
-  loop(0)
-end
-
-(*
-** Finds last index of character in string
-** Returns -1 if not found
-*)
-implement string_rindex_of(haystack, needle) = let
-  val len = string_length(haystack)
-
-  fun loop(i: int): int =
+implement string_rindex_of(haystack0, c) = let
+  val h = g1ofg0(haystack0)
+  val n = string_length(h)
+  fun loop {hl:int} {i:int | i >= ~1; i < hl} .<i+1>.
+    (h: string(hl), i: int(i), hl: size_t(hl)): int =
     if i < 0 then ~1
-    else if haystack[i] = needle then i
-    else loop(i - 1)
+    else if h[i2sz(i)] = c then i
+    else loop(h, i - 1, hl)
 in
-  loop(len - 1)
+  loop(h, sz2i(n) - 1, n)
 end
 
-(*
-** Checks if haystack contains needle
-*)
 implement string_contains(haystack, needle) =
   string_index_of(haystack, needle) >= 0
 
 (* ========== String Extraction ========== *)
 
-(*
-** Extracts substring starting at position with given length
-** Returns empty string if out of bounds
-*)
-implement string_substring(s, start, len) = let
-  val s_len = string_length(s)
+implement string_substring(s00, start00, len00) = let
+  val s = g1ofg0(s00)
+  val n = string_length(s)
+  val start0 = g1ofg0(start00)
+  val len0 = g1ofg0(len00)
 in
-  if start < 0 orelse start >= s_len then
-    ""
-  else if len <= 0 then
-    ""
+  if start0 < 0 then string0_copy("")
   else let
-    val actual_len = min(len, s_len - start)
-    val buf = string_make_substring(s, start, actual_len)
+    val st = i2sz(start0)
   in
-    buf
+    if st >= n then string0_copy("")
+    else if len0 <= 0 then string0_copy("")
+    else let
+      val ln = i2sz(len0)
+    in
+      if st + ln <= n then substr_raw(s, st, ln)
+      else substr_raw(s, st, n - st)
+    end
   end
 end
 
-(*
-** Gets suffix of string starting at position
-*)
-implement string_suffix(s, start) = let
-  val len = string_length(s)
+implement string_suffix(s00, start00) = let
+  val s = g1ofg0(s00)
+  val n = string_length(s)
+  val start0 = g1ofg0(start00)
 in
-  if start < 0 orelse start >= len then ""
-  else string_substring(s, start, len - start)
+  if start0 < 0 then string0_copy("")
+  else let
+    val st = i2sz(start0)
+  in
+    if st >= n then string0_copy("")
+    else substr_raw(s, st, n - st)
+  end
 end
 
-(*
-** Gets prefix of string up to length
-*)
-fun string_prefix(s: string, len: int): string =
-  string_substring(s, 0, len)
+implement string_prefix(s00, len00) = let
+  val s = g1ofg0(s00)
+  val n = string_length(s)
+  val len0 = g1ofg0(len00)
+in
+  if len0 <= 0 then string0_copy("")
+  else let
+    val ln = i2sz(len0)
+  in
+    if ln <= n then substr_raw(s, i2sz(0), ln)
+    else substr_raw(s, i2sz(0), n)
+  end
+end
 
 (* ========== String Trimming ========== *)
 
-(*
-** Checks if character is whitespace
-*)
-fun is_whitespace(c: char): bool =
-  c = ' ' orelse c = '\t' orelse c = '\n' orelse c = '\r'
-
-(*
-** Trims whitespace from start of string
-*)
-fun string_ltrim(s: string): string = let
-  val len = string_length(s)
-
-  fun find_start(i: int): int =
-    if i >= len then len
-    else if is_whitespace(s[i]) then find_start(i + 1)
-    else i
-
-  val start = find_start(0)
+implement string_ltrim(s00) = let
+  val s = g1ofg0(s00)
+  val n = string_length(s)
+  fun find {sl:int} {i:nat | i <= sl} .<sl-i>.
+    (s: string(sl), i: size_t(i), sl: size_t(sl)): int =
+    if i >= sl then sz2i(sl)
+    else if is_ws(s[i]) then find(s, succ(i), sl)
+    else sz2i(i)
+  val st = find(s, i2sz(0), n)
 in
-  if start >= len then ""
-  else string_suffix(s, start)
+  if st >= sz2i(n) then string0_copy("")
+  else string_suffix(s00, st)
 end
 
-(*
-** Trims whitespace from end of string
-*)
-fun string_rtrim(s: string): string = let
-  val len = string_length(s)
-
-  fun find_end(i: int): int =
+implement string_rtrim(s00) = let
+  val s = g1ofg0(s00)
+  val n = string_length(s)
+  fun find {sl:int} {i:int | i >= ~1; i < sl} .<i+1>.
+    (s: string(sl), i: int(i), sl: size_t(sl)): int =
     if i < 0 then 0
-    else if is_whitespace(s[i]) then find_end(i - 1)
+    else if is_ws(s[i2sz(i)]) then find(s, i - 1, sl)
     else i + 1
-
-  val end_pos = find_end(len - 1)
+  val ep = find(s, sz2i(n) - 1, n)
 in
-  if end_pos <= 0 then ""
-  else string_prefix(s, end_pos)
+  if ep <= 0 then string0_copy("")
+  else string_prefix(s00, ep)
 end
 
-(*
-** Trims whitespace from both ends of string
-*)
-implement string_trim(s) =
-  string_rtrim(string_ltrim(s))
-
-(* ========== String Replacement ========== *)
-
-(*
-** Replaces first occurrence of old with new
-*)
-fun string_replace_first(str: string, old: string, new: string): string = let
-  val idx = string_index_of(str, old)
+implement string_trim(s00) = let
+  val l = string_ltrim(s00)
+  val r = string_rtrim($UNSAFE.strptr2string(l))
+  val () = strptr_free(l)
 in
-  if idx < 0 then
-    str  // Not found, return original
-  else let
-    val old_len = string_length(old)
-    val before = string_prefix(str, idx)
-    val after = string_suffix(str, idx + old_len)
-  in
-    before + new + after
-  end
-end
-
-(*
-** Replaces all occurrences of old with new
-*)
-implement string_replace(str, old, new) = let
-  val old_len = string_length(old)
-
-  fun loop(s: string, acc: string): string = let
-    val idx = string_index_of(s, old)
-  in
-    if idx < 0 then
-      acc + s  // No more occurrences
-    else let
-      val before = string_prefix(s, idx)
-      val after = string_suffix(s, idx + old_len)
-      val new_acc = acc + before + new
-    in
-      loop(after, new_acc)
-    end
-  end
-in
-  if old_len = 0 then str  // Don't replace empty string
-  else loop(str, "")
-end
-
-(* ========== String Building ========== *)
-
-(*
-** Joins list of strings with separator
-*)
-fun string_join(strings: List0(string), sep: string): string = let
-  fun loop(lst: List0(string), first: bool, acc: string): string =
-    case+ lst of
-    | list_nil() => acc
-    | list_cons(s, rest) =>
-        if first then
-          loop(rest, false, s)
-        else
-          loop(rest, false, acc + sep + s)
-in
-  loop(strings, true, "")
-end
-
-(*
-** Splits string by separator
-*)
-fun string_split(s: string, sep: string): List0(string) = let
-  val sep_len = string_length(sep)
-
-  fun loop(str: string, acc: List0(string)): List0(string) = let
-    val idx = string_index_of(str, sep)
-  in
-    if idx < 0 then
-      list_cons(str, acc)  // Last part
-    else let
-      val before = string_prefix(str, idx)
-      val after = string_suffix(str, idx + sep_len)
-    in
-      loop(after, list_cons(before, acc))
-    end
-  end
-
-  val parts = loop(s, list_nil())
-
-  // Reverse to get correct order
-  fun reverse(lst: List0(string), acc: List0(string)): List0(string) =
-    case+ lst of
-    | list_nil() => acc
-    | list_cons(x, rest) => reverse(rest, list_cons(x, acc))
-in
-  reverse(parts, list_nil())
+  r
 end
 
 (* ========== Integer Conversion ========== *)
 
-(*
-** Converts integer to string
-*)
-implement tostring_int(n) = let
-  fun int2string(i: int): string =
-    if i = 0 then "0"
-    else if i < 0 then "-" + int2string_pos(~i)
-    else int2string_pos(i)
-
-  and int2string_pos(i: int): string =
-    if i = 0 then ""
-    else int2string_pos(i / 10) + digit2char(i mod 10)
-
-  and digit2char(d: int): string =
-    case+ d of
-    | 0 => "0" | 1 => "1" | 2 => "2" | 3 => "3" | 4 => "4"
-    | 5 => "5" | 6 => "6" | 7 => "7" | 8 => "8" | 9 => "9"
-    | _ => "?"
+implement tostring_int(n0) = let
+  val n = g1ofg0(n0)
+  fun digits {x:nat} .<x>. (x: int(x), acc: Strptr1): Strptr1 =
+    if x = 0 then acc
+    else let
+      val d = x mod 10
+      val ch = int2char0(char2int0('0') + d)
+      val cstr = char_to_str(ch)
+      val r = string_append($UNSAFE.strptr2string(cstr),
+                            $UNSAFE.strptr2string(acc))
+      val () = strptr_free(cstr)
+      val () = strptr_free(acc)
+    in
+      digits(x / 10, r)
+    end
 in
-  int2string(n)
+  if n = 0 then string0_copy("0")
+  else if n < 0 then let
+    val pos = digits(~n, string0_copy(""))
+    val r = string_append("-", $UNSAFE.strptr2string(pos))
+    val () = strptr_free(pos)
+  in
+    r
+  end
+  else digits(n, string0_copy(""))
 end
-
-(* ========== Helper Functions ========== *)
-
-fun min(a: int, b: int): int =
-  if a < b then a else b
-
-fun max(a: int, b: int): int =
-  if a > b then a else b
 
 (* ========== String Validation ========== *)
 
-(*
-** Checks if string is empty
-*)
-fun string_is_empty(s: string): bool =
-  string_length(s) = 0
+implement string_is_empty(s) =
+  sz2i(string_length(g1ofg0(s))) = 0
 
-(*
-** Checks if string is non-empty
-*)
-fun string_is_nonempty(s: string): bool =
-  string_length(s) > 0
+implement string_is_nonempty(s) =
+  sz2i(string_length(g1ofg0(s))) > 0
 
-(*
-** Checks if string contains only whitespace
-*)
-fun string_is_whitespace(s: string): bool = let
-  val len = string_length(s)
-
-  fun loop(i: int): bool =
-    if i >= len then true
-    else if is_whitespace(s[i]) then loop(i + 1)
+implement string_is_whitespace(s00) = let
+  val s = g1ofg0(s00)
+  val n = string_length(s)
+  fun loop {sl:int} {i:nat | i <= sl} .<sl-i>.
+    (s: string(sl), i: size_t(i), sl: size_t(sl)): bool =
+    if i >= sl then true
+    else if is_ws(s[i]) then loop(s, succ(i), sl)
     else false
 in
-  loop(0)
+  loop(s, i2sz(0), n)
 end
 
 (* ========== String Comparison ========== *)
 
-(*
-** Case-insensitive string comparison
-*)
-fun string_equal_ci(s1: string, s2: string): bool = let
-  val len1 = string_length(s1)
-  val len2 = string_length(s2)
+implement string_equal_ci(s10, s20) = let
+  val s1 = g1ofg0(s10)
+  val s2 = g1ofg0(s20)
+  val n1 = string_length(s1)
+  val n2 = string_length(s2)
 in
-  if len1 != len2 then false
+  if sz2i(n1) <> sz2i(n2) then false
   else let
-    fun loop(i: int): bool =
-      if i >= len1 then true
-      else if tolower(s1[i]) != tolower(s2[i]) then false
-      else loop(i + 1)
+    fun loop {la,lb:int} {i:nat | i <= la; i <= lb} .<la-i>.
+      (a: string(la), b: string(lb),
+       i: size_t(i), la: size_t(la), lb: size_t(lb)): bool =
+      if i >= la then true
+      else if i >= lb then true
+      else if lower(a[i]) <> lower(b[i]) then false
+      else loop(a, b, succ(i), la, lb)
   in
-    loop(0)
+    loop(s1, s2, i2sz(0), n1, n2)
   end
 end
-
-and tolower(c: char): char =
-  if c >= 'A' && c <= 'Z' then
-    char_of_int(int_of_char(c) + 32)
-  else
-    c

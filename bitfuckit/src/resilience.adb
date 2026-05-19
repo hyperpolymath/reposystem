@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 -- Resilience implementation - Fault tolerance patterns
 
 with Ada.Numerics.Float_Random;

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # Nickel configuration for bitfuckit
 #
 # Cookbook - Common Configuration Patterns:

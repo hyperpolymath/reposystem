@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 -- Security_Scan - Virus checking and vulnerability scanning
 -- Integrates: ClamAV (local), VirusTotal API (optional cloud)
 

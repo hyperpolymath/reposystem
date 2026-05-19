@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 -- Git_LFS - Git Large File Storage support for bitfuckit
 -- Handles LFS operations when mirroring/cloning
 

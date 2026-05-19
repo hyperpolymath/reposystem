@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0
+# SPDX-License-Identifier: PMPL-1.0-or-later
 Name:           bitfuckit
 Version:        0.1.0
 Release:        1%{?dist}

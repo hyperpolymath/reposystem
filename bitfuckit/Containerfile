@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # Wolfi-based container for bitfuckit
 # Build: nerdctl build -t bitfuckit:latest .
 # Run: nerdctl run -it --rm bitfuckit:latest --help

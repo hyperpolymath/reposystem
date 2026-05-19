@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: PMPL-1.0
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # SPDX-FileCopyrightText: 2025 Hyperpolymath
 #
 # forge-mesh.sh - Resilient multi-forge mirroring with fallback mesh

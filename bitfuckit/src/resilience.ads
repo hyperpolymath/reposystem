@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 -- Resilience - Fault tolerance and self-healing patterns for bitfuckit
 -- Implements: Retry, Circuit Breaker, Rate Limiting, Health Checks
 

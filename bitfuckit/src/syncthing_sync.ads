@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 -- Syncthing_Sync - Integration with Syncthing for distributed config sync
 -- Enables secure, decentralized synchronization of bitfuckit state
 

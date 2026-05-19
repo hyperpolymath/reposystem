@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 -- Storage implementation with CubsDB and OpenTimestamp support
 
 with GNAT.OS_Lib; use type GNAT.OS_Lib.String_Access;

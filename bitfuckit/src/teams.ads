@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 -- Team and permission management for bitfuckit
 -- Workspace members, groups, and repository permissions
 

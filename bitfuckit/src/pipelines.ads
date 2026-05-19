@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 -- Bitbucket Pipelines integration for bitfuckit
 -- Pipeline status, triggers, logs, and configuration
 

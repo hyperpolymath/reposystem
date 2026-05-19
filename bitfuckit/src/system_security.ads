@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 -- System_Security - SELinux and Firewalld integration for bitfuckit
 -- Provides container boundary security and network access control
 

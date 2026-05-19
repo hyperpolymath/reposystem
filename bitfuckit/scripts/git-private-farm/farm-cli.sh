@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: PMPL-1.0
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # farm-cli.sh - CLI for managing .git-private-farm
 #
 # Quick commands for instant multi-forge propagation
@@ -108,7 +108,7 @@ setup_dispatch() {
     fi
 
     cat > "$dispatch_file" << 'EOF'
-# SPDX-License-Identifier: PMPL-1.0
+# SPDX-License-Identifier: PMPL-1.0-or-later
 name: Instant Forge Sync
 
 on:

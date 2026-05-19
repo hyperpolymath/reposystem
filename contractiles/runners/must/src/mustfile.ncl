@@ -1,7 +1,7 @@
 {
   must_have = [
     { path = "LICENSE-AGPL", hash = "sha512-..." },
-    { path = "README.adoc", contains = ["SPDX-License-Identifier: PMPL-1.0"] }
+    { path = "README.adoc", contains = ["SPDX-License-Identifier: PMPL-1.0-or-later"] }
   ],
   must_not_have = ["Makefile", "node_modules/"],
   tasks = {

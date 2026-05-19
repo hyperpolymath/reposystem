@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # Alpine-based fallback container for bitfuckit
 # For systems without Wolfi/Chainguard access
 # Build: nerdctl build -f Containerfile.alpine -t bitfuckit:alpine .

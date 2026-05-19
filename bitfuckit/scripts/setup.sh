@@ -1,5 +1,5 @@
 #!/bin/sh
-# SPDX-License-Identifier: PMPL-1.0
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # bitfuckit one-click setup - POSIX-compatible (sh/bash/dash/ash)
 
 set -e

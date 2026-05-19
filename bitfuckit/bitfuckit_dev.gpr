@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 -- Development build configuration (relaxed style checks)
 
 project Bitfuckit_Dev is

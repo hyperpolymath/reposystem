@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 -- Progress bar implementation
 
 with Ada.Text_IO; use Ada.Text_IO;

@@ -1,5 +1,5 @@
 #!/usr/bin/env fish
-# SPDX-License-Identifier: PMPL-1.0
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # bitfuckit one-click setup for Fish shell
 
 set INSTALL_DIR (set -q INSTALL_DIR; and echo $INSTALL_DIR; or echo "$HOME/.local/bin")

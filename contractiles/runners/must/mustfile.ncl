@@ -1,7 +1,7 @@
 {
   must_have = [
     { path = "LICENSE-AGPL", hash = "sha512-..." },
-    { path = "README.adoc", contains = ["SPDX-License-Identifier: PMPL-1.0"] },
+    { path = "README.adoc", contains = ["SPDX-License-Identifier: PMPL-1.0-or-later"] },
     { path = "Cargo.toml" },
     { path = "target/debug/must", mode = "0755", hash = "shake256-..." }
   ],

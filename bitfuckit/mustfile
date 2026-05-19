@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # mustfile for bitfuckit - declarative build requirements
 #
 # Mustfile defines WHAT must be done, justfile defines HOW

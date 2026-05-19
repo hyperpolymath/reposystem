@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 -- Pull Request operations for bitfuckit
 -- Provides full PR workflow: create, view, merge, decline, approve, comment
 

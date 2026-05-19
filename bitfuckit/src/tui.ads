@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0
+-- SPDX-License-Identifier: PMPL-1.0-or-later
 -- TUI package for bitfuckit - Terminal User Interface in Ada/SPARK
 -- Provides interactive menu-driven interface
 

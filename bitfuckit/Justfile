@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0
+# SPDX-License-Identifier: PMPL-1.0-or-later
 # justfile for bitfuckit - Bitbucket CLI tool
 #
 # Combinatoric recipe system:

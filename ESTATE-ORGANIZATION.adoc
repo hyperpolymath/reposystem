@@ -1,0 +1,106 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Estate Organization: one aggregator, threads off it
+:toc: preamble
+
+== The rule
+
+There are three layers and exactly one is the source of truth.
+
+[cols="1,3,3",options="header"]
+|===
+| Layer | Path | Role
+| Flat clone root | `$REPOS_DIR` (default `~/dev/repos/<repo>`) | *Single source of truth.* All work and branches happen here, in ordinary independent clones. Per-repo PRs/issues unchanged.
+| Aggregator | `reposystem` (this repo) | Coordination layer over the clones: the `repos.toml` index + the `thread` runner. Owns no code history; pins nothing.
+| Published artifact | `repos-monorepo` | *Generated output.* Submodule pointers are an auto-bumped index that keeps GitHub Pages, the GitLab/Bitbucket mirror, and the governance workflows working.
+|===
+
+Never `cd` into `repos-monorepo` to edit code. Never hand-resolve a submodule
+there. It is regenerated, not maintained.
+
+== Files
+
+* `repos.toml` — *generated* from `repos-monorepo/.gitmodules` by
+  `scripts/gen-repos-manifest.sh`. Regenerate with `just repos-manifest`.
+  NOTE: `0-AI-MANIFEST.a2ml` prefers generated files out of source control;
+  `repos.toml` is a *deliberate exception* — it is the coordination index and
+  must be present on a fresh clone / in CI without a regeneration step. It
+  carries an SPDX header and is fully reproducible from the documented command.
+* `repos.groups.toml` — *hand-maintained*. Names the repo sets a cross-repo
+  thread spans (epics). Survives manifest regeneration.
+
+== Cross-repo threads (the merge model)
+
+A thread is one logical change across N repos. Each repo still merges through
+its *own normal PR* — the runner only orchestrates the fan-out.
+
+[source,sh]
+----
+just thread resolve --kind julia                              # who is in scope
+just thread start  standards-130 --repos echo-types,affinescript   # branch per clone
+just thread pr     standards-130 --refs standards#130              # one PR per repo
+just thread status standards-130 --repos echo-types,affinescript   # CI/merge state
+just thread land   standards-130 --repos echo-types,affinescript --yes
+----
+
+Selectors: `--group <name>` (from `repos.groups.toml`), `--kind <kind>` (from
+`repos.toml`), or `--repos a,b,c`. `start` skips dirty worktrees; `land`
+refuses without `--yes` and only merges PRs GitHub reports `MERGEABLE`.
+
+== Keeping the published artifact current
+
+[source,sh]
+----
+just sync-aggregator            # DRY-RUN: show pointers that would bump
+just sync-aggregator --commit   # record the bump
+just sync-aggregator --push     # record + trigger Pages deploy + mirror
+----
+
+Submodules are updated one at a time (a single `git submodule update
+--recursive` aborts on the URL-less `.git-private-farm` entry — see
+`scripts/gitlink-drift.jl`). Run after `thread land`, or on a schedule, so the
+artifact never drifts.
+
+== Drift alarm
+
+[source,sh]
+----
+just aggregator-drift           # classify gitlink drift across the estate (A2ML)
+----
+
+== Warned submodules after a sync
+
+`sync-aggregator` leaves un-fetchable submodules as `warn ... (left as-is)`
+rather than aborting. `scripts/fix-stale-submodule-urls.sh` classifies them
+into four classes and remediates only on explicit, separately-gated flags:
+
+[cols="1,3,2",options="header"]
+|===
+| Class | Cause | Remediation
+| `RENAMED`     | Repo renamed; `.gitmodules` URL stale (API redirect resolves elsewhere). | `--apply-renames` rewrites the URL.
+| `NONEXISTENT` | `.gitmodules` over-declares a repo that was never created (API 404). URL is already basename-correct, so a rewrite cannot help. | `--prune-nonexistent` removes the declaration (*destructive*).
+| `WIKI`        | `.wikis/<repo>.wiki` entry with no enabled wiki — not tracked content. | `--prune-nonexistent` (labelled `WIKI`).
+| `TRANSIENT`   | Repo exists and URL is canonical — a fetch blip. | Re-run `just sync-aggregator`.
+|===
+
+[source,sh]
+----
+sh scripts/fix-stale-submodule-urls.sh                       # classify (dry-run)
+sh scripts/fix-stale-submodule-urls.sh --apply-renames       # safe: URL rewrites
+sh scripts/fix-stale-submodule-urls.sh --prune-nonexistent   # destructive: prune
+----
+
+It refuses to run while `sync-aggregator` holds the aggregator git lock, and
+never commits/pushes — re-run `just sync-aggregator --push` afterwards.
+
+== Migration status
+
+. [x] Rule declared (this document).
+. [ ] One-shot pointer reconcile: `just sync-aggregator --push` (fixes every
+  stale/empty gitlink — incl. `echo-types` — in one commit). *Run deliberately;
+  it fetches ~300 repos.*
+. [x] `repos.toml` generated from `.gitmodules` (297 repos).
+. [x] `repos.groups.toml` stub + `thread` / `sync-aggregator` /
+  `aggregator-drift` recipes.
+. [ ] Schedule `sync-aggregator --push` (cron/CI) so the artifact self-heals.
+. [ ] Optional: have `reposystem scan` assert manifest⇔clone parity.

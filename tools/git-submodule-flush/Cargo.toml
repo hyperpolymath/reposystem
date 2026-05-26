@@ -5,7 +5,7 @@
 name = "git-submodule-flush"
 version = "0.1.0"
 edition = "2021"
-license = "PMPL-1.0-or-later"
+license = "MPL-2.0"
 description = "Recursively commit and push dirty submodule trees bottom-up, with dry-run, depth limits, and confidence guards"
 authors = ["Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"]
 repository = "https://github.com/hyperpolymath/reposystem"

@@ -5,7 +5,7 @@
 name = "gitmerge-paralleliser"
 version = "0.1.0"
 edition = "2021"
-license = "PMPL-1.0-or-later"
+license = "MPL-2.0"
 description = "Split large commits into classified batches (docs, code, data, assets, config) and push in parallel"
 authors = ["Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"]
 repository = "https://github.com/hyperpolymath/reposystem"

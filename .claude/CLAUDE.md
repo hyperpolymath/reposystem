@@ -37,7 +37,7 @@ The following files in `.machine_readable/` contain structured project metadata:
 
 | Banned | Replacement |
 |--------|-------------|
-| TypeScript | ReScript |
+| TypeScript | AffineScript — banned in NEW code 2026-04-30; existing `.ts`/`.tsx` grandfathered while in-flight migration proceeds; detected via hypatia `cicd_rules/typescript_detected` with `path_allow_prefixes` for `.d.ts`, `*/bindings/{deno,ts,typescript}/`, `avow-protocol/telegram-bot/avow-telegram-bot/`, tooling configs, upstream forks, archives |
 | Node.js | Deno |
 | npm | Deno |
 | Bun | Deno |
@@ -61,7 +61,7 @@ Both are FOSS with independent governance (no Big Tech).
 
 ### Enforcement Rules
 
-1. **No new TypeScript files** - Convert existing TS to ReScript
+1. **No new TypeScript files** - Convert existing TS to AffineScript directly (ReScript is itself banned in new code as of 2026-04-30; do not pass through it)
 2. **No package.json for runtime deps** - Use deno.json imports
 3. **No node_modules in production** - Deno caches deps automatically
 4. **No Go code** - Use Rust instead

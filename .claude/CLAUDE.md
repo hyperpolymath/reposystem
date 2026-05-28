@@ -43,7 +43,7 @@ The following files in `.machine_readable/` contain structured project metadata:
 | Bun | Deno |
 | pnpm/yarn | Deno |
 | Go | Rust |
-| V (vlang) | Zig/Rust |
+| V (vlang) | Zig/Rust — migration COMPLETED 2026-05-28; detected via hypatia `cicd_rules/vlang_detected` + `vmod_detected` |
 | Python | Julia/Rust/AffineScript |
 | Java/Kotlin | Rust/Tauri/Dioxus |
 | Swift | Tauri/Dioxus |

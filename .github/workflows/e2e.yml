@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Install Haskell (GHCup)
-        uses: haskell-actions/setup@dd344bc1cec854a9b55c2b857c28b688010e4fce  # v2
+        uses: haskell-actions/setup@cd0d9bdd65b20557f41bea4dbe43d0b5fbbfe553  # v2.11.0
         with:
           ghc-version: '9.6'
           cabal-version: '3.10'

@@ -46,6 +46,7 @@ this project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
+- docs: verify standalone-vs-local status of the 7 Phase-2 sub-projects + flag submodule-wiring drift
 - docs: record tech-debt audit findings (2026-05-26) (#74)
 - docs(repo-batcher): correct status to verified L1–L8 build-out (post #59) (#61)
 - docs(repo-batcher): correct to verified-accurate state (no V ever; Zig stub unimplemented) (#58)

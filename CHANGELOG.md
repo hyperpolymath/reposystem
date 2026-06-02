@@ -60,6 +60,7 @@ this project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### CI
 
+- ci(governance): baseline pre-existing ReScript + exempt allowed ATS2 for banned_language_file via .hypatia-ignore (#91)
 - ci(rust): convert rust-ci.yml to thin wrapper (standards#174) (#70)
 - ci(gitignore): ignore generated/* artefacts (Refs standards#93) (#67)
 - ci: redistribute concurrency-cancel guard to read-only check workflows (#60)

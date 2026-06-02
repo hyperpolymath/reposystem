@@ -12,7 +12,7 @@
 [metadata]
 project = "reposystem"
 version = "0.1.0"
-last-updated = "2026-05-18"
+last-updated = "2026-06-02"
 status = "active"
 crg-grade = "D"
 crg-grade-previous = "C"
@@ -35,6 +35,8 @@ boj-server-mcp = "2026-04-18 — reposystem-mcp cartridge (442 LOC: mod.js + Zig
 repo-batcher = "2026-05-18 — scaffoldia/repo-batcher: real `just e2e` ran against a fresh temp git repo (dry-run byte-identical, real on-disk mutation via the ATS2 core, spdx-audit) — exit 0. patscc-linked binary genuinely exercises the ATS2 C ABI. Path: scaffoldia/repo-batcher/"
 
 [recent-changes]
+- 2026-06-02: Phase-2 standalone-vs-local verification — the 7 sub-projects (dirs with both .machine_readable/ + .github/) checked vs ground truth (git ls-tree, .gitmodules, GitHub search index). Only rpa-elysium is a real standalone repo (its gitlink is broken — declared a submodule but committed as a tree); the other 6 (bitfuckit, contractiles, gui, recon-silly-ation, scaffoldia, stateful-artefacts) are local-only. Orphan gitlinks avatar-fabrication-facility + claim-forge (no .gitmodules URL, no forge repo) surfaced. Doc: docs/PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc; ECOSYSTEM-STATUS.adoc two "Unknown" rows corrected. PR #91.
+- 2026-06-02: Governance CI baseline — the estate banned_language_file gate now bans ReScript (.res). Added .hypatia-ignore baselining the 213 pre-existing .res files (new .res still flagged) and exempting the 22 ATS2 files as an ALLOWED language (the central enforce list over-reaches; tracked #94). AffineScript toolchain built locally; res-to-affine --partial over the 75 first-party .res emitted 0/75 compilable ports (397 TODO holes) — confirming the ReScript→AffineScript port is human work (epic #93; WIP skeletons #92). All 15 PR-#91 checks green.
 - 2026-05-18: repo-batcher #56 from-scratch build-out — L1–L4 ATS2 core (just tc-ats2=0), L5 self-contained C archive (ATS_DYNLOADFLAG 0 link fix, just ats2-lib=0), L6 Idris2 typed ABI w/ machine-checked theorems (just abi-check=0), L7 patscc-linked Zig CLI binding the genuine ATS2 C ABI, L8 fixture-backed just e2e=0. Independently fiction-reviewed from a clean clone. PR #59 merged (4c2d29f); issue #56 CLOSED-COMPLETED.
 - 2026-05-18: docs-truth — README/IMPLEMENTATION-STATUS/ARCHITECTURE corrected from the inverse anti-fiction defect ("still a stub") to the verified L1–L8 reality (PR #61). "No V ever" retained as true history.
 - 2026-05-18: Estate-aggregator organization landed (PR #63, branch feat/estate-aggregator-organization)
@@ -53,6 +55,11 @@ repo-batcher = "2026-05-18 — scaffoldia/repo-batcher: real `just e2e` ran agai
 - Total: 112 tests passing (2026-04-04 baseline; see tests-passing staleness note)
 
 [session-history]
+# 2026-06-02: Phase-2 standalone-vs-local verification (PR #91): 6/7 sub-projects
+#             local-only; rpa-elysium standalone w/ broken gitlink. Governance
+#             .hypatia-ignore — ReScript baseline + ATS2 allowed-exemption. ReScript
+#             ->AffineScript migration epic #93 (evidence: 0/75 auto-compile); ATS2
+#             central-rule fix #94; WIP skeletons #92. CI green, foundationally.
 # 2026-05-18: repo-batcher #56 built L1–L8 + fiction-reviewed (PR #59, 4c2d29f;
 #             #56 CLOSED-COMPLETED). Docs-truth follow-up PR #61 merged.
 #             STATE.a2ml full refresh — factual fields updated; CRG grade and

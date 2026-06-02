@@ -239,3 +239,37 @@ cicd_rules/banned_language_file:tools/hud/frontend/src/Api.res
 cicd_rules/banned_language_file:tools/hud/frontend/src/App.res
 cicd_rules/banned_language_file:tools/hud/frontend/src/SEOWidget.res
 cicd_rules/banned_language_file:tools/hud/frontend/src/Tea.res
+#
+# ─── ATS2 — ALLOWED language; central rule over-reaches (2026-06-02) ──
+#
+# ATS2 (.dats/.sats) is NOT banned (repo-owner directive, 2026-06-02).
+# scaffoldia/repo-batcher's ATS2 core is intentional, fiction-reviewed,
+# verified ATS2 (STATE.a2ml; issue #56 / PR #59). The estate's central
+# `cicd_rules/banned_language_file` enforce list over-reaches by listing
+# ATS2 alongside genuinely-banned languages ("use Idris2 or Rust/SPARK").
+# These entries stop reposystem CI flagging allowed ATS2 *pending the
+# central rule dropping ATS2* (tracking issue filed separately; carry
+# through hypatia + gitbot-fleet). THIS IS NOT MIGRATION DEBT.
+#
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/ffi/c_exports.dats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/ffi/cli_root.dats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/effects.dats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/effects.sats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/file_replace.dats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/file_replace.sats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/git_sync.dats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/git_sync.sats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/github_settings.dats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/github_settings.sats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/license_update.dats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/license_update.sats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/spdx_audit.dats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/spdx_audit.sats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/types.dats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/types.sats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/workflow_update.dats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/operations/workflow_update.sats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/utils/string_utils.dats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/utils/string_utils.sats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/validation/spdx.dats
+cicd_rules/banned_language_file:scaffoldia/repo-batcher/src/ats2/validation/spdx.sats

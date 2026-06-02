@@ -1,5 +1,5 @@
 #!/usr/bin/env julia
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 #
 # gitlink-drift.jl — classify submodule-gitlink drift across a meta-repo tree.
@@ -226,7 +226,7 @@ function emit_a2ml(root::String, classifications::Vector{Classification}, io::IO
     bucket_total == total || error(
         "aggregation invariant violated: buckets sum to $bucket_total, enumerated $total")
 
-    println(io, "# SPDX-License-Identifier: PMPL-1.0-or-later")
+    println(io, "# SPDX-License-Identifier: MPL-2.0")
     println(io, "# gitlink-drift report — generated $(Dates.now())")
     println(io, "")
     println(io, "[report]")

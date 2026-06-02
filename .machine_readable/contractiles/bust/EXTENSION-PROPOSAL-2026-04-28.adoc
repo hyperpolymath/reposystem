@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // (MPL-2.0 is automatic legal fallback until PMPL is formally recognised)
 // Author: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = Bustfile Extension — Catalogued Alert Remediation
@@ -707,7 +707,7 @@ alert_remediations: [
 
 == SPDX and Attribution
 
-  SPDX-License-Identifier: PMPL-1.0-or-later
+  SPDX-License-Identifier: MPL-2.0
 
 MPL-2.0 is the automatic legal fallback until PMPL achieves formal recognition.
 

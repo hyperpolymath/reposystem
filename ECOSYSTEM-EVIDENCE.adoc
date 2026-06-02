@@ -1,7 +1,7 @@
 image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
 image:https://img.shields.io/badge/Philosophy-Palimpsest-indigo.svg[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-license"]
 
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
 = Reposystem Ecosystem Evidence
 :toc: preamble
@@ -42,7 +42,7 @@ Path: `git-hud/.machine_readable/ECOSYSTEM.scm`
 
 [source]
 ----
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 ;; ECOSYSTEM.scm - Ecosystem position for git-hud
 ;; Media-Type: application/vnd.ecosystem+scm
 
@@ -69,7 +69,7 @@ Path: `git-seo/.machine_readable/ECOSYSTEM.scm`
 
 [source]
 ----
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 ;; ECOSYSTEM.scm - Ecosystem position for git-seo
 ;; Media-Type: application/vnd.ecosystem+scm
 
@@ -96,7 +96,7 @@ Path: `git-dispatcher/.machine_readable/ECOSYSTEM.scm`
 
 [source]
 ----
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 ;; ECOSYSTEM.scm - Ecosystem position for git-dispatcher
 ;; Media-Type: application/vnd.ecosystem+scm
 
@@ -123,7 +123,7 @@ Path: `gitbot-fleet/.machine_readable/6scm/ECOSYSTEM.scm`
 
 [source]
 ----
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 ;; SPDX-FileCopyrightText: 2025 hyperpolymath
 ;; ECOSYSTEM.scm - Position in the ecosystem
 ;; Media-Type: application/vnd.ecosystem+scm
@@ -201,7 +201,7 @@ Path: `scaffoldia/.machine_readable/ECOSYSTEM.scm`
 
 [source]
 ----
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 ;; ECOSYSTEM.scm - Ecosystem position for scaffoldia
 ;; Media-Type: application/vnd.ecosystem+scm
 
@@ -228,7 +228,7 @@ Path: `.git-private-farm/ECOSYSTEM.scm`
 
 [source]
 ----
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 ;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 ;; ECOSYSTEM.scm — rsr-template-repo
 

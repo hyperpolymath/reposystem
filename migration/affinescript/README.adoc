@@ -1,0 +1,62 @@
+// SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath)
+= AffineScript migration — WIP skeletons (DO NOT MERGE INTO PRODUCTION AS-IS)
+:toc: preamble
+
+[.lead]
+Tool-generated migration *skeletons* for reposystem's first-party ReScript,
+produced as the human-in-the-loop starting point for the
+ReScript→AffineScript port. *These do not compile and are not a finished
+port.* The working `.res` sources are retained and untouched.
+
+== Status (verified 2026-06-02)
+
+[cols="2,1",options="header"]
+|===
+| Metric | Value
+| First-party `.res` inputs | 75
+| Declarations auto-translated | *0*
+| Skeletons that compile (`affinescript`) | *0 / 75*
+| Migration markers | 151 (144 `untyped-exception`, 7 `raw-js`)
+| `TODO` holes to fill by hand | *397*
+|===
+
+The numbers come from running AffineScript's own converter and compiler — not
+from estimation. This is exactly what AffineScript's tooling is designed to
+emit: a partial port whose header states it "DELIBERATELY does NOT type-check".
+
+== How these were generated (reproducible)
+
+[source,sh]
+----
+# AffineScript toolchain built from source (apt-provided OCaml libs; the opam
+# registry opam.ocaml.org is network-blocked 403 in CI/sandbox):
+#   apt-get install ocaml-dune libcmdliner-ocaml-dev libfmt-ocaml-dev \
+#                   libsedlex-ocaml-dev libmenhir-ocaml-dev ...
+#   git clone https://github.com/hyperpolymath/affinescript && cd affinescript
+#   dune build tools/res-to-affine/main.exe bin/
+
+CONV=affinescript/_build/default/tools/res-to-affine/main.exe
+for f in $(git ls-files '*.res' | grep -v '/lib/'); do
+  "$CONV" --partial "$f" -o "migration/affinescript/${f%.res}.affine"
+done
+# compile-check: affinescript check <file.affine>  → 0/75 pass
+----
+
+== What still has to happen (this is a human effort)
+
+. Fill the 397 `TODO` holes: `untyped-exception` paths → `Result[E,A]` /
+  `Validation[E,A]`; `raw-js` (`%%raw`, `@val external`) → typed `extern` /
+  effect handlers; module-load side effects → explicit registration.
+. Re-decompose effectful/stateful code under AffineScript's affine + effect
+  type system — not a line-by-line transform.
+. Replace the vendored `gui/lib/rescript-webapi/` (138 files, *excluded* from
+  this run) with AffineScript's native `affinescript-dom` — do not hand-port a
+  third-party binding library.
+. Type-check each module with `affinescript check`, then delete the
+  corresponding `.res` once its port lands and the `.hypatia-ignore` baseline
+  line is removed.
+
+Tracked upstream: `affinescript#488` (partial-port mode). The estate's
+`res-to-affine` corpus methodology is the model (see that repo's
+`tools/res-to-affine/CORPUS-RUN.md`).

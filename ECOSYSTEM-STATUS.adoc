@@ -11,6 +11,12 @@ image:https://img.shields.io/badge/Philosophy-Palimpsest-indigo.svg[Palimpsest,l
 [.lead]
 Current status of all tools in the reposystem-centered ecosystem. Updated: 2026-02-07
 
+NOTE: The standalone-vs-local status of `scaffoldia` and
+`stateful-artefacts-for-gitforges` was independently verified on 2026-06-02 —
+both are *local-only* (no standalone forge repo). See
+`docs/PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc`. Other rows
+retain their 2026-02-07 values and have not been re-verified.
+
 == Quick Status Overview
 
 [cols="2,1,1,2", options="header"]
@@ -48,9 +54,9 @@ Current status of all tools in the reposystem-centered ecosystem. Updated: 2026-
 | Not Started
 
 | **scaffoldia**
-| ❓ Unknown
-| ?
-| Status Unknown
+| 🗂️ Local-only
+| n/a
+| Verified 2026-06-02 (no standalone repo)
 
 | **.git-private-farm**
 | ❓ Unknown
@@ -58,9 +64,9 @@ Current status of all tools in the reposystem-centered ecosystem. Updated: 2026-
 | Status Unknown
 
 | **stateful-artefacts-for-gitforges**
-| ❓ Unknown
-| ?
-| Status Unknown
+| 🗂️ Local-only
+| n/a
+| Verified 2026-06-02 (no standalone repo)
 |===
 
 _^*^ git-hud STATE.scm shows 0% but significant work completed (see below)_
@@ -346,11 +352,13 @@ git-seo batch repos.txt         # Bulk analysis
 * Could be integrated into reposystem or git-dispatcher
 
 === scaffoldia
-**Repository:** Likely `github.com/hyperpolymath/scaffoldia`
+**Repository:** None — *local-only* (verified 2026-06-02). The self-declared
+`github.com/hyperpolymath/scaffoldia` does not exist on the forge; the project
+lives only as a vendored tree (197 files) inside `reposystem`.
 
 **Purpose:** Scaffolding and templating for new repositories.
 
-**Status:** ❓ **Status Unknown**
+**Status:** 🗂️ **Local-only** (see `docs/PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc`)
 
 **Expected Integration:**
 
@@ -371,11 +379,15 @@ git-seo batch repos.txt         # Bulk analysis
 * Integrate with reposystem for private repo tracking
 
 === stateful-artefacts-for-gitforges
-**Repository:** Likely `github.com/hyperpolymath/stateful-artefacts-for-gitforges`
+**Repository:** None — *local-only* (verified 2026-06-02). Neither
+`github.com/hyperpolymath/stateful-artefacts-for-gitforges` nor the shorter
+`github.com/hyperpolymath/stateful-artefacts` exists on the forge; the project
+lives only as a vendored tree (97 files, directory `stateful-artefacts/`)
+inside `reposystem`.
 
 **Purpose:** Forge artifact hydration pipeline.
 
-**Status:** ❓ **Status Unknown**
+**Status:** 🗂️ **Local-only** (see `docs/PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc`)
 
 **Expected Integration:**
 

@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // status.rs — `contractile status`: Unified dashboard across all contractile types.
 //
 // Shows a single-screen overview of the project's contractile health:
@@ -10,7 +11,6 @@
 // This is the daily-driver command — run `contractile status` to see
 // where the project stands across all contractile dimensions.
 //
-// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 use anyhow::{Context, Result};
 use colored::Colorize;

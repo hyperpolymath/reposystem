@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # Gnosis Examples
 
 This directory contains example templates and STATE.scm configurations to help you get started with stateful artefacts.

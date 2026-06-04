@@ -1,8 +1,9 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = Contractiles — Portable Contract Set
 :toc:
 :sectnums:
 
-// SPDX-License-Identifier: PMPL-1.0-or-later
 
 This directory is the portable contract set. Copy it into any repository to establish a consistent operational, validation, trust, recovery, and intent framework.
 

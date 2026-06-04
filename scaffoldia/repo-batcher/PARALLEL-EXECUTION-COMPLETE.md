@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # Parallel Execution Implementation Complete
 
 > **⚠ Accurate state (reposystem#56, verified 2026-05-18).** The "V CLI/FFI layer"

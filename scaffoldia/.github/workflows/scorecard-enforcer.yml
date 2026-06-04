@@ -16,6 +16,7 @@ jobs:
   # See: https://github.com/ossf/scorecard-action#workflow-restrictions
   scorecard:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       security-events: write
       id-token: write  # For OIDC
@@ -39,6 +40,7 @@ jobs:
   # Check specific high-priority items (separate job, can use 'run:' steps)
   check-critical:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 

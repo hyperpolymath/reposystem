@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # Gnosis Format Toggle Browser Extension
 
 A cross-browser extension that allows users to toggle between visual and accessible formats for Gnosis-rendered content.

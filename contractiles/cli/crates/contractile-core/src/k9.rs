@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // k9.rs — Bridge to K9 Nickel components.
 //
 // K9 contractiles are `.k9.ncl` files evaluated by the Nickel configuration
@@ -11,7 +12,6 @@
 //   Yard   — Nickel evaluation with type contracts, signature recommended
 //   Hunt   — full execution with Just recipes, signature REQUIRED
 //
-// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 use anyhow::{bail, Context, Result};
 use serde::Deserialize;

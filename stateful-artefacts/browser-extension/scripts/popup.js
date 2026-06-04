@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // (PMPL-1.0-or-later preferred; MPL-2.0 required for Chrome Web Store)
 // Gnosis popup - displays 6scm project state from current repo page
 

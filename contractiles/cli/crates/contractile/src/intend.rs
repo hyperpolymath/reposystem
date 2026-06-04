@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // intend.rs — `intend` subcommand: Future intent & roadmap from Intentfile.a2ml.
 //
 // Intentfiles are purely declarative — they declare what the project intends
@@ -16,7 +17,6 @@
 //   intend abandon   — move intent to abandoned (with reason)
 //   intend supersede — mark intent as superseded by another
 //
-// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 use anyhow::{bail, Context, Result};
 use clap::{Parser, Subcommand};

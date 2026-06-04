@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # SEO Widget Monitoring Guide
 
 Monitor SEO widget usage, performance, and user feedback in the git-hud dashboard.

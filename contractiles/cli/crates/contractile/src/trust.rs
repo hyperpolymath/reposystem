@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // trust.rs — `trust` subcommand: Integrity & provenance verification from Trustfile.a2ml.
 //
 // Trust handles cryptographic verification: hash checking, signature
@@ -13,7 +14,6 @@
 //   trust hash FILE      — compute and display the SHA-256 hash of a file
 //   trust sign FILE      — sign a file (placeholder for key management)
 //
-// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 use anyhow::{bail, Context, Result};
 use clap::{Parser, Subcommand};

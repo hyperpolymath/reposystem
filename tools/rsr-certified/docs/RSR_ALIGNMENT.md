@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # RSR Framework Alignment
 
 This document explains how `git-rsr-certified` aligns with and extends the [Rhodium Standard Repositories](https://gitlab.com/hyperpolymath/rhodium-standard-repositories) framework.

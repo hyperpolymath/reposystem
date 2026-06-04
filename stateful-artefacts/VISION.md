@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # Stateful Artefacts - Vision Roadmap (v0.0.1 → v10.0)
 
 ## Executive Summary

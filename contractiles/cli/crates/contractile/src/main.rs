@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // contractile — Unified CLI for the contractile system.
 //
 // Provides subcommands for each contractile type:
@@ -12,7 +13,6 @@
 // Can also be invoked via symlinks: `must`, `trust`, `dust`, `intend`, `k9`
 // which behave as if the binary name were the subcommand.
 //
-// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 #![forbid(unsafe_code)]
 mod adjust;

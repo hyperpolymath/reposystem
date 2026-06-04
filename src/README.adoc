@@ -1,3 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = src/
 Rust source for the reposystem CLI and library: entry point (`main.rs`), graph model (`graph.rs`), scanner (`scanner.rs`), TUI (`tui.rs`), VeriSimDB integration (`verisimdb.rs`), and subcommands under `commands/`.

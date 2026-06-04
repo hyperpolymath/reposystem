@@ -1,3 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = ffi/
 Zig FFI implementation providing C-ABI bindings for the reposystem graph engine, following the Idris2-ABI + Zig-FFI architecture standard.

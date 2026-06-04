@@ -1,7 +1,8 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = Mustfile — Physical State Contract
 :author: Jonathan D.A. Jewell
 
-// SPDX-License-Identifier: PMPL-1.0-or-later
 
 A Mustfile declares **what must be true** about a project — file existence, configuration validity, runtime invariants, and banned patterns. It is the Physical State contract.
 

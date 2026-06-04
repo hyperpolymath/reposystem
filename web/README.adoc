@@ -1,3 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = web/
 Static web UI (HTML/CSS/JS, no build step): `index.html`, `styles.css`, `app.js`, and a sample `export.json` for offline exploration of graph data.

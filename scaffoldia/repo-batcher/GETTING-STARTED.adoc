@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = Getting Started with repo-batcher
 
 [IMPORTANT]
@@ -9,7 +11,6 @@ this document references *was never committed* — git history contains no
 plan, not shipped code*; the tool is not functional. See reposystem#56.
 ====
 :toc:
-// SPDX-License-Identifier: PMPL-1.0-or-later
 
 == Project Status
 

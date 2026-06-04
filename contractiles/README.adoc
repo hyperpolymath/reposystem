@@ -1,9 +1,10 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = Contractiles
 :toc:
 :sectnums:
 :author: Jonathan D.A. Jewell
 
-// SPDX-License-Identifier: PMPL-1.0-or-later
 
 Contractiles is a file-first contract system for operating, verifying, recovering, and evolving repositories. It centers on five portable contract artifacts — Mustfile, Trustfile, Dustfile, Intentfile, and K9 — that you copy into any repo to make runtime behavior, integrity, recovery, and roadmap explicit and testable.
 

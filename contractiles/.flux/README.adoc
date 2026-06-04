@@ -1,7 +1,8 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = GitOps Configuration Promotion
 :author: Jonathan D.A. Jewell
 
-// SPDX-License-Identifier: PMPL-1.0-or-later
 
 This directory contains Flux-compatible GitOps configuration for promoting
 contractile-managed policies from staging to production.

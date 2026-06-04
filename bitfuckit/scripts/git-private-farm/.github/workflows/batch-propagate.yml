@@ -30,6 +30,7 @@ env:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: github.event_name == 'schedule' || inputs.confirm == 'CONFIRM'
     outputs:
       repos: ${{ steps.get-repos.outputs.repos }}
@@ -46,6 +47,7 @@ jobs:
   propagate-all:
     needs: validate
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       max-parallel: 3  # Limit concurrent to avoid rate limits
@@ -106,6 +108,7 @@ jobs:
   report:
     needs: propagate-all
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: always()
     steps:
       - name: Generate Report

@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // must.rs — `must` subcommand: Physical State checks from Mustfile.a2ml.
 //
 // Must enforces the Physical State model — the verifiable, observable condition
@@ -13,7 +14,6 @@
 //   must list     — list available checks
 //   must run NAME — run a single named check
 //
-// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 use anyhow::{bail, Context, Result};
 use clap::{Parser, Subcommand};

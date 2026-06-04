@@ -22,6 +22,7 @@ jobs:
   benchmarks:
     name: Performance Benchmarks
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -88,6 +89,7 @@ jobs:
   test-matrix:
     name: Tests (GHC ${{ matrix.ghc }})
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       matrix:
         ghc: ['9.4.8', '9.6.7']

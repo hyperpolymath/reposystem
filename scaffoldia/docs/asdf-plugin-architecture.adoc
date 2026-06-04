@@ -1,7 +1,8 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = asdf Plugin Architecture Guide
 :toc:
 :toclevels: 3
-// SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
 
 == Overview
@@ -252,7 +253,6 @@ bun run "$(dirname "$0")/../dist/main.js" list-all
 
 [source,rescript]
 ----
-// SPDX-License-Identifier: PMPL-1.0-or-later
 // src/ListAll.res
 
 @val external argv: array<string> = "process.argv"

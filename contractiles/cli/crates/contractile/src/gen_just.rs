@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // gen_just.rs — `contractile gen-just`: Generate contractile.just from A2ML + K9 sources.
 //
 // Scans a directory for *.a2ml and *.k9.ncl files, parses them, and emits a
@@ -10,7 +11,6 @@
 // developers to use `just must-check`, `just trust-verify`, `just dust-status`
 // etc. without needing the contractile CLI installed.
 //
-// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 use anyhow::{Context, Result};
 use colored::Colorize;

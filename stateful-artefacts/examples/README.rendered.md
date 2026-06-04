@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # (:MISSING:name)
 
 **Status:** ![Current mood: active](https://img.shields.io/badge/active-grey?label=mood) | **Phase:** ![Phase: alpha](https://img.shields.io/badge/alpha-grey?label=phase) | **Version:** ![Version 0.1.0](https://img.shields.io/badge/0.1.0-grey?label=version)

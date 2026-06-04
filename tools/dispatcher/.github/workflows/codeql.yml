@@ -27,6 +27,7 @@ jobs:
   # CodeQL-supported, buildless-safe ones; skip entirely when none apply.
   detect:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     outputs:
       langs: ${{ steps.pick.outputs.langs }}
     steps:
@@ -52,6 +53,7 @@ jobs:
     needs: detect
     if: needs.detect.outputs.langs != '[]'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       security-events: write

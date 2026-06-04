@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // toml_compat.rs — Parse mustfile.toml into A2mlDocument for backward compatibility.
 //
 // The Ada must runner uses mustfile.toml (TOML format) as its contract file.
@@ -17,7 +18,6 @@
 // The key difference: TOML tasks have `commands` arrays that become
 // executable `run:` entries, so `must list` and `must run` work on TOML files.
 //
-// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 use crate::a2ml::{A2mlDocument, Entry, Section, Subsection};
 use anyhow::{Context, Result};

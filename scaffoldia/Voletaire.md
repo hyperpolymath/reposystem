@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # 🐾 *Voletaire, or The Cultivation of One’s Own Repository*
 
 In the land of Gitagonia, where branches forked without purpose and commits bore no messages, there lived a young vole named **Voletaire**. Raised in the school of Pangitism, he was taught that “all repos are for the best in this best of all possible workflows.”

@@ -1,5 +1,6 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // {{PROJECT}} Integration Tests
-// SPDX-License-Identifier: PMPL-1.0-or-later
 //
 // These tests verify that the Zig FFI correctly implements the Idris2 ABI
 

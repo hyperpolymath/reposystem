@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // just_emitter.rs — Generates Just recipes from parsed A2ML documents and K9 components.
 //
 // The emitter produces a `contractile.just` file that can be imported into any
@@ -11,7 +12,6 @@
 //   intend-list                       — from Intentfile.a2ml
 //   k9-<recipe-name>                  — from *.k9.ncl Hunt-level components
 //
-// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 use crate::a2ml::{self, A2mlDocument};
 use crate::k9::K9Component;

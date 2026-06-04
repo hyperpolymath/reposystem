@@ -1,5 +1,8 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = Reposystem — Show Me The Receipts
+image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[License: MPL-2.0,link="https://opensource.org/licenses/MPL-2.0"]
+
 :toc:
 :icons: font
 
@@ -87,3 +90,10 @@ NOTE: Paths verified against actual repository tree. Fabricated paths from an ea
 == Readiness
 
 **CRG Grade:** C (Beta) - Graph model stable, TUI and web UI working, scenario diffing validated on 47-repo ecosystems, needs formalized aspect weighting and cross-repo vulnerability chain detection.
+
+
+== License
+
+This project is licensed under the Mozilla Public License, v. 2.0. See the `LICENSE` file for details.
+
+SPDX-License-Identifier: MPL-2.0

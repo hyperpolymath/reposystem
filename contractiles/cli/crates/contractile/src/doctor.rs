@@ -1,11 +1,11 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // doctor.rs — `contractile doctor`: Diagnose tooling availability.
 //
 // Checks which tools the contractile system needs are available on PATH,
 // reports their versions, and flags any missing dependencies that would
 // prevent specific contractile operations from working.
 //
-// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 use colored::Colorize;
 use std::process::Command;

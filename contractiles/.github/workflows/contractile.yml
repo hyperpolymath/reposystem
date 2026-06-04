@@ -23,6 +23,7 @@ jobs:
   build-cli:
     name: Build contractile CLI
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: contractiles/cli
@@ -51,6 +52,7 @@ jobs:
     name: Run contract checks
     needs: build-cli
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: contractiles

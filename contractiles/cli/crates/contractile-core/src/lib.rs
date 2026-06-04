@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // contractile-core — Core library for the contractile CLI family.
 //
 // Provides three main capabilities:
@@ -9,7 +10,6 @@
 // These form the shared foundation for the `must`, `trust`, `dust`, `intend`,
 // and `k9` CLI subcommands, as well as the `gen-just` integration command.
 //
-// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 #![forbid(unsafe_code)]
 pub mod a2ml;

@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # Gnosis Living Dashboard
 
 A real-time web dashboard that pulls project metrics from Git forges (GitHub, GitLab, Bitbucket) and auto-generates `STATE.scm` files.

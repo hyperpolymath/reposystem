@@ -37,6 +37,7 @@ jobs:
   # Parse inputs and prepare matrix
   prepare:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       repo: ${{ steps.set-matrix.outputs.repo }}
@@ -71,6 +72,7 @@ jobs:
   propagate:
     needs: prepare
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false  # Don't stop if one forge fails
       max-parallel: 5
@@ -138,6 +140,7 @@ jobs:
   summary:
     needs: [prepare, propagate]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: always()
     steps:
       - name: Propagation Summary

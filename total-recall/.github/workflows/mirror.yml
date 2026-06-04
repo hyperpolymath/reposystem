@@ -13,6 +13,7 @@ permissions: read-all
 jobs:
   mirror-gitlab:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     if: ${{ vars.GITLAB_MIRROR_ENABLED == 'true' }}
@@ -43,6 +44,7 @@ jobs:
 
   mirror-bitbucket:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     if: ${{ vars.BITBUCKET_MIRROR_ENABLED == 'true' }}

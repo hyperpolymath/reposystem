@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // a2ml.rs — Parser for A2ML (Annotated Markup with Machine Logic) contractile files.
 //
 // A2ML is the canonical format for all contractile types: Mustfile, Trustfile,
@@ -13,7 +14,6 @@
 //   - key: value      ← key-value pair within the current section/subsection
 //   plain text        ← prose within @abstract or section bodies
 //
-// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 use anyhow::Result;
 

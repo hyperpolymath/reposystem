@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // k9_cmd.rs — `k9` subcommand: K9 Nickel component operations.
 //
 // K9 contractiles are self-validating components written in Nickel. This
@@ -12,7 +13,6 @@
 //   k9 typecheck FILE  — validate Nickel contracts
 //   k9 info FILE       — display component pedigree and security level
 //
-// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
 use anyhow::{bail, Context, Result};
 use clap::{Parser, Subcommand};

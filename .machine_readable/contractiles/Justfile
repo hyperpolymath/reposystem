@@ -1,0 +1,480 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+#
+# Reposystem Justfile
+# ===================
+# Development task runner
+# Usage: just <recipe>
+
+# Default recipe: show available commands
+import? "contractile.just"
+
+default:
+    @just --list
+
+# ============================================================================
+# BUILD RECIPES
+# ============================================================================
+
+# Build everything
+build: build-rescript build-rust
+    @echo "✓ Build complete"
+
+# Build ReScript core
+build-rescript:
+    @echo "Building ReScript..."
+    cd src && deno task build
+
+# Build Rust CLI
+build-rust:
+    @echo "Building Rust CLI..."
+    cargo build --release
+
+# Build for development (debug mode)
+build-dev:
+    @echo "Building for development..."
+    cd src && deno task build:dev
+    cargo build
+
+# Clean build artifacts
+clean:
+    @echo "Cleaning..."
+    rm -rf target/
+    rm -rf src/_build/
+    rm -rf node_modules/
+    @echo "✓ Clean complete"
+
+# ============================================================================
+# TEST RECIPES
+# ============================================================================
+
+# Run all tests
+test: test-rescript test-rust test-integration
+    @echo "✓ All tests passed"
+
+# Test ReScript code
+test-rescript:
+    @echo "Testing ReScript..."
+    cd src && deno test
+
+# Test Rust code
+test-rust:
+    @echo "Testing Rust..."
+    cargo test
+
+# Integration tests
+test-integration:
+    @echo "Running integration tests..."
+    ./tests/integration/run.sh
+
+# Test with coverage
+test-coverage:
+    @echo "Running tests with coverage..."
+    cargo tarpaulin --out Html
+    @echo "Coverage report: target/tarpaulin/tarpaulin-report.html"
+
+# Watch mode testing
+test-watch:
+    cargo watch -x test
+
+# ============================================================================
+# LINT & FORMAT RECIPES
+# ============================================================================
+
+# Check all formatting and linting
+check: fmt-check lint
+    @echo "✓ All checks passed"
+
+# Format all code
+fmt:
+    @echo "Formatting..."
+    deno fmt src/
+    cargo fmt
+    @echo "✓ Formatting complete"
+
+# Check formatting without changing
+fmt-check:
+    @echo "Checking format..."
+    deno fmt --check src/
+    cargo fmt --check
+
+# Run linters
+lint:
+    @echo "Linting..."
+    deno lint src/
+    cargo clippy -- -D warnings
+
+# Fix linting issues
+lint-fix:
+    @echo "Fixing lint issues..."
+    cargo clippy --fix --allow-dirty
+
+# ============================================================================
+# DOCUMENTATION RECIPES
+# ============================================================================
+
+# Build all documentation
+docs:
+    @echo "Building documentation..."
+    asciidoctor -D docs/html README.adoc ROADMAP.adoc spec/*.adoc
+    cargo doc --no-deps
+    @echo "✓ Documentation built in docs/html/"
+
+# Check documentation links
+docs-check:
+    @echo "Checking documentation..."
+    asciidoctor -D /tmp/docs-check README.adoc 2>&1 | grep -i "error" && exit 1 || true
+    @echo "✓ Documentation valid"
+
+# Serve documentation locally
+docs-serve:
+    @echo "Serving documentation at http://localhost:8000"
+    python3 -m http.server 8000 --directory docs/html/
+
+# Serve the web UI locally
+web-serve:
+    @echo "Serving web UI at http://localhost:801"
+    python3 -m http.server 801 --directory web/
+
+# Serve the web UI locally on a custom port
+web-serve-port port:
+    @echo "Serving web UI at http://localhost:{{port}}"
+    python3 -m http.server {{port}} --directory web/
+
+# ============================================================================
+# RELEASE RECIPES
+# ============================================================================
+
+# Prepare release
+release-prep version:
+    @echo "Preparing release {{version}}..."
+    scripts/bump-version.sh {{version}}
+    just check
+    just test
+    just docs
+    @echo "✓ Release {{version}} prepared"
+
+# Create release tag
+release-tag version:
+    @echo "Creating release tag v{{version}}..."
+    git tag -s "v{{version}}" -m "Release v{{version}}"
+    @echo "✓ Tag created. Push with: git push origin v{{version}}"
+
+# Build release binaries
+release-build:
+    @echo "Building release binaries..."
+    cargo build --release --target x86_64-unknown-linux-gnu
+    cargo build --release --target x86_64-apple-darwin
+    cargo build --release --target x86_64-pc-windows-msvc
+    @echo "✓ Binaries in target/*/release/"
+
+# ============================================================================
+# DEVELOPMENT RECIPES
+# ============================================================================
+
+# Start development environment
+dev:
+    @echo "Starting development environment..."
+    just build-dev
+    @echo "Ready for development"
+
+# Watch and rebuild on changes
+watch:
+    cargo watch -x build
+
+# Run the CLI in development mode
+run *args:
+    cargo run -- {{args}}
+
+# Open REPL for ReScript
+repl:
+    cd src && deno repl
+
+# ============================================================================
+# GRAPH RECIPES (reposystem-specific)
+# ============================================================================
+
+# Scan local repos
+scan path="~/repos":
+    @echo "Scanning {{path}}..."
+    cargo run -- scan {{path}}
+
+# Export graph to DOT
+export-dot output="ecosystem.dot":
+    @echo "Exporting to {{output}}..."
+    cargo run -- export --format dot > {{output}}
+
+# Export graph to JSON
+export-json output="ecosystem.json":
+    @echo "Exporting to {{output}}..."
+    cargo run -- export --format json > {{output}}
+
+# Export graph JSON into web UI folder
+web-export output="web/export.json":
+    @echo "Exporting to {{output}}..."
+    cargo run -- export --format json > {{output}}
+
+# Render graph to SVG
+render-svg input="ecosystem.dot" output="ecosystem.svg":
+    @echo "Rendering {{input}} to {{output}}..."
+    dot -Tsvg {{input}} -o {{output}}
+    @echo "✓ Rendered to {{output}}"
+
+# Full export pipeline
+export-all:
+    just export-dot
+    just export-json
+    just render-svg
+    @echo "✓ All exports complete"
+
+# ============================================================================
+# SECURITY RECIPES
+# ============================================================================
+
+# Run security audit
+audit:
+    @echo "Running security audit..."
+    cargo audit
+    @echo "Checking for secrets..."
+    git secrets --scan || true
+    @echo "✓ Audit complete"
+
+# Generate SBOM
+sbom:
+    @echo "Generating SBOM..."
+    cargo sbom > sbom.json
+    @echo "✓ SBOM generated: sbom.json"
+
+# Check dependencies
+deps-check:
+    @echo "Checking dependencies..."
+    cargo outdated
+    @echo ""
+    @echo "Checking for vulnerabilities..."
+    cargo audit
+
+# ============================================================================
+# CI/CD RECIPES
+# ============================================================================
+
+# Run CI checks locally
+ci: check test docs audit
+    @echo "✓ CI checks passed"
+
+# Run pre-commit checks
+pre-commit:
+    @echo "Running pre-commit checks..."
+    just fmt-check
+    just lint
+    scripts/check-spdx-headers.sh
+    @echo "✓ Pre-commit checks passed"
+
+# Run pre-push checks
+pre-push: pre-commit test
+    @echo "✓ Pre-push checks passed"
+
+# ============================================================================
+# STATE FILE RECIPES
+# ============================================================================
+
+# Update STATE.scm
+state-update:
+    @echo "Updating STATE.scm..."
+    scripts/update-state.sh
+    @echo "✓ STATE.scm updated"
+
+# Validate all .scm files
+scm-validate:
+    @echo "Validating Scheme files..."
+    guile -c "(load \"STATE.scm\")" || exit 1
+    guile -c "(load \"ECOSYSTEM.scm\")" || exit 1
+    guile -c "(load \"META.scm\")" || exit 1
+    guile -c "(load \"PLAYBOOK.scm\")" || exit 1
+    guile -c "(load \"AGENTIC.scm\")" || exit 1
+    guile -c "(load \"NEUROSYM.scm\")" || exit 1
+    @echo "✓ All .scm files valid"
+
+# ============================================================================
+# HELP & INFO RECIPES
+# ============================================================================
+
+# Show project status
+status:
+    @echo "=== Reposystem Status ==="
+    @echo ""
+    @echo "Git:"
+    git status --short
+    @echo ""
+    @echo "Build:"
+    @test -f target/release/reposystem && echo "  CLI: ✓ built" || echo "  CLI: ✗ not built"
+    @echo ""
+    @echo "Tests:"
+    @cargo test --quiet 2>/dev/null && echo "  Rust: ✓ passing" || echo "  Rust: ✗ failing"
+
+# Show all available recipes with descriptions
+help:
+    @echo "=== Reposystem Justfile ==="
+    @echo ""
+    @echo "Build:"
+    @echo "  just build          Build everything"
+    @echo "  just build-dev      Build for development"
+    @echo "  just clean          Clean build artifacts"
+    @echo ""
+    @echo "Test:"
+    @echo "  just test           Run all tests"
+    @echo "  just test-coverage  Run tests with coverage"
+    @echo "  just test-watch     Watch mode testing"
+    @echo ""
+    @echo "Lint & Format:"
+    @echo "  just check          Check format and lint"
+    @echo "  just fmt            Format all code"
+    @echo "  just lint           Run linters"
+    @echo ""
+    @echo "Documentation:"
+    @echo "  just docs           Build documentation"
+    @echo "  just docs-serve     Serve docs locally"
+    @echo ""
+    @echo "Graph Operations:"
+    @echo "  just scan           Scan local repos"
+    @echo "  just export-all     Export DOT, JSON, SVG"
+    @echo ""
+    @echo "Security:"
+    @echo "  just audit          Security audit"
+    @echo "  just sbom           Generate SBOM"
+    @echo ""
+    @echo "CI/CD:"
+    @echo "  just ci             Run all CI checks"
+    @echo "  just pre-commit     Pre-commit hooks"
+    @echo "  just pre-push       Pre-push hooks"
+
+# [AUTO-GENERATED] Multi-arch / RISC-V target
+build-riscv:
+	@echo "Building for RISC-V..."
+	cross build --target riscv64gc-unknown-linux-gnu
+
+# Run panic-attacker pre-commit scan
+assail:
+    @command -v panic-attack >/dev/null 2>&1 && panic-attack assail . || echo "panic-attack not found — install from https://github.com/hyperpolymath/panic-attacker"
+
+# Auto-repair common issues
+heal:
+    @echo "Attempting auto-repair for reposystem..."
+    @echo "Fixing permissions..."
+    @find . -name "*.sh" -exec chmod +x {} \; 2>/dev/null || true
+    @echo "Cleaning stale caches..."
+    @rm -rf .cache/stale 2>/dev/null || true
+    @echo "Repair complete."
+
+# Guided tour of key features
+tour:
+    @echo "=== reposystem Tour ==="
+    @echo ""
+    @echo "1. Project structure:"
+    @ls -la
+    @echo ""
+    @echo "2. Available commands: just --list"
+    @echo ""
+    @echo "3. Read README.adoc for full overview"
+    @echo "4. Read EXPLAINME.adoc for architecture decisions"
+    @echo "5. Run 'just doctor' to check your setup"
+    @echo ""
+    @echo "Tour complete! Try 'just --list' to see all available commands."
+
+# Open feedback channel with diagnostic context
+help-me:
+    @echo "=== reposystem Help ==="
+    @echo "Platform: $(uname -s) $(uname -m)"
+    @echo "Shell: $SHELL"
+    @echo ""
+    @echo "To report an issue:"
+    @echo "  https://github.com/hyperpolymath/reposystem/issues/new"
+    @echo ""
+    @echo "Include the output of 'just doctor' in your report."
+
+# Check all required toolchain dependencies and report health
+doctor:
+    #!/usr/bin/env bash
+    echo "═══════════════════════════════════════════════════"
+    echo "  Reposystem Doctor — Toolchain Health Check"
+    echo "═══════════════════════════════════════════════════"
+    echo ""
+    PASS=0; FAIL=0; WARN=0
+    check() {
+        local name="$1" cmd="$2" min="$3"
+        if command -v "$cmd" >/dev/null 2>&1; then
+            VER=$("$cmd" --version 2>&1 | head -1)
+            echo "  [OK]   $name — $VER"
+            PASS=$((PASS + 1))
+        else
+            echo "  [FAIL] $name — not found (need $min+)"
+            FAIL=$((FAIL + 1))
+        fi
+    }
+    check "just"              just      "1.25" 
+    check "git"               git       "2.40" 
+    check "Rust (cargo)"      cargo     "1.80" 
+    check "Zig"               zig       "0.13" 
+    # Optional tools
+    if command -v panic-attack >/dev/null 2>&1; then
+        echo "  [OK]   panic-attack — available"
+        PASS=$((PASS + 1))
+    else
+        echo "  [WARN] panic-attack — not found (pre-commit scanner)"
+        WARN=$((WARN + 1))
+    fi
+    echo ""
+    echo "  Result: $PASS passed, $FAIL failed, $WARN warnings"
+    if [ "$FAIL" -gt 0 ]; then
+        echo "  Run 'just heal' to attempt automatic repair."
+        exit 1
+    fi
+    echo "  All required tools present."
+
+
+# Print the current CRG grade (reads from READINESS.md '**Current Grade:** X' line)
+crg-grade:
+    @grade=$$(grep -oP '(?<=\*\*Current Grade:\*\* )[A-FX]' READINESS.md 2>/dev/null | head -1); \
+    [ -z "$$grade" ] && grade="X"; \
+    echo "$$grade"
+
+# Generate a shields.io badge markdown for the current CRG grade
+# Looks for '**Current Grade:** X' in READINESS.md; falls back to X
+crg-badge:
+    @grade=$$(grep -oP '(?<=\*\*Current Grade:\*\* )[A-FX]' READINESS.md 2>/dev/null | head -1); \
+    [ -z "$$grade" ] && grade="X"; \
+    case "$$grade" in \
+      A) color="brightgreen" ;; B) color="green" ;; C) color="yellow" ;; \
+      D) color="orange" ;; E) color="red" ;; F) color="critical" ;; \
+      *) color="lightgrey" ;; esac; \
+    echo "[![CRG $$grade](https://img.shields.io/badge/CRG-$$grade-$$color?style=flat-square)](https://github.com/hyperpolymath/standards/tree/main/component-readiness-grades)"
+
+
+# ============================================================================
+# ESTATE AGGREGATOR (flat clones = source of truth; this is the coordination
+# layer; repos-monorepo is generated output). See ESTATE-ORGANIZATION.adoc.
+# ============================================================================
+
+# Regenerate repos.toml from the superproject .gitmodules (groups preserved).
+repos-manifest:
+    @sh scripts/gen-repos-manifest.sh
+    @echo "✓ repos.toml regenerated (epic groups live in repos.groups.toml)"
+
+# Fan a cross-repo thread over the flat clones. Each repo merges via its own PR.
+#   just thread resolve --kind julia
+#   just thread start standards-130 --repos echo-types,affinescript
+#   just thread pr standards-130 --refs standards#130
+#   just thread status standards-130 --repos echo-types,affinescript
+#   just thread land standards-130 --repos echo-types,affinescript --yes
+thread *ARGS:
+    @sh scripts/thread.sh {{ARGS}}
+
+# Regenerate repos-monorepo's submodule index from pushed clone HEADs.
+# DRY-RUN by default; pass --commit or --push.
+#   just sync-aggregator           # preview
+#   just sync-aggregator --push    # record + trigger Pages/mirror
+sync-aggregator *ARGS:
+    @sh scripts/sync-aggregator.sh {{ARGS}}
+
+# Drift alarm: classify submodule-gitlink drift across the estate (A2ML out).
+aggregator-drift:
+    @julia scripts/gitlink-drift.jl "$${REPOS_DIR:-$$HOME/dev/repos}/repos-monorepo"

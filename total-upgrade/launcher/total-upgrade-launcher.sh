@@ -163,6 +163,8 @@ write_linux_desktop_file() {
     local term="${2:-true}"
     local mode="${3:---tui}"
     local name_ext="${4:-}"
+    # Ensure the target is writable if it already exists
+    [ -f "$target" ] && rm -f "$target"
     cat > "$target" <<EOF
 [Desktop Entry]
 Type=Application

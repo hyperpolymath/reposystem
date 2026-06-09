@@ -60,16 +60,19 @@ How this is implemented::
 Caveat::
 Currently relies on tool presence in `PATH`. Does not yet scan project file markers ( e.g. `_CoqProject`).
 
-== Dogfooded Across The Account
+== Architecture & Unification
 
-[cols="1,2,2", options="header"]
-|===
-| Technology / Pattern | Used here | Also used in
+TotalUpgrade follows the account-wide standards for inter-service communication.
 
-| Ratatui | TUI framework for all interactive screens. | link:https://github.com/hyperpolymath/opsm[opsm-tui]
-| Standard Launcher | Compliant with `launcher-standard.adoc`. | link:https://github.com/hyperpolymath/burble[burble]
-| Guix Manifest | Deterministic dev environment via `manifest.scm`. | link:https://github.com/hyperpolymath/standards[standards]
-|===
+=== The Groove/Cleave Paradigm
+
+[IMPORTANT]
+====
+**The Groove Protocol** provides the **"How we talk"** (communication, capability negotiation, and eventing). +
+**The Cleave Surface** defines the **"How we touch"** (physical integration, binary layout, and formal verification of the join/split point).
+====
+
+TotalUpgrade currently utilizes **Soft Groove**...
 
 == Known Gaps
 

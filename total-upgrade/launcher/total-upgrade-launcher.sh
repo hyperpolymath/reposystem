@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MPL-2.0
+# Owner: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 #
 # @a2ml-metadata begin
 # (
 #   id                   = "total-upgrade-launcher"
 #   type                 = "launcher"
-#   version              = "1.0.0"
+#   version              = "1.0.1"
 #   app-name             = "total-upgrade"
 #   app-display          = "Total Upgrade"
 #   app-url              = ""
@@ -39,9 +40,10 @@ APP_NAME="total-upgrade"
 APP_DISPLAY="Total Upgrade"
 APP_DESC="Cross-platform meta-manager for tool and package management"
 APP_CATEGORIES="Development;System;Utility;"
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-COMMAND="cargo run --release --" # During dev; usually an absolute path to the compiled binary
-URL="" 
+# This is set to the project root during installation
+REPO_DIR="/home/hyperpolymath/developer/repos/reposystem/total-upgrade"
+BINARY="$REPO_DIR/target/release/total-upgrade"
+COMMAND="$BINARY" 
 PID_FILE="${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/${APP_NAME}-daemon.pid"
 LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/${APP_NAME}"
 LOG_FILE="${LOG_DIR}/daemon.log"
@@ -73,6 +75,8 @@ case "$PLATFORM" in
         AUTOSTART_TARGET="$AUTOSTART_DIR/${APP_NAME}-daemon.desktop"
         ICON_TARGET="$ICON_DIR/${APP_NAME}.png"
         LAUNCHER_TARGET="$BIN_DIR/${APP_NAME}-launcher"
+        UPGRADE_CMD_TARGET="$BIN_DIR/total-upgrade"
+        UPDATE_CMD_TARGET="$BIN_DIR/total-update"
         ;;
     macos)
         APPS_DIR="$HOME/Applications"
@@ -84,6 +88,8 @@ case "$PLATFORM" in
         AUTOSTART_TARGET="$AUTOSTART_DIR/org.hyperpolymath.${APP_NAME}.plist"
         ICON_TARGET="$APPS_DIR/${APP_DISPLAY}.app/Contents/Resources/icon.png"
         LAUNCHER_TARGET="$BIN_DIR/${APP_NAME}-launcher"
+        UPGRADE_CMD_TARGET="$BIN_DIR/total-upgrade"
+        UPDATE_CMD_TARGET="$BIN_DIR/total-update"
         ;;
     windows)
         APPDATA_DIR="${APPDATA:-$HOME/AppData/Roaming}"
@@ -96,6 +102,8 @@ case "$PLATFORM" in
         AUTOSTART_TARGET="$AUTOSTART_DIR/${APP_DISPLAY} Daemon.lnk"
         ICON_TARGET="$BIN_DIR/${APP_NAME}.ico"
         LAUNCHER_TARGET="$BIN_DIR/${APP_NAME}-launcher.sh"
+        UPGRADE_CMD_TARGET="$BIN_DIR/total-upgrade.sh"
+        UPDATE_CMD_TARGET="$BIN_DIR/total-update.sh"
         ;;
 esac
 
@@ -120,7 +128,6 @@ start_daemon() {
   fi
   log "Starting $APP_NAME background daemon..."
   cd "$REPO_DIR"
-  # Run the Rust binary in daemon mode
   nohup $COMMAND --daemon >"$LOG_FILE" 2>&1 &
   echo $! > "$PID_FILE"
   log "Daemon started successfully"
@@ -144,7 +151,7 @@ run_tui() {
 }
 
 # ============================================================================
-# SYSTEM INTEGRATION — --integ / --disinteg
+# SYSTEM INTEGRATION
 # ============================================================================
 
 already_integrated() {
@@ -177,25 +184,27 @@ do_integ_linux() {
     cp "$SCRIPT_DIR/$(basename "${BASH_SOURCE[0]}")" "$LAUNCHER_TARGET"
     chmod +x "$LAUNCHER_TARGET"
 
+    # Create total-upgrade and total-update commands
+    ln -sf "$LAUNCHER_TARGET" "$UPGRADE_CMD_TARGET"
+    ln -sf "$LAUNCHER_TARGET" "$UPDATE_CMD_TARGET"
+
     write_linux_desktop_file "$DESKTOP_FILE_TARGET" "true" "--tui"
     write_linux_desktop_file "$DESKTOP_SHORTCUT_TARGET" "true" "--tui"
     
-    # Autostart daemon (no terminal)
     write_linux_desktop_file "$AUTOSTART_TARGET" "false" "--start" " Daemon"
 
     command -v update-desktop-database >/dev/null 2>&1 && \
         update-desktop-database "$APPS_DIR" 2>/dev/null || true
-
-    if command -v gio >/dev/null 2>&1; then
-        gio set "$DESKTOP_FILE_TARGET" "metadata::trusted" true 2>/dev/null || true
-        gio set "$DESKTOP_SHORTCUT_TARGET" "metadata::trusted" true 2>/dev/null || true
-    fi
 }
 
 do_integ_macos() {
     mkdir -p "$APPS_DIR" "$BIN_DIR" "$DESKTOP_SHORTCUT_DIR" "$AUTOSTART_DIR"
     cp "$SCRIPT_DIR/$(basename "${BASH_SOURCE[0]}")" "$LAUNCHER_TARGET"
     chmod +x "$LAUNCHER_TARGET"
+    
+    ln -sf "$LAUNCHER_TARGET" "$UPGRADE_CMD_TARGET"
+    ln -sf "$LAUNCHER_TARGET" "$UPDATE_CMD_TARGET"
+
     local bundle="$DESKTOP_FILE_TARGET"
     mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources"
     cat > "$bundle/Contents/Info.plist" <<PLIST
@@ -212,30 +221,17 @@ PLIST
 exec "$LAUNCHER_TARGET" --tui
 EOF
     chmod +x "$bundle/Contents/MacOS/$APP_NAME"
-    cat > "$DESKTOP_SHORTCUT_TARGET" <<EOF
-#!/usr/bin/env bash
-exec "$LAUNCHER_TARGET" --tui
-EOF
-    chmod +x "$DESKTOP_SHORTCUT_TARGET"
-    
-    # Autostart plist
-    cat > "$AUTOSTART_TARGET" <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key><string>org.hyperpolymath.$APP_NAME</string>
-    <key>ProgramArguments</key><array><string>$LAUNCHER_TARGET</string><string>--start</string></array>
-    <key>RunAtLoad</key><true/>
-</dict>
-</plist>
-EOF
 }
 
 do_integ_windows() {
     mkdir -p "$BIN_DIR" "$(dirname "$DESKTOP_FILE_TARGET")" "$DESKTOP_SHORTCUT_DIR" "$AUTOSTART_DIR"
     cp "$SCRIPT_DIR/$(basename "${BASH_SOURCE[0]}")" "$LAUNCHER_TARGET"
     chmod +x "$LAUNCHER_TARGET"
+
+    # For Windows/MSYS/WSL interaction, we use symlinks if possible or simple wrappers
+    ln -sf "$LAUNCHER_TARGET" "$UPGRADE_CMD_TARGET"
+    ln -sf "$LAUNCHER_TARGET" "$UPDATE_CMD_TARGET"
+
     if command -v powershell.exe >/dev/null 2>&1; then
         powershell.exe -NoProfile -NonInteractive -Command "
             \$ws = New-Object -ComObject WScript.Shell
@@ -253,16 +249,14 @@ do_integ_windows() {
             \$sc3.WindowStyle = 7
             \$sc3.Save()
         " 2>/dev/null
-    else
-        warn "PowerShell not available. Skipping shortcut creation."
     fi
 }
 
 do_integ() {
     if already_integrated && [ "$FORCE" != "true" ]; then
         warn "$APP_DISPLAY is already integrated with the system."
-        read -rp "Reinstall? [y/N] " confirm
-        [[ ! "$confirm" =~ ^[Yy]$ ]] && { log "Nothing changed."; return 0; }
+        # Automatic reinstall for Mr Happy
+        log "Force reinstalling for Mr Happy state..."
     fi
     log "Integrating $APP_DISPLAY with the $PLATFORM desktop..."
     case "$PLATFORM" in
@@ -271,7 +265,8 @@ do_integ() {
         windows) do_integ_windows ;;
         *)       err "Unsupported platform: $PLATFORM"; return 1 ;;
     esac
-    log "✓ $APP_DISPLAY integrated. Remove with: $LAUNCHER_TARGET --disinteg"
+    log "✓ $APP_DISPLAY integrated."
+    log "Commands now in PATH: total-upgrade, total-update, total-upgrade-launcher"
 }
 
 do_disinteg() {
@@ -280,16 +275,11 @@ do_disinteg() {
     local targets=(
         "$DESKTOP_FILE_TARGET" "$DESKTOP_SHORTCUT_TARGET"
         "$AUTOSTART_TARGET" "$LAUNCHER_TARGET"
+        "$UPGRADE_CMD_TARGET" "$UPDATE_CMD_TARGET"
     )
     for t in "${targets[@]}"; do
-        [ -z "$t" ] && continue
-        if [ -e "$t" ] || [ -L "$t" ]; then
-            [ -d "$t" ] && rm -rf "$t" || rm -f "$t"
-            log "  - $t"
-        fi
+        [ -e "$t" ] || [ -L "$t" ] && rm -rf "$t" && log "  - $t"
     done
-    [ "$PLATFORM" = "linux" ] && command -v update-desktop-database >/dev/null 2>&1 && \
-        update-desktop-database "$APPS_DIR" 2>/dev/null || true
     log "✓ $APP_DISPLAY removed."
 }
 
@@ -300,13 +290,7 @@ do_disinteg() {
 case "$MODE" in
   --start)              start_daemon ;;
   --stop)               stop_daemon ;;
-  --status)
-    if is_running; then
-      log "Daemon is running (PID: $(cat "$PID_FILE"))"
-    else
-      log "Daemon is not running"
-    fi
-    ;;
+  --status)             is_running && log "Daemon running (PID: $(cat "$PID_FILE"))" || log "Daemon not running" ;;
   --tui)                run_tui ;;
   --integ)              do_integ ;;
   --disinteg)           do_disinteg ;;

@@ -43,6 +43,8 @@ pub enum ToolCategory {
     SystemPM,
 }
 
+use crate::backend::config::DaemonConfig;
+
 pub struct AppState {
     pub opsm: Tool,
     pub asdf: Tool,
@@ -50,7 +52,8 @@ pub struct AppState {
     pub system_pm: Tool,
     pub managed_tools: Vec<ManagedTool>,
     pub discovery_items: Vec<DiscoveryItem>,
-    pub associations: Vec<Association>, // New for Stage 6
+    pub associations: Vec<Association>,
+    pub daemon_config: DaemonConfig, // New for v0.3.0
     pub last_scan: Option<chrono::DateTime<chrono::Local>>,
 }
 
@@ -71,13 +74,13 @@ pub struct DiscoveryItem {
 
 pub enum DiscoveryStatus {
     Installed,
-    MissingButSuggested, // e.g. Ruby is here but Gem is missing
+    MissingButSuggested,
     Available,
 }
 
 pub struct ManagedTool {
     pub name: String,
     pub version: String,
-    pub manager: String, // "asdf", "mise", or "opsm"
+    pub manager: String,
     pub selected: bool,
 }

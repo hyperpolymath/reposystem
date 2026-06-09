@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 // Owner: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+
 mod backend;
 #[cfg(test)]
 mod tests;
@@ -24,6 +25,7 @@ use crate::backend::types::{AppState, ToolCategory, ManagedTool};
 use crate::backend::detector::Detector;
 use crate::backend::scanner::Scanner;
 use crate::backend::daemon_setup::render_daemon_setup;
+use crate::backend::config::ConfigManager;
 
 use clap::Parser;
 
@@ -42,14 +44,14 @@ enum Screen {
     ManagerSetup,
     SyncTransfer,
     Discovery,
-    DaemonSetup, // New screen for daemon settings
+    DaemonSetup,
 }
 
 struct App {
     current_screen: Screen,
     menu_state: ListState,
     manager_list_state: ListState,
-    daemon_settings_state: ListState, // For navigating the complex daemon settings
+    daemon_settings_state: ListState,
     items: Vec<&'static str>,
     state: AppState,
 }
@@ -63,13 +65,11 @@ impl App {
         let mut daemon_settings_state = ListState::default();
         daemon_settings_state.select(Some(0));
 
-        // REAL DETECTION (Stage 3)
         let opsm = Detector::check_tool("opsm", ToolCategory::SystemPM);
         let asdf = Detector::check_tool("asdf", ToolCategory::SystemPM);
         let mise = Detector::check_tool("mise", ToolCategory::SystemPM);
         let system_pm = Detector::check_tool("nala", ToolCategory::SystemPM);
 
-        // MANIFEST PARSING (Stage 4)
         let mut managed_tools = Vec::new();
         let home = std::env::var("HOME").unwrap_or_default();
         let global_tv = std::path::Path::new(&home).join(".tool-versions");
@@ -79,17 +79,27 @@ impl App {
                 managed_tools.push(ManagedTool {
                     name,
                     version,
-                    manager: "global".to_string(),
+                    manager: "asdf/.tool-versions".to_string(),
                     selected: false,
                 });
             }
         }
 
-        // ECOSYSTEM DISCOVERY (Stage 5)
-        let discovery_items = Detector::discover_ecosystems();
+        let global_mise = std::path::Path::new(&home).join(".config/mise/config.toml");
+        if let Some(m) = ManifestParser::parse_mise_toml(global_mise) {
+            for (name, version) in m.tools {
+                managed_tools.push(ManagedTool {
+                    name,
+                    version,
+                    manager: "mise.toml".to_string(),
+                    selected: false,
+                });
+            }
+        }
 
-        // ASSOCIATION SCAN (Stage 6)
+        let discovery_items = Detector::discover_ecosystems();
         let associations = Scanner::scan_associations();
+        let daemon_config = ConfigManager::load();
 
         App {
             current_screen: Screen::MainMenu,
@@ -112,6 +122,7 @@ impl App {
                 managed_tools,
                 discovery_items,
                 associations,
+                daemon_config,
                 last_scan: Some(chrono::Local::now()),
             },
         }
@@ -133,6 +144,13 @@ impl App {
                 };
                 self.manager_list_state.select(Some(i));
             }
+            Screen::DaemonSetup => {
+                let i = match self.daemon_settings_state.selected() {
+                    Some(i) => if i >= 11 { 0 } else { i + 1 },
+                    None => 0,
+                };
+                self.daemon_settings_state.select(Some(i));
+            }
             _ => {}
         }
     }
@@ -153,6 +171,13 @@ impl App {
                 };
                 self.manager_list_state.select(Some(i));
             }
+            Screen::DaemonSetup => {
+                let i = match self.daemon_settings_state.selected() {
+                    Some(i) => if i == 0 { 11 } else { i - 1 },
+                    None => 0,
+                };
+                self.daemon_settings_state.select(Some(i));
+            }
             _ => {}
         }
     }
@@ -164,22 +189,40 @@ impl App {
             }
         }
     }
+
+    fn apply_transfers(&mut self) -> Result<()> {
+        let home = std::env::var("HOME").unwrap_or_default();
+        let global_tv = std::path::Path::new(&home).join(".tool-versions");
+
+        let mut current_tools = std::collections::HashMap::new();
+        for tool in &self.state.managed_tools {
+            if tool.selected {
+                current_tools.insert(tool.name.clone(), tool.version.clone());
+            }
+        }
+
+        if !current_tools.is_empty() {
+            let manifest = crate::backend::manifest::Manifest {
+                source: global_tv.to_string_lossy().to_string(),
+                tools: current_tools,
+            };
+            crate::backend::manifest::ManifestParser::write_tool_versions(&global_tv, &manifest)?;
+        }
+
+        Ok(())
+    }
 }
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
     if cli.daemon {
-        // Run silent background daemon
         println!("Starting total-upgrade daemon in background...");
         loop {
-            // Check for updates (stub logic)
-            // Log to state dir
             std::thread::sleep(std::time::Duration::from_secs(3600));
         }
     }
 
-    // Interactive TUI starts here
     enable_raw_mode()?;
     stdout().execute(EnterAlternateScreen)?;
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
@@ -192,9 +235,9 @@ fn main() -> Result<()> {
                 .direction(Direction::Vertical)
                 .margin(1)
                 .constraints([
-                    Constraint::Length(3), // Header
-                    Constraint::Min(0),    // Content
-                    Constraint::Length(3), // Footer
+                    Constraint::Length(3),
+                    Constraint::Min(0),
+                    Constraint::Length(3),
                 ])
                 .split(f.area());
 
@@ -209,7 +252,7 @@ fn main() -> Result<()> {
             };
             let tabs = Tabs::new(titles)
                 .block(Block::default().borders(Borders::ALL).title(" total-upgrade "))
-                .select(if index < 5 { index } else { 0 }) // Tab index out of bounds fallback
+                .select(if index < 5 { index } else { 0 })
                 .highlight_style(Style::default().fg(Color::Yellow));
             f.render_widget(tabs, chunks[0]);
 
@@ -224,7 +267,8 @@ fn main() -> Result<()> {
 
             let footer_text = match app.current_screen {
                 Screen::MainMenu => "Up/Down: Navigate | Enter: Select | Q: Quit",
-                Screen::ManagerSetup => "Up/Down: Navigate | Space: Toggle | Esc: Back",
+                Screen::ManagerSetup => "Up/Down: Navigate | Space: Toggle | A: Apply | Esc: Back",
+                Screen::DaemonSetup => "Up/Down: Navigate | Space: Cycle | S: Save | Esc: Back",
                 Screen::Discovery => "Esc: Back | F: Report to feedback-o-tron",
                 _ => "Press 'Esc' to return to Main Menu.",
             };
@@ -261,6 +305,19 @@ fn main() -> Result<()> {
                         KeyCode::Up => app.previous(),
                         KeyCode::Down => app.next(),
                         KeyCode::Char(' ') => app.toggle_selected(),
+                        KeyCode::Char('a') | KeyCode::Char('A') => {
+                            let _ = app.apply_transfers();
+                            app.current_screen = Screen::MainMenu;
+                        },
+                        _ => {}
+                    },
+                    Screen::DaemonSetup => match key.code {
+                        KeyCode::Up => app.previous(),
+                        KeyCode::Down => app.next(),
+                        KeyCode::Char('s') | KeyCode::Char('S') => {
+                            let _ = ConfigManager::save(&app.state.daemon_config);
+                            app.current_screen = Screen::MainMenu;
+                        },
                         _ => {}
                     },
                     _ => {}
@@ -355,7 +412,6 @@ fn render_discovery(f: &mut ratatui::Frame, area: Rect, app: &App) {
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
         .split(area);
 
-    // Left column: Ecosystems (Stage 5)
     let mut ecosystem_lines = Vec::new();
     for item in &app.state.discovery_items {
         use crate::backend::types::DiscoveryStatus;
@@ -375,7 +431,6 @@ fn render_discovery(f: &mut ratatui::Frame, area: Rect, app: &App) {
     let eco_list = List::new(ecosystem_lines).block(Block::default().borders(Borders::ALL).title(" Ecosystems "));
     f.render_widget(eco_list, chunks[0]);
 
-    // Right column: File Associations (Stage 6)
     let mut assoc_lines = Vec::new();
     for assoc in &app.state.associations {
         let certainty_color = if assoc.certainty > 0.8 { Color::Green } else { Color::Yellow };

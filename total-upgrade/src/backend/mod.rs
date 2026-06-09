@@ -5,3 +5,4 @@ pub mod detector;
 pub mod manifest;
 pub mod scanner;
 pub mod daemon_setup;
+pub mod config;

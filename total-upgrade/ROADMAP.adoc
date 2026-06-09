@@ -1,0 +1,34 @@
+// SPDX-License-Identifier: MPL-2.0
+// Owner: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= TotalUpgrade Roadmap
+
+== Current Status
+**Current Phase:** v0.1.0 - Foundation (Functional TUI & Real Detection)
+
+== Milestones
+
+=== v0.1.0 - Foundation (COMPLETED)
+* [x] Core Rust TUI with `ratatui`.
+* [x] Real-time detection of `asdf`, `mise`, and `opsm`.
+* [x] Ecosystem discovery (Python, Node, Ruby, etc.).
+* [x] File association disambiguation (Coq vs V-lang).
+* [x] Standard-compliant cross-platform launcher.
+
+=== v0.2.0 - Manifest Depth (PLANNED)
+* [ ] Full `mise.toml` (TOML) parsing and writing.
+* [ ] Local project `.tool-versions` discovery and aggregation.
+* [ ] Implementation of the "Transfer" write-back logic.
+
+=== v0.3.0 - Integration (PLANNED)
+* [ ] Direct API/CLI integration with `feedback-o-tron`.
+* [ ] Persistent daemon configuration storage in `~/.config/total-upgrade/daemon.toml`.
+* [ ] Real-time notification system for update alerts.
+
+=== v1.0.0 - Stable Release (PLANNED)
+* [ ] Multi-version pinning logic (Java 8 + 26 side-by-side).
+* [ ] Full Minix and Mobile (Termux) verification.
+* [ ] Automated release CI/CD pipeline with binary artifacts.
+
+== Future Directions
+* Formal verification of core update logic in Idris 2.
+* Plug-and-play registry support for custom private package managers.

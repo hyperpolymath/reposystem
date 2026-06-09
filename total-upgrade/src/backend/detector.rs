@@ -39,6 +39,7 @@ impl Detector {
         use crate::backend::types::{DiscoveryItem, DiscoveryStatus, ToolCategory};
         let mut items = Vec::new();
 
+        // 1. Standard PATH checks
         let checks = vec![
             ("python", "pip", "Python Ecosystem"),
             ("ruby", "gem", "Ruby Ecosystem"),
@@ -63,6 +64,27 @@ impl Detector {
                 status,
                 category: ToolCategory::Runtime,
             });
+        }
+
+        // 2. Deep Scan of /developer/tools (v0.4.0 preview)
+        let tools_root = "/home/hyperpolymath/developer/tools";
+        let prover_dirs = vec!["provers", "languages", "solvers"];
+        
+        for subdir in prover_dirs {
+            let path = std::path::Path::new(tools_root).join(subdir);
+            if let Ok(entries) = std::fs::read_dir(path) {
+                for entry in entries.flatten() {
+                    if entry.path().is_dir() {
+                        let name = entry.file_name().to_string_lossy().to_string();
+                        items.push(DiscoveryItem {
+                            name,
+                            description: format!("Found in {}/{}", tools_root, subdir),
+                            status: DiscoveryStatus::Available,
+                            category: ToolCategory::IDE, // General category for provers for now
+                        });
+                    }
+                }
+            }
         }
 
         items

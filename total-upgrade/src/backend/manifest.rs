@@ -5,6 +5,7 @@ use std::fs;
 use std::path::Path;
 
 pub struct Manifest {
+    #[allow(dead_code)]
     pub source: String, // e.g., ".tool-versions", "mise.toml"
     pub tools: HashMap<String, String>, // Name -> Version
 }

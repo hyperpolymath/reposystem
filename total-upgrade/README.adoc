@@ -1,61 +1,52 @@
 // SPDX-License-Identifier: MPL-2.0
 // Owner: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = TotalUpgrade
-:toc: left
+:toc: preamble
 :icons: font
 
 `total-upgrade` is a cross-platform Rust TUI meta-manager for tool and package management. It sits above `mise`, `asdf`, `opsm`, and system package managers to provide a unified dashboard for your entire environment.
 
-== Features
+== Overview
+Managing multiple tool managers (asdf, mise, opsm) and system package managers can lead to fragmented environments. `total-upgrade` provides a single command-center to detect, sync, and discover tools across all your managers, ensuring consistency between Windows, WSL, and Linux.
 
+== Features
 * **Manager Detection:** Real-time detection of `asdf`, `mise`, and `opsm`.
 * **Manifest Integration:** Unified view of tools managed by `.tool-versions`.
 * **Interactive Toggling:** Select tools to sync or transfer between managers using the spacebar.
 * **Proactive Discovery:** Scans for missing package managers when a runtime (Python, Node, etc.) is found.
 * **Association Disambiguation:** Handles complex file associations like Coq vs V-lang `.v` files.
-* **Cross-Platform:** Visual indicators for Windows, Mac, Linux, Minix, and Mobile.
+* **Background Daemon:** Automated checking for minor updates with advanced TUI configuration.
+* **Standard Launcher:** Full system integration with Start Menu and Desktop shortcuts.
 
-== Environment & Deployment
-
-=== GNU Guix
-To enter a RSR-compliant development environment:
-[source,bash]
-----
-guix shell -m manifest.scm
-----
-
-=== Podman / Containers
-The project is fully containerized and self-contained. To build and run:
-[source,bash]
-----
-podman build -t total-upgrade .
-podman run -it --rm total-upgrade
-----
-The container is hardened with minimal runtime dependencies and is compatible with firewalld/SELinux-enabled systems.
-
-== Usage
+== Quick Start
+To get started with `total-upgrade` on your system:
 
 [source,bash]
 ----
-cargo run --release
+# Build and integrate with your system
+just integ
+
+# Run the interactive TUI
+total-upgrade-launcher --tui
 ----
 
-* **Up/Down:** Navigate menus and lists.
-* **Enter:** Select menu items.
-* **Space:** Toggle checkboxes in the Manager screen.
-* **Esc:** Go back to the main menu.
-* **Q:** Quit from the main menu.
+Wondering how this works? See link:EXPLAINME.adoc[].
 
-== Development Stages
+== Repository Layout
+[cols="1,3", options="header"]
+|===
+| Path | Purpose
+| `src/main.rs` | TUI entry point and state machine.
+| `src/backend/` | Logic for detection, manifest parsing, and scanning.
+| `launcher/` | Standard-compliant cross-platform launcher scripts.
+| `manifest.scm` | GNU Guix environment definition.
+| `Containerfile` | Podman containerization configuration.
+|===
 
-1.  **Stage 1: Scaffolding** - Rust project initialization.
-2.  **Stage 2: TUI Components** - Layout and navigation.
-3.  **Stage 3: Real Detection** - Command-line tool and version verification.
-4.  **Stage 4: Manifest Logic** - Parsing `.tool-versions`.
-5.  **Stage 5: Ecosystem Discovery** - Proactive PM scanning.
-6.  **Stage 6: Association Discovery** - File extension disambiguation.
-7.  **Stage 7: Product Polish** - Tests, docs, and checklist.
+== Documentation
+* link:EXPLAINME.adoc[EXPLAINME.adoc] — Implementation evidence and technical deep-dive.
+* link:CONTRIBUTING.md[CONTRIBUTING.md] — Guidelines for developers.
+* link:SECURITY.md[SECURITY.md] — Security policy and reporting.
 
 == License
-
-MPL-2.0
+SPDX-License-Identifier: MPL-2.0. See link:LICENSE.txt[LICENSE].

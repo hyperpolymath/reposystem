@@ -20,13 +20,12 @@ use ratatui::{
 };
 use std::io::stdout;
 use crate::backend::manifest::ManifestParser;
-use crate::backend::types::{AppState, ToolCategory, ManagedTool, Association};
+use crate::backend::types::{AppState, ToolCategory, ManagedTool};
 use crate::backend::detector::Detector;
 use crate::backend::scanner::Scanner;
 use crate::backend::daemon_setup::render_daemon_setup;
 
 use clap::Parser;
-use std::env;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]

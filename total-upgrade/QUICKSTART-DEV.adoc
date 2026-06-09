@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: MPL-2.0
+// Owner: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= TotalUpgrade Quickstart (Developer)
+
+Guidelines for contributing to the `total-upgrade` meta-manager.
+
+== 1. Environment Setup
+
+We recommend using **GNU Guix** for a deterministic development environment:
+
+[source,bash]
+----
+just guix-shell
+----
+
+Alternatively, ensures you have `rust`, `cargo`, and `openssl` installed.
+
+== 2. Build & Test
+
+[source,bash]
+----
+# Run all tests
+just test
+
+# Check for warnings (we maintain a 0-warning policy)
+just lint
+
+# Run in dev mode
+just run
+----
+
+== 3. Architecture
+
+* **UI:** Located in `src/main.rs`. Uses `ratatui` with a state-driven approach.
+* **Logic:** Located in `src/backend/`. Keep all system calls (`std::process::Command`) in `detector.rs` or `scanner.rs`.
+* **Manifests:** Logic for file parsing belongs in `manifest.rs`.
+
+== 4. Documentation Standards
+
+Every new feature MUST have:
+1. A corresponding claim in `README.adoc`.
+2. Implementation evidence in `EXPLAINME.adoc`.
+3. Unit tests in `src/tests.rs`.

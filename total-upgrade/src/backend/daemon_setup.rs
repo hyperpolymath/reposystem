@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
 // Owner: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-use std::fs::OpenOptions;
-use std::io::Write;
 
 pub fn render_daemon_setup(f: &mut ratatui::Frame, area: ratatui::layout::Rect, app: &mut crate::App) {
     use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};

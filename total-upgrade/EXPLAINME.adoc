@@ -1,0 +1,95 @@
+// SPDX-License-Identifier: MPL-2.0
+// Owner: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= TotalUpgrade — EXPLAINME
+:toc: preamble
+:icons: font
+
+This file provides code-level evidence and implementation details for the claims made in README.adoc.
+
+== Claim-to-implementation map
+
+=== Manager Detection
+
+[quote, README.adoc]
+____
+Real-time detection of asdf, mise, and opsm.
+____
+
+How this is implemented::
+The `Detector` struct in `src/backend/detector.rs` executes `which <tool>` and `<tool> --version` using `std::process::Command`. 
+
+Caveat::
+Depends on the tools being in the system `PATH` at the time of execution.
+
+=== Manifest Integration
+
+[quote, README.adoc]
+____
+Unified view of tools managed by .tool-versions.
+____
+
+How this is implemented::
+The `ManifestParser` in `src/backend/manifest.rs` performs a targeted read of `~/.tool-versions`, parsing it into a `HashMap<String, String>` which is then displayed in the TUI.
+
+Caveat::
+Currently only parses the global `~/.tool-versions`. Support for local project files and `mise.toml` is planned.
+
+=== Proactive Discovery
+
+[quote, README.adoc]
+____
+Scans for missing package managers when a runtime (Python, Node, etc.) is found.
+____
+
+How this is implemented::
+`Detector::discover_ecosystems` in `src/backend/detector.rs` checks for specific runtime/package-manager pairs (e.g., `ruby` -> `gem`) and returns a `DiscoveryStatus`.
+
+Caveat::
+Hardcoded list of common ecosystems. Extending this requires updating the `checks` vector in `detector.rs`.
+
+=== Association Disambiguation
+
+[quote, README.adoc]
+____
+Handles complex file associations like Coq vs V-lang .v files.
+____
+
+How this is implemented::
+`Scanner::scan_associations` in `src/backend/scanner.rs` checks for the presence of multiple possible tool chains for the same extension and reports ambiguity if multiple are found.
+
+Caveat::
+Currently relies on tool presence in `PATH`. Does not yet scan project file markers ( e.g. `_CoqProject`).
+
+== Dogfooded Across The Account
+
+[cols="1,2,2", options="header"]
+|===
+| Technology / Pattern | Used here | Also used in
+
+| Ratatui | TUI framework for all interactive screens. | link:https://github.com/hyperpolymath/opsm[opsm-tui]
+| Standard Launcher | Compliant with `launcher-standard.adoc`. | link:https://github.com/hyperpolymath/burble[burble]
+| Guix Manifest | Deterministic dev environment via `manifest.scm`. | link:https://github.com/hyperpolymath/standards[standards]
+|===
+
+== Known Gaps
+
+[CAUTION]
+====
+Mise.toml: README claims support for mise, but current implementation only covers .tool-versions.
+====
+
+[CAUTION]
+====
+Transfer Action: The UI allows selecting tools for transfer, but the write-back logic to manifest files is not yet implemented.
+====
+
+== Evidence Index
+
+[cols="2,3", options="header"]
+|===
+| Path | Proves
+
+| `src/backend/detector.rs` | Real-time tool and ecosystem detection logic.
+| `src/backend/scanner.rs` | File extension disambiguation and scanning.
+| `src/tests.rs` | Unit tests for manifest parsing and detection accuracy.
+|===

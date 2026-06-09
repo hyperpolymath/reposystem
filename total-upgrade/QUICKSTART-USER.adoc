@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: MPL-2.0
+// Owner: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= TotalUpgrade Quickstart (User)
+
+Welcome to `total-upgrade`. This guide will get you up and running in 60 seconds.
+
+== 1. Installation
+
+The easiest way to install is using `just`:
+
+[source,bash]
+----
+cd reposystem/total-upgrade
+just integ
+----
+
+This command builds the project and integrates it with your system (PATH, Start Menu, shortcuts).
+
+== 2. Running the TUI
+
+Launch the interactive dashboard:
+
+[source,bash]
+----
+total-upgrade-launcher
+----
+
+== 3. Core Operations
+
+* **Navigation:** Use `Up` and `Down` arrow keys.
+* **Selection:** Press `Enter` to enter a menu.
+* **Toggle:** In the "Managed Tools" screen, use `Space` to select tools for sync.
+* **Return:** Press `Esc` to go back to the main menu.
+* **Quit:** Press `Q` on the main menu.
+
+== 4. Background Daemon
+
+`total-upgrade` runs a silent daemon to check for updates. You can configure it in the **Background Daemon Settings** screen.

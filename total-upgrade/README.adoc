@@ -1,2 +1,61 @@
 // SPDX-License-Identifier: MPL-2.0
-// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+// Owner: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= TotalUpgrade
+:toc: left
+:icons: font
+
+`total-upgrade` is a cross-platform Rust TUI meta-manager for tool and package management. It sits above `mise`, `asdf`, `opsm`, and system package managers to provide a unified dashboard for your entire environment.
+
+== Features
+
+* **Manager Detection:** Real-time detection of `asdf`, `mise`, and `opsm`.
+* **Manifest Integration:** Unified view of tools managed by `.tool-versions`.
+* **Interactive Toggling:** Select tools to sync or transfer between managers using the spacebar.
+* **Proactive Discovery:** Scans for missing package managers when a runtime (Python, Node, etc.) is found.
+* **Association Disambiguation:** Handles complex file associations like Coq vs V-lang `.v` files.
+* **Cross-Platform:** Visual indicators for Windows, Mac, Linux, Minix, and Mobile.
+
+== Environment & Deployment
+
+=== GNU Guix
+To enter a RSR-compliant development environment:
+[source,bash]
+----
+guix shell -m manifest.scm
+----
+
+=== Podman / Containers
+The project is fully containerized and self-contained. To build and run:
+[source,bash]
+----
+podman build -t total-upgrade .
+podman run -it --rm total-upgrade
+----
+The container is hardened with minimal runtime dependencies and is compatible with firewalld/SELinux-enabled systems.
+
+== Usage
+
+[source,bash]
+----
+cargo run --release
+----
+
+* **Up/Down:** Navigate menus and lists.
+* **Enter:** Select menu items.
+* **Space:** Toggle checkboxes in the Manager screen.
+* **Esc:** Go back to the main menu.
+* **Q:** Quit from the main menu.
+
+== Development Stages
+
+1.  **Stage 1: Scaffolding** - Rust project initialization.
+2.  **Stage 2: TUI Components** - Layout and navigation.
+3.  **Stage 3: Real Detection** - Command-line tool and version verification.
+4.  **Stage 4: Manifest Logic** - Parsing `.tool-versions`.
+5.  **Stage 5: Ecosystem Discovery** - Proactive PM scanning.
+6.  **Stage 6: Association Discovery** - File extension disambiguation.
+7.  **Stage 7: Product Polish** - Tests, docs, and checklist.
+
+== License
+
+MPL-2.0

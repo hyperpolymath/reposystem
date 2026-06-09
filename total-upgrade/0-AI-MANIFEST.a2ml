@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# AI-MANIFEST.a2ml — AI agent work allocation and policy
+#
+[metadata]
+version = "0.1.0"
+last-updated = "2026-04-14"
+
+[project]
+name = "pseudoscript"
+purpose = "Pseudocode-syntax AffineScript. Write code that looks like pseudocode. Get affine resource guarantees and typed WASM out."
+
+[ai-allocation]
+agents = [
+  { name = "CLAUDE", role = "proofs, compilers, repo-local implementation, CI/CD, formal verification, Rust/Idris2/Zig" },
+  { name = "CHATGPT", role = "prose, papers, publication review, standards docs, outreach drafts, letters" },
+  { name = "GEMINI", role = "estate audits, cross-repo sweeps, long-context triage, pattern detection" },
+  { name = "VIBE", role = "UI/frontend, PanLL panels, ReScript components, theming, rapid prototyping" },
+]
+
+[policy]
+rules = [
+  "Do not duplicate tasks across sections. If a task needs multiple LLMs, note the handoff.",
+  "Update THIS file during sessions. Do NOT recreate per-repo TODO files.",
+]
+
+[work-allocation]
+items = [
+  { agent = "CLAUDE", task = "proofs, compilers, repo-local implementation, CI/CD, formal verification, Rust/Idris2/Zig" },
+  { agent = "CHATGPT", task = "prose, papers, publication review, standards docs, outreach drafts, letters" },
+  { agent = "GEMINI", task = "estate audits, cross-repo sweeps, long-context triage, pattern detection" },
+  { agent = "VIBE", role = "UI/frontend, PanLL panels, ReScript components, theming, rapid prototyping" },
+]

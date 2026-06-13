@@ -31,7 +31,7 @@ toml = "1.1"
 
 # TUI
 ratatui = { version = "0.30", features = ["crossterm"] }
-crossterm = "0.28"
+crossterm = "0.29"
 
 # Graph processing
 petgraph = "0.6"

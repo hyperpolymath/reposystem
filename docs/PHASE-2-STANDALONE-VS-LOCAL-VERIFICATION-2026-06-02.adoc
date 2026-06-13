@@ -1,0 +1,300 @@
+// SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath)
+= Reposystem Phase 2 — Standalone-vs-Local Verification (7 sub-projects)
+:toc: left
+:toclevels: 3
+:icons: font
+
+[.lead]
+Establishes, against *ground truth*, whether each of the seven Phase-2
+sub-projects embedded in `reposystem` is a **standalone** repository (its own
+forge repo, properly referenced as a submodule) or **local-only** (vendored as
+a plain directory tree inside `reposystem`). This resolves the "Status
+Unknown" / "Likely `github.com/...`" hedges in `ECOSYSTEM-STATUS.adoc`.
+
+[cols="1,3",options="header"]
+|===
+| Field | Value
+| Verification date | 2026-06-02
+| Scope | `reposystem` `HEAD` working tree + GitHub Search API (token-scoped)
+| Method | Mechanical (`git ls-tree`, `.gitmodules`, metadata grep, forge search) — no claim is asserted without the command that produced it (see <<method>>).
+|===
+
+NOTE: This document follows the estate anti-fiction rule (cf. the CRG-D
+demotion for fabricated paths in `docs/governance/CRG-AUDIT-2026-04-18.adoc`):
+every cell below is reproducible from the commands in <<reproduction>>.
+Facts that *could not* be verified from this environment are labelled as such,
+not guessed.
+
+[#scope]
+== Scope: what "the 7 sub-projects" means
+
+The seven are defined by a ground-truth-derivable property: they are the only
+embedded directories carrying *full* standalone-Hyperpolymath project
+scaffolding — i.e. *both* `.machine_readable/` *and* `.github/`.
+
+[source,sh]
+----
+for d in */; do d="${d%/}"
+  [ -d "$d/.machine_readable" ] && [ -d "$d/.github" ] && echo "$d"
+done
+----
+
+yields exactly: `bitfuckit`, `contractiles`, `gui`, `recon-silly-ation`,
+`rpa-elysium`, `scaffoldia`, `stateful-artefacts`.
+
+Deliberately excluded: `git-morph` (has `.machine_readable/` but no
+`.github/`); `git-seo`, `forge-ops`, `tui`, `vexometer` (neither). The
+`.gitmodules`-declared but *content-absent* entries `total-recall`,
+`total-upgrade`, `git-scripts`, `git-reticulator` are not in this set but are
+covered in <<drift>> because they bear directly on the standalone-vs-local
+picture.
+
+[#method]
+== Method (how each fact was derived)
+
+[cols="1,3",options="header"]
+|===
+| Fact | Source of truth
+| Storage mode | `git ls-tree HEAD` — mode `160000` = gitlink (submodule pointer); `040000` = tree (local directory).
+| Submodule declaration | `.gitmodules`.
+| Self-declared remote | grep of each sub-project's own metadata (`.machine_readable/`, README, configs) for `(github\|gitlab\|bitbucket).com/...`.
+| Local footprint | `git ls-files <dir> \| wc -l`.
+| Forge existence | GitHub Search API via `search_repositories` (`user:hyperpolymath in:name <names>`), executed 2026-06-02.
+|===
+
+.Caveats on the forge-existence check (read before trusting a "no")
+[WARNING]
+====
+* The GitHub result reflects only what is visible in the *search index to the
+  token used*. A *private* repo not shared with that token would read as
+  absent. A repo created in the last few minutes may not yet be indexed.
+* Index freshness is corroborated: `rpa-elysium` returned `updated_at`
+  2026-06-01, so the index is current to within ~1 day of this verification.
+* **GitLab cannot be queried from this environment.** For the two
+  GitLab-declared submodules (`total-recall`, `total-upgrade`) forge existence
+  is marked *unverified*, not "no".
+====
+
+== Verdict — the 7 Phase-2 sub-projects
+
+All seven are stored as **trees** (local directories), each with substantial
+real content (not stubs). Only `rpa-elysium` has a confirmed standalone repo —
+and its submodule wiring is broken.
+
+[cols="2,1,3,1,1,2,2",options="header"]
+|===
+| Sub-project | Files | Self-declared remote | In `.gitmodules`? | Stored as | Standalone repo (GitHub, 2026-06-02) | Verdict
+
+| `rpa-elysium`
+| 171
+| `github.com/hyperpolymath/rpa-elysium` + GitLab
+| *yes* (github)
+| tree (local)
+| **YES** — Rust, created 2025-12-02, updated 2026-06-01, 4★
+| *STANDALONE* — but *wiring broken*: declared a submodule yet committed as a local tree (see <<drift>>)
+
+| `bitfuckit`
+| 158
+| `github.com/hyperpolymath/bitfuckit`
+| no
+| tree (local)
+| not found
+| *LOCAL-ONLY*
+
+| `contractiles`
+| 236
+| `github.com/hyperpolymath/contractiles`
+| no
+| tree (local)
+| not found
+| *LOCAL-ONLY*
+
+| `gui`
+| 250
+| _(none; references `reposystem` only)_
+| no
+| tree (local)
+| not found (`reposystem-gui` also absent)
+| *LOCAL-ONLY* — reposystem's own web-GUI component; `EXPLAINME.adoc` calls it a "web GUI sub-project"
+
+| `recon-silly-ation`
+| 114
+| `github.com/hyperpolymath/recon-silly-ation`
+| no
+| tree (local)
+| not found
+| *LOCAL-ONLY*
+
+| `scaffoldia`
+| 197
+| `github.com/hyperpolymath/scaffoldia`
+| no
+| tree (local)
+| not found
+| *LOCAL-ONLY*
+
+| `stateful-artefacts`
+| 97
+| `github.com/hyperpolymath/stateful-artefacts`
+| no
+| tree (local)
+| not found (alt name `stateful-artefacts-for-gitforges` also absent)
+| *LOCAL-ONLY*
+|===
+
+=== rpa-elysium — STANDALONE, submodule wiring BROKEN
+
+`rpa-elysium` is the one genuine standalone of the seven: the GitHub repo
+exists and is active. But `.gitmodules` declares it a submodule
+(`git@github.com:hyperpolymath/rpa-elysium.git`) while `git ls-tree HEAD`
+records it as an ordinary `040000 tree` of 171 vendored files — not a `160000`
+gitlink. The declaration and the committed object therefore disagree: a
+`git submodule` operation cannot reconcile them. This is the textbook
+"committed a submodule's working copy as a plain directory" defect.
+
+=== bitfuckit, contractiles, recon-silly-ation, scaffoldia, stateful-artefacts — LOCAL-ONLY
+
+Each self-declares a `github.com/hyperpolymath/<name>` home, but no such repo
+is present in the GitHub search index visible to this token (2026-06-02).
+Treat the self-declared remotes as *aspirational*, not existing. Each is a
+full local tree (97–236 files), so the content lives only inside `reposystem`
+today. (`stateful-artefacts` is additionally subject to a *name* ambiguity:
+`ECOSYSTEM-STATUS.adoc` calls it `stateful-artefacts-for-gitforges`; both names
+return zero on the forge.)
+
+=== gui — LOCAL-ONLY by design
+
+`gui` declares no remote of its own and only references `reposystem`. It is the
+project's own ReScript+Deno web front-end, not a separable product. No
+standalone repo is expected and none exists.
+
+[#drift]
+== Adjacent finding: submodule-wiring drift across the embedded set
+
+The standalone-vs-local audit surfaced broader gitlink drift. `git ls-tree HEAD`
+reports exactly four `160000` gitlinks; `.gitmodules` declares five submodules.
+They do not line up.
+
+[cols="2,1,2,2,3",options="header"]
+|===
+| Path | In `.gitmodules`? | Stored as | Forge repo exists? | Status
+
+| `git-scripts`
+| yes (github)
+| gitlink `c155498`
+| YES (GitHub)
+| ✅ consistent submodule
+
+| `git-reticulator`
+| yes (github)
+| gitlink `bef65e4`
+| YES (GitHub)
+| ✅ consistent submodule
+
+| `rpa-elysium`
+| yes (github)
+| *tree* (local, 171 files)
+| YES (GitHub)
+| ⚠️ declared submodule, committed as a tree → broken gitlink
+
+| `total-upgrade`
+| yes (gitlab)
+| *tree* (local, empty stub `84d1361`)
+| _unverified (GitLab)_
+| ⚠️ declared submodule, committed as an empty RSR-scaffold tree
+
+| `total-recall`
+| yes (gitlab)
+| *tree* (local, empty stub `84d1361`)
+| _unverified (GitLab)_
+| ⚠️ declared submodule, committed as an empty stub *byte-identical* to `total-upgrade` (same tree hash)
+
+| `avatar-fabrication-facility`
+| *no*
+| gitlink `f8207cd`
+| *no* (GitHub)
+| ⛔ orphan gitlink — no `.gitmodules` URL **and** no forge repo; `git submodule` cannot resolve it
+
+| `claim-forge`
+| *no*
+| gitlink `905bd22`
+| *no* (GitHub)
+| ⛔ orphan gitlink — no `.gitmodules` URL **and** no forge repo
+|===
+
+Notes:
+
+* `total-recall` and `total-upgrade` share tree hash
+  `84d1361d98374e10d45b5fb5692044d98bc6144e` — an empty RSR scaffold
+  (`README.adoc` = single newline, `STATE.adoc` empty). One is a stale copy of
+  the other.
+* The orphan gitlinks (`avatar-fabrication-facility`, `claim-forge`) are the
+  concrete cause of the "`git submodule update --recursive` aborts on a
+  URL-less entry" hazard noted in `ESTATE-ORGANIZATION.adoc` (which attributes
+  it to `.git-private-farm`). In `reposystem` itself, `.git-private-farm` is
+  *not* a top-level gitlink — it only appears vendored under
+  `bitfuckit/scripts/git-private-farm/`.
+
+== Documentation corrected by this verification
+
+`ECOSYSTEM-STATUS.adoc` carried "❓ Status Unknown" / "Repository: Likely
+`github.com/...`" for `scaffoldia` and `stateful-artefacts-for-gitforges`.
+Both are now verified *local-only* (no standalone forge repo as of
+2026-06-02); those two rows and detail sections are updated to cite this
+report. `.git-private-farm` is left "Unknown" — it was *not* verified here.
+
+[#remediation]
+== Recommended remediation (NOT executed — gated by estate policy)
+
+Per `ESTATE-ORGANIZATION.adoc`, flat clones are the source of truth and
+`reposystem` "owns no code history; pins nothing". Reconciliation is therefore
+left to the estate's deliberate, separately-gated tooling rather than performed
+unilaterally here:
+
+. *Decide each local-only project's intended home.* If `bitfuckit`,
+  `contractiles`, `recon-silly-ation`, `scaffoldia`, `stateful-artefacts` are
+  meant to be standalone, create the forge repos and convert the trees to
+  submodules; otherwise drop their aspirational self-declared remotes. `gui`
+  stays local by design.
+. *Fix `rpa-elysium`* — the repo exists; either de-vendor the tree and add it
+  as a real gitlink, or remove it from `.gitmodules` if it is intentionally
+  vendored.
+. *Resolve `total-recall` / `total-upgrade`* — both are empty stubs declared as
+  GitLab submodules; confirm the GitLab repos, then wire one gitlink each (and
+  delete the duplicate).
+. *Prune the orphan gitlinks* `avatar-fabrication-facility` and `claim-forge`
+  (no URL, no forge repo) using the *destructive*, explicitly-gated path:
++
+[source,sh]
+----
+just aggregator-drift                                        # classify (A2ML)
+sh scripts/fix-stale-submodule-urls.sh                       # dry-run classify
+sh scripts/fix-stale-submodule-urls.sh --prune-nonexistent   # destructive
+----
+
+[#reproduction]
+== Reproduction
+
+[source,sh]
+----
+# (1) The 7: dirs with both .machine_readable/ and .github/
+for d in */; do d="${d%/}"
+  [ -d "$d/.machine_readable" ] && [ -d "$d/.github" ] && echo "$d"; done
+
+# (2) Storage mode (160000 gitlink vs 040000 tree) + declared submodules
+git ls-tree HEAD | grep -E '160000|bitfuckit|contractiles|gui|recon-silly|rpa-elysium|scaffoldia|stateful-artefacts|total-'
+cat .gitmodules
+
+# (3) Local footprint
+for d in bitfuckit contractiles gui recon-silly-ation rpa-elysium scaffoldia stateful-artefacts; do
+  printf '%-22s %s\n' "$d" "$(git ls-files "$d" | wc -l)"; done
+
+# (4) Forge existence (GitHub Search API, run 2026-06-02)
+#   search_repositories  user:hyperpolymath in:name bitfuckit OR contractiles OR gui OR rpa-elysium
+#   search_repositories  user:hyperpolymath in:name recon-silly-ation OR scaffoldia OR stateful-artefacts
+#   -> only rpa-elysium present; alt names stateful-artefacts-for-gitforges / reposystem-gui also absent
+
+# (5) Duplicate stub
+git ls-tree 84d1361d98374e10d45b5fb5692044d98bc6144e   # total-recall == total-upgrade
+----

@@ -60,7 +60,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Config
-directories = "5.0"
+directories = "6.0"
 config = "0.14"
 
 # HTTP client for VeriSimDB

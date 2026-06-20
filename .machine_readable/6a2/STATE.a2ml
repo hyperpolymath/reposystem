@@ -12,13 +12,13 @@
 [metadata]
 project = "reposystem"
 version = "0.1.0"
-last-updated = "2026-06-02"
+last-updated = "2026-06-20"
 status = "active"
 crg-grade = "D"
 crg-grade-previous = "C"
 crg-grade-demoted = "2026-04-18"
 crg-grade-notes = "Demoted C->D per docs/governance/CRG-AUDIT-2026-04-18.adoc: fabricated EXPLAINME File Map + weak per-subproject README coverage. D→C blockers resolved 2026-04-25: EXPLAINME.adoc rewritten (15 fabricated paths removed, 31 verified-real paths added); 24 per-directory README.adoc files added. Dogfooding evidence populated 2026-04-18. 2026-05-18: the scaffoldia/repo-batcher subproject — a prior weak-coverage area — was built from scratch (L1–L8, ATS2 core + Idris2 ABI + patscc-linked Zig CLI, fixture-gated `just e2e`) and independently fiction-reviewed (PR #59, commit 4c2d29f, issue #56 CLOSED-COMPLETED), and its status docs corrected from the inverse anti-fiction defect (PR #61). This strengthens a future C claim but does NOT itself change the grade: a D→C move still requires a fresh formal CRG audit (docs/governance/CRG-AUDIT) plus CI green — not self-assessed here."
-tests-passing = "112/112 (2026-04-04 baseline; NOT re-run post-#56 — treat as stale until a fresh suite run)"
+tests-passing = "113/113 (2026-06-20 fresh suite run — supersedes the stale 2026-04-04 baseline; +1 manifest-importer test, plus `scan --json` and a pre-existing verisimdb doctest fixed). Build required a one-line dependency fix (gix `sha1` feature) — pre-existing compile break on rustc 1.94, unrelated to these changes."
 
 [project-context]
 name = "reposystem"
@@ -27,7 +27,7 @@ name = "reposystem"
 # "unimplemented Zig stub, non-functional" to "L1–L8 built, fiction-reviewed,
 # end-to-end fixture-gated" — one of ~10 scaffoldia/ + major subprojects.
 completion-percentage = 68
-phase = "Testing & stabilization — D-floor lift in progress; repo-batcher subproject built & verified (#56)"
+phase = "Testing & stabilization — D-floor lift in progress. Estate-representation foundation landed: the Rust `types` module is the single schema of record (Estate + ExternalSeam + RefersTo + estate field), repos.toml is imported into the graph, and the unified estate-export envelope is consumed by the web HUD (estate scoping + aerie/ambientops seams)."
 
 [dogfooding-status]
 # Populated 2026-04-18 against real on-disk integrations.
@@ -35,6 +35,7 @@ boj-server-mcp = "2026-04-18 — reposystem-mcp cartridge (442 LOC: mod.js + Zig
 repo-batcher = "2026-05-18 — scaffoldia/repo-batcher: real `just e2e` ran against a fresh temp git repo (dry-run byte-identical, real on-disk mutation via the ATS2 core, spdx-audit) — exit 0. patscc-linked binary genuinely exercises the ATS2 C ABI. Path: scaffoldia/repo-batcher/"
 
 [recent-changes]
+- 2026-06-20: Estate-representation foundation (representation -> visualisation). The Rust `types` module is now the single schema of record: added Estate (multi-estate parameterisation; hyperpolymath = estate #1), ExternalSeam + SeamDomain (loose cross-links to aerie=network / ambientops=machine; seams are edge sinks), RelationType::RefersTo, and `estate`/`metadata` on Repo. New `reposystem import manifest` bridges repos.toml (289 unique repos + 2 seams) into the GraphStore — previously the visualisation rendered nothing (web/export.json was an empty stub). New unified `export --format estate-json` envelope (schema reposystem/estate-export@1) is consumed by the web HUD (added estate selector + dashed external-seam rendering); DOT export renders seams too. Nickel contracts (config/{contracts,reposystem}.ncl) aligned to the Rust taxonomy; config/tools.ncl "super power collection" registry added; spec/DATA-MODEL.adoc made normative; GRAPH-STRUCTURE.md marked superseded. Build fix: gix `sha1` feature (gix-hash Kind::Sha1 was cfg'd out -> pre-existing compile break on rustc 1.94). Fresh suite 113/113. Consolidation gitlink surgery (orphan avatar-fabrication-facility/claim-forge, rpa-elysium path conflict) deferred to a follow-up PR.
 - 2026-06-02: Phase-2 standalone-vs-local verification — the 7 sub-projects (dirs with both .machine_readable/ + .github/) checked vs ground truth (git ls-tree, .gitmodules, GitHub search index). Only rpa-elysium is a real standalone repo (its gitlink is broken — declared a submodule but committed as a tree); the other 6 (bitfuckit, contractiles, gui, recon-silly-ation, scaffoldia, stateful-artefacts) are local-only. Orphan gitlinks avatar-fabrication-facility + claim-forge (no .gitmodules URL, no forge repo) surfaced. Doc: docs/PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc; ECOSYSTEM-STATUS.adoc two "Unknown" rows corrected. PR #91.
 - 2026-06-02: Governance CI baseline — the estate banned_language_file gate now bans ReScript (.res). Added .hypatia-ignore baselining the 213 pre-existing .res files (new .res still flagged) and exempting the 22 ATS2 files as an ALLOWED language (the central enforce list over-reaches; tracked #94). AffineScript toolchain built locally; res-to-affine --partial over the 75 first-party .res emitted 0/75 compilable ports (397 TODO holes) — confirming the ReScript→AffineScript port is human work (epic #93; WIP skeletons #92). All 15 PR-#91 checks green.
 - 2026-05-18: repo-batcher #56 from-scratch build-out — L1–L4 ATS2 core (just tc-ats2=0), L5 self-contained C archive (ATS_DYNLOADFLAG 0 link fix, just ats2-lib=0), L6 Idris2 typed ABI w/ machine-checked theorems (just abi-check=0), L7 patscc-linked Zig CLI binding the genuine ATS2 C ABI, L8 fixture-backed just e2e=0. Independently fiction-reviewed from a clean clone. PR #59 merged (4c2d29f); issue #56 CLOSED-COMPLETED.
@@ -55,6 +56,13 @@ repo-batcher = "2026-05-18 — scaffoldia/repo-batcher: real `just e2e` ran agai
 - Total: 112 tests passing (2026-04-04 baseline; see tests-passing staleness note)
 
 [session-history]
+# 2026-06-20: Estate-representation foundation. Rust types = schema of record:
+#             Estate + ExternalSeam + RefersTo + estate/metadata on Repo. New
+#             manifest importer (repos.toml -> GraphStore: 289 repos + aerie/
+#             ambientops seams) + unified estate-export envelope; web HUD gains
+#             estate scope + dashed seam rendering. Nickel aligned; tools.ncl
+#             registry; DATA-MODEL.adoc normative; GRAPH-STRUCTURE.md superseded.
+#             Pre-existing gix `sha1` build break fixed. 113/113 fresh run.
 # 2026-06-02: Phase-2 standalone-vs-local verification (PR #91): 6/7 sub-projects
 #             local-only; rpa-elysium standalone w/ broken gitlink. Governance
 #             .hypatia-ignore — ReScript baseline + ATS2 allowed-exemption. ReScript

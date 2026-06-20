@@ -2,7 +2,10 @@
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 //! Graph data structures and algorithms for the ecosystem graph
 
-use crate::types::{AspectStore, AuditStore, Edge, GraphStore, Group, PlanStore, Repo, SlotStore};
+use crate::types::{
+    AspectStore, AuditStore, Edge, ExternalSeam, GraphStore, Group, PlanStore, RelationType, Repo,
+    SlotStore,
+};
 use crate::verisimdb::VeriSimDbClient;
 use anyhow::{Context, Result};
 use petgraph::graph::{DiGraph, NodeIndex};
@@ -222,6 +225,12 @@ impl EcosystemGraph {
             self.node_indices.insert(repo.id.clone(), idx);
         }
 
+        // Add all external seams as nodes (sinks: aerie/ambientops/…)
+        for seam in &self.store.seams {
+            let idx = self.graph.add_node(seam.id.clone());
+            self.node_indices.insert(seam.id.clone(), idx);
+        }
+
         // Add all edges
         for edge in &self.store.edges {
             if let (Some(&from_idx), Some(&to_idx)) = (
@@ -250,6 +259,18 @@ impl EcosystemGraph {
 
     /// Add an edge to the graph
     pub fn add_edge(&mut self, edge: Edge) -> Result<()> {
+        // Seam invariant: external seams are edge sinks, never sources, and may
+        // only be reached via a `refers-to` relation.
+        if Self::is_seam_id(&edge.from) {
+            anyhow::bail!("external seam {} cannot be an edge source", edge.from);
+        }
+        if Self::is_seam_id(&edge.to) && edge.rel != RelationType::RefersTo {
+            anyhow::bail!(
+                "edges targeting external seam {} must use rel=refers-to",
+                edge.to
+            );
+        }
+
         // Verify both endpoints exist
         let from_idx = self
             .node_indices
@@ -278,6 +299,31 @@ impl EcosystemGraph {
         } else {
             self.store.groups.push(group);
         }
+    }
+
+    /// True if an ID refers to an external seam node.
+    #[must_use]
+    pub fn is_seam_id(id: &str) -> bool {
+        id.starts_with("seam:")
+    }
+
+    /// Add (or update) an external seam node (aerie/ambientops/…).
+    pub fn add_seam(&mut self, seam: ExternalSeam) {
+        if self.node_indices.contains_key(&seam.id) {
+            if let Some(existing) = self.store.seams.iter_mut().find(|s| s.id == seam.id) {
+                *existing = seam;
+            }
+        } else {
+            let idx = self.graph.add_node(seam.id.clone());
+            self.node_indices.insert(seam.id.clone(), idx);
+            self.store.seams.push(seam);
+        }
+    }
+
+    /// Get all external seams
+    #[must_use]
+    pub fn seams(&self) -> &[ExternalSeam] {
+        &self.store.seams
     }
 
     /// Get a repo by ID
@@ -392,6 +438,18 @@ impl EcosystemGraph {
             dot.push_str("  }\n");
         }
 
+        // Add external seams as dashed note nodes (aerie/ambientops/…)
+        if !self.store.seams.is_empty() {
+            dot.push_str("\n  // External seams (sinks)\n");
+            for seam in &self.store.seams {
+                let label = format!("{}\\n[{}]", seam.name, seam.system);
+                dot.push_str(&format!(
+                    "  \"{}\" [label=\"{}\", shape=note, style=dashed, color=gray40, fontcolor=gray40];\n",
+                    seam.id, label
+                ));
+            }
+        }
+
         // Add slots as diamond nodes
         if !self.slots.slots.is_empty() {
             dot.push_str("\n  // Slots (diamond nodes)\n");
@@ -460,6 +518,46 @@ impl EcosystemGraph {
     pub fn to_json(&self) -> Result<String> {
         serde_json::to_string_pretty(&self.store).context("Failed to serialize graph to JSON")
     }
+
+    /// Export the whole estate as a single unified interchange envelope.
+    ///
+    /// This is the one artifact every front-end (web, GUI, TUI, exporters)
+    /// consumes — a strict superset of the `GraphStore` that also carries
+    /// estates, external seams, aspects, slots/providers/bindings and plans.
+    /// One serializer, many transports.
+    pub fn to_estate_export(&self) -> Result<String> {
+        let estate_id = self
+            .store
+            .estate
+            .clone()
+            .unwrap_or_else(crate::types::default_estate);
+        let current = self
+            .store
+            .estates
+            .iter()
+            .find(|e| e.id == estate_id)
+            .or_else(|| self.store.estates.first());
+
+        let value = serde_json::json!({
+            "schema": "reposystem/estate-export@1",
+            "estate": current,
+            "estates": self.store.estates,
+            "repos": self.store.repos,
+            "components": self.store.components,
+            "seams": self.store.seams,
+            "groups": self.store.groups,
+            "edges": self.store.edges,
+            "scenarios": self.store.scenarios,
+            "aspects": self.aspects.aspects,
+            "annotations": self.aspects.annotations,
+            "slots": self.slots.slots,
+            "providers": self.slots.providers,
+            "bindings": self.slots.bindings,
+            "plans": self.plans.plans,
+        });
+
+        serde_json::to_string_pretty(&value).context("Failed to serialize estate export")
+    }
 }
 
 #[cfg(test)]
@@ -480,6 +578,8 @@ mod tests {
             default_branch: "main".into(),
             visibility: Visibility::Public,
             tags: vec![],
+            estate: "estate:hyperpolymath".into(),
+            metadata: Default::default(),
             imports: ImportMeta {
                 source: "test".into(),
                 path_hint: None,

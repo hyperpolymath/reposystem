@@ -31,7 +31,7 @@
 //! also upserted under their own IDs in the same collection for fine-grained
 //! queries.
 //!
-//! ```
+//! ```text
 //! reposystem:graph/snapshot       — full GraphStore JSON
 //! reposystem:graph/{repo_id}      — individual Repo record
 //! reposystem:graph/edge:{edge_id} — individual Edge record

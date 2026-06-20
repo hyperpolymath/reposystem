@@ -6,6 +6,15 @@
 
 Version 0.1.0 — UI-agnostic core model
 
+[IMPORTANT]
+====
+The Rust `types` module in `src/lib.rs` is the *schema of record*. This document
+and the Nickel contracts in `config/` mirror it. `repos.toml` is the generated
+estate *inventory* (imported into the graph via `reposystem import manifest`),
+not a competing schema; the legacy `graph.toml` / `GRAPH-STRUCTURE.md` design is
+superseded by this document.
+====
+
 == Design Goals and Invariants
 
 === Invariants (Non-Negotiable)
@@ -53,6 +62,8 @@ Represents a repository as an addressable unit.
   "default_branch": "main",
   "visibility": "public",
   "tags": ["router", "rescript"],
+  "estate": "estate:hyperpolymath",
+  "metadata": { "manifest_kind": "repo" },
   "imports": {
     "source": "local-scan",
     "path_hint": "../src/cadre-router",
@@ -74,6 +85,76 @@ Represents a repository as an addressable unit.
 * `cb` — Codeberg
 * `sr` — Sourcehut
 * `local` — Local filesystem only
+
+=== 1a. Estate (Tenant Identity)
+
+An estate is a top-level tenant: a coherent collection of repositories across one
+or more forges. Hyperpolymath is "estate #1"; every node carries an `estate` so
+the model generalises to other estates without changing node IDs (multi-tenant
+later = filter by `estate`).
+
+[source,json]
+----
+{
+  "kind": "Estate",
+  "id": "estate:hyperpolymath",
+  "name": "Hyperpolymath",
+  "forges": ["gh", "gl", "bb", "cb", "sr"],
+  "root_owner": "hyperpolymath"
+}
+----
+
+* ID format: `estate:<slug>`.
+* `GraphStore` carries `estates` (the set) and `estate` (the current/primary id).
+
+=== 1b. External Seam (Loose Cross-Link)
+
+Reposystem models repositories and forges only. Sibling systems — `aerie`
+(networks / the wider world) and `ambientops` (machines) — appear as *external
+seams*: clearly-external boundary nodes that repos may point at, storing none of
+those systems' internals. Seams are edge **sinks**: a repo may `refers-to` a
+seam, but a seam never originates a structural edge.
+
+[source,json]
+----
+{
+  "kind": "ExternalSeam",
+  "id": "seam:ambientops:ambientops",
+  "domain": "machine",
+  "system": "ambientops",
+  "name": "ambientops",
+  "uri": "git@github.com:hyperpolymath/ambientops.git",
+  "estate": "estate:hyperpolymath"
+}
+----
+
+* ID format: `seam:<system>:<slug>`.
+* `domain` ∈ { `network`, `machine`, `service`, `org`, `other` }.
+* The `refers-to` edge relation is the only relation permitted to target a seam.
+
+=== 1c. Estate-Export Envelope (Interchange)
+
+All front-ends (web, GUI, TUI) consume one artifact: the estate-export envelope,
+a strict superset of the `GraphStore` plus estates, seams, aspects,
+slots/providers/bindings and plans. Produced by
+`reposystem export --format estate-json` — one serializer, many transports.
+
+[source,json]
+----
+{
+  "schema": "reposystem/estate-export@1",
+  "estate":   { "id": "estate:hyperpolymath", "name": "Hyperpolymath", "forges": ["gh"] },
+  "estates":  [ ... ],
+  "repos":    [ ... ],
+  "components": [ ... ],
+  "seams":    [ ... ],
+  "groups":   [ ... ],
+  "edges":    [ ... ],
+  "aspects":  [ ... ], "annotations": [ ... ],
+  "slots":    [ ... ], "providers": [ ... ], "bindings": [ ... ],
+  "plans":    [ ... ]
+}
+----
 
 === 2. Component (Node Subtype, Optional in v1)
 
@@ -183,6 +264,7 @@ This is your "no hidden channels" surface.
 * `extends` — A builds on B
 * `mirrors` — A is a mirror/fork of B
 * `replaces` — A can substitute for B
+* `refers-to` — A points at an external seam (the only relation allowed to target an `ExternalSeam`)
 
 == Aspect Tagging (Annotations)
 

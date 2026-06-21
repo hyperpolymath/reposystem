@@ -4,3 +4,6 @@
 [submodule "git-reticulator"]
 	path = git-reticulator
 	url = git@github.com:hyperpolymath/git-reticulator.git
+[submodule "rpa-elysium"]
+	path = rpa-elysium
+	url = git@github.com:hyperpolymath/rpa-elysium.git

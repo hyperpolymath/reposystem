@@ -7,3 +7,18 @@
 [submodule "rpa-elysium"]
 	path = rpa-elysium
 	url = git@github.com:hyperpolymath/rpa-elysium.git
+[submodule "bitfuckit"]
+	path = bitfuckit
+	url = git@github.com:hyperpolymath/bitfuckit.git
+[submodule "contractiles"]
+	path = contractiles
+	url = git@github.com:hyperpolymath/contractiles.git
+[submodule "recon-silly-ation"]
+	path = recon-silly-ation
+	url = git@github.com:hyperpolymath/recon-silly-ation.git
+[submodule "scaffoldia"]
+	path = scaffoldia
+	url = git@github.com:hyperpolymath/scaffoldia.git
+[submodule "stateful-artefacts"]
+	path = stateful-artefacts
+	url = git@github.com:hyperpolymath/stateful-artefacts.git

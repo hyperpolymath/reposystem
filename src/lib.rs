@@ -15,6 +15,8 @@
 pub mod commands;
 pub mod config;
 pub mod graph;
+/// Importers that populate the graph from external sources (the estate manifest).
+pub mod importers;
 pub mod scanner;
 pub mod tui;
 /// VeriSimDB HTTP client — replaces flat JSON file storage.
@@ -90,6 +92,124 @@ pub mod types {
     }
 
     // =========================================================================
+    // Estate (multi-estate parameterisation)
+    // =========================================================================
+
+    /// Default estate identifier used when none is specified.
+    ///
+    /// Hyperpolymath is "estate #1". The model is parameterised so other
+    /// estates can be represented later without changing any node IDs.
+    #[must_use]
+    pub fn default_estate() -> String {
+        "estate:hyperpolymath".to_string()
+    }
+
+    /// An estate is a top-level tenant: a coherent collection of repositories
+    /// across one or more forges (a person's or org's whole holdings).
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct Estate {
+        /// Always "Estate"
+        pub kind: String,
+        /// Unique identifier: estate:<slug>
+        pub id: String,
+        /// Display name
+        pub name: String,
+        /// Description
+        #[serde(default)]
+        pub description: Option<String>,
+        /// Forges this estate spans
+        #[serde(default)]
+        pub forges: Vec<Forge>,
+        /// Primary owner/namespace (e.g. "hyperpolymath")
+        #[serde(default)]
+        pub root_owner: Option<String>,
+    }
+
+    impl Estate {
+        /// Generate a deterministic estate ID from a slug.
+        #[must_use]
+        pub fn id_for(slug: &str) -> String {
+            format!("estate:{}", slug.to_lowercase())
+        }
+
+        /// The initial single-estate set (hyperpolymath = estate #1).
+        #[must_use]
+        pub fn defaults() -> Vec<Self> {
+            vec![Self {
+                kind: "Estate".into(),
+                id: default_estate(),
+                name: "Hyperpolymath".into(),
+                description: Some("The hyperpolymath repository estate".into()),
+                forges: vec![
+                    Forge::GitHub,
+                    Forge::GitLab,
+                    Forge::Bitbucket,
+                    Forge::Codeberg,
+                    Forge::Sourcehut,
+                ],
+                root_owner: Some("hyperpolymath".into()),
+            }]
+        }
+    }
+
+    // =========================================================================
+    // External Seams (loose cross-links to sibling domains)
+    // =========================================================================
+
+    /// The external domain a seam belongs to. Reposystem models repos/forges
+    /// only; seams are loose outward pointers to sibling systems and store
+    /// none of those systems' internals.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+    #[serde(rename_all = "lowercase")]
+    pub enum SeamDomain {
+        /// Networks / the wider world (e.g. aerie)
+        Network,
+        /// Machines / hosts (e.g. ambientops)
+        Machine,
+        /// An external service
+        Service,
+        /// An organisation / tenant boundary
+        Org,
+        /// Anything else
+        Other,
+    }
+
+    /// An external seam node: a clearly-external boundary the repo estate
+    /// points at (e.g. `aerie` for networks, `ambientops` for machines).
+    /// Seams are edge *sinks* — a repo may `refers-to` a seam, but seams never
+    /// originate structural edges.
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    pub struct ExternalSeam {
+        /// Always "ExternalSeam"
+        pub kind: String,
+        /// Unique identifier: seam:<system>:<slug>
+        pub id: String,
+        /// External domain
+        pub domain: SeamDomain,
+        /// Sibling system name (e.g. "aerie", "ambientops")
+        pub system: String,
+        /// Display name
+        pub name: String,
+        /// Outward pointer (repo URL, doc, dashboard, …)
+        #[serde(default)]
+        pub uri: Option<String>,
+        /// Description
+        #[serde(default)]
+        pub description: Option<String>,
+        /// Owning estate
+        #[serde(default = "default_estate")]
+        pub estate: String,
+    }
+
+    impl ExternalSeam {
+        /// Generate a deterministic seam ID.
+        #[must_use]
+        pub fn seam_id(system: &str, slug: &str) -> String {
+            format!("seam:{}:{}", system.to_lowercase(), slug.to_lowercase())
+        }
+    }
+
+    // =========================================================================
     // Repo (Node Subtype)
     // =========================================================================
 
@@ -124,6 +244,14 @@ pub mod types {
         /// Tags for classification
         #[serde(default)]
         pub tags: Vec<String>,
+        /// Owning estate (estate:<slug>); defaults to hyperpolymath.
+        #[serde(default = "default_estate")]
+        pub estate: String,
+        /// Free-form metadata. Carries the legacy `graph.toml` fields
+        /// (`phase`, `completion_percentage`, `seo_score`, `health_score`,
+        /// `tech_stack`, …) and tool-registry stamps (`tool_role`, `actions`).
+        #[serde(default)]
+        pub metadata: HashMap<String, String>,
         /// Import metadata
         pub imports: ImportMeta,
         /// Local filesystem path (runtime, not persisted)
@@ -268,6 +396,9 @@ pub mod types {
         Mirrors,
         /// A can substitute for B
         Replaces,
+        /// A refers to an external seam — the only relation allowed to target
+        /// an `ExternalSeam` (aerie/ambientops/…).
+        RefersTo,
     }
 
     /// Edge between repositories (or components)
@@ -1264,6 +1395,15 @@ pub mod types {
         /// All change sets (one per scenario)
         #[serde(default)]
         pub changesets: Vec<ChangeSet>,
+        /// Known estates (multi-estate parameterisation; hyperpolymath = #1).
+        #[serde(default)]
+        pub estates: Vec<Estate>,
+        /// The current/primary estate id.
+        #[serde(default)]
+        pub estate: Option<String>,
+        /// External seam nodes (loose cross-links to aerie/ambientops/…).
+        #[serde(default)]
+        pub seams: Vec<ExternalSeam>,
     }
 
     /// Aspect store

@@ -42,7 +42,10 @@ ignore = "0.4"
 globset = "0.4"
 
 # Git
-gix = { version = "0.83", default-features = false, features = ["max-performance-safe"] }
+# `sha1` is required: with default-features disabled, gix-hash's Kind::Sha1
+# variant (the `#[default]`) is cfg'd out, which fails to compile. A git tool
+# needs SHA-1 object hashing regardless.
+gix = { version = "0.84", default-features = false, features = ["max-performance-safe", "sha1"] }
 
 # Error handling
 anyhow = "1.0"

@@ -273,6 +273,41 @@ sh scripts/fix-stale-submodule-urls.sh                       # dry-run classify
 sh scripts/fix-stale-submodule-urls.sh --prune-nonexistent   # destructive
 ----
 
+[#executed]
+== Reconciliation executed — 2026-06-21
+
+The mechanical, non-destructive half of <<remediation>> has now been performed on
+`claude/eager-fermi-bld0gh`; the divergent / outward-facing half remains gated.
+
+*Done:*
+
+* *Orphan gitlinks pruned* (remediation item 4) — `avatar-fabrication-facility`
+  and `claim-forge` were removed in commit `741a982` (shipped with the fuzz fix,
+  PR #130). `git ls-tree HEAD` now reports no orphan gitlinks.
+* *Stale submodule declarations pruned* (item 2 + the local half of item 3) — the
+  three paths committed as ordinary `040000` trees rather than `160000` gitlinks
+  had their `.gitmodules` sections removed (`git config -f .gitmodules
+  --remove-section submodule.<name>`), *keeping all tracked content*:
+  `rpa-elysium` (171 files), `total-upgrade` (28), `total-recall` (28).
+  `.gitmodules` now declares exactly the two consistent gitlinks (`git-scripts`,
+  `git-reticulator`); `git submodule status` / `update --init` are consistent
+  again.
+
+*Why de-vendoring `rpa-elysium` was NOT done* (measured 2026-06-21 against forge
+HEAD `bda6720`): the vendored snapshot and the forge have *diverged* — of the 155
+files common to both, *141 differ*; 16 files exist only in the vendored copy
+(local-only `contractiles/`, `flake.nix`, agent-instruction files) and 23 only on
+the forge. Replacing the tree with a gitlink at forge HEAD would silently discard
+the vendored-side state. Reconciling the two is a deliberate merge, not a
+consolidation wiring fix, and is left to a separate, human-gated decision.
+
+*Still deferred* (outward-facing / divergent / product decisions): reconcile
+`rpa-elysium` with its forge; extract the five local-only standalones
+(`bitfuckit`, `contractiles`, `recon-silly-ation`, `scaffoldia`,
+`stateful-artefacts`) by creating their forge repos; de-duplicate `total-upgrade`
+/ `total-recall` (they share tree `84d1361`); optionally migrate the two keepers'
+`git@` → `https` URLs.
+
 [#reproduction]
 == Reproduction
 

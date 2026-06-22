@@ -209,10 +209,19 @@ export-json output="ecosystem.json":
     @echo "Exporting to {{output}}..."
     cargo run -- export --format json > {{output}}
 
-# Export graph JSON into web UI folder
+# Import the estate manifest (repos.toml) into the graph store
+import-manifest:
+    @cargo run -- import manifest
+    @echo "✓ Estate imported into the graph store"
+
+# Export the unified estate envelope the front-ends consume into the web UI folder
 web-export output="web/export.json":
     @echo "Exporting to {{output}}..."
-    cargo run -- export --format json > {{output}}
+    @cargo run -- export --format estate-json -o {{output}}
+
+# Import the estate then refresh the web envelope in one step
+web-refresh: import-manifest web-export
+    @echo "✓ web/export.json refreshed from the estate manifest"
 
 # Render graph to SVG
 render-svg input="ecosystem.dot" output="ecosystem.svg":

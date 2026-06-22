@@ -14,8 +14,11 @@ use tracing::info;
 pub enum ExportFormat {
     /// Graphviz DOT format
     Dot,
-    /// JSON format
+    /// JSON format (GraphStore only)
     Json,
+    /// Unified estate-export envelope (all stores + estates + seams).
+    /// This is what the front-ends (web/GUI/TUI) consume.
+    EstateJson,
     /// YAML format (future)
     Yaml,
     /// TOML format (future)
@@ -28,6 +31,7 @@ impl ExportFormat {
         match s.to_lowercase().as_str() {
             "dot" | "graphviz" => Some(Self::Dot),
             "json" => Some(Self::Json),
+            "estate-json" | "estate" => Some(Self::EstateJson),
             "yaml" | "yml" => Some(Self::Yaml),
             "toml" => Some(Self::Toml),
             _ => None,
@@ -38,7 +42,7 @@ impl ExportFormat {
     pub fn extension(&self) -> &'static str {
         match self {
             Self::Dot => "dot",
-            Self::Json => "json",
+            Self::Json | Self::EstateJson => "json",
             Self::Yaml => "yaml",
             Self::Toml => "toml",
         }
@@ -49,8 +53,12 @@ impl ExportFormat {
 pub fn run(format: &str, output: Option<PathBuf>, aspect: Option<String>) -> Result<()> {
     info!("Exporting to {}", format);
 
-    let export_format = ExportFormat::from_str(format)
-        .ok_or_else(|| anyhow::anyhow!("Unknown export format: {}. Supported: dot, json", format))?;
+    let export_format = ExportFormat::from_str(format).ok_or_else(|| {
+        anyhow::anyhow!(
+            "Unknown export format: {}. Supported: dot, json, estate-json",
+            format
+        )
+    })?;
 
     // Load the graph
     let data_dir = get_data_dir()?;
@@ -72,6 +80,7 @@ pub fn run(format: &str, output: Option<PathBuf>, aspect: Option<String>) -> Res
     let content = match export_format {
         ExportFormat::Dot => graph.to_dot(),
         ExportFormat::Json => graph.to_json()?,
+        ExportFormat::EstateJson => graph.to_estate_export()?,
         ExportFormat::Yaml => {
             anyhow::bail!("YAML export not yet implemented");
         }

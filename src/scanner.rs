@@ -152,6 +152,8 @@ fn scan_repo(path: &Path, config: &ScanConfig) -> Result<ScanResult> {
         default_branch,
         visibility,
         tags,
+        estate: crate::types::default_estate(),
+        metadata: Default::default(),
         imports: ImportMeta {
             source: "local-scan".into(),
             path_hint: Some(path.to_path_buf()),

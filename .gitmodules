@@ -1,15 +1,24 @@
-[submodule "rpa-elysium"]
-	path = rpa-elysium
-	url = git@github.com:hyperpolymath/rpa-elysium.git
-[submodule "total-upgrade"]
-	path = total-upgrade
-	url = git@gitlab.com:hyperpolymath/total-upgrade.git
-[submodule "total-recall"]
-	path = total-recall
-	url = git@gitlab.com:hyperpolymath/total-recall.git
 [submodule "git-scripts"]
 	path = git-scripts
 	url = git@github.com:hyperpolymath/git-scripts.git
 [submodule "git-reticulator"]
 	path = git-reticulator
 	url = git@github.com:hyperpolymath/git-reticulator.git
+[submodule "rpa-elysium"]
+	path = rpa-elysium
+	url = git@github.com:hyperpolymath/rpa-elysium.git
+[submodule "bitfuckit"]
+	path = bitfuckit
+	url = git@github.com:hyperpolymath/bitfuckit.git
+[submodule "contractiles"]
+	path = contractiles
+	url = git@github.com:hyperpolymath/contractiles.git
+[submodule "recon-silly-ation"]
+	path = recon-silly-ation
+	url = git@github.com:hyperpolymath/recon-silly-ation.git
+[submodule "scaffoldia"]
+	path = scaffoldia
+	url = git@github.com:hyperpolymath/scaffoldia.git
+[submodule "stateful-artefacts"]
+	path = stateful-artefacts
+	url = git@github.com:hyperpolymath/stateful-artefacts.git

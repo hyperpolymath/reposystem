@@ -107,7 +107,7 @@ in
       embed = 'standalone,
       repo_ref = "scaffoldia",
       summary = "Repository generator / customiser (trainyard topology).",
-      status = 'extracting,
+      status = 'extracted,
       actions = ["new-repo", "customise"],
     },
     {
@@ -117,7 +117,7 @@ in
       embed = 'standalone,
       repo_ref = "bitfuckit",
       summary = "Ada/SPARK repository auditor (health, compliance, security posture).",
-      status = 'extracting,
+      status = 'extracted,
       actions = ["audit"],
     },
     {
@@ -127,7 +127,7 @@ in
       embed = 'standalone,
       repo_ref = "contractiles",
       summary = "Declarative build/task contracts (ADJUST/INTENT/MUST/TRUST).",
-      status = 'extracting,
+      status = 'extracted,
       actions = ["run-contract"],
     },
     {
@@ -137,7 +137,7 @@ in
       embed = 'standalone,
       repo_ref = "recon-silly-ation",
       summary = "WASM document reconciliation (ReconForth VM).",
-      status = 'extracting,
+      status = 'extracted,
       actions = ["reconcile"],
     },
     {
@@ -147,7 +147,7 @@ in
       embed = 'standalone,
       repo_ref = "stateful-artefacts",
       summary = "Forge artefact hydration / consensus state (Paxos, DAX).",
-      status = 'extracting,
+      status = 'extracted,
       actions = ["hydrate"],
     },
     {
@@ -157,7 +157,7 @@ in
       embed = 'standalone,
       repo_ref = "rpa-elysium",
       summary = "Robotic process automation engine (workflows, scheduler, plugins).",
-      status = 'extracting,
+      status = 'extracted,
       actions = ["run-workflow"],
     },
 

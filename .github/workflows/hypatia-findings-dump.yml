@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: MPL-2.0
+# SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath)
+#
+# DIAGNOSTIC (informational, not a gate): run the Hypatia scanner the same way
+# the standards hypatia-scan-reusable does, then DUMP the findings to the job log
+# — totals, by-severity, by-rule, by-top-level-path, and one line per finding —
+# so the residual reposystem-core findings can be triaged from CI output.
+# Submodules are NOT checked out, so this scans reposystem's own tree only.
+# Safe to delete once the triage is done.
+name: Hypatia Findings Dump (diagnostic)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/hypatia-findings-dump.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hypatia-dump-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dump:
+    name: Hypatia findings dump
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout (no submodules — reposystem core only)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          submodules: false
+          fetch-depth: 1
+
+      - name: Setup Elixir
+        uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93  # v1.24.0
+        with:
+          elixir-version: '1.19.4'
+          otp-version: '28.3'
+
+      - name: Build Hypatia scanner
+        run: |
+          git clone --depth 1 https://github.com/hyperpolymath/hypatia.git "$HOME/hypatia"
+          cd "$HOME/hypatia"
+          mix deps.get && mix escript.build
+
+      - name: Scan and dump findings to the log
+        run: |
+          HYPATIA_FORMAT=json "$HOME/hypatia/hypatia-cli.sh" scan . > findings.json || true
+          if ! jq -e 'type == "array"' findings.json >/dev/null 2>&1; then
+            echo "findings.json is not a JSON array — raw head follows:"
+            head -c 3000 findings.json
+            exit 0
+          fi
+          echo "###### TOTAL ###### $(jq 'length' findings.json)"
+          echo "###### BY SEVERITY ######"
+          jq -r 'group_by(.severity)[] | "\(length)\t\(.[0].severity)"' findings.json | sort -rn
+          echo "###### SCHEMA (keys of first finding) ######"
+          jq -S 'if length > 0 then (.[0] | keys) else [] end' findings.json
+          echo "###### BY RULE ######"
+          jq -r 'group_by(.rule // .id // .ruleId // "?")[] | "\(length)\t\(.[0].rule // .[0].id // .[0].ruleId // "?")"' findings.json | sort -rn
+          echo "###### BY TOP-LEVEL PATH ######"
+          jq -r '.[] | (.path // .file // .location // "?")' findings.json | awk -F/ '{print $1}' | sort | uniq -c | sort -rn
+          echo "###### ALL FINDINGS (severity | rule | path | message) ######"
+          jq -r '.[] | "\(.severity)\t\(.rule // .id // .ruleId // "?")\t\(.path // .file // .location // "?")\t\((.message // .title // .description // "") | tostring | gsub("[\n\t]"; " ") | .[0:140])"' findings.json | sort
+          echo "###### END FINDINGS ######"

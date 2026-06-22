@@ -6,6 +6,9 @@ on:
       - '**/*.rs'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - '.clusterfuzzlite/**'
+      - '.gitmodules'
+  workflow_dispatch:
 permissions: read-all
 jobs:
   fuzz:

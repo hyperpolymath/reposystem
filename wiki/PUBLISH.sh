@@ -25,8 +25,11 @@ SRC_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
+# Redact any embedded credentials (e.g. https://x-access-token:TOKEN@github.com/...)
+# before printing — keeps tokens out of CI logs / terminals.
+WIKI_URL_SAFE="$(printf '%s' "$WIKI_URL" | sed -E 's#//[^/@]*@#//***@#')"
 echo "==> wiki source : $SRC_DIR"
-echo "==> wiki remote : $WIKI_URL"
+echo "==> wiki remote : $WIKI_URL_SAFE"
 
 # Clone the existing wiki, or initialise a fresh one if it has no commits yet.
 if git clone --depth 1 "$WIKI_URL" "$WORK/wiki" 2>/dev/null; then

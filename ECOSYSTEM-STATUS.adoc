@@ -9,13 +9,17 @@ image:https://img.shields.io/badge/Philosophy-Palimpsest-indigo.svg[Palimpsest,l
 :icons: font
 
 [.lead]
-Current status of all tools in the reposystem-centered ecosystem. Updated: 2026-02-07
+Current status of all tools in the reposystem-centered ecosystem. Updated: 2026-06-26
 
-NOTE: The standalone-vs-local status of `scaffoldia` and
-`stateful-artefacts-for-gitforges` was independently verified on 2026-06-02 —
-both are *local-only* (no standalone forge repo). See
-`docs/PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc`. Other rows
-retain their 2026-02-07 values and have not been re-verified.
+NOTE: UPDATE 2026-06-26 — `scaffoldia` and `stateful-artefacts-for-gitforges`
+(and the other former local-only standalones bitfuckit, contractiles,
+recon-silly-ation) have since been *extracted* to real GitHub forge repos and
+wired into `reposystem` as gitlink submodules. The 2026-06-02 "local-only"
+finding below is superseded; `.gitmodules` now declares eight consistent gitlink
+submodules. See `docs/PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc`
+(reconciliation-completed section) and `.machine_readable/6a2/STATE.a2ml`
+(2026-06-26 entry). Other rows retain their 2026-02-07 values and have not been
+re-verified.
 
 == Quick Status Overview
 
@@ -54,9 +58,9 @@ retain their 2026-02-07 values and have not been re-verified.
 | Not Started
 
 | **scaffoldia**
-| 🗂️ Local-only
+| 🔗 Extracted (submodule)
 | n/a
-| Verified 2026-06-02 (no standalone repo)
+| Forge repo created + gitlinked 2026-06-26
 
 | **.git-private-farm**
 | ❓ Unknown
@@ -64,9 +68,9 @@ retain their 2026-02-07 values and have not been re-verified.
 | Status Unknown
 
 | **stateful-artefacts-for-gitforges**
-| 🗂️ Local-only
+| 🔗 Extracted (submodule)
 | n/a
-| Verified 2026-06-02 (no standalone repo)
+| Forge repo created + gitlinked 2026-06-26
 |===
 
 _^*^ git-hud STATE.scm shows 0% but significant work completed (see below)_
@@ -352,13 +356,14 @@ git-seo batch repos.txt         # Bulk analysis
 * Could be integrated into reposystem or git-dispatcher
 
 === scaffoldia
-**Repository:** None — *local-only* (verified 2026-06-02). The self-declared
-`github.com/hyperpolymath/scaffoldia` does not exist on the forge; the project
-lives only as a vendored tree (197 files) inside `reposystem`.
+**Repository:** `github.com/hyperpolymath/scaffoldia` — *extracted 2026-06-26*.
+Previously a vendored tree (197 files) inside `reposystem`; the forge repo was
+created and the directory replaced with a gitlink submodule (declared in
+`.gitmodules`).
 
 **Purpose:** Scaffolding and templating for new repositories.
 
-**Status:** 🗂️ **Local-only** (see `docs/PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc`)
+**Status:** 🔗 **Extracted (gitlink submodule)** (see `docs/PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc` reconciliation-completed section)
 
 **Expected Integration:**
 
@@ -379,15 +384,14 @@ lives only as a vendored tree (197 files) inside `reposystem`.
 * Integrate with reposystem for private repo tracking
 
 === stateful-artefacts-for-gitforges
-**Repository:** None — *local-only* (verified 2026-06-02). Neither
-`github.com/hyperpolymath/stateful-artefacts-for-gitforges` nor the shorter
-`github.com/hyperpolymath/stateful-artefacts` exists on the forge; the project
-lives only as a vendored tree (97 files, directory `stateful-artefacts/`)
-inside `reposystem`.
+**Repository:** `github.com/hyperpolymath/stateful-artefacts` — *extracted
+2026-06-26*. Previously a vendored tree (97 files, directory
+`stateful-artefacts/`) inside `reposystem`; the forge repo was created and the
+directory replaced with a gitlink submodule (declared in `.gitmodules`).
 
 **Purpose:** Forge artifact hydration pipeline.
 
-**Status:** 🗂️ **Local-only** (see `docs/PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc`)
+**Status:** 🔗 **Extracted (gitlink submodule)** (see `docs/PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc` reconciliation-completed section)
 
 **Expected Integration:**
 

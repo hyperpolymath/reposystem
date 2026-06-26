@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MPL-2.0
+// SPDX-License-Identifier: CC-BY-SA-4.0
 // SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath)
 = Reposystem Phase 2 — Standalone-vs-Local Verification (7 sub-projects)
 :toc: left
@@ -81,6 +81,11 @@ picture.
 All seven are stored as **trees** (local directories), each with substantial
 real content (not stubs). Only `rpa-elysium` has a confirmed standalone repo —
 and its submodule wiring is broken.
+
+NOTE: SUPERSEDED 2026-06-26 — this verdict reflects the 2026-06-02 snapshot. The
+five *LOCAL-ONLY* rows and the *wiring-broken* `rpa-elysium` row have since been
+extracted/de-vendored to real gitlink submodules; only `gui` remains local by
+design. See <<completed-0626>>.
 
 [cols="2,1,3,1,1,2,2",options="header"]
 |===
@@ -307,6 +312,37 @@ consolidation wiring fix, and is left to a separate, human-gated decision.
 `stateful-artefacts`) by creating their forge repos; de-duplicate `total-upgrade`
 / `total-recall` (they share tree `84d1361`); optionally migrate the two keepers'
 `git@` → `https` URLs.
+
+[#completed-0626]
+== Reconciliation completed — 2026-06-26
+
+The outward-facing half of <<remediation>> — left "Still deferred" in the
+2026-06-21 section above — has now been executed. The Phase-2 verdict table is
+**superseded**: of the seven sub-projects, the five marked *LOCAL-ONLY* and
+`rpa-elysium` (*wiring broken*) are now real gitlink submodules; only `gui`
+remains local-by-design.
+
+*Done (the deferred items above, now executed):*
+
+* *Five local-only standalones extracted* — `bitfuckit`, `contractiles`,
+  `recon-silly-ation`, `scaffoldia`, `stateful-artefacts` were created as GitHub
+  forge repos and the vendored trees replaced with `160000` gitlinks (PR #134).
+* *rpa-elysium de-vendored* — the divergent 171-file tree was replaced with a
+  real gitlink at forge HEAD `bda6720`; the vendored snapshot is *preserved* on
+  branch `archive/rpa-elysium-vendored-2026-06-21` (PR #133).
+* *total-recall / total-upgrade de-duplicated* — `total-recall` (the
+  byte-identical duplicate, tree `84d1361`) was dropped; `total-upgrade` is kept
+  as an embedded RSR scaffold tree by design. The displaced standalones snapshot
+  is preserved on branch `archive/vendored-standalones-2026-06-21` (PR #133).
+
+*Resulting state:* `.gitmodules` declares *eight* consistent gitlink submodules
+(`git-scripts`, `git-reticulator`, `rpa-elysium`, `bitfuckit`, `contractiles`,
+`recon-silly-ation`, `scaffoldia`, `stateful-artefacts`) — every declaration
+maps to a `160000` gitlink. `git ls-tree HEAD | grep '^160000'` returns all
+eight; `git submodule status` is clean.
+
+*Still embedded as ordinary trees, by design:* `total-upgrade` (RSR scaffold),
+`gui` (reposystem's own web front-end), `git-morph` and `git-seo`.
 
 [#reproduction]
 == Reproduction

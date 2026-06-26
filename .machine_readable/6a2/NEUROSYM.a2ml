@@ -6,9 +6,18 @@
 
 [metadata]
 version = "0.1.0"
-last-updated = "2026-03-16"
+last-updated = "2026-06-26"
 
 [hypatia-config]
 scan-enabled = true
 scan-depth = "standard"
 report-format = "logtalk"
+
+[findings-history]
+# hypatia neurosymbolic scanner runs against this repo (clone-at-HEAD in CI;
+# exits non-zero on >=medium findings). The gate is a known pre-existing red and
+# is non-blocking — PRs #129-#162 all merged through it.
+baseline-2026-06-20 = "222 findings (pre-consolidation)"
+current-2026-06-26 = "71 findings"
+reduction-basis = "Extraction of the vendored standalone trees to gitlink submodules removed large swathes of vendored-tree noise; real first-party source fixes (#160: src/commands/apply.rs error-handling, src/verisimdb.rs blocking-client build) cleared genuine items; workflow timeout-minutes hardening (#162) cleared WF013 missing_timeout_minutes."
+residual-classification = "The remaining 71 are dominated by (a) epic-#93 ReScript->AffineScript migration debt (banned-in-new-code; ~213 baselined .res in .hypatia-ignore), (b) known false positives (web/app.js SVG xmlns attributes, clippy::pedantic style noise), (c) total-upgrade/git-morph/git-seo embedded-tree residue. None are blocking; tracked, not regressions."

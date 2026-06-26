@@ -9,19 +9,19 @@ The README makes claims. This file backs them up.
 
 === Claim 1: "Visual wiring layer for multi-repo component management with aspect tagging and scenario comparison"
 
-**How it works:** Reposystem scans local repository clones (`src/importers/`) to extract metadata (deps, APIs, names). The `src/graph/` module builds a directed graph where nodes are repositories and edges are dependencies or artifact flows. Each edge has a `channel` (artifact, runtime, source) and `evidence` pointing to CI config or Cargo.toml lines. The `src/aspects/` module overlays concern-based views (security, reliability, supply-chain) where each node/edge gets a weight. The TUI (`src/cli/`) and web UI (`web/`) render these graphs interactively; the web UI supports force-directed layout, ER mode, and accessibility (keyboard navigation, zoom, contrast).
+**How it works:** Reposystem scans local repository clones (`src/importers/`) to extract metadata (deps, APIs, names). The `src/graph.rs` module builds a directed graph where nodes are repositories and edges are dependencies or artifact flows. Each edge has a `channel` (artifact, runtime, source) and `evidence` pointing to CI config or Cargo.toml lines. The aspect overlay (`src/commands/aspect.rs`) applies concern-based views (security, reliability, supply-chain) where each node/edge gets a weight. The TUI (`src/tui.rs`) and web UI (`web/`) render these graphs interactively; the web UI supports force-directed layout, ER mode, and accessibility (keyboard navigation, zoom, contrast).
 
 **Caveat:** Graph discovery is file-pattern-based (parsing Cargo.toml, package.json) and may miss implicit dependencies. Aspect weights are manual annotations, not machine-learned; a security weight of "3/3" requires human judgment. For high-stakes decisions, pair with formal risk analysis.
 
-**Evidence:** `src/importers/cargo.rs` and `src/importers/package.rs` parse dependency files; `src/graph/` defines node/edge/aspect data model; `web/graph.js` implements the interactive visualization.
+**Evidence:** `src/importers/cargo.rs` and `src/importers/package.rs` parse dependency files; `src/graph.rs` defines node/edge/aspect data model; `web/graph.js` implements the interactive visualization.
 
 === Claim 2: "Scenario comparison shows how switching providers changes security, reliability, and supply-chain metrics"
 
-**How it works:** The `src/scenarios/` module stores named configurations of the graph. A scenario is a snapshot: select which provider implementation each consumer uses for a given component (e.g., "use local podman" vs "use external docker"). The `scenario diff` command computes differences between two scenarios (how many edges changed, which nodes are affected) and re-evaluates aspect metrics on the new configuration. The `src/export/` module renders side-by-side comparisons showing before/after aspect scores (security 7/10 → 10/10, reliability 10/10 → 8/10).
+**How it works:** The `src/commands/scenario.rs` module stores named configurations of the graph. A scenario is a snapshot: select which provider implementation each consumer uses for a given component (e.g., "use local podman" vs "use external docker"). The `scenario diff` command computes differences between two scenarios (how many edges changed, which nodes are affected) and re-evaluates aspect metrics on the new configuration. The `src/commands/export.rs` module renders side-by-side comparisons showing before/after aspect scores (security 7/10 → 10/10, reliability 10/10 → 8/10).
 
 **Caveat:** Aspect metric recalculation is deterministic but depends on accurate initial weights. If weights are unreliable, diffs are misleading. Integration with VeriSimDB or a formal risk database would improve fidelity.
 
-**Evidence:** `src/scenarios/manager.rs` stores and diffs scenarios; `src/export/comparison.rs` computes metric deltas; the TUI shows side-by-side comparison view in the "SCENARIO COMPARISON" panel (see README mock UI).
+**Evidence:** `src/commands/scenario.rs` stores and diffs scenarios; `src/commands/export.rs` computes metric deltas; the TUI shows side-by-side comparison view in the "SCENARIO COMPARISON" panel (see README mock UI).
 
 == Technology Choices
 

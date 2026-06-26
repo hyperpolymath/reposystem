@@ -1,5 +1,5 @@
 <!--
-SPDX-License-Identifier: MPL-2.0
+SPDX-License-Identifier: CC-BY-SA-4.0
 SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath)
 -->
 
@@ -20,6 +20,8 @@ this project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- feat(representation): canonical estate schema, manifest importer, unified estate-export + web seams (#129)
+- feat(repo-scripts): megasweep — parallel estate sweep runner (#137)
 - feat(aggregator): estate organization — manifest, thread runner, generated superproject (#63)
 - feat(repo-batcher): from-scratch verified build-out (#59)
 - feat(bust): extend schema with alert_remediations + seed 11 entries (#15)
@@ -31,8 +33,18 @@ this project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0
 - feat(crg): add crg-grade and crg-badge justfile recipes
 - feat: wire conflow config validation pipeline
 
+### Changed
+
+- chore(submodules): extract the 5 local-only standalones (bitfuckit, contractiles, recon-silly-ation, scaffoldia, stateful-artefacts) to gitlinks (#134)
+- chore(submodules): de-vendor rpa-elysium to a real gitlink + drop total-recall duplicate (vendored snapshots preserved on archive/* branches) (#133)
+- chore(submodules): reconcile .gitmodules to ground truth — prune stale declarations whose paths were committed as trees (#131)
+- chore(licence): normalise to MPL-2.0 + CC-BY-SA-4.0 canonical pair (#157)
+- chore(clade): backfill [status] lifecycle block (#156)
+- chore(nix->guix): remove flake.nix — Guix-only (#144)
+
 ### Fixed
 
+- fix(hypatia): remediate the real first-party residual findings — apply.rs error-handling, verisimdb.rs blocking-client build (#160)
 - fix(licence): rb56-work — clear scaffold-placeholder leak (superproject) (#64)
 - fix(ci): canonicalise all 12 hypatia-scan.yml (kill templater regeneration drift) (#51)
 - fix(ci): bump a2ml/k9-validate-action pins off broken/stale SHAs (standards#85) (#50)
@@ -44,8 +56,13 @@ this project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix(ci): hypatia-scan.yml -- --exit-zero + GITHUB_TOKEN (hyperpolymath/hypatia#213) (#26)
 - fix(ci): rsr-antipattern duplicate heredoc + setup-beam ubuntu24 (#28)
 
+### Security
+
+- fix(deps): security dependency updates (#159)
+
 ### Documentation
 
+- docs: sync machine + human docs to consolidation ground truth — STATE.a2ml, ECOSYSTEM-STATUS/MAP.adoc, PHASE-2 verification doc, config/tools.ncl, README.adoc, NEUROSYM.a2ml; author + publish GitHub wiki
 - docs: verify standalone-vs-local status of the 7 Phase-2 sub-projects + flag submodule-wiring drift
 - docs: record tech-debt audit findings (2026-05-26) (#74)
 - docs(repo-batcher): correct status to verified L1–L8 build-out (post #59) (#61)
@@ -60,6 +77,14 @@ this project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### CI
 
+- ci(hardening): add timeout-minutes to all jobs in standalone workflows (#162)
+- ci: fix estate-wide standards-treadmill breakage — rust-ci `toolchain` input + LICENSE SPDX header (#161)
+- chore(ci): add dormant push-email notification workflow (#158)
+- chore(ci): bump standards reusable workflow pins (#155)
+- ci(governance): refresh stale standards pins + drop retired scorecard-enforcer (#132)
+- ci: drop orphaned e2e.yml — Gnosis E2E moved to standalone stateful-artefacts (#135)
+- ci(diagnostic): add hypatia-findings-dump to log residual findings for triage (#136)
+- ci(fuzz): give ClusterFuzzLite a Dockerfile + drop orphan gitlinks; install pkg-config/libssl-dev; re-run on config change (#130)
 - ci(governance): baseline pre-existing ReScript + exempt allowed ATS2 for banned_language_file via .hypatia-ignore (#91)
 - ci(rust): convert rust-ci.yml to thin wrapper (standards#174) (#70)
 - ci(gitignore): ignore generated/* artefacts (Refs standards#93) (#67)

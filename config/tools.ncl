@@ -16,7 +16,12 @@ let Embed = [| 'core, 'standalone |] in
 let Role =
   [| 'representation, 'visualisation, 'tools_as_interface, 'control_surface, 'interop, 'utility |]
 in
-let Status = [| 'active, 'extracting, 'broken, 'orphan |] in
+# 'active     — embedded core component, in use
+# 'extracting — declared standalone but still vendored as an embedded tree; gitlink extraction pending
+# 'extracted  — now a real gitlink submodule (declared in .gitmodules)
+# 'broken     — declared a submodule but committed as a tree (wiring mismatch)
+# 'orphan     — gitlink with no .gitmodules URL and no forge repo
+let Status = [| 'active, 'extracting, 'extracted, 'broken, 'orphan |] in
 let Tool = {
   id | String,
   name | String,
@@ -79,7 +84,8 @@ in
       role = 'utility,
       embed = 'standalone,
       repo_ref = "git-morph",
-      summary = "Inflate/deflate components between standalone repos and the monorepo.",
+      summary = "Inflate/deflate components between standalone repos and the monorepo. Still vendored as an embedded tree in reposystem; gitlink extraction pending.",
+      status = 'extracting,
       actions = ["inflate", "deflate", "detect"],
     },
     {
@@ -88,7 +94,8 @@ in
       role = 'utility,
       embed = 'standalone,
       repo_ref = "git-seo",
-      summary = "Repository discoverability / SEO scoring (Julia).",
+      summary = "Repository discoverability / SEO scoring (Julia). Still vendored as an embedded tree in reposystem; gitlink extraction pending.",
+      status = 'extracting,
       actions = ["score"],
     },
     {
@@ -98,6 +105,7 @@ in
       embed = 'standalone,
       repo_ref = "git-reticulator",
       summary = "Submodule / gitlink reticulation across the estate.",
+      status = 'extracted,
       actions = ["reticulate"],
     },
     {
@@ -160,23 +168,8 @@ in
       status = 'extracted,
       actions = ["run-workflow"],
     },
-
-    # ---- Blocked (orphan gitlinks; resolve before classifying) --------------
-    {
-      id = "avatar-fabrication-facility",
-      name = "avatar-fabrication-facility",
-      role = 'utility,
-      embed = 'standalone,
-      summary = "Orphan gitlink: no .gitmodules URL and no forge repo. Resolve before use.",
-      status = 'orphan,
-    },
-    {
-      id = "claim-forge",
-      name = "claim-forge",
-      role = 'utility,
-      embed = 'standalone,
-      summary = "Orphan gitlink: no .gitmodules URL and no forge repo. Resolve before use.",
-      status = 'orphan,
-    },
+    # NOTE: the orphan gitlinks avatar-fabrication-facility and claim-forge
+    # (no .gitmodules URL, no forge repo) were removed in PR #130 (f0586e8);
+    # their registry records are dropped accordingly.
   ],
 }

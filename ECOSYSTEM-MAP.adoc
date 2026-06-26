@@ -18,9 +18,9 @@ Working map of the reposystem-centered ecosystem. This separates confirmed relat
 * git-dispatcher — automation/dispatch core — 20% complete
 * git-batcher — bulk repository operations (replaces git-dropper) — planned
 * gitbot-fleet — bot fleet coordinator — 35% complete
-* scaffoldia — scaffolding/templating — status unknown
+* scaffoldia — scaffolding/templating — extracted to forge repo + gitlinked into reposystem (2026-06-26)
 * .git-private-farm — private repo management — status unknown
-* stateful-artefacts-for-gitforges — forge artefact hydration — status unknown
+* stateful-artefacts-for-gitforges — forge artefact hydration — extracted to forge repo + gitlinked into reposystem (2026-06-26)
 
 **For detailed status, completion percentages, and integration points, see link:ECOSYSTEM-STATUS.adoc[Ecosystem Status].**
 
@@ -28,14 +28,14 @@ Working map of the reposystem-centered ecosystem. This separates confirmed relat
 
 * reposystem → git-hud (consumes graph for forge HUD)
 * reposystem → git-seo (consumes graph for discoverability artifacts)
+* reposystem ⊃ scaffoldia (gitlink submodule, extracted 2026-06-26)
+* reposystem ⊃ stateful-artefacts-for-gitforges (gitlink submodule, extracted 2026-06-26)
 
 == User-Asserted Links (pending evidence)
 
 * git-dispatcher ↔ reposystem (ecosystem orchestration)
 * git-dispatcher → gitbot-fleet (parent orchestration)
-* reposystem ↔ scaffoldia (ecosystem tooling)
 * reposystem ↔ .git-private-farm (private forge management)
-* reposystem ↔ stateful-artefacts-for-gitforges (forge artefact pipeline)
 
 == Naming
 

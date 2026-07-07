@@ -2,6 +2,7 @@ image:https://img.shields.io/badge/License-MPL--2.0-blue.svg[License: PMPL-1.0,l
 image:https://img.shields.io/badge/Philosophy-Palimpsest-indigo.svg[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-license"]
 
 // SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
 = Reposystem Ecosystem Status
 :toc: left
@@ -17,7 +18,7 @@ recon-silly-ation) have since been *extracted* to real GitHub forge repos and
 wired into `reposystem` as gitlink submodules. The 2026-06-02 "local-only"
 finding below is superseded; `.gitmodules` now declares eight consistent gitlink
 submodules. See `docs/PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc`
-(reconciliation-completed section) and `.machine_readable/6a2/STATE.a2ml`
+(reconciliation-completed section) and `.machine_readable/descriptiles/STATE.a2ml`
 (2026-06-26 entry). Other rows retain their 2026-02-07 values and have not been
 re-verified.
 

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MPL-2.0 */
-/* SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell */
+/* SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk> */
 
 const svg = document.getElementById("graph");
 const fileInput = document.getElementById("fileInput");
@@ -1177,8 +1177,28 @@ loadGraph = function (raw) {
   persistToLocalStorage();
 };
 
-// Restore from localStorage on startup (if no file loaded)
-loadFromLocalStorage();
+// Startup: prefer a fresh ./export.json (written by `just estate-refresh`)
+// over the localStorage snapshot; fall back to localStorage when there is no
+// server or no export yet (file:// pages, first run).
+async function bootstrap() {
+  try {
+    const resp = await fetch("./export.json", { cache: "no-store" });
+    if (resp.ok) {
+      const raw = await resp.json();
+      if (raw && (raw.nodes || raw.repos || raw.components || (raw.graph && raw.graph.nodes))) {
+        loadGraph(raw);
+        if (graphData.nodes.length > 0) {
+          setStatus(`Auto-loaded ${graphData.nodes.length} nodes from ./export.json`);
+          return;
+        }
+      }
+    }
+  } catch {
+    // No server or unreadable export — fall through to the local snapshot.
+  }
+  loadFromLocalStorage();
+}
+bootstrap();
 
 // UI event wiring
 layoutSelect.addEventListener("change", () => {

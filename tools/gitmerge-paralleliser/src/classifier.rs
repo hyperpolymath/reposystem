@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
 //! File classification engine for gitmerge-paralleliser.
 //!
@@ -473,7 +474,7 @@ mod tests {
     #[test]
     fn test_a2ml_is_meta() {
         assert_eq!(
-            classify_single(".machine_readable/6a2/STATE.a2ml"),
+            classify_single(".machine_readable/descriptiles/STATE.a2ml"),
             FileClass::Meta
         );
     }

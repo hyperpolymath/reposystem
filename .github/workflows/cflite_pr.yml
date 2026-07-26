@@ -10,6 +10,7 @@ on:
       - '.gitmodules'
   workflow_dispatch:
 permissions: read-all
+  actions: read
 jobs:
   fuzz:
     runs-on: ubuntu-latest

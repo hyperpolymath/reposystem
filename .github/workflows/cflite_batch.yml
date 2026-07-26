@@ -4,6 +4,7 @@ on:
   schedule:
     - cron: '0 0 * * 0'  # Weekly
 permissions: read-all
+  actions: read
 jobs:
   fuzz:
     runs-on: ubuntu-latest

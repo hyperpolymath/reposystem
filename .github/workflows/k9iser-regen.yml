@@ -10,6 +10,7 @@ on:
     branches: [main, master]
   workflow_dispatch:
 permissions:
+  actions: read
   contents: read
 jobs:
   trigger-k9iser:

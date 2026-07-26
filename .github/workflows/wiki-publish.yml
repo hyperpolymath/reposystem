@@ -16,6 +16,7 @@ on:
   workflow_dispatch: {}
 
 permissions:
+  actions: read
   contents: write
 
 # Never run two wiki pushes at once (they would race on the wiki's single branch).

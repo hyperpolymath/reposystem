@@ -1349,7 +1349,7 @@ const panllBridge = {
   },
 
   /** Push graph snapshot to PanLL Panel-W. */
-  syncGraph() {
+  async syncGraph() {
     if (panllBridge.status !== "connected") return;
 
     const payload = {

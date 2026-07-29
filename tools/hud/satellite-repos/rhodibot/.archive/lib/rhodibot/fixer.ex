@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 defmodule Rhodibot.Fixer do
   @moduledoc """
@@ -97,7 +97,7 @@ defmodule Rhodibot.Fixer do
 
   defp render_template(:license, _opts) do
     """
-    SPDX-License-Identifier: PMPL-1.0-or-later
+    SPDX-License-Identifier: MPL-2.0
 
     This project is available under your choice of:
     1. MIT License

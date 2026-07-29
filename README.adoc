@@ -1,11 +1,11 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: CC-BY-SA-4.0
 // SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = Reposystem
 :toc: preamble
 :toclevels: 3
 
 image:https://img.shields.io/badge/OpenSSF-Best_Practices-green?logo=opensourcesecurity[OpenSSF Best Practices,link="https://www.bestpractices.dev/en/projects/new?repo_url=https://github.com/hyperpolymath/reposystem"]
-image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+image:https://img.shields.io/badge/License-MPL--2.0-blue.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
 image:https://api.thegreenwebfoundation.org/greencheckimage/github.com[Green Web,link="https://www.thegreenwebfoundation.org/green-web-check/?url=github.com"]
 image:https://img.shields.io/badge/status-implementation-green.svg[Implementation Phase]
 
@@ -58,11 +58,11 @@ Run `just web-serve` or `just web-serve-port 1803` to preview.
 * Graph + plan fidelity is in place: scan → slot/provider registry → scenario diff → plan + apply with rollback.
 * TUI, CLI, DOT/JSON exporters and the web prototype are stable; the UI now highlights aspect tags, ER mode switching, and accessibility (keyboard, zoom, contrast, screen-reader hints).
 * OPSM is the production umbrella for everything in this stack: Reposystem feeds git-dispatcher/githud/data connectors, which in turn let gitbot-fleet and the rest of the ecosystem deliver everything-everywhere workflows.
-* Documentation is being refreshed: the README/ROADMAP/6scm files (STATE/ECOSYSTEM/META/PLAYBOOK/AGENTIC/NEUROSYM) now capture status, blockers, and next actions for both agents and humans, and the new GitHub wiki pages summarize the developer/platform/layperson story.
+* Documentation is being refreshed: the README/ROADMAP/6scm files (STATE/ECOSYSTEM/META/PLAYBOOK/AGENTIC/NEUROSYM) now capture status, blockers, and next actions for both agents and humans. The GitHub wiki is authored as version-controlled source in `wiki/` (Home, Architecture/Representation-Model, Estate/Submodule-Layout, Getting-Started, Tool-Registry, Governance-and-Hypatia) and mirrored to the published wiki via `wiki/PUBLISH.sh` — see `wiki/README.adoc`.
 
 [NOTE]
 ====
-Machine-readable context lives in the six `.scm` files (`.machine_readable/6a2/STATE.a2ml`, `.machine_readable/6a2/ECOSYSTEM.a2ml`, `.machine_readable/6a2/META.a2ml`, `.machine_readable/6a2/PLAYBOOK.a2ml`, `.machine_readable/6a2/AGENTIC.a2ml`, `.machine_readable/6a2/NEUROSYM.a2ml`). Agents should read them before mutating the graph so they know the current completion, blockers, and the OPSM/doc narrative.
+Machine-readable context lives in the six `.scm` files (`.machine_readable/descriptiles/STATE.a2ml`, `.machine_readable/descriptiles/ECOSYSTEM.a2ml`, `.machine_readable/descriptiles/META.a2ml`, `.machine_readable/descriptiles/PLAYBOOK.a2ml`, `.machine_readable/descriptiles/AGENTIC.a2ml`, `.machine_readable/descriptiles/NEUROSYM.a2ml`). Agents should read them before mutating the graph so they know the current completion, blockers, and the OPSM/doc narrative.
 ====
 
 == Next Up for Documentation + OPSM
@@ -434,7 +434,7 @@ dot -Tsvg ecosystem.dot -o ecosystem.svg
 
 |State files
 |Guile Scheme
-|.machine_readable/6a2/STATE.a2ml, .machine_readable/6a2/META.a2ml, .machine_readable/6a2/ECOSYSTEM.a2ml
+|.machine_readable/descriptiles/STATE.a2ml, .machine_readable/descriptiles/META.a2ml, .machine_readable/descriptiles/ECOSYSTEM.a2ml
 |===
 
 == Project Structure
@@ -443,21 +443,25 @@ dot -Tsvg ecosystem.dot -o ecosystem.svg
 ----
 reposystem/
 ├── src/
-│   ├── importers/       # Repo scanners
-│   ├── graph/           # Core data model
-│   ├── aspects/         # Aspect tagging
-│   ├── scenarios/       # Scenario management
-│   ├── export/          # DOT, JSON, SVG export
-│   └── cli/             # Rust CLI
+│   ├── lib.rs           # Canonical types: Estate, ExternalSeam, GraphStore, RelationType
+│   ├── main.rs          # CLI entry point (clap)
+│   ├── commands/        # Subcommands: scan, import, plan, apply, scenario, aspect, edge, group, export
+│   ├── importers/       # Manifest importer (repos.toml → GraphStore) + scanners
+│   ├── graph.rs         # Graph build + DOT/JSON/estate-export serializers
+│   ├── scanner.rs       # Repo/forge URL scanner
+│   ├── config.rs        # Config loading
+│   ├── tui.rs           # Terminal UI
+│   ├── verisimdb.rs     # VeriSimDB persistence client
+│   └── abi/             # Ada/Idris ABI surface
 ├── spec/
 │   ├── DATA-MODEL.adoc  # Entity specifications
 │   └── CONCEPTS.adoc    # Mental model
-├── .machine_readable/6a2/STATE.a2ml            # Project state
-├── .machine_readable/6a2/ECOSYSTEM.a2ml        # Ecosystem position
-├── .machine_readable/6a2/META.a2ml             # Architecture decisions
-├── .machine_readable/6a2/PLAYBOOK.a2ml         # Operational runbooks
-├── .machine_readable/6a2/AGENTIC.a2ml          # AI agent patterns
-├── .machine_readable/6a2/NEUROSYM.a2ml         # Neural-symbolic integration
+├── .machine_readable/descriptiles/STATE.a2ml            # Project state
+├── .machine_readable/descriptiles/ECOSYSTEM.a2ml        # Ecosystem position
+├── .machine_readable/descriptiles/META.a2ml             # Architecture decisions
+├── .machine_readable/descriptiles/PLAYBOOK.a2ml         # Operational runbooks
+├── .machine_readable/descriptiles/AGENTIC.a2ml          # AI agent patterns
+├── .machine_readable/descriptiles/NEUROSYM.a2ml         # Neural-symbolic integration
 ├── ROADMAP.adoc         # f/i staged plan
 ├── Mustfile             # Build recipes
 └── Justfile             # Development tasks

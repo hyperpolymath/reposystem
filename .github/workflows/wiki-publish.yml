@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: MPL-2.0
+# Publish the in-repo wiki sources (wiki/*.md) to the GitHub wiki
+# (reposystem.wiki.git) on every push to main that touches wiki/. The wiki is a
+# separate git repo that is not writable from every environment; CI's built-in
+# GITHUB_TOKEN can push to this repo's own wiki, so the repository publishes its
+# own wiki. The version-controlled source of truth stays under wiki/ — see
+# wiki/README.adoc. Manual run: the Actions "Run workflow" button (workflow_dispatch).
+name: Publish wiki
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'wiki/**'
+      - '.github/workflows/wiki-publish.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+# Never run two wiki pushes at once (they would race on the wiki's single branch).
+concurrency:
+  group: wiki-publish
+  cancel-in-progress: false
+
+jobs:
+  publish-wiki:
+    name: Mirror wiki/ to the GitHub wiki
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Publish wiki pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          sh wiki/PUBLISH.sh "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.wiki.git"

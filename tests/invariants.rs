@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 //! Invariant tests for the reposystem graph - i1 seam review
 //!
@@ -31,6 +31,8 @@ fn make_repo(name: &str, forge: Forge, owner: &str) -> Repo {
         default_branch: "main".into(),
         visibility: Visibility::Public,
         tags: vec!["test".into()],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
         imports: ImportMeta {
             source: "test".into(),
             path_hint: None,

@@ -1,5 +1,15 @@
 # Reposystem Graph Structure
 
+> **SUPERSEDED.** This v1.0 `graph.toml` design is superseded by
+> [`spec/DATA-MODEL.adoc`](spec/DATA-MODEL.adoc) — the Rust `types` module in
+> `src/lib.rs` is the schema of record. The estate inventory now lives in
+> `repos.toml` and is imported into the graph via `reposystem import manifest`;
+> the front-ends consume the unified `reposystem export --format estate-json`
+> envelope. The legacy per-repo fields below (`depends_on`/`provides_to`/
+> `related`, `seo_score`, `health_score`, `completion_percentage`, `phase`) are
+> preserved verbatim under each repo's `metadata` map. Retained for historical
+> reference only.
+
 ## Overview
 
 The reposystem graph is a TOML-based data structure that tracks all repositories in the hyperpolymath ecosystem, their relationships, and metadata.

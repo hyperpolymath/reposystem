@@ -42,17 +42,30 @@
   # Log level
   LogLevel = [| 'trace, 'debug, 'info, 'warn, 'error |],
 
-  # Export format
-  ExportFormat = [| 'dot, 'json, 'yaml, 'toml, 'csv |],
+  # Export format ('estate = the unified estate-export envelope)
+  ExportFormat = [| 'dot, 'json, 'estate, 'yaml, 'toml, 'csv |],
 
   # Theme
   Theme = [| 'dark, 'light, 'solarized, 'gruvbox, 'nord |],
 
-  # Repo kind
+  # Git forge (mirrors Rust `types::Forge`)
+  Forge = [| 'gh, 'gl, 'bb, 'cb, 'sr, 'local |],
+
+  # Repository visibility (mirrors Rust `types::Visibility`)
+  Visibility = [| 'public, 'private, 'internal |],
+
+  # Repo kind (legacy GRAPH-STRUCTURE classification; informational only)
   RepoKind = [| 'Library, 'Application, 'Service, 'Tool, 'Documentation, 'Data, 'Config |],
 
-  # Edge kind
-  EdgeKind = [| 'Artifact, 'Runtime, 'DevDep, 'Peer, 'Optional, 'Build, 'Test |],
+  # Relationship type (mirrors Rust `types::RelationType`). `refersto` is the
+  # only relation allowed to target an external seam.
+  RelationType = [| 'uses, 'provides, 'extends, 'mirrors, 'replaces, 'refersto |],
+
+  # Edge channel (mirrors Rust `types::Channel`)
+  Channel = [| 'api, 'artifact, 'config, 'runtime, 'human, 'unknown |],
+
+  # External seam domain (mirrors Rust `types::SeamDomain`)
+  SeamDomain = [| 'network, 'machine, 'service, 'org, 'other |],
 
   # Full repo contract
   Repo = {
@@ -60,23 +73,47 @@
     path | ValidPath,
     name | NonEmptyString,
     kind | RepoKind,
+    estate | String | default = "estate:hyperpolymath",
     channels | { default | String, ..String },
     metadata | { ..String } | optional,
   },
 
-  # Full edge contract
+  # Full edge contract (mirrors Rust `types::Edge`)
   Edge = {
     from | ValidId,
     to | ValidId,
-    kind | EdgeKind,
-    channel | String | default = "default",
-    weight | Weight | default = 1.0,
+    rel | RelationType,
+    channel | Channel | default = 'unknown,
+    label | String | optional,
+  },
+
+  # Estate identity (multi-estate parameterisation; hyperpolymath = #1)
+  Estate = {
+    id | String,
+    name | NonEmptyString,
+    forges | Array Forge | default = [],
+    root_owner | String | optional,
+  },
+
+  # External seam: a loose outward pointer to a sibling system (aerie =
+  # networks, ambientops = machines). Seams are edge sinks; reposystem stores
+  # none of the sibling system's internals.
+  Seam = {
+    id | String,
+    system | NonEmptyString,
+    domain | SeamDomain,
+    name | NonEmptyString,
+    uri | String | optional,
+    estate | String | default = "estate:hyperpolymath",
   },
 
   # Ecosystem contract
   Ecosystem = {
     version | String | default = "1.0",
+    estate | String | default = "estate:hyperpolymath",
+    estates | Array Estate | default = [],
     repos | Array Repo,
+    seams | Array Seam | default = [],
     edges | Array Edge,
     groups | Array {
       id | ValidId,

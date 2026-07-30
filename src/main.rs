@@ -67,6 +67,29 @@ enum Commands {
         detect_workspaces: bool,
     },
 
+    /// Import the estate from a manifest (repos.toml) into the graph
+    Import {
+        /// Import source (currently: manifest)
+        #[arg(default_value = "manifest")]
+        source: String,
+
+        /// Path to the manifest (defaults to repos.toml)
+        #[arg(long)]
+        manifest: Option<std::path::PathBuf>,
+
+        /// Path to the groups file (defaults to repos.groups.toml)
+        #[arg(long)]
+        groups: Option<std::path::PathBuf>,
+
+        /// Estate id to stamp on imported nodes
+        #[arg(long, default_value = "estate:hyperpolymath")]
+        estate: String,
+
+        /// Estate display name
+        #[arg(long)]
+        estate_name: Option<String>,
+    },
+
     /// Launch interactive TUI
     View,
 
@@ -330,15 +353,27 @@ fn main() -> Result<()> {
         _ => tracing::Level::TRACE,
     };
 
+    // Logs go to stderr so that command output piped from stdout (e.g.
+    // `export --format estate-json`) is never contaminated by log lines.
     tracing_subscriber::fmt()
         .with_max_level(log_level)
         .with_target(false)
+        .with_writer(std::io::stderr)
         .init();
 
     // Execute command
     match cli.command {
         Commands::Scan { path, deep, shallow, metadata, detect_workspaces } => {
-            commands::scan::run(path, deep, shallow, metadata, detect_workspaces)
+            commands::scan::run(path, deep, shallow, metadata, detect_workspaces, cli.json)
+        }
+        Commands::Import { source, manifest, groups, estate, estate_name } => {
+            let args = commands::import::ImportArgs {
+                manifest,
+                groups,
+                estate,
+                estate_name,
+            };
+            commands::import::run(&source, args)
         }
         Commands::View => {
             commands::view::run()

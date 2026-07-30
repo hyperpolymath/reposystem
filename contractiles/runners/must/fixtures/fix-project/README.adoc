@@ -1,3 +1,0 @@
-= Fix Fixture
-
-This fixture should fail must check until must fix removes Makefile.

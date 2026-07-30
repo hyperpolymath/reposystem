@@ -16,6 +16,7 @@ pub fn run(
     shallow: bool,
     metadata: bool,
     detect_workspaces: bool,
+    json: bool,
 ) -> Result<()> {
     info!("Scanning: {:?}", path);
 
@@ -32,7 +33,11 @@ pub fn run(
         .with_context(|| format!("Failed to scan {}", path.display()))?;
 
     if results.is_empty() {
-        println!("No git repositories found in {}", path.display());
+        if json {
+            println!("{}", EcosystemGraph::new().to_json()?);
+        } else {
+            println!("No git repositories found in {}", path.display());
+        }
         return Ok(());
     }
 
@@ -48,40 +53,41 @@ pub fn run(
         }
     }
 
-    // Print summary
-    println!("Found {} repositories:", graph.node_count());
-    println!();
+    // Human-readable summary (suppressed in --json mode so stdout stays pure JSON).
+    if !json {
+        println!("Found {} repositories:", graph.node_count());
+        println!();
 
-    for repo in graph.repos() {
-        let forge_info = if repo.forge == Forge::Local {
-            "local".to_string()
-        } else {
-            format!("{}/{}", repo.owner, repo.name)
-        };
+        for repo in graph.repos() {
+            let forge_info = if repo.forge == Forge::Local {
+                "local".to_string()
+            } else {
+                format!("{}/{}", repo.owner, repo.name)
+            };
 
-        println!(
-            "  {} [{}:{}]",
-            repo.name,
-            repo.forge.code(),
-            forge_info
-        );
+            println!("  {} [{}:{}]", repo.name, repo.forge.code(), forge_info);
 
-        if !repo.tags.is_empty() {
-            println!("    tags: {}", repo.tags.join(", "));
+            if !repo.tags.is_empty() {
+                println!("    tags: {}", repo.tags.join(", "));
+            }
         }
-    }
 
-    println!();
+        println!();
+    }
 
     // Determine data directory
     let data_dir = get_data_dir()?;
     graph.save(&data_dir)
         .with_context(|| format!("Failed to save graph to {}", data_dir.display()))?;
 
-    println!("Graph saved to {}", data_dir.display());
+    if json {
+        println!("{}", graph.to_json()?);
+    } else {
+        println!("Graph saved to {}", data_dir.display());
+    }
 
     // If workspace detection is requested, look for monorepos
-    if detect_workspaces {
+    if detect_workspaces && !json {
         detect_and_report_workspaces(&graph);
     }
 

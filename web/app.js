@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MPL-2.0 */
-/* SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell */
+/* SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk> */
 
 const svg = document.getElementById("graph");
 const fileInput = document.getElementById("fileInput");
@@ -8,6 +8,7 @@ const detailsEl = document.getElementById("details");
 const searchInput = document.getElementById("searchInput");
 const layoutSelect = document.getElementById("layoutSelect");
 const groupSelect = document.getElementById("groupSelect");
+const estateSelect = document.getElementById("estateSelect");
 const aspectSelect = document.getElementById("aspectSelect");
 const labelToggle = document.getElementById("labelToggle");
 const weightToggle = document.getElementById("weightToggle");
@@ -47,6 +48,7 @@ const ariaStatus = document.getElementById("ariaStatus");
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 let graphData = { nodes: [], edges: [], groups: [], annotations: [] };
+let estatesList = [];
 let selectedItems = [];
 let view = { scale: 1, offsetX: 0, offsetY: 0 };
 let toolMode = "select";
@@ -127,9 +129,10 @@ function normalizeGraph(raw) {
     return { nodes: raw.graph.nodes || [], edges: raw.graph.edges || [], groups: raw.graph.groups || [], annotations: raw.graph.annotations || [] };
   }
 
-  if (raw.repos || raw.components || raw.edges) {
-    // Rust GraphStore format: repos + components + groups are separate arrays
-    const nodes = [...(raw.repos || []), ...(raw.components || [])];
+  if (raw.repos || raw.components || raw.seams || raw.edges) {
+    // Rust GraphStore / estate-export envelope: repos + components + external
+    // seams are separate node arrays (seams = aerie/ambientops/… boundaries).
+    const nodes = [...(raw.repos || []), ...(raw.components || []), ...(raw.seams || [])];
     return { nodes, edges: raw.edges || [], groups: raw.groups || [], annotations: raw.annotations || [] };
   }
 
@@ -145,7 +148,9 @@ function normalizeGraph(raw) {
 }
 
 function ensureNodeShape(node) {
-  const kind = (node.kind || "Repo").toLowerCase();
+  const rawKind = (node.kind || "Repo").toLowerCase();
+  // External seams render as their own node class.
+  const kind = rawKind === "externalseam" ? "seam" : rawKind;
   return {
     ...node,
     _kind: kind,
@@ -367,6 +372,17 @@ function filterByGroup(nodes, edges, groupId) {
   return { nodes: filteredNodes, edges: filteredEdges };
 }
 
+function filterByEstate(nodes, edges, estateId) {
+  if (!estateId || estateId === "all") return { nodes, edges };
+  // Groups and estate-less nodes are always kept; repos/seams filter by estate.
+  const filteredNodes = nodes.filter(
+    (n) => n._kind === "group" || !n.estate || n.estate === estateId
+  );
+  const ids = new Set(filteredNodes.map((n) => n.id));
+  const filteredEdges = edges.filter((e) => ids.has(e.from) && ids.has(e.to));
+  return { nodes: filteredNodes, edges: filteredEdges };
+}
+
 function getAspectWeight(entity) {
   const aspect = aspectSelect.value;
   const aspects = entity.aspects || [];
@@ -544,6 +560,7 @@ function render() {
   const aspect = aspectSelect.value;
   let { nodes, edges } = filterByAspect(graphData.nodes, graphData.edges, aspect);
   ({ nodes, edges } = filterByGroup(nodes, edges, groupSelect.value));
+  ({ nodes, edges } = filterByEstate(nodes, edges, estateSelect ? estateSelect.value : "all"));
 
   const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
   defs.innerHTML = `
@@ -752,8 +769,10 @@ function makeDraggable(nodeEl, nodeData, offsetX = 0, offsetY = 0) {
 }
 
 function loadGraph(raw) {
+  estatesList = raw && Array.isArray(raw.estates) ? raw.estates : [];
   graphData = buildModel(raw);
   updateGroupSelect();
+  updateEstateSelect();
   updateNodeList();
   applyLayout(layoutSelect.value);
   setStatus(`Loaded ${graphData.nodes.length} nodes / ${graphData.edges.length} edges`);
@@ -769,6 +788,23 @@ function updateGroupSelect() {
     option.value = g.id;
     option.textContent = g.name || g.id;
     groupSelect.appendChild(option);
+  });
+}
+
+function updateEstateSelect() {
+  if (!estateSelect) return;
+  estateSelect.innerHTML = '<option value="all">All estates</option>';
+  let estates = estatesList;
+  if (!estates || !estates.length) {
+    // Fall back to distinct estate ids present on the nodes.
+    const ids = [...new Set(graphData.nodes.map((n) => n.estate).filter(Boolean))];
+    estates = ids.map((id) => ({ id, name: id }));
+  }
+  estates.forEach((e) => {
+    const option = document.createElement("option");
+    option.value = e.id;
+    option.textContent = e.name || e.id;
+    estateSelect.appendChild(option);
   });
 }
 
@@ -1141,8 +1177,28 @@ loadGraph = function (raw) {
   persistToLocalStorage();
 };
 
-// Restore from localStorage on startup (if no file loaded)
-loadFromLocalStorage();
+// Startup: prefer a fresh ./export.json (written by `just estate-refresh`)
+// over the localStorage snapshot; fall back to localStorage when there is no
+// server or no export yet (file:// pages, first run).
+async function bootstrap() {
+  try {
+    const resp = await fetch("./export.json", { cache: "no-store" });
+    if (resp.ok) {
+      const raw = await resp.json();
+      if (raw && (raw.nodes || raw.repos || raw.components || (raw.graph && raw.graph.nodes))) {
+        loadGraph(raw);
+        if (graphData.nodes.length > 0) {
+          setStatus(`Auto-loaded ${graphData.nodes.length} nodes from ./export.json`);
+          return;
+        }
+      }
+    }
+  } catch {
+    // No server or unreadable export — fall through to the local snapshot.
+  }
+  loadFromLocalStorage();
+}
+bootstrap();
 
 // UI event wiring
 layoutSelect.addEventListener("change", () => {
@@ -1150,6 +1206,7 @@ layoutSelect.addEventListener("change", () => {
   render();
 });
 groupSelect.addEventListener("change", render);
+if (estateSelect) estateSelect.addEventListener("change", render);
 aspectSelect.addEventListener("change", render);
 labelToggle.addEventListener("change", render);
 weightToggle.addEventListener("change", render);
@@ -1292,7 +1349,7 @@ const panllBridge = {
   },
 
   /** Push graph snapshot to PanLL Panel-W. */
-  syncGraph() {
+  async syncGraph() {
     if (panllBridge.status !== "connected") return;
 
     const payload = {

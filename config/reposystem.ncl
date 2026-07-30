@@ -5,6 +5,10 @@
 #
 # Validate: nickel typecheck config/reposystem.ncl
 # Export:   nickel export config/reposystem.ncl --format json
+#
+# NOTE: the Rust `types` module in src/lib.rs is the schema of record
+# (see spec/DATA-MODEL.adoc). These contracts mirror it; they do not define a
+# competing model.
 
 let contracts = import "contracts.ncl" in
 
@@ -20,17 +24,36 @@ let contracts = import "contracts.ncl" in
       path | String,
       name | String,
       kind | [| 'Library, 'Application, 'Service, 'Tool, 'Documentation |],
+      estate | String | default = "estate:hyperpolymath",
       channels | { default | String, ..String },
       metadata | { ..String } | optional,
     },
 
-    # Edge (dependency) configuration
+    # Edge (relationship) configuration — mirrors Rust `types::Edge`.
     Edge = {
       from | String,
       to | String,
-      kind | [| 'Artifact, 'Runtime, 'DevDep, 'Peer, 'Optional |],
-      channel | String | default = "default",
-      weight | Number | default = 1.0,
+      rel | [| 'uses, 'provides, 'extends, 'mirrors, 'replaces, 'refersto |],
+      channel | [| 'api, 'artifact, 'config, 'runtime, 'human, 'unknown |] | default = 'unknown,
+      label | String | optional,
+    },
+
+    # Estate identity (multi-estate; hyperpolymath = #1)
+    Estate = {
+      id | String,
+      name | String,
+      forges | Array String | default = [],
+      root_owner | String | optional,
+    },
+
+    # External seam (loose cross-link to aerie/ambientops/…; an edge sink)
+    Seam = {
+      id | String,
+      system | String,
+      domain | [| 'network, 'machine, 'service, 'org, 'other |],
+      name | String,
+      uri | String | optional,
+      estate | String | default = "estate:hyperpolymath",
     },
 
     # Group configuration

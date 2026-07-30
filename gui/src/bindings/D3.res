@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // ReScript bindings for D3.js — minimal surface for force-directed graph
 
 module Selection = D3_Selection

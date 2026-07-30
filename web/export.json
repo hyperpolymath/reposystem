@@ -1,9 +1,6478 @@
-[2m2026-01-25T18:46:59.105564Z[0m [32m INFO[0m Exporting to json
 {
-  "repos": [],
+  "annotations": [],
+  "aspects": [
+    {
+      "description": "Authentication, authorization, vulnerability exposure",
+      "id": "aspect:security",
+      "kind": "Aspect",
+      "name": "Security"
+    },
+    {
+      "description": "Uptime, fault tolerance, recovery",
+      "id": "aspect:reliability",
+      "kind": "Aspect",
+      "name": "Reliability"
+    },
+    {
+      "description": "Code quality, test coverage, documentation",
+      "id": "aspect:maintainability",
+      "kind": "Aspect",
+      "name": "Maintainability"
+    },
+    {
+      "description": "Cross-platform, containerization, dependencies",
+      "id": "aspect:portability",
+      "kind": "Aspect",
+      "name": "Portability"
+    },
+    {
+      "description": "Speed, resource usage, scalability",
+      "id": "aspect:performance",
+      "kind": "Aspect",
+      "name": "Performance"
+    },
+    {
+      "description": "Logging, metrics, tracing",
+      "id": "aspect:observability",
+      "kind": "Aspect",
+      "name": "Observability"
+    },
+    {
+      "description": "User experience, accessibility",
+      "id": "aspect:ux",
+      "kind": "Aspect",
+      "name": "UX"
+    },
+    {
+      "description": "Documentation quality and coverage",
+      "id": "aspect:docs",
+      "kind": "Aspect",
+      "name": "Docs"
+    },
+    {
+      "description": "Dependency provenance, SBOM, signing",
+      "id": "aspect:supply-chain",
+      "kind": "Aspect",
+      "name": "Supply Chain"
+    },
+    {
+      "description": "CI/CD, deployment, testing automation",
+      "id": "aspect:automation",
+      "kind": "Aspect",
+      "name": "Automation"
+    }
+  ],
+  "bindings": [],
   "components": [],
-  "groups": [],
   "edges": [],
+  "estate": {
+    "description": null,
+    "forges": [
+      "gh"
+    ],
+    "id": "estate:hyperpolymath",
+    "kind": "Estate",
+    "name": "Hyperpolymath",
+    "root_owner": "hyperpolymath"
+  },
+  "estates": [
+    {
+      "description": null,
+      "forges": [
+        "gh"
+      ],
+      "id": "estate:hyperpolymath",
+      "kind": "Estate",
+      "name": "Hyperpolymath",
+      "root_owner": "hyperpolymath"
+    }
+  ],
+  "groups": [],
+  "plans": [],
+  "providers": [],
+  "repos": [
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/boj-server",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "boj-server",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "boj-server"
+      },
+      "name": "boj-server",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/JuliaPackage-Reuse-Audit.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "JuliaPackage-Reuse-Audit.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "JuliaPackage-Reuse-Audit.jl"
+      },
+      "name": "JuliaPackage-Reuse-Audit.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/thejeffparadox",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "thejeffparadox",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "thejeffparadox"
+      },
+      "name": "thejeffparadox",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/KnotTheory.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "KnotTheory.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "KnotTheory.jl"
+      },
+      "name": "KnotTheory.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/homebrew-tap",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/homebrew-tap",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/homebrew-tap"
+      },
+      "name": "systems-ecosystem/homebrew-tap",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/eclexia",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "eclexia",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "eclexia"
+      },
+      "name": "eclexia",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/hyperpolymath.github.io",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "hyperpolymath.github.io",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "site",
+        "manifest_path": "hyperpolymath.github.io"
+      },
+      "name": "hyperpolymath.github.io",
+      "owner": "hyperpolymath",
+      "tags": [
+        "site"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/Cladistics.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "Cladistics.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "Cladistics.jl"
+      },
+      "name": "Cladistics.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/ZeroProb.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "ZeroProb.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "ZeroProb.jl"
+      },
+      "name": "ZeroProb.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/developer-ecosystem",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "developer-ecosystem",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "ecosystem",
+        "manifest_path": "developer-ecosystem"
+      },
+      "name": "developer-ecosystem",
+      "owner": "hyperpolymath",
+      "tags": [
+        "ecosystem"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/Cliodynamics.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "Cliodynamics.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "Cliodynamics.jl"
+      },
+      "name": "Cliodynamics.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/ipv6-site-enforcer",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "ipv6-site-enforcer",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "ipv6-site-enforcer"
+      },
+      "name": "ipv6-site-enforcer",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/Cliometrics.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "Cliometrics.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "Cliometrics.jl"
+      },
+      "name": "Cliometrics.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/Exnovation.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "Exnovation.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "Exnovation.jl"
+      },
+      "name": "Exnovation.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/bgp-backbone-lab",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "bgp-backbone-lab",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "bgp-backbone-lab"
+      },
+      "name": "bgp-backbone-lab",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/poly-k8s-mcp",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "poly-k8s-mcp",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "poly-k8s-mcp"
+      },
+      "name": "poly-k8s-mcp",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/snif",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "snif",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "snif"
+      },
+      "name": "snif",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/FirmwareAudit.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "FirmwareAudit.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "FirmwareAudit.jl"
+      },
+      "name": "FirmwareAudit.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/echo-types",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "echo-types",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "echo-types"
+      },
+      "name": "echo-types",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/MinixSDK.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "MinixSDK.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "MinixSDK.jl"
+      },
+      "name": "MinixSDK.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/rsr-template-repo",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/rsr-template-repo",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/rsr-template-repo"
+      },
+      "name": "verification-ecosystem/rsr-template-repo",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/candy-crash",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "candy-crash",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "candy-crash"
+      },
+      "name": "candy-crash",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/Axiology.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "Axiology.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "Axiology.jl"
+      },
+      "name": "Axiology.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/PolyglotFormalisms.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "PolyglotFormalisms.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "PolyglotFormalisms.jl"
+      },
+      "name": "PolyglotFormalisms.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/PostDisciplinary.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "PostDisciplinary.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "PostDisciplinary.jl"
+      },
+      "name": "PostDisciplinary.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/HardwareResilience.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "HardwareResilience.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "HardwareResilience.jl"
+      },
+      "name": "HardwareResilience.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/Hyperpolymath.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "Hyperpolymath.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "Hyperpolymath.jl"
+      },
+      "name": "Hyperpolymath.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/AcceleratorGate.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "AcceleratorGate.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "AcceleratorGate.jl"
+      },
+      "name": "AcceleratorGate.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/PRComms.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "PRComms.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "PRComms.jl"
+      },
+      "name": "PRComms.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/Axiom.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "Axiom.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "Axiom.jl"
+      },
+      "name": "Axiom.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/ProvenCrypto.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "ProvenCrypto.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "ProvenCrypto.jl"
+      },
+      "name": "ProvenCrypto.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/QuantumCircuit.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "QuantumCircuit.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "QuantumCircuit.jl"
+      },
+      "name": "QuantumCircuit.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/InvestigativeJournalist.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "InvestigativeJournalist.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "InvestigativeJournalist.jl"
+      },
+      "name": "InvestigativeJournalist.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/affinescript-vite",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "affinescript-ecosystem/affinescript-vite",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "affinescript-ecosystem/affinescript-vite"
+      },
+      "name": "affinescript-ecosystem/affinescript-vite",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/poly-observability-mcp",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "poly-observability-mcp",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "poly-observability-mcp"
+      },
+      "name": "poly-observability-mcp",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/Lithoglyph.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "Lithoglyph.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "Lithoglyph.jl"
+      },
+      "name": "Lithoglyph.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/ShellIntegration.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "ShellIntegration.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "ShellIntegration.jl"
+      },
+      "name": "ShellIntegration.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/oikos",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/oikos",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/oikos"
+      },
+      "name": "verification-ecosystem/oikos",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/SiliconCore.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "SiliconCore.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "SiliconCore.jl"
+      },
+      "name": "SiliconCore.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/my-lang",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "my-lang",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "my-lang"
+      },
+      "name": "my-lang",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/Skein.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "Skein.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "Skein.jl"
+      },
+      "name": "Skein.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/BowtieRisk.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "BowtieRisk.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "BowtieRisk.jl"
+      },
+      "name": "BowtieRisk.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/TradeUnionist.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "TradeUnionist.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "TradeUnionist.jl"
+      },
+      "name": "TradeUnionist.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/LowLevel.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "LowLevel.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "LowLevel.jl"
+      },
+      "name": "LowLevel.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/SMTLib.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "SMTLib.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "SMTLib.jl"
+      },
+      "name": "SMTLib.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/network-dashboard",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "network-dashboard",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "network-dashboard"
+      },
+      "name": "network-dashboard",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/idaptik",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "idaptik",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "idaptik"
+      },
+      "name": "idaptik",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/JuliaKids.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "JuliaKids.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "JuliaKids.jl"
+      },
+      "name": "JuliaKids.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/ViableSystems.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "ViableSystems.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "ViableSystems.jl"
+      },
+      "name": "ViableSystems.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/gossamer",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "gossamer",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "gossamer"
+      },
+      "name": "gossamer",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/Causals.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "Causals.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "Causals.jl"
+      },
+      "name": "Causals.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/SoftwareSovereign.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "SoftwareSovereign.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "SoftwareSovereign.jl"
+      },
+      "name": "SoftwareSovereign.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/frayed-knot-toolkit",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/frayed-knot-toolkit",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/frayed-knot-toolkit"
+      },
+      "name": "verification-ecosystem/frayed-knot-toolkit",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/launch-scaffolder",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "launch-scaffolder",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "launch-scaffolder"
+      },
+      "name": "launch-scaffolder",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/format-registrations",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "format-registrations",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "format-registrations"
+      },
+      "name": "format-registrations",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/MacroPower.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "MacroPower.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "MacroPower.jl"
+      },
+      "name": "MacroPower.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:The-Metadatastician/007",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "007-lang",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "007-lang"
+      },
+      "name": "007-lang",
+      "owner": "The-Metadatastician",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/julia-the-viper",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "jtv",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "jtv"
+      },
+      "name": "jtv",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/robodog-ecm",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "robodog-ecm",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "robodog-ecm"
+      },
+      "name": "robodog-ecm",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/julia-ecosystem",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "julia-ecosystem",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "ecosystem",
+        "manifest_path": "julia-ecosystem"
+      },
+      "name": "julia-ecosystem",
+      "owner": "hyperpolymath",
+      "tags": [
+        "ecosystem"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/checky-monkey",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "checky-monkey",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "checky-monkey"
+      },
+      "name": "checky-monkey",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/laniakea",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "laniakea",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "laniakea"
+      },
+      "name": "laniakea",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/KRLAdapter.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "KRLAdapter.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "KRLAdapter.jl"
+      },
+      "name": "KRLAdapter.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/reposystem",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "reposystem",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "reposystem"
+      },
+      "name": "reposystem",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/hyperpolymath-archive",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "hyperpolymath-archive",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "hyperpolymath-archive"
+      },
+      "name": "hyperpolymath-archive",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/rescript",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "rescript-developer-ecosystem/rescript",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "rescript-developer-ecosystem/rescript"
+      },
+      "name": "rescript-developer-ecosystem/rescript",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/rescript-evangeliser",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "rescript-developer-ecosystem/rescript-evangeliser",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "rescript-developer-ecosystem/rescript-evangeliser"
+      },
+      "name": "rescript-developer-ecosystem/rescript-evangeliser",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/rescript-tea",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "rescript-developer-ecosystem/rescript-tea",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "rescript-developer-ecosystem/rescript-tea"
+      },
+      "name": "rescript-developer-ecosystem/rescript-tea",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/rescript-string-power",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "rescript-developer-ecosystem/rescript-string-power",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "rescript-developer-ecosystem/rescript-string-power"
+      },
+      "name": "rescript-developer-ecosystem/rescript-string-power",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/rescript-wasm-runtime",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "rescript-developer-ecosystem/rescript-wasm-runtime",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "rescript-developer-ecosystem/rescript-wasm-runtime"
+      },
+      "name": "rescript-developer-ecosystem/rescript-wasm-runtime",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/rescript-vite",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "web-ecosystem/rescript-vite",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "web-ecosystem/rescript-vite"
+      },
+      "name": "web-ecosystem/rescript-vite",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/cloudguard-cli",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "fleet-ecosystem/cloudguard-cli",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "fleet-ecosystem/cloudguard-cli"
+      },
+      "name": "fleet-ecosystem/cloudguard-cli",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/cloudguard-server",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "fleet-ecosystem/cloudguard-server",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "fleet-ecosystem/cloudguard-server"
+      },
+      "name": "fleet-ecosystem/cloudguard-server",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/hybrid-automation-router",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "fleet-ecosystem/hybrid-automation-router",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "fleet-ecosystem/hybrid-automation-router"
+      },
+      "name": "fleet-ecosystem/hybrid-automation-router",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/git-eco-bot",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "fleet-ecosystem/git-eco-bot",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "fleet-ecosystem/git-eco-bot"
+      },
+      "name": "fleet-ecosystem/git-eco-bot",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/stapeln",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "fleet-ecosystem/stapeln",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "fleet-ecosystem/stapeln"
+      },
+      "name": "fleet-ecosystem/stapeln",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/infrastructure-automation",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "fleet-ecosystem/infrastructure-automation",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "fleet-ecosystem/infrastructure-automation"
+      },
+      "name": "fleet-ecosystem/infrastructure-automation",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/cloud-sync-tuner",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "fleet-ecosystem/cloud-sync-tuner",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "fleet-ecosystem/cloud-sync-tuner"
+      },
+      "name": "fleet-ecosystem/cloud-sync-tuner",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/cloudflare-dns-terraform",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "fleet-ecosystem/cloudflare-dns-terraform",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "fleet-ecosystem/cloudflare-dns-terraform"
+      },
+      "name": "fleet-ecosystem/cloudflare-dns-terraform",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/twingate-helm-deploy",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "fleet-ecosystem/twingate-helm-deploy",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "fleet-ecosystem/twingate-helm-deploy"
+      },
+      "name": "fleet-ecosystem/twingate-helm-deploy",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/sdp-hkdf-deployment",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "fleet-ecosystem/sdp-hkdf-deployment",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "fleet-ecosystem/sdp-hkdf-deployment"
+      },
+      "name": "fleet-ecosystem/sdp-hkdf-deployment",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/boinc-boinc",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "fleet-ecosystem/boinc-boinc",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "fleet-ecosystem/boinc-boinc"
+      },
+      "name": "fleet-ecosystem/boinc-boinc",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/game-server-admin",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "fleet-ecosystem/game-server-admin",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "fleet-ecosystem/game-server-admin"
+      },
+      "name": "fleet-ecosystem/game-server-admin",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/double-track-browser",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "web-ecosystem/double-track-browser",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "web-ecosystem/double-track-browser"
+      },
+      "name": "web-ecosystem/double-track-browser",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/groove-browser-harness",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "web-ecosystem/groove-browser-harness",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "web-ecosystem/groove-browser-harness"
+      },
+      "name": "web-ecosystem/groove-browser-harness",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/claude-gecko-browser-extension",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "web-ecosystem/claude-gecko-browser-extension",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "web-ecosystem/claude-gecko-browser-extension"
+      },
+      "name": "web-ecosystem/claude-gecko-browser-extension",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/claude-gitlab-bridge",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "web-ecosystem/claude-gitlab-bridge",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "web-ecosystem/claude-gitlab-bridge"
+      },
+      "name": "web-ecosystem/claude-gitlab-bridge",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/claude-integrations",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "web-ecosystem/claude-integrations",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "web-ecosystem/claude-integrations"
+      },
+      "name": "web-ecosystem/claude-integrations",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/http-capability-gateway",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "web-ecosystem/http-capability-gateway",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "web-ecosystem/http-capability-gateway"
+      },
+      "name": "web-ecosystem/http-capability-gateway",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/consent-aware-http",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "web-ecosystem/consent-aware-http",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "web-ecosystem/consent-aware-http"
+      },
+      "name": "web-ecosystem/consent-aware-http",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/indieweb2-bastion",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "web-ecosystem/indieweb2-bastion",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "web-ecosystem/indieweb2-bastion"
+      },
+      "name": "web-ecosystem/indieweb2-bastion",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/lcb-website",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "web-ecosystem/lcb-website",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "web-ecosystem/lcb-website"
+      },
+      "name": "web-ecosystem/lcb-website",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/well-known-ecosystem",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "well-known-ecosystem",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "ecosystem",
+        "manifest_path": "well-known-ecosystem"
+      },
+      "name": "well-known-ecosystem",
+      "owner": "hyperpolymath",
+      "tags": [
+        "ecosystem"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/julia-professional-registry",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "julia-professional-registry",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "julia-professional-registry"
+      },
+      "name": "julia-professional-registry",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/pow-the-game",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "pow-the-game",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "pow-the-game"
+      },
+      "name": "pow-the-game",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/HackenbushGames.jl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "HackenbushGames.jl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "julia",
+        "manifest_path": "HackenbushGames.jl"
+      },
+      "name": "HackenbushGames.jl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "julia"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/chimichanga",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "chimichanga",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "chimichanga"
+      },
+      "name": "chimichanga",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/tangle",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "tangle",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "tangle"
+      },
+      "name": "tangle",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/somethings-fishy",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "somethings-fishy",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "somethings-fishy"
+      },
+      "name": "somethings-fishy",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/snapcreate",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "snapcreate",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "snapcreate"
+      },
+      "name": "snapcreate",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/panic-attack",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "panic-attack",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "panic-attack"
+      },
+      "name": "panic-attack",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/panic-attacker",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "panic-attacker",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "panic-attacker"
+      },
+      "name": "panic-attacker",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/outreach",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "social-media-ecosystem/outreach",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "social-media-ecosystem/outreach"
+      },
+      "name": "social-media-ecosystem/outreach",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/info",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "social-media-ecosystem/info",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "social-media-ecosystem/info"
+      },
+      "name": "social-media-ecosystem/info",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/my-newsroom",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "social-media-ecosystem/my-newsroom",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "social-media-ecosystem/my-newsroom"
+      },
+      "name": "social-media-ecosystem/my-newsroom",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/awesome-elixir",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "awesome-ecosystem/awesome-elixir",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "awesome-ecosystem/awesome-elixir"
+      },
+      "name": "awesome-ecosystem/awesome-elixir",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/awesome-haskell",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "awesome-ecosystem/awesome-haskell",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "awesome-ecosystem/awesome-haskell"
+      },
+      "name": "awesome-ecosystem/awesome-haskell",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/awesome-lua",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "awesome-ecosystem/awesome-lua",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "awesome-ecosystem/awesome-lua"
+      },
+      "name": "awesome-ecosystem/awesome-lua",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/awesome-pandoc",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "awesome-ecosystem/awesome-pandoc",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "awesome-ecosystem/awesome-pandoc"
+      },
+      "name": "awesome-ecosystem/awesome-pandoc",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/awesome-rust",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "awesome-ecosystem/awesome-rust",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "awesome-ecosystem/awesome-rust"
+      },
+      "name": "awesome-ecosystem/awesome-rust",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/awesome-selfhosted",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "awesome-ecosystem/awesome-selfhosted",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "awesome-ecosystem/awesome-selfhosted"
+      },
+      "name": "awesome-ecosystem/awesome-selfhosted",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/awesome-v",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "awesome-ecosystem/awesome-v",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "awesome-ecosystem/awesome-v"
+      },
+      "name": "awesome-ecosystem/awesome-v",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/academic-workflow-suite",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "document-management-toolset/academic-workflow-suite",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "document-management-toolset/academic-workflow-suite"
+      },
+      "name": "document-management-toolset/academic-workflow-suite",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/anamnesis",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "document-management-toolset/anamnesis",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "document-management-toolset/anamnesis"
+      },
+      "name": "document-management-toolset/anamnesis",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/blog-drafts",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "document-management-toolset/blog-drafts",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "document-management-toolset/blog-drafts"
+      },
+      "name": "document-management-toolset/blog-drafts",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/branch-newspaper",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "document-management-toolset/branch-newspaper",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "document-management-toolset/branch-newspaper"
+      },
+      "name": "document-management-toolset/branch-newspaper",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/excel-economic-numbers-tool",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "document-management-toolset/excel-economic-numbers-tool",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "document-management-toolset/excel-economic-numbers-tool"
+      },
+      "name": "document-management-toolset/excel-economic-numbers-tool",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/the-metadatastician",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "document-management-toolset/the-metadatastician",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "document-management-toolset/the-metadatastician"
+      },
+      "name": "document-management-toolset/the-metadatastician",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/the-metadatastician-org-profile",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "document-management-toolset/the-metadatastician-org-profile",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "document-management-toolset/the-metadatastician-org-profile"
+      },
+      "name": "document-management-toolset/the-metadatastician-org-profile",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/unified-dataset-vocab",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "document-management-toolset/unified-dataset-vocab",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "document-management-toolset/unified-dataset-vocab"
+      },
+      "name": "document-management-toolset/unified-dataset-vocab",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/universal-chat-extractor",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "document-management-toolset/universal-chat-extractor",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "document-management-toolset/universal-chat-extractor"
+      },
+      "name": "document-management-toolset/universal-chat-extractor",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/universal-extension-format",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "document-management-toolset/universal-extension-format",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "document-management-toolset/universal-extension-format"
+      },
+      "name": "document-management-toolset/universal-extension-format",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/reposystem.wiki",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": ".wikis/reposystem.wiki",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": ".wikis/reposystem.wiki"
+      },
+      "name": ".wikis/reposystem.wiki",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/git-dispatcher.wiki",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": ".wikis/git-dispatcher.wiki",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": ".wikis/git-dispatcher.wiki"
+      },
+      "name": ".wikis/git-dispatcher.wiki",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/aletheia",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/aletheia",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/aletheia"
+      },
+      "name": "verification-ecosystem/aletheia",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/avow-protocol",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/avow-protocol",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/avow-protocol"
+      },
+      "name": "verification-ecosystem/avow-protocol",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/coq-jr",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/coq-jr",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/coq-jr"
+      },
+      "name": "verification-ecosystem/coq-jr",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/echidna",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/echidna",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/echidna"
+      },
+      "name": "verification-ecosystem/echidna",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/llm-verify",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/llm-verify",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/llm-verify"
+      },
+      "name": "verification-ecosystem/llm-verify",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/proven",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/proven",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/proven"
+      },
+      "name": "verification-ecosystem/proven",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/verisimdb",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/verisimdb",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/verisimdb"
+      },
+      "name": "verification-ecosystem/verisimdb",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/vql-ut",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/vcl-ut",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/vcl-ut"
+      },
+      "name": "verification-ecosystem/vcl-ut",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/eclexia-playground",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/eclexia-playground",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/eclexia-playground"
+      },
+      "name": "verification-ecosystem/eclexia-playground",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/proven-servers",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/proven-servers",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/proven-servers"
+      },
+      "name": "verification-ecosystem/proven-servers",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/verified-container-spec",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/verified-container-spec",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/verified-container-spec"
+      },
+      "name": "verification-ecosystem/verified-container-spec",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/claim-forge",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/claim-forge",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/claim-forge"
+      },
+      "name": "verification-ecosystem/claim-forge",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/disinfo-nesy-detector",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/disinfo-nesy-detector",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/disinfo-nesy-detector"
+      },
+      "name": "verification-ecosystem/disinfo-nesy-detector",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/llm-unify",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/llm-unify",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/llm-unify"
+      },
+      "name": "verification-ecosystem/llm-unify",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/llm-unify-core",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/llm-unify-core",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/llm-unify-core"
+      },
+      "name": "verification-ecosystem/llm-unify-core",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/rrecord-verity",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/rrecord-verity",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/rrecord-verity"
+      },
+      "name": "verification-ecosystem/rrecord-verity",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/typell",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/typell",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/typell"
+      },
+      "name": "verification-ecosystem/typell",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/invariant-path",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "invariant-path",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "invariant-path"
+      },
+      "name": "invariant-path",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/defensive-multiplicity",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/defensive-multiplicity",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/defensive-multiplicity"
+      },
+      "name": "verification-ecosystem/defensive-multiplicity",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/a2ml-deno",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/a2ml-deno",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/a2ml-deno"
+      },
+      "name": "verification-ecosystem/a2ml-deno",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/a2ml_ex",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/a2ml_ex",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/a2ml_ex"
+      },
+      "name": "verification-ecosystem/a2ml_ex",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/a2ml_gleam",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/a2ml_gleam",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/a2ml_gleam"
+      },
+      "name": "verification-ecosystem/a2ml_gleam",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/a2ml-rs",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/a2ml-rs",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/a2ml-rs"
+      },
+      "name": "verification-ecosystem/a2ml-rs",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/a2ml-showcase",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/a2ml-showcase",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/a2ml-showcase"
+      },
+      "name": "verification-ecosystem/a2ml-showcase",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/k9-deno",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/k9-deno",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/k9-deno"
+      },
+      "name": "verification-ecosystem/k9-deno",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/k9-haskell",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/k9-haskell",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/k9-haskell"
+      },
+      "name": "verification-ecosystem/k9-haskell",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/k9iser",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/k9iser",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/k9iser"
+      },
+      "name": "verification-ecosystem/k9iser",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/k9-pre-commit",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/k9-pre-commit",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/k9-pre-commit"
+      },
+      "name": "verification-ecosystem/k9-pre-commit",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/k9-rs",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/k9-rs",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/k9-rs"
+      },
+      "name": "verification-ecosystem/k9-rs",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/k9-validate-action",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/k9-validate-action",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/k9-validate-action"
+      },
+      "name": "verification-ecosystem/k9-validate-action",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/verisimdb-data",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/verisimdb-data",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/verisimdb-data"
+      },
+      "name": "verification-ecosystem/verisimdb-data",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/verisimiser",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/verisimiser",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/verisimiser"
+      },
+      "name": "verification-ecosystem/verisimiser",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/vexometer",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/vexometer",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/vexometer"
+      },
+      "name": "verification-ecosystem/vexometer",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/vex-tools",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/vex-tools",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/vex-tools"
+      },
+      "name": "verification-ecosystem/vex-tools",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/vex-satellite-template",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/vex-satellite-template",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/vex-satellite-template"
+      },
+      "name": "verification-ecosystem/vex-satellite-template",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/explicit-trust-plane",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/explicit-trust-plane",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/explicit-trust-plane"
+      },
+      "name": "verification-ecosystem/explicit-trust-plane",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/mustfile",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/mustfile",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/mustfile"
+      },
+      "name": "verification-ecosystem/mustfile",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/panll",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/panll",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/panll"
+      },
+      "name": "verification-ecosystem/panll",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/Panoptes",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/Panoptes",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/Panoptes"
+      },
+      "name": "verification-ecosystem/Panoptes",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/squisher-corpus",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/squisher-corpus",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/squisher-corpus"
+      },
+      "name": "verification-ecosystem/squisher-corpus",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/protocol-squisher",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/protocol-squisher",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/protocol-squisher"
+      },
+      "name": "verification-ecosystem/protocol-squisher",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/echidnabot",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/echidnabot",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/echidnabot"
+      },
+      "name": "verification-ecosystem/echidnabot",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/nesy-solver",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/nesy-solver",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/nesy-solver"
+      },
+      "name": "verification-ecosystem/nesy-solver",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/statistease",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/statistease",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/statistease"
+      },
+      "name": "verification-ecosystem/statistease",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/7-tentacles",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/7-tentacles",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/7-tentacles"
+      },
+      "name": "verification-ecosystem/7-tentacles",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/absolute-zero",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/absolute-zero",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/absolute-zero"
+      },
+      "name": "verification-ecosystem/absolute-zero",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/alkahest-shell-transmuter",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/alkahest-shell-transmuter",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/alkahest-shell-transmuter"
+      },
+      "name": "verification-ecosystem/alkahest-shell-transmuter",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/amethe",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/amethe",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/amethe"
+      },
+      "name": "verification-ecosystem/amethe",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/betlang",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/betlang",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/betlang"
+      },
+      "name": "verification-ecosystem/betlang",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/betlang-playground",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/betlang-playground",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/betlang-playground"
+      },
+      "name": "verification-ecosystem/betlang-playground",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/bofig",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/bofig",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/bofig"
+      },
+      "name": "verification-ecosystem/bofig",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/broad-spectrum",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/broad-spectrum",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/broad-spectrum"
+      },
+      "name": "verification-ecosystem/broad-spectrum",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/conative-gating",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/conative-gating",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/conative-gating"
+      },
+      "name": "verification-ecosystem/conative-gating",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/conflow",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/conflow",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/conflow"
+      },
+      "name": "verification-ecosystem/conflow",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/did-you-actually-do-that",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/did-you-actually-do-that",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/did-you-actually-do-that"
+      },
+      "name": "verification-ecosystem/did-you-actually-do-that",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/elegant-STATE",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/elegant-STATE",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/elegant-STATE"
+      },
+      "name": "verification-ecosystem/elegant-STATE",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/ephapax",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/ephapax",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/ephapax"
+      },
+      "name": "verification-ecosystem/ephapax",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/feedback-a-tron",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/feedback-a-tron",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/feedback-a-tron"
+      },
+      "name": "verification-ecosystem/feedback-a-tron",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/feedback-o-tron",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/feedback-o-tron",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/feedback-o-tron"
+      },
+      "name": "verification-ecosystem/feedback-o-tron",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/fireflag",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/fireflag",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/fireflag"
+      },
+      "name": "verification-ecosystem/fireflag",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/fogbinder",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/fogbinder",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/fogbinder"
+      },
+      "name": "verification-ecosystem/fogbinder",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/fraying-model-computational-testbed",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/fraying-model-computational-testbed",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/fraying-model-computational-testbed"
+      },
+      "name": "verification-ecosystem/fraying-model-computational-testbed",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/grim-repo",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/grim-repo",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/grim-repo"
+      },
+      "name": "verification-ecosystem/grim-repo",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/hypatia",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/hypatia",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/hypatia"
+      },
+      "name": "verification-ecosystem/hypatia",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/intsoc-transactor",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/intsoc-transactor",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/intsoc-transactor"
+      },
+      "name": "verification-ecosystem/intsoc-transactor",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/kaldor-iiot",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/kaldor-iiot",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/kaldor-iiot"
+      },
+      "name": "verification-ecosystem/kaldor-iiot",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/lithoglyph",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/lithoglyph",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/lithoglyph"
+      },
+      "name": "verification-ecosystem/lithoglyph",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/lsm",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/lsm",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/lsm"
+      },
+      "name": "verification-ecosystem/lsm",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/maa-framework",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/maa-framework",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/maa-framework"
+      },
+      "name": "verification-ecosystem/maa-framework",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/manifesto",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/manifesto",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/manifesto"
+      },
+      "name": "verification-ecosystem/manifesto",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/me-dialect-playground",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/me-dialect-playground",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/me-dialect-playground"
+      },
+      "name": "verification-ecosystem/me-dialect-playground",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/megadog",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/megadog",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/megadog"
+      },
+      "name": "verification-ecosystem/megadog",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/methodologies",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/methodologies",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/methodologies"
+      },
+      "name": "verification-ecosystem/methodologies",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/misinformation-defence-platform",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/misinformation-defence-platform",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/misinformation-defence-platform"
+      },
+      "name": "verification-ecosystem/misinformation-defence-platform",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/modshells",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/modshells",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/modshells"
+      },
+      "name": "verification-ecosystem/modshells",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/mtpc-template-repo",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/mtpc-template-repo",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/mtpc-template-repo"
+      },
+      "name": "verification-ecosystem/mtpc-template-repo",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/nafa-app",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/nafa-app",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/nafa-app"
+      },
+      "name": "verification-ecosystem/nafa-app",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/nafa-app-ambient",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/nafa-app-ambient",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/nafa-app-ambient"
+      },
+      "name": "verification-ecosystem/nafa-app-ambient",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/nano-aider",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/nano-aider",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/nano-aider"
+      },
+      "name": "verification-ecosystem/nano-aider",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/neural-foundations",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/neural-foundations",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/neural-foundations"
+      },
+      "name": "verification-ecosystem/neural-foundations",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/neurophone",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/neurophone",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/neurophone"
+      },
+      "name": "verification-ecosystem/neurophone",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/nexia-list",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/nexia-list",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/nexia-list"
+      },
+      "name": "verification-ecosystem/nexia-list",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/oblibeny",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/oblibeny",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/oblibeny"
+      },
+      "name": "verification-ecosystem/oblibeny",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/ochrance",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/ochrance",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/ochrance"
+      },
+      "name": "verification-ecosystem/ochrance",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/ochrance-framework",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/ochrance-framework",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/ochrance-framework"
+      },
+      "name": "verification-ecosystem/ochrance-framework",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/odds-and-sods-package-manager",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/odds-and-sods-package-manager",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/odds-and-sods-package-manager"
+      },
+      "name": "verification-ecosystem/odds-and-sods-package-manager",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/overview",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/overview",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/overview"
+      },
+      "name": "verification-ecosystem/overview",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/package-publishers",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/package-publishers",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/package-publishers"
+      },
+      "name": "verification-ecosystem/package-publishers",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/palimpsest-license",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/palimpsest-license",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/palimpsest-license"
+      },
+      "name": "verification-ecosystem/palimpsest-license",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/palimpsest-plasma",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/palimpsest-plasma",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/palimpsest-plasma"
+      },
+      "name": "verification-ecosystem/palimpsest-plasma",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/pandoc-a2ml",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/pandoc-a2ml",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/pandoc-a2ml"
+      },
+      "name": "verification-ecosystem/pandoc-a2ml",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/patallm-gallery",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/patallm-gallery",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/patallm-gallery"
+      },
+      "name": "verification-ecosystem/patallm-gallery",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/patch-bridge",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/patch-bridge",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/patch-bridge"
+      },
+      "name": "verification-ecosystem/patch-bridge",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/phantom-metal-taste",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/phantom-metal-taste",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/phantom-metal-taste"
+      },
+      "name": "verification-ecosystem/phantom-metal-taste",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/php-aegis",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/php-aegis",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/php-aegis"
+      },
+      "name": "verification-ecosystem/php-aegis",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/pimcore-fortress",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/pimcore-fortress",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/pimcore-fortress"
+      },
+      "name": "verification-ecosystem/pimcore-fortress",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/playbooks",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/playbooks",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/playbooks"
+      },
+      "name": "verification-ecosystem/playbooks",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/preference-injector",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/preference-injector",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/preference-injector"
+      },
+      "name": "verification-ecosystem/preference-injector",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/presswerk",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/presswerk",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/presswerk"
+      },
+      "name": "verification-ecosystem/presswerk",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/project-cb",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/project-cb",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/project-cb"
+      },
+      "name": "verification-ecosystem/project-cb",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/proof-of-work",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/proof-of-work",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/proof-of-work"
+      },
+      "name": "verification-ecosystem/proof-of-work",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/reasonably-good-token-vault",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/reasonably-good-token-vault",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/reasonably-good-token-vault"
+      },
+      "name": "verification-ecosystem/reasonably-good-token-vault",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/recon-silly-ation",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/recon-silly-ation",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/recon-silly-ation"
+      },
+      "name": "verification-ecosystem/recon-silly-ation",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/refugia",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/refugia",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/refugia"
+      },
+      "name": "verification-ecosystem/refugia",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/repo-customiser",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/repo-customiser",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/repo-customiser"
+      },
+      "name": "verification-ecosystem/repo-customiser",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/repo-slm-augmentor",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/repo-slm-augmentor",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/repo-slm-augmentor"
+      },
+      "name": "verification-ecosystem/repo-slm-augmentor",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/resource-record-fluctuator",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/resource-record-fluctuator",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/resource-record-fluctuator"
+      },
+      "name": "verification-ecosystem/resource-record-fluctuator",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/rhodium-pipeline",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/rhodium-pipeline",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/rhodium-pipeline"
+      },
+      "name": "verification-ecosystem/rhodium-pipeline",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/rhodium-standard-repositories",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/rhodium-standard-repositories",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/rhodium-standard-repositories"
+      },
+      "name": "verification-ecosystem/rhodium-standard-repositories",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/robot-repo-automaton",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/robot-repo-automaton",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/robot-repo-automaton"
+      },
+      "name": "verification-ecosystem/robot-repo-automaton",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/robot-vacuum-cleaner",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/robot-vacuum-cleaner",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/robot-vacuum-cleaner"
+      },
+      "name": "verification-ecosystem/robot-vacuum-cleaner",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/sanctify-php",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/sanctify-php",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/sanctify-php"
+      },
+      "name": "verification-ecosystem/sanctify-php",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/seamstress",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/seamstress",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/seamstress"
+      },
+      "name": "verification-ecosystem/seamstress",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/servers",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/servers",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/servers"
+      },
+      "name": "verification-ecosystem/servers",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/session-sentinel",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/session-sentinel",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/session-sentinel"
+      },
+      "name": "verification-ecosystem/session-sentinel",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/sinople-journal-theme",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/sinople-journal-theme",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/sinople-journal-theme"
+      },
+      "name": "verification-ecosystem/sinople-journal-theme",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/slopctl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/slopctl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/slopctl"
+      },
+      "name": "verification-ecosystem/slopctl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/squeakwell",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/squeakwell",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/squeakwell"
+      },
+      "name": "verification-ecosystem/squeakwell",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/ssg-collection",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/ssg-collection",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/ssg-collection"
+      },
+      "name": "verification-ecosystem/ssg-collection",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/supernorma",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/supernorma",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/supernorma"
+      },
+      "name": "verification-ecosystem/supernorma",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/SupraNorma",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/SupraNorma",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/SupraNorma"
+      },
+      "name": "verification-ecosystem/SupraNorma",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/synapse",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/synapse",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/synapse"
+      },
+      "name": "verification-ecosystem/synapse",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/techstack-enforcer",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/techstack-enforcer",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/techstack-enforcer"
+      },
+      "name": "verification-ecosystem/techstack-enforcer",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/techstack-filterlist",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/techstack-filterlist",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/techstack-filterlist"
+      },
+      "name": "verification-ecosystem/techstack-filterlist",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/tentacles-agentic-syllabus",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/tentacles-agentic-syllabus",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/tentacles-agentic-syllabus"
+      },
+      "name": "verification-ecosystem/tentacles-agentic-syllabus",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/the-hotchocolabot",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/the-hotchocolabot",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/the-hotchocolabot"
+      },
+      "name": "verification-ecosystem/the-hotchocolabot",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/the-nash-equilibrium",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/the-nash-equilibrium",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/the-nash-equilibrium"
+      },
+      "name": "verification-ecosystem/the-nash-equilibrium",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/thunderbird-template-reloaded",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/thunderbird-template-reloaded",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/thunderbird-template-reloaded"
+      },
+      "name": "verification-ecosystem/thunderbird-template-reloaded",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/tma-mark2",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/tma-mark2",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/tma-mark2"
+      },
+      "name": "verification-ecosystem/tma-mark2",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/tropical-resource-typing",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/tropical-resource-typing",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/tropical-resource-typing"
+      },
+      "name": "verification-ecosystem/tropical-resource-typing",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/typedqliser",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/typedqliser",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/typedqliser"
+      },
+      "name": "verification-ecosystem/typedqliser",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/typed-wasm",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/typed-wasm",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/typed-wasm"
+      },
+      "name": "verification-ecosystem/typed-wasm",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/ubicity",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/ubicity",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/ubicity"
+      },
+      "name": "verification-ecosystem/ubicity",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/union-policy-parser",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/union-policy-parser",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/union-policy-parser"
+      },
+      "name": "verification-ecosystem/union-policy-parser",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/union-policy-parsers",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/union-policy-parsers",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/union-policy-parsers"
+      },
+      "name": "verification-ecosystem/union-policy-parsers",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/volumod",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/volumod",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/volumod"
+      },
+      "name": "verification-ecosystem/volumod",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/voyage-enterprise-decision-system",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/voyage-enterprise-decision-system",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/voyage-enterprise-decision-system"
+      },
+      "name": "verification-ecosystem/voyage-enterprise-decision-system",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/wharf",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/wharf",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/wharf"
+      },
+      "name": "verification-ecosystem/wharf",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/zerostep",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/zerostep",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/zerostep"
+      },
+      "name": "verification-ecosystem/zerostep",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/zerotier-k8s-link",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/zerotier-k8s-link",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/zerotier-k8s-link"
+      },
+      "name": "verification-ecosystem/zerotier-k8s-link",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/scripts",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "verification-ecosystem/scripts",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "verification-ecosystem/scripts"
+      },
+      "name": "verification-ecosystem/scripts",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/flatracoon-os",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/flatracoon-os",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/flatracoon-os"
+      },
+      "name": "systems-ecosystem/flatracoon-os",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/immutable-linux-auditor",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/immutable-linux-auditor",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/immutable-linux-auditor"
+      },
+      "name": "systems-ecosystem/immutable-linux-auditor",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/personal-sysadmin",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/personal-sysadmin",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/personal-sysadmin"
+      },
+      "name": "systems-ecosystem/personal-sysadmin",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/svalinn",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/svalinn",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/svalinn"
+      },
+      "name": "systems-ecosystem/svalinn",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/devkit-risc-v",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/devkit-risc-v",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/devkit-risc-v"
+      },
+      "name": "systems-ecosystem/devkit-risc-v",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/exorcised-nerdctl",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/exorcised-nerdctl",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/exorcised-nerdctl"
+      },
+      "name": "systems-ecosystem/exorcised-nerdctl",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/flatracoon-netstack",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/flatracoon-netstack",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/flatracoon-netstack"
+      },
+      "name": "systems-ecosystem/flatracoon-netstack",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/jusys",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/jusys",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/jusys"
+      },
+      "name": "systems-ecosystem/jusys",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/complete-linux-internet-repair",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/complete-linux-internet-repair",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/complete-linux-internet-repair"
+      },
+      "name": "systems-ecosystem/complete-linux-internet-repair",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/system-operating-theatre",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/system-operating-theatre",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/system-operating-theatre"
+      },
+      "name": "systems-ecosystem/system-operating-theatre",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/systems-observatory",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/systems-observatory",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/systems-observatory"
+      },
+      "name": "systems-ecosystem/systems-observatory",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/flathub",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/flathub",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/flathub"
+      },
+      "name": "systems-ecosystem/flathub",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/flat-mate",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/flat-mate",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/flat-mate"
+      },
+      "name": "systems-ecosystem/flat-mate",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/macports-ports",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/macports-ports",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/macports-ports"
+      },
+      "name": "systems-ecosystem/macports-ports",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/obli-riscv-dev-kit",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/obli-riscv-dev-kit",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/obli-riscv-dev-kit"
+      },
+      "name": "systems-ecosystem/obli-riscv-dev-kit",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/svalinn-backup",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/svalinn-backup",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/svalinn-backup"
+      },
+      "name": "systems-ecosystem/svalinn-backup",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/file-soup",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/file-soup",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/file-soup"
+      },
+      "name": "systems-ecosystem/file-soup",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/filesoup",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "systems-ecosystem/filesoup",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "systems-ecosystem/filesoup"
+      },
+      "name": "systems-ecosystem/filesoup",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/natsci-studio",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "natsci-studio",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "natsci-studio"
+      },
+      "name": "natsci-studio",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/vext",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "vext",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "vext"
+      },
+      "name": "vext",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/quandledb",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "quandledb",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "quandledb"
+      },
+      "name": "quandledb",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/humor-ecosystem",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "humor-ecosystem",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "ecosystem",
+        "manifest_path": "humor-ecosystem"
+      },
+      "name": "humor-ecosystem",
+      "owner": "hyperpolymath",
+      "tags": [
+        "ecosystem"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/airborne-submarine-squadron",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "airborne-submarine-squadron",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "airborne-submarine-squadron"
+      },
+      "name": "airborne-submarine-squadron",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    },
+    {
+      "default_branch": "main",
+      "estate": "estate:hyperpolymath",
+      "forge": "gh",
+      "id": "repo:gh:hyperpolymath/git-scripts",
+      "imports": {
+        "imported_at": "2026-06-20T08:58:01.398643894Z",
+        "path_hint": "fleet-ecosystem/git-automation-ecosystem/git-scripts",
+        "source": "manifest:repos.toml"
+      },
+      "kind": "Repo",
+      "metadata": {
+        "manifest_kind": "repo",
+        "manifest_path": "fleet-ecosystem/git-automation-ecosystem/git-scripts"
+      },
+      "name": "fleet-ecosystem/git-automation-ecosystem/git-scripts",
+      "owner": "hyperpolymath",
+      "tags": [
+        "repo"
+      ],
+      "visibility": "public"
+    }
+  ],
   "scenarios": [],
-  "changesets": []
+  "schema": "reposystem/estate-export@1",
+  "seams": [
+    {
+      "description": null,
+      "domain": "network",
+      "estate": "estate:hyperpolymath",
+      "id": "seam:aerie:aerie",
+      "kind": "ExternalSeam",
+      "name": "aerie",
+      "system": "aerie",
+      "uri": "git@github.com:hyperpolymath/aerie.git"
+    },
+    {
+      "description": null,
+      "domain": "machine",
+      "estate": "estate:hyperpolymath",
+      "id": "seam:ambientops:ambientops",
+      "kind": "ExternalSeam",
+      "name": "ambientops",
+      "system": "ambientops",
+      "uri": "git@github.com:hyperpolymath/ambientops.git"
+    }
+  ],
+  "slots": []
 }

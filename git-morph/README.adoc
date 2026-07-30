@@ -1,5 +1,5 @@
 = git-morph
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: CC-BY-SA-4.0
 :author: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 
 A git extension that morphs repositories between monorepo components and standalone repos.

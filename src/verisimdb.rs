@@ -31,7 +31,7 @@
 //! also upserted under their own IDs in the same collection for fine-grained
 //! queries.
 //!
-//! ```
+//! ```text
 //! reposystem:graph/snapshot       — full GraphStore JSON
 //! reposystem:graph/{repo_id}      — individual Repo record
 //! reposystem:graph/edge:{edge_id} — individual Edge record
@@ -86,7 +86,7 @@ impl VeriSimDbClient {
         let client = reqwest::blocking::Client::builder()
             .timeout(std::time::Duration::from_secs(5))
             .build()
-            .expect("Failed to build HTTP client");
+            .unwrap_or_else(|_| reqwest::blocking::Client::new());
 
         debug!("[VeriSimDB] base_url={}", base_url);
         Self { base_url, client }

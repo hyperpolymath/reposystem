@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MPL-2.0
+// SPDX-License-Identifier: CC-BY-SA-4.0
 = Clone the repository
 git clone https://github.com/hyperpolymath/git-rsr-certified.git
 cd git-rsr-certified

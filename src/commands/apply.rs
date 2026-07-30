@@ -98,7 +98,7 @@ fn run_apply(data_dir: &Path, plan_name: Option<String>, args: ApplyArgs) -> Res
         if success {
             println!("       OK");
         } else {
-            println!("       FAILED: {}", error.as_ref().unwrap());
+            println!("       FAILED: {}", error.as_deref().unwrap_or("unknown error"));
             failed = true;
             failure_index = Some(i);
 
@@ -113,9 +113,9 @@ fn run_apply(data_dir: &Path, plan_name: Option<String>, args: ApplyArgs) -> Res
 
     // Determine result
     let (result, auto_rollback_triggered, rollback_plan_id) = if failed {
-        if args.auto_rollback && failure_index.is_some() {
+        if let (true, Some(failure_idx)) = (args.auto_rollback, failure_index) {
             // Execute rollback
-            let rollback_result = execute_rollback(&mut graph, &plan, failure_index.unwrap());
+            let rollback_result = execute_rollback(&mut graph, &plan, failure_idx);
             match rollback_result {
                 Ok(rollback_id) => (ApplyResult::RolledBack, true, Some(rollback_id)),
                 Err(e) => {
@@ -267,7 +267,7 @@ fn run_undo(data_dir: &Path, plan_name: Option<String>, args: ApplyArgs) -> Resu
         if success {
             println!("       OK");
         } else {
-            println!("       FAILED: {}", error.as_ref().unwrap());
+            println!("       FAILED: {}", error.as_deref().unwrap_or("unknown error"));
             failed = true;
         }
     }

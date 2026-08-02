@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: MPL-2.0
+# Owner: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+# Podman/Containerfile for total-upgrade
+# Fully self-contained build and runtime environment
+
+FROM fedora:40 AS builder
+
+# Install build dependencies
+RUN dnf install -y \
+    rust \
+    cargo \
+    openssl-devel \
+    zlib-devel \
+    pkg-config \
+    git \
+    && dnf clean all
+
+WORKDIR /app
+COPY . .
+
+# Build the release binary
+RUN cargo build --release
+
+# Final runtime image
+FROM fedora:40
+
+# Install runtime dependencies and security tools
+RUN dnf install -y \
+    openssl \
+    zlib \
+    firewalld \
+    policycoreutils \
+    && dnf clean all
+
+WORKDIR /app
+COPY --from=builder /app/target/release/total-upgrade /usr/local/bin/total-upgrade
+COPY --from=builder /app/launcher/total-upgrade-launcher.sh /usr/local/bin/total-upgrade-launcher
+
+# SELinux / Firewall hints
+# Firewalld: The daemon uses no ports by default but we ensure it's safe.
+# SELinux: Labels for the binary should be set on the host or via podman --security-opt label=disable if testing.
+
+ENTRYPOINT ["total-upgrade-launcher"]
+CMD ["--tui"]

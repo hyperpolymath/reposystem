@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # Category 2: Documentation Standards
 
 > For SLM training: Documentation should describe the project, not meta-frameworks.

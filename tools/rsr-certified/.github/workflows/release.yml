@@ -13,6 +13,7 @@ jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
@@ -31,6 +32,7 @@ jobs:
     name: Build ${{ matrix.target }}
     needs: create-release
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
       matrix:
         include:
@@ -107,6 +109,7 @@ jobs:
     name: Container Release
     needs: create-release
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       packages: write

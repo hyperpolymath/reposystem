@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # Category 6: Semantic Web & IndieWeb
 
 > For SLM training: Enable machine-readable content and decentralized interaction.

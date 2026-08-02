@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 //! Rhodium tier compliance checks - Exemplary level
 
 use super::{ComplianceCheck, RepoContents};

@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 //! Property-based tests for reposystem core invariants
 //!
@@ -98,6 +97,8 @@ fn test_graph_with_single_repo_is_valid() {
         default_branch: "main".into(),
         visibility: reposystem::types::Visibility::Public,
         tags: vec![],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
         imports: reposystem::types::ImportMeta {
             source: "test".into(),
             path_hint: None,
@@ -127,6 +128,8 @@ fn test_graph_with_multiple_repos_maintains_count() {
             default_branch: "main".into(),
             visibility: reposystem::types::Visibility::Public,
             tags: vec![],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
             imports: reposystem::types::ImportMeta {
                 source: "test".into(),
                 path_hint: None,
@@ -154,6 +157,8 @@ fn test_graph_edge_addition_maintains_invariant() {
         default_branch: "main".into(),
         visibility: reposystem::types::Visibility::Public,
         tags: vec![],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
         imports: reposystem::types::ImportMeta {
             source: "test".into(),
             path_hint: None,
@@ -171,6 +176,8 @@ fn test_graph_edge_addition_maintains_invariant() {
         default_branch: "main".into(),
         visibility: reposystem::types::Visibility::Public,
         tags: vec![],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
         imports: reposystem::types::ImportMeta {
             source: "test".into(),
             path_hint: None,
@@ -221,6 +228,8 @@ fn test_graph_export_dot_format_produces_valid_syntax() {
         default_branch: "main".into(),
         visibility: reposystem::types::Visibility::Public,
         tags: vec![],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
         imports: reposystem::types::ImportMeta {
             source: "test".into(),
             path_hint: None,
@@ -255,6 +264,8 @@ fn test_graph_is_deterministic_across_exports() {
         default_branch: "main".into(),
         visibility: reposystem::types::Visibility::Public,
         tags: vec![],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
         imports: reposystem::types::ImportMeta {
             source: "test".into(),
             path_hint: None,
@@ -272,6 +283,8 @@ fn test_graph_is_deterministic_across_exports() {
         default_branch: "main".into(),
         visibility: reposystem::types::Visibility::Public,
         tags: vec![],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
         imports: reposystem::types::ImportMeta {
             source: "test".into(),
             path_hint: None,

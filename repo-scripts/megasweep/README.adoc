@@ -1,0 +1,52 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= megasweep — parallel estate-wide repo sweep runner
+:toc: preamble
+
+Implements reposystem#137. A pluggable, parallel sweep over local repo clones —
+the execution engine behind the estate Nix/Guix and settings/template sweeps.
+*Elixir-only* (no Python/npm), pure git/gh, owned-compute friendly (host cron or
+bag-of-actions; never metered Actions).
+
+== Run
+
+[source,bash]
+----
+elixir megasweep.exs [--detector nix-guix] [--root ~/developer/repos] \
+                     [--jobs N] [--out report.json] [--mode audit]
+----
+
+Outputs a console summary and a machine-readable JSON report
+(`{detector, mode, summary, results}`) for downstream consumers.
+
+== Detectors
+
+A detector is a module implementing `name/0`, `detect/2` (per-repo, parallel,
+*read-only*), and `summarize/1` (fold). Add one to `@detectors` in `megasweep.exs`.
+
+* `nix-guix` (v1) — classifies each repo `NIX_NO_GUIX` / `BOTH` / `GUIX_ONLY` /
+  `NEITHER`, counts nix files, `.envrc` nix blocks, CI nix usage, and *broken*
+  `guix.scm` (invalid Guix names / placeholders). Feeds reposystem#138 and #139.
+* `templates` — health-file presence (LICENSE / README / SECURITY /
+  CONTRIBUTING / CODE_OF_CONDUCT) + local issue/discussion/PR templates, which
+  are drift now that the estate inherits the org-level `.github` canon
+  (reposystem#164/#167). Verdicts `OK` / `MISSING_HEALTH` / `LOCAL_TEMPLATES` /
+  `BOTH_DRIFT`.
+* `settings` — GitHub repo-settings drift vs estate policy (squash/rebase only,
+  auto-merge on, delete-branch-on-merge on). One `gh api repos/<slug>` GET per
+  repo, self-capped at 8 concurrent jobs. Verdicts `OK` / `DRIFT` / `ARCHIVED` /
+  `NO_GITHUB_REMOTE` / `GH_ERROR`, with per-repo flags such as
+  `MERGE_COMMIT_ENABLED`, `AUTO_MERGE_OFF`. Feeds reposystem#141.
+
+== Safety
+
+* *Audit / report-only.* `--mode apply` is intentionally refused for now —
+  megasweep is a canary first; mutation lands later, owner-gated and staged.
+* Per-repo failures are isolated (one bad repo can't abort the run).
+
+== Scope / roadmap
+
+* v1 scans *local clones* (whatever is under `--root`). A `gh`-backed mode to
+  reach uncloned owned repos is a follow-up.
+* Planned detectors: settings depth-2 (branch protection / required-checks —
+  needs extra API calls), on-creation regularise (reposystem#142).

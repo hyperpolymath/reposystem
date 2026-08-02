@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 #
 # Reposystem Justfile
@@ -195,7 +195,7 @@ repl:
 # ============================================================================
 
 # Scan local repos
-scan path="~/repos":
+scan path="~/developer/repos":
     @echo "Scanning {{path}}..."
     cargo run -- scan {{path}}
 
@@ -209,10 +209,31 @@ export-json output="ecosystem.json":
     @echo "Exporting to {{output}}..."
     cargo run -- export --format json > {{output}}
 
-# Export graph JSON into web UI folder
+# Import the estate manifest (repos.toml) into the graph store
+import-manifest:
+    @cargo run -- import manifest
+    @echo "✓ Estate imported into the graph store"
+
+# Export the unified estate envelope the front-ends consume into the web UI folder
 web-export output="web/export.json":
     @echo "Exporting to {{output}}..."
-    cargo run -- export --format json > {{output}}
+    @cargo run -- export --format estate-json -o {{output}}
+
+# Import the estate then refresh the web envelope in one step
+web-refresh: import-manifest web-export
+    @echo "✓ web/export.json refreshed from the estate manifest"
+
+# Daily driver: scan clones + import manifest + refresh the HUD data in one go
+estate-refresh path="~/developer/repos": (scan path) web-refresh
+    @echo "✓ Estate refreshed — the HUD auto-loads web/export.json (just estate to serve)"
+
+# Refresh the estate then serve the HUD
+estate path="~/developer/repos": (estate-refresh path) web-serve
+
+# Install the reposystem binary to ~/.cargo/bin
+install:
+    cargo install --path . --locked
+    @echo "✓ reposystem installed — run 'reposystem --help'"
 
 # Render graph to SVG
 render-svg input="ecosystem.dot" output="ecosystem.svg":

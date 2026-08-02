@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MPL-2.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 name: CodeQL Security Analysis
 
 on:
@@ -7,7 +7,7 @@ on:
   pull_request:
     branches: [main, master]
   schedule:
-    - cron: '0 6 * * 1'
+    - cron: '0 6 1 * *'   # monthly 1st 06:00 UTC
 
 # Estate guardrail: cancel superseded runs so re-pushes / rebased PR
 # updates do not pile up queued runs against the shared account-wide
@@ -23,7 +23,7 @@ permissions:
 jobs:
   analyze:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 60
     permissions:
       contents: read
       security-events: write

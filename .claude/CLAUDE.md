@@ -1,13 +1,16 @@
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk> -->
+
 ## Machine-Readable Artefacts
 
 The following files in `.machine_readable/` contain structured project metadata:
 
-- `.machine_readable/6a2/STATE.a2ml` - Current project state and progress
-- `.machine_readable/6a2/META.a2ml` - Architecture decisions and development practices
-- `.machine_readable/6a2/ECOSYSTEM.a2ml` - Position in the ecosystem and related projects
-- `.machine_readable/6a2/AGENTIC.a2ml` - AI agent interaction patterns
-- `.machine_readable/6a2/NEUROSYM.a2ml` - Neurosymbolic integration config
-- `.machine_readable/6a2/PLAYBOOK.a2ml` - Operational runbook
+- `.machine_readable/descriptiles/STATE.a2ml` - Current project state and progress
+- `.machine_readable/descriptiles/META.a2ml` - Architecture decisions and development practices
+- `.machine_readable/descriptiles/ECOSYSTEM.a2ml` - Position in the ecosystem and related projects
+- `.machine_readable/descriptiles/AGENTIC.a2ml` - AI agent interaction patterns
+- `.machine_readable/descriptiles/NEUROSYM.a2ml` - Neurosymbolic integration config
+- `.machine_readable/descriptiles/PLAYBOOK.a2ml` - Operational runbook
 
 ---
 
@@ -28,7 +31,7 @@ The following files in `.machine_readable/` contain structured project metadata:
 | **Bash/POSIX Shell** | Scripts, automation | Keep minimal |
 | **JavaScript** | Only where ReScript cannot | MCP protocol glue, Deno APIs |
 | **Nickel** | Configuration language | For complex configs |
-| **Guile Scheme** | State/meta files | .machine_readable/6a2/STATE.a2ml, .machine_readable/6a2/META.a2ml, .machine_readable/6a2/ECOSYSTEM.a2ml |
+| **Guile Scheme** | State/meta files | .machine_readable/descriptiles/STATE.a2ml, .machine_readable/descriptiles/META.a2ml, .machine_readable/descriptiles/ECOSYSTEM.a2ml |
 | **Julia** | Batch scripts, data processing | Per RSR |
 | **OCaml** | AffineScript compiler | Language-specific |
 | **Ada** | Safety-critical systems | Where required |

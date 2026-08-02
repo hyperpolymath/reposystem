@@ -1,4 +1,5 @@
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk> -->
 
 # Governance & Hypatia
 
@@ -20,7 +21,7 @@ jobs:
     secrets: inherit
 ```
 
-How it runs (verified in `.machine_readable/6a2/NEUROSYM.a2ml`):
+How it runs (verified in `.machine_readable/descriptiles/NEUROSYM.a2ml`):
 
 - **Clone-at-HEAD in CI** — the scanner is cloned at its current HEAD rather than pinned, so the gate always reflects the latest rule set.
 - **Exits non-zero on `>= medium` findings**, surfacing them as a check.
@@ -169,7 +170,7 @@ CI is built from **reusable workflows in `hyperpolymath/standards`**, called as 
 | `mirror.yml` | Cross-forge mirror |
 | `push-email-notify.yml` | Push email notification |
 
-`governance.yml` notes that it *replaces* per-repo governance scaffolding (formerly `quality.yml`, `guix-nix-policy.yml`, `npm-bun-blocker.yml`, `ts-blocker.yml`, `security-policy.yml`, `rsr-antipattern.yml`, `wellknown-enforcement.yml`, `workflow-linter.yml`) by delegating to the shared bundle, while load-bearing build/security workflows stay standalone in the repo.
+`governance.yml` notes that it *replaces* per-repo governance scaffolding (formerly `quality.yml`, `guix-nix-policy.yml`, `runtime-policy.yml`, `security-policy.yml`, `rsr-antipattern.yml`, `wellknown-enforcement.yml`, `workflow-linter.yml`) by delegating to the shared bundle, while load-bearing build/security workflows stay standalone in the repo.
 
 ---
 

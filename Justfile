@@ -195,7 +195,7 @@ repl:
 # ============================================================================
 
 # Scan local repos
-scan path="~/repos":
+scan path="~/developer/repos":
     @echo "Scanning {{path}}..."
     cargo run -- scan {{path}}
 
@@ -222,6 +222,18 @@ web-export output="web/export.json":
 # Import the estate then refresh the web envelope in one step
 web-refresh: import-manifest web-export
     @echo "✓ web/export.json refreshed from the estate manifest"
+
+# Daily driver: scan clones + import manifest + refresh the HUD data in one go
+estate-refresh path="~/developer/repos": (scan path) web-refresh
+    @echo "✓ Estate refreshed — the HUD auto-loads web/export.json (just estate to serve)"
+
+# Refresh the estate then serve the HUD
+estate path="~/developer/repos": (estate-refresh path) web-serve
+
+# Install the reposystem binary to ~/.cargo/bin
+install:
+    cargo install --path . --locked
+    @echo "✓ reposystem installed — run 'reposystem --help'"
 
 # Render graph to SVG
 render-svg input="ecosystem.dot" output="ecosystem.svg":

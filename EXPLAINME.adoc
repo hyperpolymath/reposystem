@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = Reposystem — Show Me The Receipts
 :toc:
 :icons: font
@@ -33,7 +34,7 @@ The README makes claims. This file backs them up.
 | **ReScript** | Type-safe data model
 | **Deno** | Web UI runtime (no Node/npm)
 | **Nickel** | Configuration parsing
-| **Guile Scheme** | State metadata (.machine_readable/6a2/*.a2ml files)
+| **Guile Scheme** | State metadata (.machine_readable/descriptiles/*.a2ml files)
 |===
 
 == File Map

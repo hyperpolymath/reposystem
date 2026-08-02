@@ -1,4 +1,5 @@
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk> -->
 
 # Getting Started
 
@@ -69,7 +70,7 @@ just test-rust           # -> cargo test
 
 `just test` chains `test-rescript` (`deno test`), `test-rust` (`cargo test`), and `test-integration` (`./tests/integration/run.sh`).
 
-**Current baseline: 113/113** on a fresh run (per `.machine_readable/6a2/STATE.a2ml`). Note that the recorded `tests-passing` figure in STATE carries an explicit staleness note — treat it as a baseline marker, not a live CI assertion.
+**Current baseline: 113/113** on a fresh run (per `.machine_readable/descriptiles/STATE.a2ml`). Note that the recorded `tests-passing` figure in STATE carries an explicit staleness note — treat it as a baseline marker, not a live CI assertion.
 
 ---
 

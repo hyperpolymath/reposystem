@@ -1,4 +1,5 @@
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk> -->
 
 # reposystem
 
@@ -17,7 +18,7 @@ The project builds outward in this order:
 
 ## What's built now
 
-Per `.machine_readable/6a2/STATE.a2ml` (2026-06-26), the project is in the **"Testing & stabilization"** phase (completion estimated ~68%, a coarse non-rubric figure), with the estate-representation foundation landed:
+Per `.machine_readable/descriptiles/STATE.a2ml` (2026-06-26), the project is in the **"Testing & stabilization"** phase (completion estimated ~68%, a coarse non-rubric figure), with the estate-representation foundation landed:
 
 - **Representation foundation** — the Rust `types` module is the single schema of record: `Estate`, `ExternalSeam` + `SeamDomain`, `RelationType` (including `RefersTo`), and the five stores (Graph/Slot/Aspect/Plan/Audit). Seams are edge sinks (`aerie` → Network, `ambientops` → Machine).
 - **Manifest import** — `src/importers/manifest.rs` bridges `repos.toml` (declared 297 repos) + `repos.groups.toml` into the `GraphStore` via `reposystem import manifest`.
@@ -37,7 +38,7 @@ The remaining work is the **f6 — GUI Railway Yard (Polish)** freeze in `ROADMA
 - [ ] Contingency-paths visualisation
 - [ ] Multi-user collaboration
 
-Documentation and OPSM-alignment work is also tracked there, and the ReScript → AffineScript migration is epic #93. Always read `.machine_readable/6a2/STATE.a2ml` for the live status, blockers, and next actions before relying on this summary.
+Documentation and OPSM-alignment work is also tracked there, and the ReScript → AffineScript migration is epic #93. Always read `.machine_readable/descriptiles/STATE.a2ml` for the live status, blockers, and next actions before relying on this summary.
 
 ## Navigation
 
@@ -49,7 +50,7 @@ Documentation and OPSM-alignment work is also tracked there, and the ReScript �
 
 ## Machine-readable artefacts
 
-Structured project metadata lives under `.machine_readable/6a2/`. Agents should read these before mutating the graph or relying on summaries:
+Structured project metadata lives under `.machine_readable/descriptiles/`. Agents should read these before mutating the graph or relying on summaries:
 
 - `STATE.a2ml` — current project state, blockers, and next actions
 - `META.a2ml` — architecture decisions and development practices

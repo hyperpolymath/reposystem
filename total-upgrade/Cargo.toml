@@ -1,0 +1,17 @@
+[package]
+name = "total-upgrade"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.102"
+chrono = "0.4.45"
+clap = { version = "4.6.1", features = ["derive"] }
+crossterm = "0.29.0"
+ratatui = "0.30.1"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_toml = "0.0.1"
+toml = "1.1.2"
+
+[dev-dependencies]
+tempfile = "3.27.0"

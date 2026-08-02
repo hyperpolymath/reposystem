@@ -1,24 +1,25 @@
 ;;; SPDX-License-Identifier: MPL-2.0
-;;; manifest.scm — Generic Guix manifest for RSR-compliant projects
-;;;
-;;; Usage:
-;;;   guix shell -m manifest.scm
+;;; Owner: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+;;; manifest.scm — Guix manifest for total-upgrade
 ;;;
 
 (specifications->manifest
   '(;; Core development tools
     "git"
     "just"
-    "nickel"
     "curl"
     "bash"
     "coreutils"
 
-    ;; Documentation
-    "asciidoctor"
-    "pandoc"
+    ;; Rust Toolchain
+    "rust"
+    "cargo"
+    "rust-analyzer"
 
-    ;; Common build dependencies
+    ;; Dependencies for the binary
     "openssl"
     "zlib"
-    "pkg-config"))
+    "pkg-config"
+    
+    ;; TUI support
+    "ncurses"))

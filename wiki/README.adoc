@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+= reposystem wiki — source of truth
+
+This directory holds the *canonical, version-controlled source* for the
+`reposystem` GitHub wiki. The published wiki (https://github.com/hyperpolymath/reposystem/wiki)
+is a mirror of these files.
+
+== Why the source lives here
+
+GitHub wikis are a separate git repository (`reposystem.wiki.git`). That repo is
+not writable from every CI/sandbox environment — an egress policy can return
+`403` for the wiki host even when the main repository is reachable (this is
+exactly what happened when these pages were authored). Keeping the source in the
+main repo makes the wiki reviewable in pull requests and re-publishable from any
+environment that *does* have wiki push access.
+
+== Pages
+
+[cols="1,3",options="header"]
+|===
+| File | Page
+
+| `Home.md`                                | Landing page / index
+| `Architecture-Representation-Model.md`   | The canonical Rust `types` schema of record
+| `Estate-Submodule-Layout.md`             | The 8 gitlink submodules + embedded trees + manifest
+| `Getting-Started.md`                     | Build, test, CLI, visualise-the-estate flow
+| `Tool-Registry.md`                       | The `config/tools.ncl` "super power collection"
+| `Governance-and-Hypatia.md`              | Hypatia gate, language policy, CRG, licensing, CI
+| `_Sidebar.md` / `_Footer.md`             | Wiki navigation chrome
+|===
+
+== Publishing
+
+From an environment with push access to `reposystem.wiki.git`:
+
+[source,sh]
+----
+sh wiki/PUBLISH.sh
+# or, over HTTPS:
+WIKI_URL=https://github.com/hyperpolymath/reposystem.wiki.git sh wiki/PUBLISH.sh
+----
+
+The script clones the wiki (or initialises it if empty), copies every `*.md`
+page in this directory into it, commits, and pushes. It is idempotent — edit a
+page here, re-run, and the wiki updates. `PUBLISH.sh` and this `README.adoc` are
+never published.

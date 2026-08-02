@@ -514,6 +514,15 @@ body.dark .edge {
   fill: var(--component);
 }
 
+/* External seams (aerie/ambientops/…): warm, dashed, clearly "outside" the
+   indigo repo estate. */
+.node.seam {
+  fill: var(--seam, #c8860d);
+  stroke: var(--seam-stroke, #7a5200);
+  stroke-width: 2;
+  stroke-dasharray: 3 2;
+}
+
 .node.selected {
   stroke: var(--accent);
   stroke-width: 3;

@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 //! Criterion benchmarks for reposystem core operations
 //!
@@ -29,6 +28,8 @@ fn make_test_repo(id: usize) -> Repo {
         default_branch: "main".into(),
         visibility: Visibility::Public,
         tags: vec!["benchmark".into()],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
         imports: ImportMeta {
             source: "bench".into(),
             path_hint: None,

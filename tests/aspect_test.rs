@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 //! Aspect-based cross-cutting tests for reposystem
 //!
@@ -108,6 +107,8 @@ fn test_graph_handles_duplicate_repos() {
         default_branch: "main".into(),
         visibility: Visibility::Public,
         tags: vec![],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
         imports: ImportMeta {
             source: "test".into(),
             path_hint: None,
@@ -200,6 +201,8 @@ fn test_large_graph_construction_bounded_time() {
             default_branch: "main".into(),
             visibility: Visibility::Public,
             tags: vec![],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
             imports: ImportMeta {
                 source: "perf".into(),
                 path_hint: None,
@@ -232,6 +235,8 @@ fn test_large_graph_export_bounded_time() {
             default_branch: "main".into(),
             visibility: Visibility::Public,
             tags: vec![],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
             imports: ImportMeta {
                 source: "export".into(),
                 path_hint: None,
@@ -267,6 +272,8 @@ fn test_query_operations_are_fast() {
             default_branch: "main".into(),
             visibility: Visibility::Public,
             tags: vec![],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
             imports: ImportMeta {
                 source: "query".into(),
                 path_hint: None,
@@ -310,6 +317,8 @@ fn test_graph_state_consistency_after_operations() {
             default_branch: "main".into(),
             visibility: Visibility::Public,
             tags: vec![],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
             imports: ImportMeta {
                 source: "cons".into(),
                 path_hint: None,
@@ -399,6 +408,8 @@ fn test_visibility_enum_coverage() {
             default_branch: "main".into(),
             visibility: vis,
             tags: vec![],
+        estate: "estate:hyperpolymath".into(),
+        metadata: Default::default(),
             imports: ImportMeta {
                 source: "vis".into(),
                 path_hint: None,

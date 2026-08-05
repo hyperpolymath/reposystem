@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v5.0.1
+      - uses: actions/checkout@v7.0.1
       - uses: google/clusterfuzzlite/actions/build_fuzzers@v1
         with:
           language: rust

@@ -95,6 +95,48 @@ defmodule Megasweep.Detectors.NixGuix do
     }
   end
 
+
+  def apply(repo, res) do
+    if res.verdict in ["BOTH", "NIX_NO_GUIX"] or res.nix_files > 0 or res.envrc_nix or res.ci_nix_files > 0 do
+      needs_commit = false
+      
+      for nix_file <- res.detail.nix do
+        System.cmd("git", ["-C", repo, "rm", "-f", nix_file])
+      end
+      if res.detail.nix != [], do: needs_commit = true
+      
+      envrc_path = Path.join(repo, ".envrc")
+      if File.exists?(envrc_path) do
+        content = File.read!(envrc_path)
+        new_content = content |> String.split("\n") |> Enum.reject(&Regex.match?(@envrc_nix_re, &1)) |> Enum.join("\n")
+        if content != new_content do
+          File.write!(envrc_path, new_content)
+          System.cmd("git", ["-C", repo, "add", ".envrc"])
+          needs_commit = true
+        end
+      end
+      
+      for ci_file <- res.detail.ci_nix do
+        path = Path.join(repo, ci_file)
+        if File.exists?(path) do
+           content = File.read!(path)
+           new_content = content |> String.split("\n") |> Enum.reject(&Regex.match?(@ci_nix_re, &1)) |> Enum.join("\n")
+           if content != new_content do
+             File.write!(path, new_content)
+             System.cmd("git", ["-C", repo, "add", ci_file])
+             needs_commit = true
+           end
+        end
+      end
+      
+      if needs_commit do
+        IO.puts("      Applying nix removal to #{res.repo}...")
+        System.cmd("git", ["-C", repo, "commit", "-m", "chore(nix->guix): delete Nix estate-wide (#138)"])
+        System.cmd("git", ["-C", repo, "push"])
+      end
+    end
+  end
+
   def summarize(results) do
     relevant =
       Enum.filter(results, fn r ->

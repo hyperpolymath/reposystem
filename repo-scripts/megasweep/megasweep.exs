@@ -161,6 +161,40 @@ defmodule Megasweep.Detectors.Templates do
     }
   end
 
+  
+  def apply(repo, res) do
+    if res.verdict != "OK" do
+      for tpl <- res.detail.local_templates do
+        System.cmd("git", ["-C", repo, "rm", "-f", tpl])
+      end
+      
+      for miss <- res.missing do
+        case miss do
+          "SECURITY" ->
+            File.mkdir_p!(Path.join(repo, ".github"))
+            {out, 0} = System.cmd("curl", ["-fsSL", "https://raw.githubusercontent.com/hyperpolymath/.github/main/SECURITY.md"])
+            File.write!(Path.join([repo, ".github", "SECURITY.md"]), out)
+            System.cmd("git", ["-C", repo, "add", ".github/SECURITY.md"])
+          "CONTRIBUTING" ->
+            {out, 0} = System.cmd("curl", ["-fsSL", "https://raw.githubusercontent.com/hyperpolymath/.github/main/CONTRIBUTING.md"])
+            File.write!(Path.join(repo, "CONTRIBUTING.md"), out)
+            System.cmd("git", ["-C", repo, "add", "CONTRIBUTING.md"])
+          "CODE_OF_CONDUCT" ->
+            {out, 0} = System.cmd("curl", ["-fsSL", "https://raw.githubusercontent.com/hyperpolymath/.github/main/CODE_OF_CONDUCT.md"])
+            File.write!(Path.join(repo, "CODE_OF_CONDUCT.md"), out)
+            System.cmd("git", ["-C", repo, "add", "CODE_OF_CONDUCT.md"])
+          _ -> :ignore
+        end
+      end
+      
+      needs_commit = res.detail.local_templates != [] or Enum.any?(res.missing, &(&1 in ["SECURITY", "CONTRIBUTING", "CODE_OF_CONDUCT"]))
+      if needs_commit do
+        System.cmd("git", ["-C", repo, "commit", "-m", "chore: estate baseline regularisation (WS7)"])
+        System.cmd("git", ["-C", repo, "push"])
+      end
+    end
+  end
+
   def summarize(results) do
     %{
       repos_scanned: length(results),
@@ -242,6 +276,19 @@ defmodule Megasweep.Detectors.Settings do
     _ -> :error
   end
 
+  
+  def apply(_repo, res) do
+    if res.verdict == "DRIFT" do
+      IO.puts("      Applying settings fix to #{res.slug}...")
+      System.cmd("gh", ["api", "-X", "PATCH", "repos/#{res.slug}",
+        "-F", "allow_merge_commit=false",
+        "-F", "allow_squash_merge=true",
+        "-F", "allow_auto_merge=true",
+        "-F", "delete_branch_on_merge=true"
+      ])
+    end
+  end
+
   def summarize(results) do
     on_github = Enum.reject(results, &(&1.verdict in ["NO_GITHUB_REMOTE", "GH_ERROR"]))
 
@@ -288,8 +335,8 @@ defmodule Megasweep do
       end
     mode = opts[:mode] || "audit"
 
-    if mode != "audit" do
-      IO.puts(:stderr, "megasweep: only --mode audit is implemented (report-only canary). Refusing #{mode}.")
+    if mode not in ["audit", "apply"] do
+      IO.puts(:stderr, "megasweep: Refusing #{mode}.")
       System.halt(2)
     end
 
@@ -305,7 +352,13 @@ defmodule Megasweep do
 
     results =
       repos
-      |> Task.async_stream(fn r -> detector.detect(r, opts) end,
+      |> Task.async_stream(fn r ->
+          res = detector.detect(r, opts)
+          if mode == "apply" and function_exported?(detector, :apply, 2) do
+            detector.apply(r, res)
+          end
+          res
+        end,
         max_concurrency: jobs,
         timeout: 120_000,
         on_timeout: :kill_task

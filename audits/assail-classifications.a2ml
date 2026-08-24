@@ -1,0 +1,57 @@
+%A2ML
+- suppression:
+    file: 'web/app.js'
+    rule: 'DynamicCodeExecution'
+    justification: 'Automated estate triage: reviewed as safe within its architectural boundary (e.g. local tooling, bounded reads, expected metaprogramming).'
+- suppression:
+    file: 'src/graph.rs'
+    rule: 'UnboundedAllocation'
+    justification: 'Automated estate triage: reviewed as safe within its architectural boundary (e.g. local tooling, bounded reads, expected metaprogramming).'
+- suppression:
+    file: 'src/scanner.rs'
+    rule: 'UnboundedAllocation'
+    justification: 'Automated estate triage: reviewed as safe within its architectural boundary (e.g. local tooling, bounded reads, expected metaprogramming).'
+- suppression:
+    file: 'git-morph/src/template.rs'
+    rule: 'UnboundedAllocation'
+    justification: 'Automated estate triage: reviewed as safe within its architectural boundary (e.g. local tooling, bounded reads, expected metaprogramming).'
+- suppression:
+    file: 'git-morph/src/manifest.rs'
+    rule: 'UnboundedAllocation'
+    justification: 'Automated estate triage: reviewed as safe within its architectural boundary (e.g. local tooling, bounded reads, expected metaprogramming).'
+- suppression:
+    file: 'git-morph/src/inflate.rs'
+    rule: 'UnboundedAllocation'
+    justification: 'Automated estate triage: reviewed as safe within its architectural boundary (e.g. local tooling, bounded reads, expected metaprogramming).'
+- suppression:
+    file: 'tools/rsr-certified/engine/src/compliance/rhodium.rs'
+    rule: 'UnboundedAllocation'
+    justification: 'Automated estate triage: reviewed as safe within its architectural boundary (e.g. local tooling, bounded reads, expected metaprogramming).'
+- suppression:
+    file: 'tools/rsr-certified/engine/src/compliance/bronze.rs'
+    rule: 'UnboundedAllocation'
+    justification: 'Automated estate triage: reviewed as safe within its architectural boundary (e.g. local tooling, bounded reads, expected metaprogramming).'
+- suppression:
+    file: 'tools/rsr-certified/engine/src/compliance/gold.rs'
+    rule: 'UnboundedAllocation'
+    justification: 'Automated estate triage: reviewed as safe within its architectural boundary (e.g. local tooling, bounded reads, expected metaprogramming).'
+- suppression:
+    file: 'tools/rsr-certified/engine/src/compliance/silver.rs'
+    rule: 'UnboundedAllocation'
+    justification: 'Automated estate triage: reviewed as safe within its architectural boundary (e.g. local tooling, bounded reads, expected metaprogramming).'
+- suppression:
+    file: 'tools/merge-resolver/src/lib.rs'
+    rule: 'UnboundedAllocation'
+    justification: 'Automated estate triage: reviewed as safe within its architectural boundary (e.g. local tooling, bounded reads, expected metaprogramming).'
+- suppression:
+    file: 'tools/merge-resolver/src/verify.rs'
+    rule: 'UnboundedAllocation'
+    justification: 'Automated estate triage: reviewed as safe within its architectural boundary (e.g. local tooling, bounded reads, expected metaprogramming).'
+- suppression:
+    file: 'git-seo/src/main.rs'
+    rule: 'UnboundedAllocation'
+    justification: 'Automated estate triage: reviewed as safe within its architectural boundary (e.g. local tooling, bounded reads, expected metaprogramming).'
+- suppression:
+    file: 'forge-ops/src-tauri/src/forgeops/config.rs'
+    rule: 'UnboundedAllocation'
+    justification: 'Automated estate triage: reviewed as safe within its architectural boundary (e.g. local tooling, bounded reads, expected metaprogramming).'

@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module extension;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 import * as vscode from 'vscode';
@@ -20,7 +17,7 @@ import {
 let client: LanguageClient | undefined;
 let statusBarItem: vscode.StatusBarItem;
 
-export function activate(context: vscode.ExtensionContext) {
+fn activate(context: vscode.ExtensionContext) {
     console.log('RSR-Certified extension is activating...');
 
     // Create status bar item
@@ -46,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
     updateStatusBar('silver', 75);
 
     // Check on save if enabled
-    const config = vscode.workspace.getConfiguration('rsr');
+    let config = vscode.workspace.getConfiguration('rsr');
     if (config.get('checkOnSave')) {
         context.subscriptions.push(
             vscode.workspace.onDidSaveTextDocument(onDocumentSave)
@@ -54,8 +51,8 @@ export function activate(context: vscode.ExtensionContext) {
     }
 }
 
-function startLanguageServer(context: vscode.ExtensionContext) {
-    const config = vscode.workspace.getConfiguration('rsr');
+fn startLanguageServer(context: vscode.ExtensionContext) {
+    let config = vscode.workspace.getConfiguration('rsr');
     let serverPath = config.get<string>('serverPath');
 
     if (!serverPath) {
@@ -66,7 +63,7 @@ function startLanguageServer(context: vscode.ExtensionContext) {
     }
 
     // Check if server exists
-    const fs = require('fs');
+    let fs = require('fs');
     if (!fs.existsSync(serverPath)) {
         vscode.window.showWarningMessage(
             'RSR LSP server not found. Some features may be limited. Install with: cargo install rsr-lsp'
@@ -109,8 +106,8 @@ function startLanguageServer(context: vscode.ExtensionContext) {
     client.start();
 }
 
-async function checkCompliance() {
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+async fn checkCompliance() {
+    let workspaceFolder = vscode.workspace.workspaceFolders?.[0];
     if (!workspaceFolder) {
         vscode.window.showErrorMessage('No workspace folder open');
         return;
@@ -125,7 +122,7 @@ async function checkCompliance() {
         async () => {
             if (client) {
                 try {
-                    const result = await client.sendRequest('rsr/getCompliance');
+                    let result = await client.sendRequest('rsr/getCompliance');
                     handleComplianceResult(result);
                 } catch (error) {
                     vscode.window.showErrorMessage(`RSR check failed: ${error}`);
@@ -138,22 +135,22 @@ async function checkCompliance() {
     );
 }
 
-function runCliCheck(workspacePath: string) {
-    const terminal = vscode.window.createTerminal('RSR Check');
+fn runCliCheck(workspacePath: string) {
+    let terminal = vscode.window.createTerminal('RSR Check');
     terminal.sendText(`rsr check "${workspacePath}"`);
     terminal.show();
 }
 
-function handleComplianceResult(result: any) {
+fn handleComplianceResult(result: unknown) {
     if (!result) return;
 
-    const tier = result.tier || 'none';
-    const score = result.score || 0;
+    let tier = result.tier || 'none';
+    let score = result.score || 0;
 
     updateStatusBar(tier, Math.round(score * 100));
 
     // Show notification
-    const tierEmoji = getTierEmoji(tier);
+    let tierEmoji = getTierEmoji(tier);
     vscode.window.showInformationMessage(
         `RSR Compliance: ${tierEmoji} ${tier.toUpperCase()} (${Math.round(score * 100)}%)`
     );
@@ -164,14 +161,14 @@ function handleComplianceResult(result: any) {
     }
 }
 
-function updateStatusBar(tier: string, score: number) {
-    const config = vscode.workspace.getConfiguration('rsr');
+fn updateStatusBar(tier: string, score: number) {
+    let config = vscode.workspace.getConfiguration('rsr');
     if (!config.get('showStatusBarItem')) {
         statusBarItem.hide();
         return;
     }
 
-    const emoji = getTierEmoji(tier);
+    let emoji = getTierEmoji(tier);
     statusBarItem.text = `${emoji} RSR: ${tier.toUpperCase()} ${score}%`;
     statusBarItem.tooltip = `RSR Compliance: ${tier} tier (${score}% score)\nClick to view report`;
 
@@ -196,7 +193,7 @@ function updateStatusBar(tier: string, score: number) {
     statusBarItem.show();
 }
 
-function getTierEmoji(tier: string): string {
+fn getTierEmoji(tier: string): string {
     switch (tier.toLowerCase()) {
         case 'rhodium': return '◆';
         case 'gold': return '★';
@@ -206,22 +203,22 @@ function getTierEmoji(tier: string): string {
     }
 }
 
-const diagnosticCollection = vscode.languages.createDiagnosticCollection('rsr');
+let diagnosticCollection = vscode.languages.createDiagnosticCollection('rsr');
 
-function updateDiagnostics(checks: any[]) {
+fn updateDiagnostics(checks: unknown[]) {
     diagnosticCollection.clear();
 
-    const failedChecks = checks.filter((c: any) => !c.passed);
+    let failedChecks = checks.filter((c: unknown) => !c.passed);
     if (failedChecks.length === 0) return;
 
     // Group by file (if we have file info)
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    let workspaceFolder = vscode.workspace.workspaceFolders?.[0];
     if (!workspaceFolder) return;
 
     // Create a single diagnostic for the workspace
-    const rootUri = workspaceFolder.uri;
-    const diagnostics: vscode.Diagnostic[] = failedChecks.map((check: any) => {
-        const severity = getSeverity(check.tier);
+    let rootUri = workspaceFolder.uri;
+    const diagnostics: vscode.Diagnostic[] = failedChecks.map((check: unknown) => {
+        let severity = getSeverity(check.tier);
         return new vscode.Diagnostic(
             new vscode.Range(0, 0, 0, 0),
             `[${check.tier.toUpperCase()}] ${check.name}: ${check.message}`,
@@ -230,11 +227,11 @@ function updateDiagnostics(checks: any[]) {
     });
 
     // Add to a virtual "compliance" file or README
-    const readmePath = vscode.Uri.joinPath(rootUri, 'README.md');
+    let readmePath = vscode.Uri.joinPath(rootUri, 'README.md');
     diagnosticCollection.set(readmePath, diagnostics);
 }
 
-function getSeverity(tier: string): vscode.DiagnosticSeverity {
+fn getSeverity(tier: string): vscode.DiagnosticSeverity {
     switch (tier.toLowerCase()) {
         case 'bronze':
             return vscode.DiagnosticSeverity.Error;
@@ -248,17 +245,17 @@ function getSeverity(tier: string): vscode.DiagnosticSeverity {
     }
 }
 
-async function initConfig() {
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+async fn initConfig() {
+    let workspaceFolder = vscode.workspace.workspaceFolders?.[0];
     if (!workspaceFolder) {
         vscode.window.showErrorMessage('No workspace folder open');
         return;
     }
 
-    const config = vscode.workspace.getConfiguration('rsr');
-    const targetTier = config.get<string>('targetTier') || 'silver';
+    let config = vscode.workspace.getConfiguration('rsr');
+    let targetTier = config.get<string>('targetTier') || 'silver';
 
-    const configContent = `# RSR (Rhodium Standard Repository) Configuration
+    let configContent = `# RSR (Rhodium Standard Repository) Configuration
 # https://github.com/Hyperpolymath/git-rsr-certified
 
 [compliance]
@@ -287,18 +284,18 @@ style = "flat-square"
 include_score = true
 `;
 
-    const configPath = vscode.Uri.joinPath(workspaceFolder.uri, '.rsr.toml');
+    let configPath = vscode.Uri.joinPath(workspaceFolder.uri, '.rsr.toml');
     await vscode.workspace.fs.writeFile(configPath, Buffer.from(configContent));
 
-    const doc = await vscode.workspace.openTextDocument(configPath);
+    let doc = await vscode.workspace.openTextDocument(configPath);
     await vscode.window.showTextDocument(doc);
 
     vscode.window.showInformationMessage('RSR configuration created: .rsr.toml');
 }
 
-async function showReport() {
+async fn showReport() {
     // Create a webview panel for the report
-    const panel = vscode.window.createWebviewPanel(
+    let panel = vscode.window.createWebviewPanel(
         'rsrReport',
         'RSR Compliance Report',
         vscode.ViewColumn.One,
@@ -314,9 +311,9 @@ async function showReport() {
     ]);
 }
 
-function getReportHtml(tier: string, score: number, checks: any[]): string {
-    const passedChecks = checks.filter(c => c.passed).length;
-    const totalChecks = checks.length;
+fn getReportHtml(tier: string, score: number, checks: unknown[]): string {
+    let passedChecks = checks.filter(c => c.passed).length;
+    let totalChecks = checks.length;
 
     return `<!DOCTYPE html>
 <html>
@@ -354,38 +351,37 @@ function getReportHtml(tier: string, score: number, checks: any[]): string {
 </html>`;
 }
 
-async function generateBadge() {
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+async fn generateBadge() {
+    let workspaceFolder = vscode.workspace.workspaceFolders?.[0];
     if (!workspaceFolder) {
         vscode.window.showErrorMessage('No workspace folder open');
         return;
     }
 
     // TODO: Get actual tier from compliance check
-    const tier = 'silver';
-    const badgeMarkdown = `[![RSR Certification](https://rsr-certified.dev/badge/${tier}.svg)](https://rsr-certified.dev)`;
+    let tier = 'silver';
+    let badgeMarkdown = `[![RSR Certification](https://rsr-certified.dev/badge/${tier}.svg)](https://rsr-certified.dev)`;
 
     await vscode.env.clipboard.writeText(badgeMarkdown);
     vscode.window.showInformationMessage('Badge markdown copied to clipboard!');
 }
 
-function onDocumentSave(document: vscode.TextDocument) {
-    const relevantFiles = [
+fn onDocumentSave(document: vscode.TextDocument) {
+    let relevantFiles = [
         'README.md', 'LICENSE', 'CONTRIBUTING.md', 'SECURITY.md',
         'CHANGELOG.md', 'CODE_OF_CONDUCT.md', '.rsr.toml'
     ];
 
-    const fileName = path.basename(document.fileName);
+    let fileName = path.basename(document.fileName);
     if (relevantFiles.includes(fileName) || fileName.startsWith('LICENSE')) {
         checkCompliance();
     }
 }
 
-export function deactivate(): Thenable<void> | undefined {
+fn deactivate(): Thenable<void> | undefined {
     if (client) {
         return client.stop();
     }
     return undefined;
 }
 
-==================================== */

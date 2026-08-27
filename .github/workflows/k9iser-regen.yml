@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # This workflow is managed by gh actions-lock.
+# This workflow is managed by gh actions-lock.
 # Triggers central K9-contract regeneration via boj-server's k9iser-mcp
 # cartridge, so generated/k9iser/*.k9 are produced centrally instead of
 # being run ad hoc and hand-committed (the drift that broke Dogfood Gate

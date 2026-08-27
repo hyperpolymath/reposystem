@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 # This workflow is managed by gh actions-lock.
+# This workflow is managed by gh actions-lock.
 # Publish the in-repo wiki sources (wiki/*.md) to the GitHub wiki
 # (reposystem.wiki.git) on every push to main that touches wiki/. The wiki is a
 # separate git repo that is not writable from every environment; CI's built-in

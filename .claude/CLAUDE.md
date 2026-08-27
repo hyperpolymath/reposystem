@@ -66,7 +66,7 @@ Both are FOSS with independent governance (no Big Tech).
 
 1. **No new TypeScript files** - Convert existing TS to AffineScript directly (ReScript is itself banned in new code as of 2026-04-30; do not pass through it)
 2. **Use `package.json` + `bun.lock` for JS runtime deps** - Bun is npm-compatible; a manifest is REQUIRED
-3. **`bun install --production` for production deps** - resolved from `package.json`, pinned via `bun.lock`
+3. **`bun install --production --frozen-lockfile` for production deps** - resolved from `package.json` and pinned via `bun.lock`; `--frozen-lockfile` makes a lockfile mismatch a build failure rather than a silent re-resolve
 4. **No Go code** - Use Rust instead
 5. **No Python anywhere** - Use Julia for data/batch, Rust for systems, AffineScript for apps
 6. **No Kotlin/Swift for mobile** - Use Tauri 2.0+ or Dioxus

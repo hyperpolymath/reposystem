@@ -45,7 +45,7 @@ Wondering how this works? See link:EXPLAINME.adoc[].
 
 == Documentation
 * link:EXPLAINME.adoc[EXPLAINME.adoc] — Implementation evidence and technical deep-dive.
-* link:CONTRIBUTING.md[CONTRIBUTING.md] — Guidelines for developers.
+* link:../.github/CONTRIBUTING.md[CONTRIBUTING.md] — Guidelines for developers.
 * link:SECURITY.md[SECURITY.md] — Security policy and reporting.
 
 == License

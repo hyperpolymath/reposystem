@@ -84,7 +84,7 @@ defmodule Rhodibot.Checker do
         check_any(path, ["README.adoc", "README.md"], "README"),
         check_any(path, ["LICENSE.txt", "LICENSE", "LICENSE.md"], "LICENSE"),
         check_any(path, ["CODE_OF_CONDUCT.adoc", "CODE_OF_CONDUCT.md"], "Code of Conduct"),
-        check_any(path, ["CONTRIBUTING.adoc", "CONTRIBUTING.md"], "Contributing guide")
+        check_any(path, ["../../../../../../../.github/CONTRIBUTING.md", "CONTRIBUTING.md"], "Contributing guide")
       ]
     }
   end

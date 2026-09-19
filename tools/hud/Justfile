@@ -182,7 +182,7 @@ rsr-check:
     @test -f LICENSE.txt && echo "✓ LICENSE.txt" || echo "✗ LICENSE.txt missing"
     @test -f SECURITY.md && echo "✓ SECURITY.md" || echo "✗ SECURITY.md missing"
     @test -f CODE_OF_CONDUCT.adoc && echo "✓ CODE_OF_CONDUCT.adoc" || echo "✗ CODE_OF_CONDUCT.adoc missing"
-    @test -f CONTRIBUTING.adoc && echo "✓ CONTRIBUTING.adoc" || echo "✗ CONTRIBUTING.adoc missing"
+    @test -f ../../.github/CONTRIBUTING.md && echo "✓ ../../.github/CONTRIBUTING.md" || echo "✗ ../../.github/CONTRIBUTING.md missing"
     @test -f GOVERNANCE.adoc && echo "✓ GOVERNANCE.adoc" || echo "✗ GOVERNANCE.adoc missing"
     @test -f flake.nix && echo "✓ flake.nix" || echo "✗ flake.nix missing"
     @test -d .well-known && echo "✓ .well-known/" || echo "✗ .well-known/ missing"

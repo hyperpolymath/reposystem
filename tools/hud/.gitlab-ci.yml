@@ -163,7 +163,7 @@ rsr:compliance:
       test -f LICENSE.txt && echo "✓ LICENSE.txt" && SCORE=$((SCORE+1)) || echo "✗ LICENSE.txt"
       test -f SECURITY.md && echo "✓ SECURITY.md" && SCORE=$((SCORE+1)) || echo "✗ SECURITY.md"
       test -f CODE_OF_CONDUCT.adoc && echo "✓ CODE_OF_CONDUCT.adoc" && SCORE=$((SCORE+1)) || echo "✗ CODE_OF_CONDUCT.adoc"
-      test -f CONTRIBUTING.adoc && echo "✓ CONTRIBUTING.adoc" && SCORE=$((SCORE+1)) || echo "✗ CONTRIBUTING.adoc"
+      test -f ../../.github/CONTRIBUTING.md && echo "✓ ../../.github/CONTRIBUTING.md" && SCORE=$((SCORE+1)) || echo "✗ ../../.github/CONTRIBUTING.md"
       test -f GOVERNANCE.adoc && echo "✓ GOVERNANCE.adoc" && SCORE=$((SCORE+1)) || echo "✗ GOVERNANCE.adoc"
       test -f flake.nix && echo "✓ flake.nix" && SCORE=$((SCORE+1)) || echo "✗ flake.nix"
       test -f justfile && echo "✓ justfile" && SCORE=$((SCORE+1)) || echo "✗ justfile"

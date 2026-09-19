@@ -225,4 +225,4 @@ image::https://img.shields.io/badge/RSR-Gold-gold[RSR Gold]
 
 == Contributing
 
-See link:CONTRIBUTING.adoc[CONTRIBUTING.adoc] for guidelines.
+See link:../../.github/CONTRIBUTING.md[../../.github/CONTRIBUTING.md] for guidelines.

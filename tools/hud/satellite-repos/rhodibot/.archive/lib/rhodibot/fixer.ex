@@ -10,7 +10,7 @@ defmodule Rhodibot.Fixer do
     "LICENSE.txt" => :license,
     "SECURITY.md" => :security,
     "CODE_OF_CONDUCT.adoc" => :code_of_conduct,
-    "CONTRIBUTING.adoc" => :contributing,
+    "../../../../../../../.github/CONTRIBUTING.md" => :contributing,
     "GOVERNANCE.adoc" => :governance,
     ".github/FUNDING.yml" => :funding,
     "flake.nix" => :flake,

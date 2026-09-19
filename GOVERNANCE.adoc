@@ -114,7 +114,7 @@ This repository adheres to hyperpolymath estate-wide policies:
 * **License**: MPL-2.0 for code, CC-BY-SA-4.0 for prose (per standards/LICENCE-POLICY.adoc)
 * **Code of Conduct**: Follows hyperpolymath CODE_OF_CONDUCT.md
 * **Security**: Follows hyperpolymath SECURITY.md
-* **Contributing**: Follows hyperpolymath CONTRIBUTING.adoc conventions
+* **Contributing**: Follows hyperpolymath .github/CONTRIBUTING.md conventions
 
 == Repository-Specific Conventions
 
@@ -148,7 +148,7 @@ Changes to this document require the same process as Significant Changes above.
 
 * link:MAINTAINERS.adoc[Maintainers]
 * link:CODE_OF_CONDUCT.md[Code of Conduct]
-* link:CONTRIBUTING.adoc[Contributing Guide]
+* link:.github/CONTRIBUTING.md[Contributing Guide]
 * link:https://github.com/hyperpolymath/standards/blob/main/LICENCE-POLICY.adoc[Estate License Policy]
 * link:https://github.com/hyperpolymath/standards[rhodium-standard-repositories (TPCF)]
 

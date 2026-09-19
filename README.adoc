@@ -481,7 +481,7 @@ SPDX-License-Identifier: MPL-2.0
 
 == Contributing
 
-See link:CONTRIBUTING.adoc[CONTRIBUTING.adoc].
+See link:.github/CONTRIBUTING.md[.github/CONTRIBUTING.md].
 
 == OPSM Link
 

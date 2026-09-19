@@ -16,7 +16,7 @@ All facts below are taken from the repository's `Justfile`, `src/main.rs`, `READ
 | **Rust toolchain** (`cargo`) | Builds the CLI / TUI and runs tests | `just doctor` checks for cargo |
 | **Deno** | JS runtime / package manager; builds the ReScript core (`just build-rescript` runs `deno task build`) | No Node/npm |
 | **just** | Task runner for every recipe on this page | `just --list` to enumerate |
-| **Guix** (primary) | Package/build definition lives in `guix.scm` | `guix build -f guix.scm`, `guix shell -f guix.scm` |
+| **Guix** (primary) | Package/build definition lives in `guix.scm` | `guix build -f build/guix.scm`, `guix shell -f build/guix.scm` |
 | **Graphviz** (`dot`) | Renders DOT exports to SVG (`just render-svg`) | Optional, for visual export |
 
 **Package management is Guix-only at the repo root.** The top-level `flake.nix` was removed (Nix fallback retired). A `flake.nix` still exists *inside* a sub-tool (`tools/hud/`), but there is no root-level Nix flake — use `guix.scm`.
@@ -53,7 +53,7 @@ just build
 To build the Guix package directly:
 
 ```bash
-guix build -f guix.scm
+guix build -f build/guix.scm
 ```
 
 ---

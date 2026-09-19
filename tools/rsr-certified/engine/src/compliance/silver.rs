@@ -35,7 +35,7 @@ impl ComplianceCheck for ContributingCheck {
     }
 
     async fn check_local(&self, path: &Path) -> Result<CheckResult> {
-        let files = ["CONTRIBUTING.md", "CONTRIBUTING.adoc", "CONTRIBUTING.rst", ".github/CONTRIBUTING.md"];
+        let files = ["CONTRIBUTING.md", "../../../../../.github/CONTRIBUTING.md", "CONTRIBUTING.rst", ".github/CONTRIBUTING.md"];
 
         for name in files {
             let file_path = path.join(name);

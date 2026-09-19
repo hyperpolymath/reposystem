@@ -2,8 +2,8 @@
 ;; SPDX-FileCopyrightText: 2025 hyperpolymath
 ;;
 ;; Guix package definition for git-hud
-;; Build: guix build -f guix.scm
-;; Shell: guix shell -D -f guix.scm
+;; Build: guix build -f build/guix.scm
+;; Shell: guix shell -D -f build/guix.scm
 
 (use-modules (guix packages)
              (guix gexp)

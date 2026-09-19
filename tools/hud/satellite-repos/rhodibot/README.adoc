@@ -103,7 +103,7 @@ rhodibot badge --format markdown
 - [ ] `README.adoc` or `README.md`
 - [ ] `LICENSE.txt`
 - [ ] `CODE_OF_CONDUCT.adoc`
-- [ ] `CONTRIBUTING.adoc`
+- [ ] `../../../../.github/CONTRIBUTING.md`
 
 === 3. Security Architecture
 - [ ] `SECURITY.md` - Vulnerability disclosure

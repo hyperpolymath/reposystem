@@ -1,0 +1,311 @@
+# language-gate.yml — Reusable GitHub Actions workflow
+# Lives in: hyperpolymath/.github (or a dedicated ci-policies repo)
+# Called by every repo's CI to enforce language bans, prover requirements,
+# and architectural anti-patterns.
+#
+# Usage in a repo's .github/workflows/ci.yml:
+#
+#   jobs:
+#     language-gate:
+#       uses: hyperpolymath/.github/.github/workflows/language-gate.yml@main
+#       # or: uses: hyperpolymath/ci-policies/.github/workflows/language-gate.yml@main
+#
+
+name: Language Gate
+
+on:
+  workflow_call:
+    inputs:
+      policy_path:
+        description: 'Path to .language-policy.toml (default: repo root)'
+        required: false
+        default: '.language-policy.toml'
+        type: string
+      strict:
+        description: 'Fail on warnings too (default: false — only errors fail)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  language-gate:
+    name: Language & Architecture Policy Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install tools
+        run: |
+          # Install linguist for language detection
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ruby ruby-dev cmake pkg-config libicu-dev zlib1g-dev libcurl4-openssl-dev libssl-dev 2>/dev/null
+          sudo gem install github-linguist --no-document 2>/dev/null || true
+
+          # Install toml parser
+          pip install toml --break-system-packages -q 2>/dev/null || true
+
+      - name: Parse policy file
+        id: policy
+        run: |
+          POLICY_FILE="${{ inputs.policy_path }}"
+
+          if [[ ! -f "$POLICY_FILE" ]]; then
+            echo "::warning::No .language-policy.toml found — using default strict policy"
+            echo "role=core" >> "$GITHUB_OUTPUT"
+            echo "extra_allowed=" >> "$GITHUB_OUTPUT"
+            echo "required_provers=gnatprove" >> "$GITHUB_OUTPUT"
+            echo "runtime=bun" >> "$GITHUB_OUTPUT"
+            echo "ffi=hexadeca" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          python3 << 'PYEOF'
+          import toml, os
+
+          with open(os.environ.get("POLICY_FILE", ".language-policy.toml")) as f:
+              policy = toml.load(f)
+
+          p = policy.get("policy", {})
+          role = p.get("role", "core")
+
+          allowed = policy.get("allowed_languages", {})
+          extra = ",".join(allowed.get("extra_allowed", []))
+
+          provers = policy.get("provers", {})
+          required = ",".join(provers.get("required", ["gnatprove"]))
+
+          runtime_cfg = policy.get("runtime", {})
+          runtime = runtime_cfg.get("js", "bun")
+
+          ffi_cfg = policy.get("ffi", {})
+          ffi = ffi_cfg.get("method", "hexadeca")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"role={role}\n")
+              out.write(f"extra_allowed={extra}\n")
+              out.write(f"required_provers={required}\n")
+              out.write(f"runtime={runtime}\n")
+              out.write(f"ffi={ffi}\n")
+          PYEOF
+        env:
+          POLICY_FILE: ${{ inputs.policy_path }}
+
+      - name: Detect languages
+        id: languages
+        run: |
+          echo "::group::Language Detection"
+
+          # Use linguist if available, fall back to extension counting
+          if command -v github-linguist &>/dev/null; then
+            github-linguist --breakdown > /tmp/linguist-output.txt 2>/dev/null || true
+            DETECTED=$(github-linguist 2>/dev/null | awk '{print $2}' | tr '\n' ',' | sed 's/,$//')
+          else
+            # Fallback: extension-based detection
+            DETECTED=""
+            declare -A ext_lang=(
+              [go]="Go" [py]="Python" [ts]="TypeScript" [tsx]="TypeScript"
+              [js]="JavaScript" [jsx]="JavaScript" [res]="ReScript" [resi]="ReScript"
+              [nix]="Nix" [rs]="Rust" [zig]="Zig" [idr]="Idris"
+              [hs]="Haskell" [jl]="Julia" [erl]="Erlang" [ex]="Elixir"
+              [v]="V" [rb]="Ruby" [php]="PHP" [dart]="Dart"
+              [kt]="Kotlin" [java]="Java" [scala]="Scala" [cs]="CSharp"
+              [swift]="Swift" [lua]="Lua" [r]="R" [pl]="Perl"
+            )
+
+            seen=()
+            for ext in "${!ext_lang[@]}"; do
+              if find . -name "*.$ext" -not -path '*/\.*' -not -path '*/node_modules/*' \
+                   -not -path '*/target/*' -not -path '*/_build/*' -not -path '*/vendor/*' \
+                   2>/dev/null | head -1 | grep -q .; then
+                lang="${ext_lang[$ext]}"
+                if [[ ! " ${seen[*]:-} " =~ " $lang " ]]; then
+                  seen+=("$lang")
+                  DETECTED="${DETECTED:+$DETECTED,}$lang"
+                fi
+              fi
+            done
+          fi
+
+          echo "Detected languages: $DETECTED"
+          echo "detected=$DETECTED" >> "$GITHUB_OUTPUT"
+          echo "::endgroup::"
+
+      - name: Check banned languages
+        id: banned
+        run: |
+          echo "::group::Banned Language Check"
+
+          ROLE="${{ steps.policy.outputs.role }}"
+          DETECTED="${{ steps.languages.outputs.detected }}"
+          EXTRA_ALLOWED="${{ steps.policy.outputs.extra_allowed }}"
+
+          # Default banned list
+          BANNED="Go,Python,TypeScript,JavaScript,ReScript,Nix,CoffeeScript,Dart,PHP,Ruby,Perl,Lua,R,Objective-C,Swift,Kotlin,Java,Scala,Groovy,CSharp,FSharp,VisualBasic,PowerShell"
+
+          # Community adapters get their extra_allowed languages removed from ban list
+          if [[ "$ROLE" == "community-adapter" && -n "$EXTRA_ALLOWED" ]]; then
+            echo "Community adapter role — exempting: $EXTRA_ALLOWED"
+          fi
+
+          VIOLATIONS=""
+          IFS=',' read -ra LANG_ARRAY <<< "$DETECTED"
+          for lang in "${LANG_ARRAY[@]}"; do
+            lang=$(echo "$lang" | xargs)  # trim whitespace
+
+            # Check if in banned list
+            if echo ",$BANNED," | grep -qi ",$lang,"; then
+              # Check if exempted
+              if echo ",$EXTRA_ALLOWED," | grep -qi ",$lang,"; then
+                echo "  ✓ $lang — exempted by policy (community adapter)"
+              else
+                echo "  ✗ $lang — BANNED"
+                VIOLATIONS="${VIOLATIONS:+$VIOLATIONS,}$lang"
+              fi
+            else
+              echo "  ✓ $lang — allowed"
+            fi
+          done
+
+          echo "violations=$VIOLATIONS" >> "$GITHUB_OUTPUT"
+
+          if [[ -n "$VIOLATIONS" ]]; then
+            echo "::error::Banned languages detected: $VIOLATIONS"
+            echo "has_violations=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "All languages pass policy."
+            echo "has_violations=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "::endgroup::"
+
+      - name: Check anti-patterns
+        id: antipatterns
+        run: |
+          echo "::group::Anti-Pattern Detection"
+
+          ERRORS=""
+          WARNINGS=""
+
+          # ── NIF without SNIF ──
+          if grep -rql 'erl_nif\.h\|#\[rustler::nif\]\|:nif\b' . \
+               --include='*.rs' --include='*.erl' --include='*.ex' --include='*.c' --include='*.h' 2>/dev/null; then
+            if ! grep -rql 'snif\|SNIF\|safe_nif' . 2>/dev/null; then
+              echo "::error::NIF detected without SNIF — migrate to SNIF"
+              ERRORS="${ERRORS:+$ERRORS,}NIF_WITHOUT_SNIF"
+            fi
+          fi
+
+          # ── Unverified Rust ──
+          if find . -name "Cargo.toml" -not -path "*/target/*" 2>/dev/null | head -1 | grep -q .; then
+            PROVERS="${{ steps.policy.outputs.required_provers }}"
+            HAS_PROVER=false
+
+            # Check for prover evidence
+            if grep -rql '#\[requires\]\|#\[ensures\]\|#\[invariant\]\|#\[proof\]\|kani::proof\|creusot\|prusti\|verus!' . \
+                 --include='*.rs' 2>/dev/null; then
+              HAS_PROVER=true
+            fi
+            # Check for prover config files
+            if [[ -f "kani-args.toml" ]] || [[ -f ".gnatprove" ]] || [[ -f "creusot.toml" ]] || [[ -f "prusti.toml" ]]; then
+              HAS_PROVER=true
+            fi
+            # Check Cargo.toml for prover dependencies
+            if grep -ql 'kani\|creusot\|prusti\|verus\|gnatprove' Cargo.toml 2>/dev/null; then
+              HAS_PROVER=true
+            fi
+
+            if [[ "$HAS_PROVER" == false ]]; then
+              echo "::error::Rust code found without formal verification prover (required: $PROVERS)"
+              ERRORS="${ERRORS:+$ERRORS,}UNVERIFIED_RUST"
+            else
+              echo "  ✓ Formal verification prover detected"
+            fi
+          fi
+
+          # ── Deno (should be Bun) ──
+          if find . -name "deno.json" -o -name "deno.jsonc" -o -name "deno.lock" 2>/dev/null | head -1 | grep -q .; then
+            echo "::error::Deno detected — migrate to Bun"
+            ERRORS="${ERRORS:+$ERRORS,}DENO_NOT_BUN"
+          fi
+
+          # ── Node (should be Bun) ──
+          if find . -name "package-lock.json" -o -name "yarn.lock" -o -name "pnpm-lock.yaml" 2>/dev/null | head -1 | grep -q .; then
+            if ! find . -name "bun.lockb" -o -name "bunfig.toml" 2>/dev/null | head -1 | grep -q .; then
+              echo "::error::Node/Yarn/pnpm lockfile detected without Bun — migrate to Bun"
+              ERRORS="${ERRORS:+$ERRORS,}NODE_NOT_BUN"
+            fi
+          fi
+
+          # ── Direct FFI without hexadeca ──
+          FFI_METHOD="${{ steps.policy.outputs.ffi }}"
+          if [[ "$FFI_METHOD" == "hexadeca" ]]; then
+            if grep -rql '@cImport\|extern "C"\|ctypes\.\|cffi\.\|Foreign\.C\.' . \
+                 --include='*.rs' --include='*.zig' --include='*.py' --include='*.hs' --include='*.idr' 2>/dev/null; then
+              if ! grep -rql 'hexadeca\|hexadeca_adapter\|hexadeca-adapter' . 2>/dev/null; then
+                echo "::error::Direct C FFI detected — must go through hexadeca adapter"
+                ERRORS="${ERRORS:+$ERRORS,}DIRECT_FFI_NO_HEXADECA"
+              fi
+            fi
+          fi
+
+          # ── Nix present ──
+          if find . -name "flake.nix" -o -name "default.nix" -o -name "shell.nix" 2>/dev/null | head -1 | grep -q .; then
+            echo "::warning::Nix configuration detected — consider migrating to Guix/Justfile"
+            WARNINGS="${WARNINGS:+$WARNINGS,}NIX_PRESENT"
+          fi
+
+          # ── Vite (debate item) ──
+          if find . -name "vite.config.*" 2>/dev/null | head -1 | grep -q .; then
+            echo "::warning::Vite detected — pending debate resolution (TS+Vite policy)"
+            WARNINGS="${WARNINGS:+$WARNINGS,}VITE_DEBATE"
+          fi
+
+          echo "errors=$ERRORS" >> "$GITHUB_OUTPUT"
+          echo "warnings=$WARNINGS" >> "$GITHUB_OUTPUT"
+          echo "::endgroup::"
+
+      - name: Gate result
+        run: |
+          LANG_VIOLATIONS="${{ steps.banned.outputs.has_violations }}"
+          AP_ERRORS="${{ steps.antipatterns.outputs.errors }}"
+          AP_WARNINGS="${{ steps.antipatterns.outputs.warnings }}"
+          STRICT="${{ inputs.strict }}"
+
+          echo ""
+          echo "════════════════════════════════════════════════════════"
+          echo "  LANGUAGE GATE RESULTS"
+          echo "════════════════════════════════════════════════════════"
+          echo ""
+          echo "  Role:        ${{ steps.policy.outputs.role }}"
+          echo "  Languages:   ${{ steps.languages.outputs.detected }}"
+          echo "  Violations:  ${{ steps.banned.outputs.violations }}"
+          echo "  Errors:      ${AP_ERRORS:-none}"
+          echo "  Warnings:    ${AP_WARNINGS:-none}"
+          echo ""
+          echo "════════════════════════════════════════════════════════"
+
+          FAILED=false
+
+          if [[ "$LANG_VIOLATIONS" == "true" ]]; then
+            echo "::error::GATE FAILED — banned languages detected"
+            FAILED=true
+          fi
+
+          if [[ -n "$AP_ERRORS" ]]; then
+            echo "::error::GATE FAILED — architectural anti-patterns detected"
+            FAILED=true
+          fi
+
+          if [[ "$STRICT" == "true" && -n "$AP_WARNINGS" ]]; then
+            echo "::error::GATE FAILED (strict mode) — warnings present"
+            FAILED=true
+          fi
+
+          if [[ "$FAILED" == "true" ]]; then
+            exit 1
+          fi
+
+          echo "✓ Language gate passed"

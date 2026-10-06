@@ -1,0 +1,103 @@
+# .language-policy.toml — Per-repo language and architecture policy
+#
+# This file declares what this repo is allowed to contain.
+# The language-gate CI workflow reads it to enforce policy.
+#
+# Place in repo root. If absent, strict default policy applies
+# (core role, no extra languages, gnatprove required for Rust).
+
+[policy]
+# Role determines how strict the language ban is:
+#   "core"              — full ban enforcement, prover required (DEFAULT)
+#   "community-adapter" — extra_allowed languages are exempted from ban
+#   "tool"              — like core, but warnings don't fail in strict mode
+#   "research"          — like core, but NIX_PRESENT is allowed
+#   "deprecated"        — repo has a deprecation notice, gate is advisory only
+role = "core"
+
+# Only for community-adapter role: which community this adapter serves
+# target_community = "rescript"
+
+[allowed_languages]
+# Languages exempted from the ban for THIS repo only.
+# Only meaningful when role = "community-adapter".
+# Example for a ReScript adapter:
+# extra_allowed = ["ReScript"]
+extra_allowed = []
+
+[provers]
+# Formal verification tools that MUST pass in CI for this repo.
+# At least one must be present if the repo contains Rust code.
+#
+# Options:
+#   "gnatprove"        — SPARK/Ada-style contracts on Rust (default)
+#   "kani"             — model checking, unsafe code, bounded verification
+#   "creusot"          — functional correctness via Why3 backend
+#   "prusti"           — Viper-based pre/postcondition verification
+#   "verus"            — linear types, ownership proofs
+#   "idris2-typecheck" — for repos where Idris2 is the primary language
+#
+# Multiple provers can be required (all must pass):
+required = ["gnatprove"]
+
+[runtime]
+# JavaScript/TypeScript runtime policy:
+#   "bun"  — only Bun allowed (DEFAULT)
+#   "none" — no JS/TS runtime expected in this repo
+js = "bun"
+
+[ffi]
+# Foreign function interface policy:
+#   "hexadeca" — all FFI must go through the Zig hexadeca adapter (DEFAULT)
+#   "direct"   — direct FFI allowed (only for hexadeca adapter itself)
+method = "hexadeca"
+
+[beam]
+# BEAM (Erlang/Elixir) native interop policy:
+#   "snif" — must use SNIF, not stock NIF (DEFAULT)
+#   "none" — no BEAM interop expected
+native = "snif"
+
+[abi]
+# ABI contract generation policy:
+#   "idrisiser" — ABI contracts generated via idrisiser (DEFAULT)
+#   "manual"    — manual ABI definitions allowed (only for idrisiser itself)
+method = "idrisiser"
+
+# ─── Examples for common repo types ───────────────────────────────────────
+#
+# == Core Rust library ==
+# [policy]
+# role = "core"
+# [provers]
+# required = ["gnatprove"]
+#
+# == ReScript community adapter ==
+# [policy]
+# role = "community-adapter"
+# target_community = "rescript"
+# [allowed_languages]
+# extra_allowed = ["ReScript"]
+# [provers]
+# required = ["idris2-typecheck"]
+#
+# == The hexadeca adapter itself ==
+# [policy]
+# role = "core"
+# [ffi]
+# method = "direct"
+#
+# == MCP server (TypeScript on Bun) ==
+# [policy]
+# role = "community-adapter"
+# target_community = "mcp-ecosystem"
+# [allowed_languages]
+# extra_allowed = ["TypeScript"]
+# [runtime]
+# js = "bun"
+# [provers]
+# required = []
+#
+# == Deprecated repo (moving to boj-server) ==
+# [policy]
+# role = "deprecated"

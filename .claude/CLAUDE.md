@@ -85,3 +85,11 @@ Both are FOSS with independent governance (no Big Tech).
 - SHA-pinned dependencies
 - SPDX license headers on all files
 
+
+## Estate scripts — `putative-scripts/`
+
+The estate maintenance scripts from the retired `hyperpolymath/estate-scripts`
+repo were imported on 2026-10-06 into `putative-scripts/` (see its
+`README.adoc` for provenance and what was excluded). They are untriaged: group
+them into `scripts/`, `repo-scripts/` or `tools/`, or delete them, rather than
+adding new scripts beside them. Many contain machine-specific absolute paths.

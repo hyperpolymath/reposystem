@@ -17,3 +17,9 @@ See README.adoc for overview.
 * License: PMPL-1.0-or-later
 * Part of hyperpolymath ecosystem
 * See EXPLAINME.adoc for architecture
+
+=== Estate scripts (putative-scripts/)
+
+* `putative-scripts/` holds the estate maintenance scripts imported on
+  2026-10-06 from the retired `estate-scripts` repo. They are untriaged:
+  read `putative-scripts/README.adoc` before running or moving any of them.

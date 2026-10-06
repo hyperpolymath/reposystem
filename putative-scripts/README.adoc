@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= putative-scripts — estate maintenance scripts awaiting triage
+
+These are the estate maintenance scripts formerly kept in the private
+`hyperpolymath/estate-scripts` repository, imported here verbatim from its
+`main` at `a41fd01` (2026-10-06). They are *putative*: not yet grouped, not
+yet wired into reposystem's build, and not all of them are still current.
+The intent is to triage them into reposystem proper (`scripts/`,
+`repo-scripts/`, `tools/`) or delete them.
+
+== What was left out, and why
+
+* `memory-sync.sh`, `claude-config-sync.sh`, `dev-notes-sync.sh` (and a `.bak`):
+  personal encrypted-vault sync jobs; they move to the private vaults repo.
+* `*.py`: Python is banned estate-wide.
+* `backup/`: personal off-site backup (rclone) configuration.
+* `ruleset-backups/`: raw ruleset JSON dumps.
+
+The full original history is preserved as a git bundle outside this repository.
+
+== Changes made on import
+
+* A one-line `#` docstring was added above each previously undocumented shell
+  function (estate docstring rule). No behaviour was changed.
+
+== Caveats
+
+* Many scripts carry absolute paths under `/home/hyperpolymath/developer`;
+  they are machine-specific until parameterised.
+* The dated `*_2026-09-11.md` reports are historical records, not instructions.

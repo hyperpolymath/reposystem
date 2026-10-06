@@ -1,0 +1,17 @@
+# Copy this to .github/workflows/language-gate-caller.yml in each repo.
+# It calls the shared language-gate workflow — no duplication.
+
+name: Language Gate
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  language-gate:
+    uses: hyperpolymath/.github/.github/workflows/language-gate.yml@main
+    # To use strict mode (warnings also fail):
+    # with:
+    #   strict: true

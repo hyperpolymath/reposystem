@@ -1,0 +1,145 @@
+#!/bin/bash
+# SPDX-License-Identifier: MPL-2.0
+# Apply CI/CD fixes to a repository via PR
+# This creates a branch and pushes it, allowing PR creation
+
+set -euo pipefail
+
+REPO_PATH="$1"
+DRY_RUN="$2"
+BRANCH_NAME="chore/apply-foundation-ci-fixes-$(date +%Y%m%d)"
+
+if [[ -z "$REPO_PATH" ]]; then
+    echo "Usage: $0 <repo-path> [dry-run]"
+    exit 1
+fi
+
+cd "$REPO_PATH"
+
+echo "Processing: $(basename "$REPO_PATH")"
+
+# Get current branch
+CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "detached")
+
+# Ensure we're on main
+if [[ "$CURRENT_BRANCH" != "main" ]]; then
+    echo "  Checking out main..."
+    git checkout main 2>/dev/null || true
+fi
+
+# Pull latest
+if ! $DRY_RUN; then
+    echo "  Pulling latest main..."
+    git pull origin main 2>&1 | tail -1 || true
+fi
+
+# Track which files we change
+CHANGED_FILES=()
+
+# Fix codeql.yml
+CODEQL_FILE=".github/workflows/codeql.yml"
+if [[ -f "$CODEQL_FILE" ]]; then
+    if grep -q "codeql-action.*@v" "$CODEQL_FILE" 2>/dev/null || grep -q "actions/checkout@v" "$CODEQL_FILE" 2>/dev/null; then
+        echo "  Fixing codeql.yml..."
+        cp "$CODEQL_FILE" "$CODEQL_FILE.bak"
+        
+        ACTIONS_CHECKOUT_SHA="3d3c42e5aac5ba805825da76410c181273ba90b1"
+        CODEQL_INIT_SHA="cdf488f595d80d6e07e03d4674febd5ab45fa938"
+        CODEQL_ANALYZE_SHA="cdf488f595d80d6e07e03d4674febd5ab45fa938"
+        CODEQL_AUTOBUILD_SHA="cdf488f595d80d6e07e03d4674febd5ab45fa938"
+        
+        sed -i "s|uses: actions/checkout@v[0-9][^ ]*|uses: actions/checkout@$ACTIONS_CHECKOUT_SHA # v7.0.1|g" "$CODEQL_FILE"
+        
+        # Add persist-credentials using Python for multi-line
+        python3 -c "
+import re
+with open('$CODEQL_FILE', 'r') as f:
+    content = f.read()
+content = re.sub(
+    r'(uses: actions/checkout@[a-f0-90-]+ \# v7\.0\.1)',
+    r'\\1\n        with:\n          persist-credentials: false',
+    content
+)
+with open('$CODEQL_FILE', 'w') as f:
+    f.write(content)
+" 2>/dev/null || true
+        
+        sed -i "s|uses: github/codeql-action/init@v[0-9][^ ]*|uses: github/codeql-action/init@$CODEQL_INIT_SHA # v3|g" "$CODEQL_FILE"
+        sed -i "s|uses: github/codeql-action/analyze@v[0-9][^ ]*|uses: github/codeql-action/analyze@$CODEQL_ANALYZE_SHA # v3|g" "$CODEQL_FILE"
+        sed -i "s|uses: github/codeql-action/autobuild@v[0-9][^ ]*|uses: github/codeql-action/autobuild@$CODEQL_AUTOBUILD_SHA # v3|g" "$CODEQL_FILE"
+        
+        if $DRY_RUN; then
+            mv "$CODEQL_FILE.bak" "$CODEQL_FILE"
+        else
+            rm "$CODEQL_FILE.bak"
+            CHANGED_FILES+=("$CODEQL_FILE")
+        fi
+        echo "  Fixed codeql.yml"
+    fi
+fi
+
+# Fix governance.yml
+GOVERNANCE_FILE=".github/workflows/governance.yml"
+if [[ -f "$GOVERNANCE_FILE" ]]; then
+    GOVERNANCE_REUSABLE_SHA="8f31a5a4ba591d544b65f91f6d78b136e07756f0"
+    CURRENT_SHA=$(grep "governance-reusable.yml@" "$GOVERNANCE_FILE" 2>/dev/null | grep -oE '[a-f0-9]{40}' | head -1 || true)
+    if [[ -n "$CURRENT_SHA" && "$CURRENT_SHA" != "$GOVERNANCE_REUSABLE_SHA" ]]; then
+        echo "  Fixing governance.yml..."
+        sed -i "s|governance-reusable.yml@[a-f0-9]\{40\}|governance-reusable.yml@$GOVERNANCE_REUSABLE_SHA|g" "$GOVERNANCE_FILE"
+        CHANGED_FILES+=("$GOVERNANCE_FILE")
+        echo "  Fixed governance.yml"
+    fi
+fi
+
+# Fix scorecard.yml
+SCORECARD_FILE=".github/workflows/scorecard.yml"
+if [[ -f "$SCORECARD_FILE" ]]; then
+    SCORECARD_REUSABLE_SHA="8750b94ac1bbe8c51ad13fe106669b13478f0b62"
+    CURRENT_SHA=$(grep "scorecard-reusable.yml@" "$SCORECARD_FILE" 2>/dev/null | grep -oE '[a-f0-9]{40}' | head -1 || true)
+    if [[ -n "$CURRENT_SHA" && "$CURRENT_SHA" != "$SCORECARD_REUSABLE_SHA" ]]; then
+        echo "  Fixing scorecard.yml..."
+        sed -i "s|scorecard-reusable.yml@[a-f0-9]\{40\}|scorecard-reusable.yml@$SCORECARD_REUSABLE_SHA|g" "$SCORECARD_FILE"
+        CHANGED_FILES+=("$SCORECARD_FILE")
+        echo "  Fixed scorecard.yml"
+    fi
+fi
+
+# Fix hypatia-scan.yml
+HYPATIA_FILE=".github/workflows/hypatia-scan.yml"
+if [[ -f "$HYPATIA_FILE" ]]; then
+    HYPATIA_REUSABLE_SHA="cc58c0cb23f73fc2019ce85a56a468e5248a93b3"
+    CURRENT_SHA=$(grep "hypatia-scan-reusable.yml@" "$HYPATIA_FILE" 2>/dev/null | grep -oE '[a-f0-9]{40}' | head -1 || true)
+    if [[ -n "$CURRENT_SHA" && "$CURRENT_SHA" != "$HYPATIA_REUSABLE_SHA" ]]; then
+        echo "  Fixing hypatia-scan.yml..."
+        sed -i "s|hypatia-scan-reusable.yml@[a-f0-9]\{40\}|hypatia-scan-reusable.yml@$HYPATIA_REUSABLE_SHA|g" "$HYPATIA_FILE"
+        CHANGED_FILES+=("$HYPATIA_FILE")
+        echo "  Fixed hypatia-scan.yml"
+    fi
+fi
+
+# Commit and push if not dry run
+if ! $DRY_RUN; then
+    if [[ ${#CHANGED_FILES[@]} -gt 0 ]]; then
+        echo "  Committing changes..."
+        git add -A
+        git commit -m "fix(ci): apply foundation CI/CD security fixes
+
+- Update CodeQL workflow to SHA-pinned actions with persist-credentials: false
+- Update reusable workflow pins to current standards main SHAs
+
+Generated by Mistral Vibe.
+Co-Authored-By: Mistral Vibe <vibe@mistral.ai>" 2>&1 | tail -2 || true
+        
+        echo "  Creating branch: $BRANCH_NAME"
+        git checkout -b "$BRANCH_NAME" 2>/dev/null || true
+        
+        echo "  Pushing to origin..."
+        git push origin "$BRANCH_NAME" 2>&1 | tail -3 || echo "  Push failed"
+        echo "  Done: $(basename "$REPO_PATH")"
+        echo "  PR URL: https://github.com/$(git config --get remote.origin.url | sed 's|.*github.com[:/]||;s|\.git$||')/compare/$BRANCH_NAME?expand=1"
+    else
+        echo "  No changes to commit for $(basename "$REPO_PATH")"
+    fi
+fi
+
+echo ""

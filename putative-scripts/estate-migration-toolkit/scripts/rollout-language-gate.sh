@@ -223,7 +223,7 @@ SNIF, Bun, idrisiser)." --quiet
 
   # Create PR
   ROLE=$(grep 'role' .language-policy.toml | head -1 | awk -F'"' '{print $2}')
-  gh pr create \
+  if gh pr create \
     --title "$PR_TITLE" \
     --body "## Auto-generated language gate policy
 
@@ -243,9 +243,7 @@ This PR adds:
 - BEAM interop (SNIF, not NIF)
 
 Part of the estate-wide migration plan." \
-    --head "$BRANCH_NAME" 2>/dev/null
-
-  if [[ $? -eq 0 ]]; then
+    --head "$BRANCH_NAME" 2>/dev/null; then
     echo "  ✓ PR created (role: $ROLE)"
     CREATED=$((CREATED + 1))
   else

@@ -25,7 +25,7 @@ LIMIT="${MEMORY_LIMIT_BYTES:-24576}"   # ~24KB hard truncation limit
 WARN_AT=$(( LIMIT * 90 / 100 ))        # start warning at 90%
 
 GREP=/usr/bin/grep
-[ -x "$GREP" ] || GREP=grep
+[ -x "$GREP" ] || GREP="grep"
 
 if [ ! -f "$INDEX" ]; then
   echo "FATAL: no index at $INDEX" >&2

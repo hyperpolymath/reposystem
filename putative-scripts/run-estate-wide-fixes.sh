@@ -23,7 +23,7 @@ get_repos() {
         # dirname = hyper-repos/reposystem/.github/workflows
         # dirname = hyper-repos/reposystem/.github
         # dirname = hyper-repos/reposystem
-        echo "$(dirname "$(dirname "$(dirname "$file")")")"
+        dirname "$(dirname "$(dirname "$file")")"
     done | sort -u
 }
 

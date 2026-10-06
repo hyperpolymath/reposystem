@@ -62,7 +62,7 @@ done
 mkdir -p "$OUT"
 TODAY="$(date +%F)"
 REPORT="$OUT/$TODAY.tsv"
-PREV="$(ls -1 "$OUT"/*.tsv 2>/dev/null | grep -v "/$TODAY.tsv\$" | tail -1)"
+PREV="$(find "$OUT" -maxdepth 1 -name '*.tsv' ! -name "$TODAY.tsv" 2>/dev/null | sort | tail -1)"
 
 # --- enumerate ---------------------------------------------------------------
 # `-name .git` WITHOUT `-type d`: a linked worktree's .git is a FILE, and

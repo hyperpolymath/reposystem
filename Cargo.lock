@@ -492,9 +492,9 @@ dependencies = [
 
 [[package]]
 name = "config"
-version = "0.15.26"
+version = "0.15.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "790374c727a4cb20877dd2cc99ce7011cbe03b0b8df083acccd37df0d161304d"
+checksum = "38e9fbc53afcec54441422f1c596cd054655b32e70e1cbac956651b7b175a404"
 dependencies = [
  "async-trait",
  "convert_case 0.6.0",
@@ -826,7 +826,7 @@ version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "10d60334b3b2e7c9d91ef8150abfb6fa4c1c39ebbcf4a81c2e346aad939fee3e"
 dependencies = [
- "thiserror 2.0.20",
+ "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1267,7 +1267,6 @@ dependencies = [
  "gix-zlib",
  "nonempty",
  "smallvec",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1295,7 +1294,6 @@ dependencies = [
  "gix-quote",
  "gix-trace",
  "smallvec",
- "thiserror 2.0.21",
  "unicode-bom",
 ]
 
@@ -1360,7 +1358,6 @@ dependencies = [
  "gix-sec",
  "gix-utils",
  "smallvec",
- "thiserror 2.0.21",
  "unicode-bom",
 ]
 
@@ -1375,7 +1372,6 @@ dependencies = [
  "gix-error",
  "gix-path",
  "libc",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1400,7 +1396,6 @@ dependencies = [
  "gix-error",
  "gix-hash",
  "gix-object",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1416,7 +1411,6 @@ dependencies = [
  "gix-path",
  "gix-ref",
  "gix-sec",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1466,7 +1460,6 @@ dependencies = [
  "gix-trace",
  "gix-utils",
  "smallvec",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1480,7 +1473,6 @@ dependencies = [
  "gix-features",
  "gix-path",
  "gix-utils",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1505,8 +1497,7 @@ dependencies = [
  "faster-hex",
  "gix-error",
  "gix-features",
- "sha1-checked",
- "thiserror 2.0.21",
+ "sha1dc",
 ]
 
 [[package]]
@@ -1559,7 +1550,6 @@ dependencies = [
  "memmap2",
  "rustix",
  "smallvec",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1571,7 +1561,6 @@ dependencies = [
  "gix-error",
  "gix-tempfile",
  "gix-utils",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1613,7 +1602,6 @@ dependencies = [
  "gix-validate",
  "itoa",
  "smallvec",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1636,7 +1624,6 @@ dependencies = [
  "memmap2",
  "parking_lot",
  "tempfile",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1657,7 +1644,6 @@ dependencies = [
  "gix-zlib",
  "memmap2",
  "smallvec",
- "thiserror 2.0.21",
  "uluru",
 ]
 
@@ -1671,7 +1657,6 @@ dependencies = [
  "faster-hex",
  "gix-error",
  "gix-trace",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1684,7 +1669,6 @@ dependencies = [
  "gix-error",
  "gix-trace",
  "gix-validate",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1700,7 +1684,6 @@ dependencies = [
  "gix-error",
  "gix-glob",
  "gix-path",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1720,7 +1703,6 @@ dependencies = [
  "gix-transport",
  "gix-utils",
  "nonempty",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1752,7 +1734,6 @@ dependencies = [
  "gix-utils",
  "gix-validate",
  "memmap2",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1766,7 +1747,6 @@ dependencies = [
  "gix-hash",
  "gix-validate",
  "smallvec",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1798,7 +1778,6 @@ dependencies = [
  "gix-hashtable",
  "gix-object",
  "smallvec",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1824,7 +1803,6 @@ dependencies = [
  "gix-hash",
  "gix-lock",
  "nonempty",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1861,7 +1839,6 @@ dependencies = [
  "gix-quote",
  "gix-sec",
  "gix-url",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1879,7 +1856,6 @@ dependencies = [
  "gix-object",
  "gix-revwalk",
  "smallvec",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1893,7 +1869,6 @@ dependencies = [
  "gix-path",
  "gix-utils",
  "percent-encoding",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -1961,7 +1936,7 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "44a1a9c82ec5b712082566cbef8f5782472a0d3973132911e5a83380a5298fe2"
 dependencies = [
- "thiserror 2.0.21",
+ "gix-error",
  "zlib-rs",
 ]
 

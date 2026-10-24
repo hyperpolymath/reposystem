@@ -2,10 +2,12 @@
 = docs/
 User-facing documentation: governance policy, Mustfile reference, and contributor guides.
 
-* `VERISIMDB-MODALITY-PROFILE.adoc` — VeriSimDB terminology ("modality profile"
-  vs. "Octad") and why `src/verisimdb.rs` is labelled legacy/custom.
-* `MUSTFILE-REFERENCE.adoc` — Mustfile command reference.
-* `PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc` — vendored-tree
-  reconciliation record.
-* `tech-debt-2026-05-26.adoc` — technical-debt register.
-* `governance/` — dated governance audits (historical records).
+* xref:VERISIMDB-MODALITY-PROFILE.adoc[VERISIMDB-MODALITY-PROFILE.adoc] — VeriSimDB
+  terminology ("modality profile" vs. "Octad") and why `src/verisimdb.rs` is
+  labelled legacy/custom.
+* xref:MUSTFILE-REFERENCE.adoc[MUSTFILE-REFERENCE.adoc] — Mustfile command reference.
+* xref:PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc[PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc]
+  — vendored-tree reconciliation record.
+* xref:tech-debt-2026-05-26.adoc[tech-debt-2026-05-26.adoc] — technical-debt register.
+* xref:governance/CRG-AUDIT-2026-04-18.adoc[governance/CRG-AUDIT-2026-04-18.adoc]
+  — the dated Component Readiness Grade audit (a historical record).

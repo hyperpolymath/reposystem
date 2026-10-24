@@ -59,8 +59,8 @@ The evidence supports that label:
 
 * It addresses documents as `PUT|GET /api/v1/{collection}/{id}`, where the
   collection names (`reposystem:graph`, `reposystem:aspects`, …) and the
-  `snapshot` / `edge:<id>` document IDs are **reposystem-local conventions**
-  invented alongside this client.
+  document IDs — `snapshot`, `{repo_id}` (graph only) and `edge:<id>` (graph
+  only) — are **reposystem-local conventions** invented alongside this client.
 * Upstream's documented HTTP surface is octad-oriented —
   `POST /api/v1/octads`, `GET /api/v1/drift/status`,
   `POST /api/v1/normalizer/trigger/{subject}`, `/api/v1/vql/execute` — plus a
@@ -85,8 +85,8 @@ to a VeriSimDB-shaped endpoint.
 The following are intentionally untouched, and must stay untouched until an
 agreed contract exists:
 
-* route shape `/api/v1/{collection}/{id}`, including the `snapshot` and
-  `edge:<id>` document IDs;
+* route shape `/api/v1/{collection}/{id}`, including the `snapshot`,
+  `{repo_id}` and `edge:<id>` document IDs;
 * the serialised JSON of each store document (field names, nesting);
 * collection names under `reposystem:`;
 * `VERISIMDB_URL`, its `http://localhost:8080` default, the `/api/v1` prefix,
@@ -103,9 +103,12 @@ Renaming any of these is a wire/format change, not a documentation change.
 
 |`tools/merge-resolver/src/lib.rs`, `decision.rs`
 |Removed the "VeriSimDB hexad" description. Decision logs are JSON files
-written by the resolver; no VeriSimDB transport exists in that crate. The
-word "modality profile" now describes a decision's modality selection, and
-"Octad" is reserved for the upstream contract.
+written by the resolver; no VeriSimDB transport exists in that crate, and a
+`ConflictDecision` is merge-resolution metadata only — it carries no modality
+selection, so neither a modality profile nor the Octad contract applies to it.
+"Octad" is reserved for the upstream contract, and "modality profile" is the
+term to reach for only if such records later gain an explicit modality
+selection.
 
 |`src/verisimdb.rs`
 |Added an explicit *legacy/custom, not an Octad adapter* status section and
@@ -125,9 +128,12 @@ the Octad contract.
 tracking"), and pointed at this note.
 |===
 
-Dated historical records (`docs/governance/CRG-AUDIT-2026-04-18.adoc`,
-`.machine_readable/descriptiles/STATE.a2ml`, `CHANGELOG.adoc`) are left as
-written; they describe past sessions, not current guidance.
+Dated historical records are left as written: `CHANGELOG.adoc` and
+`docs/governance/CRG-AUDIT-2026-04-18.adoc` are untouched, and
+`.machine_readable/descriptiles/STATE.a2ml` keeps its older dated entries
+verbatim — this PR only adds a new dated checkpoint entry (and refreshes that
+file's `last-updated` line). Past entries describe past sessions, not current
+guidance.
 
 == If Octad support is wanted later
 

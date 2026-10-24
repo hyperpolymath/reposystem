@@ -11,13 +11,19 @@
 //!
 //! # Persistence terminology
 //!
-//! These records are **not** persisted to VeriSimDB by this crate, and they
-//! are not described as "hexads" (a fixed six-element grouping) or "octads"
-//! (the current upstream eight-modality model/API). A decision is one entity
-//! whose supporting evidence is whatever set of modalities it happens to
-//! carry — a **modality profile**. Any future VeriSimDB integration must be
-//! designed against the versioned upstream contract and added as its own
-//! change, without altering the JSON fields defined here.
+//! A [`ConflictDecision`] is **merge-resolution metadata only**: file, conflict
+//! type, strategy, reasoning, confidence, timestamp, reversibility. It carries
+//! no modalities and selects no representations, so no modality selection is
+//! involved and neither a "modality profile" nor the upstream **Octad**
+//! contract applies to it.
+//!
+//! These records are also **not** persisted to VeriSimDB by this crate, and
+//! they are not "hexads" (a fixed six-element grouping) or "octads" (the
+//! current upstream eight-modality model/API). Any future VeriSimDB
+//! integration must be designed against the versioned upstream contract and
+//! added as its own change, without altering the JSON fields defined here;
+//! only if such records then acquire an explicit modality selection would
+//! "modality profile" be the appropriate term for it.
 //! See `docs/VERISIMDB-MODALITY-PROFILE.adoc`.
 
 use serde::{Deserialize, Serialize};

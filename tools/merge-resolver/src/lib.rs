@@ -11,13 +11,14 @@
 //! `.merge-resolver/<session>-decisions.json` and is visualizable in PanLL.
 //!
 //! No VeriSimDB transport is wired up here (there is no HTTP client
-//! dependency). If these records are ever published to VeriSimDB, they must be
-//! shaped against that project's versioned API — the current upstream
-//! eight-modality contract is named **Octad**. A decision record is a single
-//! entity described by whatever modalities it actually carries, i.e. a
-//! **modality profile**; it is not a fixed-count "hexad", and the word
-//! "Octad" names upstream's eight-modality model, not a wrapper around this
-//! log. See `docs/VERISIMDB-MODALITY-PROFILE.adoc`.
+//! dependency). A decision record is merge-resolution metadata only — it
+//! carries no modalities and selects no representations, so neither a
+//! **modality profile** nor upstream's **Octad** contract applies to it. Those
+//! terms are kept distinct for future work: "modality profile" is the
+//! number-agnostic term for an implementation's selected modalities, while
+//! "Octad" names upstream's specific eight-modality model/API. If these
+//! records are ever published to VeriSimDB they must be shaped against that
+//! project's versioned API. See `docs/VERISIMDB-MODALITY-PROFILE.adoc`.
 //!
 //! This documentation change deliberately alters no routes, record fields or
 //! serialised format.

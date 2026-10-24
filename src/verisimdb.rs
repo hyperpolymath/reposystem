@@ -6,9 +6,12 @@
 //! # Status: legacy custom client, not an Octad adapter
 //!
 //! This module implements a reposystem-local convention: one collection per
-//! former JSON file, one document per collection under the key `"snapshot"`,
-//! addressed as `PUT|GET /api/v1/{collection}/{id}`. Those route shapes and
-//! payloads are ours, not upstream's.
+//! former JSON file, holding one *snapshot* document under the key
+//! `"snapshot"`, plus — in the graph collection only — one document per
+//! repository ID and one per `edge:<id>`. Every one of these documents is
+//! addressed as `PUT|GET /api/v1/{collection}/{id}`. Those route shapes, the
+//! `snapshot` / `{repo_id}` / `edge:<id>` IDs and the payloads are ours, not
+//! upstream's.
 //!
 //! The current upstream VeriSimDB API is built around the **Octad** — one
 //! consonance subject carried across its eight named modal witnesses — with

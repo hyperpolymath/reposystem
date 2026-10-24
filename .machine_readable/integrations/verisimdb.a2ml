@@ -1,5 +1,15 @@
 # SPDX-License-Identifier: MPL-2.0
 # VeriSimDB Feed — Cross-Repo Analytics Data Store
+#
+# Terminology note (reposystem issue #299): "hexad" in [feed-config] below was
+# used generically for the emitted record shape. It never meant a six-element
+# record. Upstream's named eight-modality contract is "Octad"; the
+# number-agnostic term for a selected/configured group of modalities is
+# "modality profile". See docs/VERISIMDB-MODALITY-PROFILE.adoc.
+#
+# The existing value is retained verbatim so any current reader keeps working,
+# and it is marked as a legacy, unverified alias: no feed emitter in this repo
+# has been checked against the current Octad API.
 
 [integration]
 name = "verisimdb"
@@ -11,5 +21,9 @@ data-store = "verisimdb-data"
 emit-scan-results = true
 emit-build-metrics = true
 emit-dependency-graph = true
+# Legacy alias, retained for compatibility. The emitted records are ordinary
+# JSON documents — not octads, and not six-element hexads.
 format = "hexad"
+format-status = "legacy-unverified-alias"
+format-preferred-term = "modality-profile"
 destination = "verisimdb-data/feeds/"

@@ -52,7 +52,12 @@ impl EcosystemGraph {
         }
     }
 
-    /// Load graph from VeriSimDB (preferred) falling back to flat JSON files.
+    /// Load graph via the legacy/custom VeriSimDB client, falling back to flat
+    /// JSON files.
+    ///
+    /// The VeriSimDB path uses reposystem's own collection/snapshot routes
+    /// (`src/verisimdb.rs`), not the current upstream Octad API, so the stored
+    /// documents are plain store snapshots rather than octads.
     ///
     /// For each of the five stores the load priority is:
     /// 1. VeriSimDB snapshot (`VERISIMDB_URL` env var; default `http://localhost:8080`)
@@ -167,11 +172,13 @@ impl EcosystemGraph {
         Ok(ecosystem)
     }
 
-    /// Save graph to a directory and to VeriSimDB.
+    /// Save graph to a directory and mirror it to VeriSimDB.
     ///
     /// Flat JSON files in `dir` are written first (authoritative on-disk copy).
-    /// VeriSimDB is then updated with the same data.  VeriSimDB failures are
-    /// logged as warnings — they do not cause `save()` to return `Err`.
+    /// VeriSimDB is then updated with the same data through the legacy/custom
+    /// client (custom collection routes, not the current Octad API).  VeriSimDB
+    /// failures are logged as warnings — they do not cause `save()` to return
+    /// `Err`.
     pub fn save(&self, dir: &Path) -> Result<()> {
         fs::create_dir_all(dir)
             .with_context(|| format!("Failed to create directory {}", dir.display()))?;

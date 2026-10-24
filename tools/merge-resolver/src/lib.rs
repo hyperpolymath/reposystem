@@ -7,8 +7,21 @@
 //! 2. `rollback` — revert to pre-merge snapshot (decision log preserved)
 //! 3. `accept` — finalize merge, clean up snapshots
 //!
-//! Every conflict resolution decision is logged as structured JSON,
-//! stored as a VeriSimDB hexad, and visualizable in PanLL.
+//! Every conflict resolution decision is logged as structured JSON under
+//! `.merge-resolver/<session>-decisions.json` and is visualizable in PanLL.
+//!
+//! No VeriSimDB transport is wired up here (there is no HTTP client
+//! dependency). A decision record is merge-resolution metadata only — it
+//! carries no modalities and selects no representations, so neither a
+//! **modality profile** nor upstream's **Octad** contract applies to it. Those
+//! terms are kept distinct for future work: "modality profile" is the
+//! number-agnostic term for an implementation's selected modalities, while
+//! "Octad" names upstream's specific eight-modality model/API. If these
+//! records are ever published to VeriSimDB they must be shaped against that
+//! project's versioned API. See `docs/VERISIMDB-MODALITY-PROFILE.adoc`.
+//!
+//! This documentation change deliberately alters no routes, record fields or
+//! serialised format.
 
 #![forbid(unsafe_code)]
 pub mod decision;

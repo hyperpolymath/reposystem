@@ -23,7 +23,7 @@ Per `.machine_readable/descriptiles/STATE.a2ml` (2026-06-26), the project is in 
 - **Representation foundation** — the Rust `types` module is the single schema of record: `Estate`, `ExternalSeam` + `SeamDomain`, `RelationType` (including `RefersTo`), and the five stores (Graph/Slot/Aspect/Plan/Audit). Seams are edge sinks (`aerie` → Network, `ambientops` → Machine).
 - **Manifest import** — `src/importers/manifest.rs` bridges `repos.toml` (declared 297 repos) + `repos.groups.toml` into the `GraphStore` via `reposystem import manifest`.
 - **Unified export** — the `reposystem/estate-export@1` envelope (`reposystem export`, estate-json) is consumed by the web HUD; DOT export is available too.
-- **Core pipeline** — scan → slot/provider registry → scenario diff → plan + apply with rollback, with an audited Plan → Apply → Rollback flow (`PlanStore` + `AuditStore`) and the VeriSimDB persistence client (`src/verisimdb.rs`).
+- **Core pipeline** — scan → slot/provider registry → scenario diff → plan + apply with rollback, with an audited Plan → Apply → Rollback flow (`PlanStore` + `AuditStore`) and the legacy/custom VeriSimDB persistence client (`src/verisimdb.rs` — custom collection routes; not an adapter for the current Octad API, see [VeriSimDB terminology](https://github.com/hyperpolymath/reposystem/blob/main/docs/VERISIMDB-MODALITY-PROFILE.adoc)).
 - **Front-ends** — web HUD (static vanilla-JS canvas prototype, grandfathered no-build), TUI (ratatui), desktop GUI (ReScript), and forge-ops (Tauri control surface).
 
 `ROADMAP.adoc` confirms staged freezes **f1–f5** are checked off (graph + tagging + export, slots/providers, plan + dry-run diff, apply + rollback execution, interactive TUI + web).

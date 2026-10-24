@@ -205,9 +205,11 @@ The rollback plan is created in `PlanStatus::Draft` with id `plan:rollback:<orig
 
 Applying a plan records an `AuditEntry` (in `AuditStore`): `plan_id`, an overall `result: ApplyResult` (`Success`/`PartialFailure`/`Failure`/`RolledBack`), per-operation `op_results: Vec<OpResult>`, `started_at`/`finished_at`, `applied_by`, `auto_rollback_triggered`, optional `rollback_plan_id`, optional `health_check_passed`, and `notes`. Helper methods include `success_count`, `failure_count`, `errors`, and `AuditStore::failed_entries`. This is what makes the flow auditable: a plan, the inverse plan that undoes it, and a logged record of what actually happened.
 
-### VeriSimDB persistence
+### VeriSimDB persistence (legacy/custom client)
 
-`src/verisimdb.rs` provides `VeriSimDbClient`, which mirrors all five JSON stores to VeriSimDB collections. The collection mapping is one-per-former-file:
+Status: **legacy/custom, contract unverified.** `src/verisimdb.rs` provides `VeriSimDbClient`, which mirrors all five JSON stores to VeriSimDB collections using reposystem's own routes (`PUT|GET /api/v1/{collection}/{id}`, with `snapshot` and `edge:<id>` document IDs). Those collection names and document IDs are reposystem conventions, and the payloads are whole store snapshots — this is **not** an adapter for the current upstream Octad API, and a stored document is neither an "octad" nor a "hexad". See [`docs/VERISIMDB-MODALITY-PROFILE.adoc`](https://github.com/hyperpolymath/reposystem/blob/main/docs/VERISIMDB-MODALITY-PROFILE.adoc) for the terminology ("modality profile" vs. "Octad") and the evidence behind this label.
+
+The collection mapping is one-per-former-file:
 
 | Store / file | Collection |
 |---|---|

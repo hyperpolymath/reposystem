@@ -1,0 +1,160 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= VeriSimDB Interoperability: Terminology and Client Status
+:toc: preamble
+:toclevels: 3
+
+This note resolves the wording used for VeriSimDB in this repository
+(tracking issue https://github.com/hyperpolymath/reposystem/issues/299, which
+follows the upstream terminology proposal at
+https://github.com/hyperpolymath/verisimdb/issues/299).
+
+It is a **documentation change only**. No route, document ID, serialised
+record or transport behaviour of the reposystem VeriSimDB client changes here.
+
+== Vocabulary
+
+[cols="1,3"]
+|===
+|Term |Meaning and permitted use
+
+|Consonance subject
+|Upstream's name for an identity that is maintained consistently across several
+modal witnesses. Use it only when discussing the upstream model.
+
+|Modal witness (modality)
+|One way of representing an entity: graph structure, vector embedding, tensor
+data, semantic annotation, document body, temporal history, provenance chain,
+spatial reference.
+
+|Modality set
+|The membership alone — *which* modalities are present for a subject. Avoids
+any claim about ordering, version or cardinality.
+
+|**Modality profile**
+|The number-agnostic term for a versioned, implementation-specific selection of
+supported/used modalities. Its cardinality is stated explicitly when it
+matters and is never implied by the word itself. Use this for "the modalities
+this record/tool uses".
+
+|**Octad**
+|*Reserved.* Upstream's named eight-modality model and its current API
+(`POST /api/v1/octads` and friends). Use it only when referring to that exact
+current contract — not as a synonym for "record", "document" or "bundle".
+
+|hexad
+|*Do not use generically.* It is a count-specific word (six) and is easily
+mistaken for a six-element contract. Upstream retains `HEXAD` only as a legacy
+keyword inside VCL source statements. Where a fixed-count word is genuinely
+meant, write the number out ("six-element").
+|===
+
+Rule of thumb: if removing the number would not change the meaning, the word
+"hexad" or "Octad" is the wrong word — use "modality profile".
+
+== Status of `src/verisimdb.rs`: legacy/custom, contract unverified
+
+`VeriSimDbClient` is labelled **legacy/custom** in its module documentation.
+The evidence supports that label:
+
+* It addresses documents as `PUT|GET /api/v1/{collection}/{id}`, where the
+  collection names (`reposystem:graph`, `reposystem:aspects`, …) and the
+  document IDs — `snapshot`, `{repo_id}` (graph only) and `edge:<id>` (graph
+  only) — are **reposystem-local conventions** invented alongside this client.
+* Upstream's documented HTTP surface is octad-oriented —
+  `POST /api/v1/octads`, `GET /api/v1/drift/status`,
+  `POST /api/v1/normalizer/trigger/{subject}`, `/api/v1/vql/execute` — plus a
+  gRPC service (`verisimdb.VeriSimService`). No generic per-collection
+  document `PUT` appears in it.
+* The payloads sent are whole serialised reposystem stores
+  (`GraphStore`, `AspectStore`, `SlotStore`, `PlanStore`, `AuditStore`), not
+  octad payloads shaped per modality. A stored snapshot is therefore neither
+  an "octad" nor a "hexad"; no fixed modality cardinality applies to it.
+* The five-store file layout is reposystem's own legacy model: it mirrors the
+  historical flat files one-for-one and says nothing about upstream's eight
+  modalities.
+* The client carries no API version negotiation, no VCL, and no per-modality
+  query surface — it is a best-effort mirror.
+
+Consequently: **this client is not established as an adapter for the current
+Octad API.** Treat it as a custom persistence path that happens to speak HTTP
+to a VeriSimDB-shaped endpoint.
+
+== What a terminology cleanup must not change
+
+The following are intentionally untouched, and must stay untouched until an
+agreed contract exists:
+
+* route shape `/api/v1/{collection}/{id}`, including the `snapshot`,
+  `{repo_id}` and `edge:<id>` document IDs;
+* the serialised JSON of each store document (field names, nesting);
+* collection names under `reposystem:`;
+* `VERISIMDB_URL`, its `http://localhost:8080` default, the `/api/v1` prefix,
+  the 5-second timeout, and the warnings-only failure behaviour of
+  `EcosystemGraph::save`.
+
+Renaming any of these is a wire/format change, not a documentation change.
+
+== Where the wording changed
+
+[cols="2,3"]
+|===
+|Location |Change
+
+|`tools/merge-resolver/src/lib.rs`, `decision.rs`
+|Removed the "VeriSimDB hexad" description. Decision logs are JSON files
+written by the resolver; no VeriSimDB transport exists in that crate, and a
+`ConflictDecision` is merge-resolution metadata only — it carries no modality
+selection, so neither a modality profile nor the Octad contract applies to it.
+"Octad" is reserved for the upstream contract, and "modality profile" is the
+term to reach for only if such records later gain an explicit modality
+selection.
+
+|`src/verisimdb.rs`
+|Added an explicit *legacy/custom, not an Octad adapter* status section and
+marked the collection layout as a reposystem convention. Also corrected a
+pre-existing inaccuracy there: only the graph collection upserts per-record
+documents (`{repo_id}`, `edge:<id>`); aspects, slots, plans and audit are
+snapshot-only.
+
+|`src/lib.rs`, `src/graph.rs`
+|Module and load/save comments reworded to name the client legacy/custom and
+to stop implying that stored documents are VeriSimDB-native records.
+
+|`.machine_readable/integrations/verisimdb.a2ml`
+|The generic `format` value is retained verbatim for compatibility but is now
+annotated as a legacy, unverified alias; the feed has not been checked against
+the Octad contract.
+
+|`README.adoc`, `EXPLAINME.adoc`, `src/README.adoc`, `wiki/*`
+|Client descriptions corrected (persistence mirror, not "temporal aspect
+tracking"), and pointed at this note.
+|===
+
+Dated historical records are left as written: `CHANGELOG.adoc` and
+`docs/governance/CRG-AUDIT-2026-04-18.adoc` are untouched, and
+`.machine_readable/descriptiles/STATE.a2ml` keeps its older dated entries
+verbatim — this PR only adds a new dated checkpoint entry (and refreshes that
+file's `last-updated` line). Past entries describe past sessions, not current
+guidance.
+
+== If Octad support is wanted later
+
+That is a separate, contract-driven change:
+
+. check the versioned upstream API and its schema, rather than assuming it
+  accepts arbitrary modality subsets or counts;
+. map each reposystem record to one consonance subject and state its modality
+  profile explicitly (which modalities are required, which optional) and how
+  the profile is versioned;
+. keep any new adapter beside the existing client so the legacy routes can be
+  retired deliberately, with a migration note.
+
+== References
+
+* Reposystem issue #299 — this terminology review.
+* Upstream https://github.com/hyperpolymath/verisimdb/issues/299 — modality
+  profile / cardinality semantics.
+* Upstream `README.adoc` and `ARCHITECTURE.adoc` — octad model and current
+  HTTP/gRPC surface.
+* `src/verisimdb.rs`, `src/graph.rs`, `tools/merge-resolver/src/{lib,decision}.rs`.

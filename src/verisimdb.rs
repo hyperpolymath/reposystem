@@ -56,11 +56,11 @@
 //!
 //! # Collection layout (reposystem convention, not an upstream schema)
 //!
-//! Each collection holds a single document keyed `"snapshot"` containing the
+//! Each collection holds a snapshot document keyed `"snapshot"` containing the
 //! full serialised store. This matches the existing file-per-store model while
-//! keeping VeriSimDB queries simple.  Individual repo/edge/aspect records are
-//! also upserted under their own IDs in the same collection for fine-grained
-//! queries.
+//! keeping VeriSimDB queries simple. Only the graph collection additionally
+//! upserts finer-grained documents — one per repository ID and one per
+//! `edge:<id>`; aspects, slots, plans and audit are stored as snapshots only.
 //!
 //! ```text
 //! reposystem:graph/snapshot       — full GraphStore JSON

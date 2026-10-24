@@ -112,7 +112,10 @@ selection.
 
 |`src/verisimdb.rs`
 |Added an explicit *legacy/custom, not an Octad adapter* status section and
-marked the collection layout as a reposystem convention.
+marked the collection layout as a reposystem convention. Also corrected a
+pre-existing inaccuracy there: only the graph collection upserts per-record
+documents (`{repo_id}`, `edge:<id>`); aspects, slots, plans and audit are
+snapshot-only.
 
 |`src/lib.rs`, `src/graph.rs`
 |Module and load/save comments reworded to name the client legacy/custom and

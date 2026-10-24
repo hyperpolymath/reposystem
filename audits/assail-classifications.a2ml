@@ -1,4 +1,7 @@
 %A2ML
+# SPDX-License-Identifier: MPL-2.0
+# Assail (panic-attack) finding classifications for reposystem.
+project = "reposystem"
 - suppression:
     file: 'web/app.js'
     rule: 'DynamicCodeExecution'

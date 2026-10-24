@@ -34,7 +34,10 @@ pub fn run(
                 "extends" => RelationType::Extends,
                 "mirrors" => RelationType::Mirrors,
                 "replaces" => RelationType::Replaces,
-                other => anyhow::bail!("Unknown relation type: {}. Valid: uses, provides, extends, mirrors, replaces", other),
+                other => anyhow::bail!(
+                    "Unknown relation type: {}. Valid: uses, provides, extends, mirrors, replaces",
+                    other
+                ),
             };
 
             // Parse channel type
@@ -45,7 +48,10 @@ pub fn run(
                 "runtime" => Channel::Runtime,
                 "human" => Channel::Human,
                 "unknown" => Channel::Unknown,
-                other => anyhow::bail!("Unknown channel: {}. Valid: api, artifact, config, runtime, human, unknown", other),
+                other => anyhow::bail!(
+                    "Unknown channel: {}. Valid: api, artifact, config, runtime, human, unknown",
+                    other
+                ),
             };
 
             // Resolve repo IDs (allow short names)
@@ -106,7 +112,10 @@ pub fn run(
 
             // Find and remove matching edges
             let initial_count = graph.store.edges.len();
-            graph.store.edges.retain(|e| !(e.from == from_id && e.to == to_id));
+            graph
+                .store
+                .edges
+                .retain(|e| !(e.from == from_id && e.to == to_id));
             let removed = initial_count - graph.store.edges.len();
 
             if removed > 0 {
@@ -125,10 +134,19 @@ pub fn run(
 
             println!("Edges ({}):", graph.store.edges.len());
             for edge in &graph.store.edges {
-                let from_name = graph.get_repo(&edge.from).map(|r| r.name.as_str()).unwrap_or(&edge.from);
-                let to_name = graph.get_repo(&edge.to).map(|r| r.name.as_str()).unwrap_or(&edge.to);
+                let from_name = graph
+                    .get_repo(&edge.from)
+                    .map(|r| r.name.as_str())
+                    .unwrap_or(&edge.from);
+                let to_name = graph
+                    .get_repo(&edge.to)
+                    .map(|r| r.name.as_str())
+                    .unwrap_or(&edge.to);
                 let label = edge.label.as_deref().unwrap_or("");
-                println!("  {} --[{:?}/{}]--> {}", from_name, edge.rel, label, to_name);
+                println!(
+                    "  {} --[{:?}/{}]--> {}",
+                    from_name, edge.rel, label, to_name
+                );
             }
         }
 

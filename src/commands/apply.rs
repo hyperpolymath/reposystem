@@ -33,7 +33,10 @@ pub fn run(action: &str, plan_name: Option<String>, args: ApplyArgs) -> Result<(
         "undo" | "rollback" => run_undo(&data_dir, plan_name, args),
         "status" | "audit" | "log" => run_audit_log(&data_dir, plan_name),
         _ => {
-            bail!("Unknown apply action: {}. Use apply, undo, or status", action);
+            bail!(
+                "Unknown apply action: {}. Use apply, undo, or status",
+                action
+            );
         }
     }
 }
@@ -42,8 +45,7 @@ pub fn run(action: &str, plan_name: Option<String>, args: ApplyArgs) -> Result<(
 fn run_apply(data_dir: &Path, plan_name: Option<String>, args: ApplyArgs) -> Result<()> {
     let plan_id = plan_name.ok_or_else(|| anyhow!("Plan name/ID is required"))?;
 
-    let mut graph = EcosystemGraph::load(data_dir)
-        .context("Failed to load ecosystem graph")?;
+    let mut graph = EcosystemGraph::load(data_dir).context("Failed to load ecosystem graph")?;
 
     // Find the plan
     let plan = graph
@@ -82,7 +84,12 @@ fn run_apply(data_dir: &Path, plan_name: Option<String>, args: ApplyArgs) -> Res
 
     // Execute operations
     for (i, op) in plan.operations.iter().enumerate() {
-        println!("  [{}/{}] {}", i + 1, plan.operations.len(), op.description());
+        println!(
+            "  [{}/{}] {}",
+            i + 1,
+            plan.operations.len(),
+            op.description()
+        );
 
         let result = execute_operation(&mut graph, op);
         let success = result.is_ok();
@@ -98,12 +105,18 @@ fn run_apply(data_dir: &Path, plan_name: Option<String>, args: ApplyArgs) -> Res
         if success {
             println!("       OK");
         } else {
-            println!("       FAILED: {}", error.as_deref().unwrap_or("unknown error"));
+            println!(
+                "       FAILED: {}",
+                error.as_deref().unwrap_or("unknown error")
+            );
             failed = true;
             failure_index = Some(i);
 
             if args.auto_rollback {
-                notes.push(format!("Auto-rollback triggered after operation {} failed", i + 1));
+                notes.push(format!(
+                    "Auto-rollback triggered after operation {} failed",
+                    i + 1
+                ));
                 break;
             }
         }
@@ -208,8 +221,7 @@ fn run_apply(data_dir: &Path, plan_name: Option<String>, args: ApplyArgs) -> Res
 fn run_undo(data_dir: &Path, plan_name: Option<String>, args: ApplyArgs) -> Result<()> {
     let plan_id = plan_name.ok_or_else(|| anyhow!("Plan name/ID is required"))?;
 
-    let mut graph = EcosystemGraph::load(data_dir)
-        .context("Failed to load ecosystem graph")?;
+    let mut graph = EcosystemGraph::load(data_dir).context("Failed to load ecosystem graph")?;
 
     // Find the plan
     let plan = graph
@@ -267,7 +279,10 @@ fn run_undo(data_dir: &Path, plan_name: Option<String>, args: ApplyArgs) -> Resu
         if success {
             println!("       OK");
         } else {
-            println!("       FAILED: {}", error.as_deref().unwrap_or("unknown error"));
+            println!(
+                "       FAILED: {}",
+                error.as_deref().unwrap_or("unknown error")
+            );
             failed = true;
         }
     }
@@ -320,8 +335,7 @@ fn run_undo(data_dir: &Path, plan_name: Option<String>, args: ApplyArgs) -> Resu
 
 /// Show audit log
 fn run_audit_log(data_dir: &Path, plan_name: Option<String>) -> Result<()> {
-    let graph = EcosystemGraph::load(data_dir)
-        .context("Failed to load ecosystem graph")?;
+    let graph = EcosystemGraph::load(data_dir).context("Failed to load ecosystem graph")?;
 
     let entries: Vec<_> = if let Some(ref plan_id) = plan_name {
         graph
@@ -349,7 +363,10 @@ fn run_audit_log(data_dir: &Path, plan_name: Option<String>) -> Result<()> {
         println!("Result: {:?}", entry.result);
         println!("Applied by: {}", entry.applied_by);
         println!("Started: {}", entry.started_at.format("%Y-%m-%d %H:%M:%S"));
-        println!("Finished: {}", entry.finished_at.format("%Y-%m-%d %H:%M:%S"));
+        println!(
+            "Finished: {}",
+            entry.finished_at.format("%Y-%m-%d %H:%M:%S")
+        );
         println!(
             "Duration: {}ms",
             (entry.finished_at - entry.started_at).num_milliseconds()
@@ -357,7 +374,10 @@ fn run_audit_log(data_dir: &Path, plan_name: Option<String>) -> Result<()> {
 
         let success_count = entry.op_results.iter().filter(|r| r.success).count();
         let fail_count = entry.op_results.len() - success_count;
-        println!("Operations: {} succeeded, {} failed", success_count, fail_count);
+        println!(
+            "Operations: {} succeeded, {} failed",
+            success_count, fail_count
+        );
 
         if entry.auto_rollback_triggered {
             println!("Auto-rollback: triggered");
@@ -400,9 +420,10 @@ fn execute_operation(graph: &mut EcosystemGraph, op: &PlanOp) -> Result<()> {
 
             if graph.slots.bindings.len() == initial_len {
                 // Binding wasn't found by ID, try to find by slot/consumer
-                graph.slots.bindings.retain(|b| {
-                    !(b.slot_id == *slot_id && b.consumer_id == *consumer_id)
-                });
+                graph
+                    .slots
+                    .bindings
+                    .retain(|b| !(b.slot_id == *slot_id && b.consumer_id == *consumer_id));
             }
 
             // Create new binding
@@ -466,9 +487,12 @@ fn execute_operation(graph: &mut EcosystemGraph, op: &PlanOp) -> Result<()> {
             ..
         } => {
             // Check if binding already exists
-            if graph.slots.bindings.iter().any(|b| {
-                b.slot_id == *slot_id && b.consumer_id == *consumer_id
-            }) {
+            if graph
+                .slots
+                .bindings
+                .iter()
+                .any(|b| b.slot_id == *slot_id && b.consumer_id == *consumer_id)
+            {
                 return Err(anyhow!("Binding already exists for this slot/consumer"));
             }
 
@@ -504,9 +528,10 @@ fn execute_operation(graph: &mut EcosystemGraph, op: &PlanOp) -> Result<()> {
 
             if graph.slots.bindings.len() == initial_len {
                 // Binding wasn't found by ID, try by slot/consumer
-                graph.slots.bindings.retain(|b| {
-                    !(b.slot_id == *slot_id && b.consumer_id == *consumer_id)
-                });
+                graph
+                    .slots
+                    .bindings
+                    .retain(|b| !(b.slot_id == *slot_id && b.consumer_id == *consumer_id));
             }
 
             if graph.slots.bindings.len() == initial_len {
@@ -514,10 +539,18 @@ fn execute_operation(graph: &mut EcosystemGraph, op: &PlanOp) -> Result<()> {
             }
             Ok(())
         }
-        PlanOp::FileChange { repo_id, file_path, change_type, .. } => {
+        PlanOp::FileChange {
+            repo_id,
+            file_path,
+            change_type,
+            ..
+        } => {
             // File changes are recorded but not executed automatically
             // This is a safety measure - actual file operations should be done manually
-            println!("       [FILE] {:?} {} in {}", change_type, file_path, repo_id);
+            println!(
+                "       [FILE] {:?} {} in {}",
+                change_type, file_path, repo_id
+            );
             println!("       Note: File changes require manual execution");
             Ok(())
         }
@@ -539,8 +572,8 @@ fn reverse_operation(op: &PlanOp) -> Option<PlanOp> {
             binding_id: binding_id.clone(),
             consumer_id: consumer_id.clone(),
             slot_id: slot_id.clone(),
-            from_provider_id: to_provider_id.clone(),  // Swap
-            to_provider_id: from_provider_id.clone(),  // Swap
+            from_provider_id: to_provider_id.clone(), // Swap
+            to_provider_id: from_provider_id.clone(), // Swap
             risk: *risk,
             reason: format!("Rollback: {}", reason),
         }),
@@ -598,7 +631,12 @@ fn execute_rollback(graph: &mut EcosystemGraph, plan: &Plan, up_to_index: usize)
     println!("  Executing automatic rollback...");
 
     for (i, op) in rollback_ops.iter().enumerate() {
-        println!("  [rollback {}/{}] {}", i + 1, rollback_ops.len(), op.description());
+        println!(
+            "  [rollback {}/{}] {}",
+            i + 1,
+            rollback_ops.len(),
+            op.description()
+        );
         if let Err(e) = execute_operation(graph, &op) {
             println!("       ROLLBACK FAILED: {}", e);
             return Err(anyhow!("Rollback failed at step {}: {}", i + 1, e));
@@ -621,12 +659,23 @@ fn run_health_check(graph: &EcosystemGraph) -> bool {
     for binding in &graph.slots.bindings {
         // Check slot exists
         if !graph.slots.slots.iter().any(|s| s.id == binding.slot_id) {
-            eprintln!("Health check: Binding {} references missing slot {}", binding.id, binding.slot_id);
+            eprintln!(
+                "Health check: Binding {} references missing slot {}",
+                binding.id, binding.slot_id
+            );
             healthy = false;
         }
         // Check provider exists
-        if !graph.slots.providers.iter().any(|p| p.id == binding.provider_id) {
-            eprintln!("Health check: Binding {} references missing provider {}", binding.id, binding.provider_id);
+        if !graph
+            .slots
+            .providers
+            .iter()
+            .any(|p| p.id == binding.provider_id)
+        {
+            eprintln!(
+                "Health check: Binding {} references missing provider {}",
+                binding.id, binding.provider_id
+            );
             healthy = false;
         }
     }
@@ -635,7 +684,11 @@ fn run_health_check(graph: &EcosystemGraph) -> bool {
     for binding in &graph.slots.bindings {
         if let (Some(slot), Some(provider)) = (
             graph.slots.slots.iter().find(|s| s.id == binding.slot_id),
-            graph.slots.providers.iter().find(|p| p.id == binding.provider_id),
+            graph
+                .slots
+                .providers
+                .iter()
+                .find(|p| p.id == binding.provider_id),
         ) {
             if slot.interface_version != provider.interface_version {
                 eprintln!(

@@ -82,8 +82,14 @@ pub fn run(action: &str, name: Option<String>, base: Option<String>) -> Result<(
             }
 
             let before = graph.store.scenarios.len();
-            graph.store.scenarios.retain(|s| s.id != scenario_id && s.name != name);
-            graph.store.changesets.retain(|c| c.scenario_id != scenario_id);
+            graph
+                .store
+                .scenarios
+                .retain(|s| s.id != scenario_id && s.name != name);
+            graph
+                .store
+                .changesets
+                .retain(|c| c.scenario_id != scenario_id);
 
             if graph.store.scenarios.len() < before {
                 graph.save(&data_dir)?;
@@ -95,7 +101,9 @@ pub fn run(action: &str, name: Option<String>, base: Option<String>) -> Result<(
 
         "list" | "ls" => {
             if graph.store.scenarios.is_empty() {
-                println!("No scenarios defined. Use 'reposystem scenario create <name>' to create one.");
+                println!(
+                    "No scenarios defined. Use 'reposystem scenario create <name>' to create one."
+                );
                 return Ok(());
             }
 
@@ -144,7 +152,10 @@ pub fn run(action: &str, name: Option<String>, base: Option<String>) -> Result<(
             if let Some(desc) = &scenario.description {
                 println!("  description: {}", desc);
             }
-            println!("  created: {}", scenario.created_at.format("%Y-%m-%d %H:%M:%S"));
+            println!(
+                "  created: {}",
+                scenario.created_at.format("%Y-%m-%d %H:%M:%S")
+            );
 
             if let Some(cs) = changeset {
                 println!("  operations ({}):", cs.ops.len());
@@ -157,7 +168,10 @@ pub fn run(action: &str, name: Option<String>, base: Option<String>) -> Result<(
                             println!("    - edge: {}", edge_id);
                         }
                         crate::types::ChangeOp::AddAnnotation { annotation } => {
-                            println!("    + annotation: {} on {}", annotation.aspect_id, annotation.target);
+                            println!(
+                                "    + annotation: {} on {}",
+                                annotation.aspect_id, annotation.target
+                            );
                         }
                         crate::types::ChangeOp::RemoveAnnotation { annotation_id } => {
                             println!("    - annotation: {}", annotation_id);
@@ -172,7 +186,8 @@ pub fn run(action: &str, name: Option<String>, base: Option<String>) -> Result<(
 
         "compare" => {
             // Compare two scenarios (name is scenario A, base is scenario B)
-            let name = name.ok_or_else(|| anyhow::anyhow!("Scenario name is required for compare"))?;
+            let name =
+                name.ok_or_else(|| anyhow::anyhow!("Scenario name is required for compare"))?;
             let scenario_a_id = format!("scenario:{}", slug(&name));
             let scenario_b_id = base
                 .map(|b| format!("scenario:{}", slug(&b)))
@@ -214,7 +229,11 @@ pub fn run(action: &str, name: Option<String>, base: Option<String>) -> Result<(
 
             println!("Comparing scenarios:");
             println!("  A: {} ({} ops)", name, ops_a);
-            println!("  B: {} ({} ops)", scenario_b_id.replace("scenario:", ""), ops_b);
+            println!(
+                "  B: {} ({} ops)",
+                scenario_b_id.replace("scenario:", ""),
+                ops_b
+            );
             println!();
 
             if ops_a == 0 && ops_b == 0 {

@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 //! Integration tests for the reposystem CLI commands
 
-use std::process::Command;
 use std::path::PathBuf;
+use std::process::Command;
 use tempfile::TempDir;
 
 /// Get the path to the reposystem binary
@@ -88,18 +88,34 @@ fn test_edge_lifecycle() {
         eprintln!("STDOUT: {}", stdout_str(&output));
         eprintln!("STDERR: {}", stderr_str(&output));
     }
-    assert!(output.status.success(), "edge list failed: {}", stderr_str(&output));
+    assert!(
+        output.status.success(),
+        "edge list failed: {}",
+        stderr_str(&output)
+    );
     assert!(stdout_str(&output).contains("No edges defined"));
 
     // Add an edge
-    let output = run_reposystem(&data_dir, &[
-        "edge", "add",
-        "--from", "alpha",
-        "--to", "beta",
-        "--rel", "uses",
-        "--label", "test dependency"
-    ]);
-    assert!(output.status.success(), "Failed to add edge: {}", stderr_str(&output));
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "edge",
+            "add",
+            "--from",
+            "alpha",
+            "--to",
+            "beta",
+            "--rel",
+            "uses",
+            "--label",
+            "test dependency",
+        ],
+    );
+    assert!(
+        output.status.success(),
+        "Failed to add edge: {}",
+        stderr_str(&output)
+    );
     assert!(stdout_str(&output).contains("Created edge"));
 
     // List edges (should have one)
@@ -109,11 +125,10 @@ fn test_edge_lifecycle() {
     assert!(stdout_str(&output).contains("beta"));
 
     // Remove the edge
-    let output = run_reposystem(&data_dir, &[
-        "edge", "remove",
-        "--from", "alpha",
-        "--to", "beta"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &["edge", "remove", "--from", "alpha", "--to", "beta"],
+    );
     assert!(output.status.success());
     assert!(stdout_str(&output).contains("Removed"));
 
@@ -177,7 +192,11 @@ fn test_group_lifecycle() {
 
     // Create a group with one member
     let output = run_reposystem(&data_dir, &["group", "create", "Test Group", "alpha"]);
-    assert!(output.status.success(), "Failed to create group: {}", stderr_str(&output));
+    assert!(
+        output.status.success(),
+        "Failed to create group: {}",
+        stderr_str(&output)
+    );
     assert!(stdout_str(&output).contains("Created group"));
 
     // Add another member
@@ -250,15 +269,28 @@ fn test_aspect_lifecycle() {
     assert!(stdout_str(&output).contains("No annotations"));
 
     // Tag the repo with a security annotation
-    let output = run_reposystem(&data_dir, &[
-        "aspect", "tag",
-        "--target", "alpha",
-        "--aspect", "security",
-        "--weight", "2",
-        "--polarity", "risk",
-        "--reason", "Uses external APIs"
-    ]);
-    assert!(output.status.success(), "Failed to tag: {}", stderr_str(&output));
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "aspect",
+            "tag",
+            "--target",
+            "alpha",
+            "--aspect",
+            "security",
+            "--weight",
+            "2",
+            "--polarity",
+            "risk",
+            "--reason",
+            "Uses external APIs",
+        ],
+    );
+    assert!(
+        output.status.success(),
+        "Failed to tag: {}",
+        stderr_str(&output)
+    );
     assert!(stdout_str(&output).contains("Added security annotation"));
 
     // Show annotations on the repo
@@ -273,11 +305,10 @@ fn test_aspect_lifecycle() {
     assert!(stdout_str(&output).contains("alpha"));
 
     // Remove the annotation
-    let output = run_reposystem(&data_dir, &[
-        "aspect", "rm",
-        "--target", "alpha",
-        "--aspect", "security"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &["aspect", "rm", "--target", "alpha", "--aspect", "security"],
+    );
     assert!(output.status.success());
     assert!(stdout_str(&output).contains("Removed"));
 

@@ -121,7 +121,8 @@ fn scan_repo(path: &Path, config: &ScanConfig) -> Result<ScanResult> {
     let mut warnings = Vec::new();
 
     // Try to open the repository with gix
-    let repo = gix::open(path).with_context(|| format!("Failed to open git repo: {}", path.display()))?;
+    let repo =
+        gix::open(path).with_context(|| format!("Failed to open git repo: {}", path.display()))?;
 
     // Extract remote origin URL
     let (forge, owner, name, visibility) = extract_remote_info(&repo, path, &mut warnings);
@@ -175,10 +176,11 @@ fn extract_remote_info(
     warnings: &mut Vec<String>,
 ) -> (Forge, String, String, Visibility) {
     // Try to get the origin remote
-    let remote_url = repo
-        .find_remote("origin")
-        .ok()
-        .and_then(|remote| remote.url(gix::remote::Direction::Fetch).map(|u| u.to_bstring().to_string()));
+    let remote_url = repo.find_remote("origin").ok().and_then(|remote| {
+        remote
+            .url(gix::remote::Direction::Fetch)
+            .map(|u| u.to_bstring().to_string())
+    });
 
     match remote_url {
         Some(url) => parse_remote_url(&url, path, warnings),
@@ -348,25 +350,42 @@ mod tests {
 
     #[test]
     fn test_parse_github_https_url() {
-        let (owner, name) = parse_owner_name("https://github.com/hyperpolymath/reposystem.git").unwrap();
+        let (owner, name) =
+            parse_owner_name("https://github.com/hyperpolymath/reposystem.git").unwrap();
         assert_eq!(owner, "hyperpolymath");
         assert_eq!(name, "reposystem");
     }
 
     #[test]
     fn test_parse_github_ssh_url() {
-        let (owner, name) = parse_owner_name("git@github.com:hyperpolymath/reposystem.git").unwrap();
+        let (owner, name) =
+            parse_owner_name("git@github.com:hyperpolymath/reposystem.git").unwrap();
         assert_eq!(owner, "hyperpolymath");
         assert_eq!(name, "reposystem");
     }
 
     #[test]
     fn test_forge_detection() {
-        assert_eq!(Forge::from_url("https://github.com/foo/bar"), Some(Forge::GitHub));
-        assert_eq!(Forge::from_url("git@gitlab.com:foo/bar.git"), Some(Forge::GitLab));
-        assert_eq!(Forge::from_url("https://bitbucket.org/foo/bar"), Some(Forge::Bitbucket));
-        assert_eq!(Forge::from_url("https://codeberg.org/foo/bar"), Some(Forge::Codeberg));
-        assert_eq!(Forge::from_url("https://git.sr.ht/~foo/bar"), Some(Forge::Sourcehut));
+        assert_eq!(
+            Forge::from_url("https://github.com/foo/bar"),
+            Some(Forge::GitHub)
+        );
+        assert_eq!(
+            Forge::from_url("git@gitlab.com:foo/bar.git"),
+            Some(Forge::GitLab)
+        );
+        assert_eq!(
+            Forge::from_url("https://bitbucket.org/foo/bar"),
+            Some(Forge::Bitbucket)
+        );
+        assert_eq!(
+            Forge::from_url("https://codeberg.org/foo/bar"),
+            Some(Forge::Codeberg)
+        );
+        assert_eq!(
+            Forge::from_url("https://git.sr.ht/~foo/bar"),
+            Some(Forge::Sourcehut)
+        );
         assert_eq!(Forge::from_url("https://example.com/foo/bar"), None);
     }
 

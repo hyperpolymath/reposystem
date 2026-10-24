@@ -269,7 +269,11 @@ kind = "repo"
         assert_eq!(graph.seams().len(), 2);
         assert_eq!(graph.repos().len(), 1);
         assert_eq!(graph.store.estate.as_deref(), Some("estate:hyperpolymath"));
-        assert!(graph.store.repos.iter().all(|r| r.estate == "estate:hyperpolymath"));
+        assert!(graph
+            .store
+            .repos
+            .iter()
+            .all(|r| r.estate == "estate:hyperpolymath"));
 
         // The boj-server repo id is derived from the forge URL.
         assert!(graph.get_repo("repo:gh:hyperpolymath/boj-server").is_some());

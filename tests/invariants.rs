@@ -10,9 +10,9 @@
 use chrono::Utc;
 use reposystem::graph::EcosystemGraph;
 use reposystem::types::{
-    AnnotationSource, ApplyResult, AspectAnnotation, AuditEntry, AuditStore, BindingMode,
-    Channel, Edge, EdgeMeta, Evidence, Forge, Group, ImportMeta, OpResult, Polarity,
-    Provider, ProviderType, RelationType, Repo, Slot, SlotBinding, Visibility,
+    AnnotationSource, ApplyResult, AspectAnnotation, AuditEntry, AuditStore, BindingMode, Channel,
+    Edge, EdgeMeta, Evidence, Forge, Group, ImportMeta, OpResult, Polarity, Provider, ProviderType,
+    RelationType, Repo, Slot, SlotBinding, Visibility,
 };
 use std::collections::HashSet;
 use tempfile::TempDir;
@@ -102,16 +102,36 @@ fn test_repo_id_uniqueness() {
     let id3 = Repo::forge_id(Forge::GitLab, "owner", "repo1");
     let id4 = Repo::forge_id(Forge::GitHub, "other", "repo1");
 
-    let ids: HashSet<_> = [id1.clone(), id2.clone(), id3.clone(), id4.clone()].into_iter().collect();
+    let ids: HashSet<_> = [id1.clone(), id2.clone(), id3.clone(), id4.clone()]
+        .into_iter()
+        .collect();
     assert_eq!(ids.len(), 4, "All IDs should be unique");
 }
 
 #[test]
 fn test_edge_id_determinism() {
     // Same inputs should always produce the same edge ID
-    let id1 = Edge::generate_id("repo:a", "repo:b", RelationType::Uses, Channel::Api, Some("test"));
-    let id2 = Edge::generate_id("repo:a", "repo:b", RelationType::Uses, Channel::Api, Some("test"));
-    let id3 = Edge::generate_id("repo:a", "repo:b", RelationType::Uses, Channel::Api, Some("test"));
+    let id1 = Edge::generate_id(
+        "repo:a",
+        "repo:b",
+        RelationType::Uses,
+        Channel::Api,
+        Some("test"),
+    );
+    let id2 = Edge::generate_id(
+        "repo:a",
+        "repo:b",
+        RelationType::Uses,
+        Channel::Api,
+        Some("test"),
+    );
+    let id3 = Edge::generate_id(
+        "repo:a",
+        "repo:b",
+        RelationType::Uses,
+        Channel::Api,
+        Some("test"),
+    );
 
     assert_eq!(id1, id2);
     assert_eq!(id2, id3);
@@ -123,9 +143,27 @@ fn test_edge_id_uniqueness() {
     // Different inputs should produce different IDs
     let id1 = Edge::generate_id("repo:a", "repo:b", RelationType::Uses, Channel::Api, None);
     let id2 = Edge::generate_id("repo:a", "repo:c", RelationType::Uses, Channel::Api, None);
-    let id3 = Edge::generate_id("repo:a", "repo:b", RelationType::Provides, Channel::Api, None);
-    let id4 = Edge::generate_id("repo:a", "repo:b", RelationType::Uses, Channel::Artifact, None);
-    let id5 = Edge::generate_id("repo:a", "repo:b", RelationType::Uses, Channel::Api, Some("label"));
+    let id3 = Edge::generate_id(
+        "repo:a",
+        "repo:b",
+        RelationType::Provides,
+        Channel::Api,
+        None,
+    );
+    let id4 = Edge::generate_id(
+        "repo:a",
+        "repo:b",
+        RelationType::Uses,
+        Channel::Artifact,
+        None,
+    );
+    let id5 = Edge::generate_id(
+        "repo:a",
+        "repo:b",
+        RelationType::Uses,
+        Channel::Api,
+        Some("label"),
+    );
 
     let ids: HashSet<_> = [id1, id2, id3, id4, id5].into_iter().collect();
     assert_eq!(ids.len(), 5, "All edge IDs should be unique");
@@ -265,7 +303,12 @@ fn test_default_aspects_loaded() {
     // Should have the 10 default aspects
     assert!(graph.aspects.aspects.len() >= 10);
 
-    let aspect_ids: HashSet<_> = graph.aspects.aspects.iter().map(|a| a.id.as_str()).collect();
+    let aspect_ids: HashSet<_> = graph
+        .aspects
+        .aspects
+        .iter()
+        .map(|a| a.id.as_str())
+        .collect();
 
     // Check for key aspects from DATA-MODEL.adoc
     assert!(aspect_ids.contains("aspect:security"));
@@ -313,7 +356,12 @@ fn test_json_export_import_fidelity() {
     graph.add_repo(repo_c.clone());
 
     // Add edges with evidence
-    let mut edge1 = make_edge(&repo_a.id, &repo_b.id, RelationType::Uses, Some("api client"));
+    let mut edge1 = make_edge(
+        &repo_a.id,
+        &repo_b.id,
+        RelationType::Uses,
+        Some("api client"),
+    );
     edge1.evidence.push(Evidence {
         evidence_type: "file".into(),
         reference: "Cargo.toml".into(),
@@ -359,7 +407,12 @@ fn test_json_export_import_fidelity() {
 
     // Verify edges
     assert_eq!(loaded.store.edges.len(), 2);
-    let loaded_edge1 = loaded.store.edges.iter().find(|e| e.from == repo_a.id).unwrap();
+    let loaded_edge1 = loaded
+        .store
+        .edges
+        .iter()
+        .find(|e| e.from == repo_a.id)
+        .unwrap();
     assert_eq!(loaded_edge1.to, repo_b.id);
     assert_eq!(loaded_edge1.rel, RelationType::Uses);
     assert_eq!(loaded_edge1.evidence.len(), 1);
@@ -388,7 +441,12 @@ fn test_dot_export_contains_all_elements() {
     graph.add_repo(repo_a.clone());
     graph.add_repo(repo_b.clone());
 
-    let edge = make_edge(&repo_a.id, &repo_b.id, RelationType::Uses, Some("test-label"));
+    let edge = make_edge(
+        &repo_a.id,
+        &repo_b.id,
+        RelationType::Uses,
+        Some("test-label"),
+    );
     graph.add_edge(edge).unwrap();
 
     let group = Group {
@@ -482,13 +540,16 @@ fn test_scenarios_and_changesets_round_trip() {
     graph.store.scenarios.push(scenario);
 
     // Add a changeset with operations
-    let edge_to_add = make_edge(&repo_a.id, &repo_b.id, RelationType::Uses, Some("scenario edge"));
+    let edge_to_add = make_edge(
+        &repo_a.id,
+        &repo_b.id,
+        RelationType::Uses,
+        Some("scenario edge"),
+    );
     let changeset = ChangeSet {
         kind: "ChangeSet".into(),
         scenario_id: "scenario:test-scenario".into(),
-        ops: vec![
-            ChangeOp::AddEdge { edge: edge_to_add },
-        ],
+        ops: vec![ChangeOp::AddEdge { edge: edge_to_add }],
     };
     graph.store.changesets.push(changeset);
 
@@ -520,7 +581,12 @@ fn test_edge_requires_valid_endpoints() {
     graph.add_repo(repo_a.clone());
 
     // Try to add edge to non-existent target
-    let edge = make_edge(&repo_a.id, "repo:gh:test/nonexistent", RelationType::Uses, None);
+    let edge = make_edge(
+        &repo_a.id,
+        "repo:gh:test/nonexistent",
+        RelationType::Uses,
+        None,
+    );
     let result = graph.add_edge(edge);
 
     // Should fail
@@ -742,7 +808,7 @@ fn test_slot_store_compatibility_check() {
     // Check compatible provider
     let compat1 = graph.slots.check_compatibility(
         "slot:container.runtime",
-        "provider:container.runtime:podman"
+        "provider:container.runtime:podman",
     );
     assert!(compat1.compatible, "podman should be compatible");
     assert!(compat1.version_match);
@@ -751,7 +817,7 @@ fn test_slot_store_compatibility_check() {
     // Check incompatible provider
     let compat2 = graph.slots.check_compatibility(
         "slot:container.runtime",
-        "provider:container.runtime:minimal"
+        "provider:container.runtime:minimal",
     );
     assert!(!compat2.compatible, "minimal should be incompatible");
     assert!(compat2.capabilities_missing.contains(&"build".into()));
@@ -871,7 +937,10 @@ fn test_slots_round_trip() {
 
     // Verify providers
     assert_eq!(loaded.slots.providers.len(), 2);
-    let loaded_provider = loaded.slots.providers.iter()
+    let loaded_provider = loaded
+        .slots
+        .providers
+        .iter()
         .find(|p| p.name == "podman")
         .expect("podman provider should exist");
     assert_eq!(loaded_provider.repo_id, Some(repo_b.id.clone()));
@@ -945,7 +1014,10 @@ fn test_provider_substitution_preserves_repo_identity() {
 
     // Verify consumer repo identity unchanged after switch
     let consumer_after = graph.get_repo(&consumer.id).unwrap();
-    assert_eq!(consumer_after.id, consumer_id_before, "Consumer repo ID should not change when switching providers");
+    assert_eq!(
+        consumer_after.id, consumer_id_before,
+        "Consumer repo ID should not change when switching providers"
+    );
 
     // Verify binding changed
     let current_binding = graph.slots.get_binding(&consumer.id, &slot.id).unwrap();
@@ -1004,20 +1076,41 @@ fn test_dot_export_includes_slots_overlay() {
     let dot = graph.to_dot();
 
     // Verify slots are represented as diamonds
-    assert!(dot.contains("shape=diamond"), "Slots should be diamond-shaped");
+    assert!(
+        dot.contains("shape=diamond"),
+        "Slots should be diamond-shaped"
+    );
     assert!(dot.contains(&slot.id), "Slot ID should appear in DOT");
-    assert!(dot.contains("lightyellow"), "Slots should have lightyellow fill");
+    assert!(
+        dot.contains("lightyellow"),
+        "Slots should have lightyellow fill"
+    );
 
     // Verify providers are represented as hexagons
-    assert!(dot.contains("shape=hexagon"), "Providers should be hexagon-shaped");
-    assert!(dot.contains(&provider.id), "Provider ID should appear in DOT");
-    assert!(dot.contains("lightblue"), "Non-fallback providers should have lightblue fill");
+    assert!(
+        dot.contains("shape=hexagon"),
+        "Providers should be hexagon-shaped"
+    );
+    assert!(
+        dot.contains(&provider.id),
+        "Provider ID should appear in DOT"
+    );
+    assert!(
+        dot.contains("lightblue"),
+        "Non-fallback providers should have lightblue fill"
+    );
 
     // Verify provider-to-slot relationship
-    assert!(dot.contains("satisfies"), "Provider should show 'satisfies' relationship to slot");
+    assert!(
+        dot.contains("satisfies"),
+        "Provider should show 'satisfies' relationship to slot"
+    );
 
     // Verify provider-to-repo implementation link
-    assert!(dot.contains("impl"), "Provider should show 'impl' link to repo");
+    assert!(
+        dot.contains("impl"),
+        "Provider should show 'impl' link to repo"
+    );
 
     // Verify bindings
     assert!(dot.contains("darkgreen"), "Bindings should be dark green");
@@ -1028,9 +1121,7 @@ fn test_dot_export_includes_slots_overlay() {
 // f3 Tests: Plan Generation + Dry-Run
 // =========================================================================
 
-use reposystem::types::{
-    Plan, PlanOp, PlanStatus, PlanStore, PlanDiff, RiskLevel, FileChangeType,
-};
+use reposystem::types::{FileChangeType, Plan, PlanDiff, PlanOp, PlanStatus, PlanStore, RiskLevel};
 
 fn make_plan(scenario_id: &str, operations: Vec<PlanOp>) -> Plan {
     Plan {
@@ -1055,7 +1146,10 @@ fn test_plan_id_determinism() {
     let scenario_id = "scenario:test";
     let plan_id = Plan::generate_id(scenario_id);
 
-    assert!(plan_id.starts_with("plan:test:"), "Plan ID should start with scenario name");
+    assert!(
+        plan_id.starts_with("plan:test:"),
+        "Plan ID should start with scenario name"
+    );
     assert!(plan_id.len() > 15, "Plan ID should include timestamp");
 }
 
@@ -1066,15 +1160,13 @@ fn test_plan_risk_calculation() {
     assert_eq!(empty_risk, RiskLevel::Low);
 
     // Single low risk operation
-    let low_ops = vec![
-        PlanOp::CreateBinding {
-            consumer_id: "repo:test".into(),
-            slot_id: "slot:test".into(),
-            provider_id: "provider:test".into(),
-            risk: RiskLevel::Low,
-            reason: "test".into(),
-        },
-    ];
+    let low_ops = vec![PlanOp::CreateBinding {
+        consumer_id: "repo:test".into(),
+        slot_id: "slot:test".into(),
+        provider_id: "provider:test".into(),
+        risk: RiskLevel::Low,
+        reason: "test".into(),
+    }];
     assert_eq!(Plan::calculate_overall_risk(&low_ops), RiskLevel::Low);
 
     // Mixed risks should return highest
@@ -1099,17 +1191,18 @@ fn test_plan_risk_calculation() {
     assert_eq!(Plan::calculate_overall_risk(&mixed_ops), RiskLevel::High);
 
     // Critical risk should propagate
-    let critical_ops = vec![
-        PlanOp::RemoveBinding {
-            binding_id: "binding:test".into(),
-            consumer_id: "repo:test".into(),
-            slot_id: "slot:test".into(),
-            provider_id: "provider:test".into(),
-            risk: RiskLevel::Critical,
-            reason: "test".into(),
-        },
-    ];
-    assert_eq!(Plan::calculate_overall_risk(&critical_ops), RiskLevel::Critical);
+    let critical_ops = vec![PlanOp::RemoveBinding {
+        binding_id: "binding:test".into(),
+        consumer_id: "repo:test".into(),
+        slot_id: "slot:test".into(),
+        provider_id: "provider:test".into(),
+        risk: RiskLevel::Critical,
+        reason: "test".into(),
+    }];
+    assert_eq!(
+        Plan::calculate_overall_risk(&critical_ops),
+        RiskLevel::Critical
+    );
 }
 
 #[test]
@@ -1153,8 +1246,14 @@ fn test_rollback_plan_reverses_operations() {
     let rollback = PlanStore::generate_rollback(&plan);
 
     // Verify rollback properties
-    assert!(rollback.id.contains("rollback"), "Rollback ID should contain 'rollback'");
-    assert!(rollback.name.contains("Rollback"), "Rollback name should contain 'Rollback'");
+    assert!(
+        rollback.id.contains("rollback"),
+        "Rollback ID should contain 'rollback'"
+    );
+    assert!(
+        rollback.name.contains("Rollback"),
+        "Rollback name should contain 'Rollback'"
+    );
     assert_eq!(rollback.scenario_id, plan.scenario_id);
 
     // Operations should be reversed in order
@@ -1162,7 +1261,12 @@ fn test_rollback_plan_reverses_operations() {
 
     // First rollback op should reverse the CreateBinding (last original op)
     match &rollback.operations[0] {
-        PlanOp::RemoveBinding { consumer_id, slot_id, provider_id, .. } => {
+        PlanOp::RemoveBinding {
+            consumer_id,
+            slot_id,
+            provider_id,
+            ..
+        } => {
             assert_eq!(consumer_id, "repo:new-consumer");
             assert_eq!(slot_id, "slot:test");
             assert_eq!(provider_id, "provider:new");
@@ -1172,9 +1276,19 @@ fn test_rollback_plan_reverses_operations() {
 
     // Second rollback op should reverse the SwitchBinding (first original op)
     match &rollback.operations[1] {
-        PlanOp::SwitchBinding { from_provider_id, to_provider_id, .. } => {
-            assert_eq!(from_provider_id, "provider:new", "From should be the new provider");
-            assert_eq!(to_provider_id, "provider:old", "To should be the original provider");
+        PlanOp::SwitchBinding {
+            from_provider_id,
+            to_provider_id,
+            ..
+        } => {
+            assert_eq!(
+                from_provider_id, "provider:new",
+                "From should be the new provider"
+            );
+            assert_eq!(
+                to_provider_id, "provider:old",
+                "To should be the original provider"
+            );
         }
         _ => panic!("Second rollback op should be SwitchBinding"),
     }
@@ -1193,7 +1307,10 @@ fn test_plan_op_descriptions() {
     };
     let desc = switch_op.description();
     assert!(desc.contains("Switch"), "Description should mention switch");
-    assert!(desc.contains("repo:app"), "Description should mention consumer");
+    assert!(
+        desc.contains("repo:app"),
+        "Description should mention consumer"
+    );
 
     let create_op = PlanOp::CreateBinding {
         consumer_id: "repo:new".into(),
@@ -1213,8 +1330,14 @@ fn test_plan_op_descriptions() {
         risk: RiskLevel::Low,
     };
     let desc = file_op.description();
-    assert!(desc.contains("Modify"), "Description should mention file change type");
-    assert!(desc.contains("config.toml"), "Description should mention file path");
+    assert!(
+        desc.contains("Modify"),
+        "Description should mention file change type"
+    );
+    assert!(
+        desc.contains("config.toml"),
+        "Description should mention file path"
+    );
 }
 
 #[test]
@@ -1347,15 +1470,13 @@ fn test_plans_round_trip() {
         name: "Round Trip Test".into(),
         scenario_id: "scenario:test".into(),
         description: Some("Testing persistence".into()),
-        operations: vec![
-            PlanOp::CreateBinding {
-                consumer_id: "repo:test".into(),
-                slot_id: "slot:test".into(),
-                provider_id: "provider:test".into(),
-                risk: RiskLevel::Low,
-                reason: "Test binding".into(),
-            },
-        ],
+        operations: vec![PlanOp::CreateBinding {
+            consumer_id: "repo:test".into(),
+            slot_id: "slot:test".into(),
+            provider_id: "provider:test".into(),
+            risk: RiskLevel::Low,
+            reason: "Test binding".into(),
+        }],
         overall_risk: RiskLevel::Low,
         status: PlanStatus::Ready,
         created_at: Utc::now(),
@@ -1507,14 +1628,12 @@ fn test_audit_store_round_trip() {
         id: "audit:plan:test:001".into(),
         plan_id: "plan:test:001".into(),
         result: ApplyResult::Success,
-        op_results: vec![
-            OpResult {
-                op_index: 0,
-                success: true,
-                error: None,
-                executed_at: Utc::now(),
-            },
-        ],
+        op_results: vec![OpResult {
+            op_index: 0,
+            success: true,
+            error: None,
+            executed_at: Utc::now(),
+        }],
         started_at: Utc::now() - chrono::Duration::seconds(10),
         finished_at: Utc::now() - chrono::Duration::seconds(5),
         applied_by: "test".into(),
@@ -1670,12 +1789,16 @@ fn test_audit_store_filter_by_plan() {
     });
 
     // Filter by plan ID
-    let plan_a_entries: Vec<_> = store.entries.iter()
+    let plan_a_entries: Vec<_> = store
+        .entries
+        .iter()
         .filter(|e| e.plan_id.contains("scenario-a"))
         .collect();
     assert_eq!(plan_a_entries.len(), 2);
 
-    let plan_b_entries: Vec<_> = store.entries.iter()
+    let plan_b_entries: Vec<_> = store
+        .entries
+        .iter()
         .filter(|e| e.plan_id.contains("scenario-b"))
         .collect();
     assert_eq!(plan_b_entries.len(), 1);

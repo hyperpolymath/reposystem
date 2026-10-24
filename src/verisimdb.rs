@@ -88,11 +88,11 @@ const VERISIMDB_URL_DEFAULT: &str = "http://localhost:8080";
 const API_PREFIX: &str = "/api/v1";
 
 // Collection names — one per former JSON file.
-const COL_GRAPH:   &str = "reposystem:graph";
+const COL_GRAPH: &str = "reposystem:graph";
 const COL_ASPECTS: &str = "reposystem:aspects";
-const COL_SLOTS:   &str = "reposystem:slots";
-const COL_PLANS:   &str = "reposystem:plans";
-const COL_AUDIT:   &str = "reposystem:audit";
+const COL_SLOTS: &str = "reposystem:slots";
+const COL_PLANS: &str = "reposystem:plans";
+const COL_AUDIT: &str = "reposystem:audit";
 
 /// Synchronous HTTP client for VeriSimDB.
 ///
@@ -110,8 +110,8 @@ impl VeriSimDbClient {
     /// Create a new client. Reads `VERISIMDB_URL` from the environment.
     #[must_use]
     pub fn new() -> Self {
-        let base_url = std::env::var(VERISIMDB_URL_ENV)
-            .unwrap_or_else(|_| VERISIMDB_URL_DEFAULT.to_string());
+        let base_url =
+            std::env::var(VERISIMDB_URL_ENV).unwrap_or_else(|_| VERISIMDB_URL_DEFAULT.to_string());
         let base_url = base_url.trim_end_matches('/').to_string();
 
         let client = reqwest::blocking::Client::builder()
@@ -186,11 +186,11 @@ impl VeriSimDbClient {
     /// save in `EcosystemGraph::save()` remains the authoritative on-disk store.
     pub fn save_all(
         &self,
-        graph:   &GraphStore,
+        graph: &GraphStore,
         aspects: &AspectStore,
-        slots:   &SlotStore,
-        plans:   &PlanStore,
-        audit:   &AuditStore,
+        slots: &SlotStore,
+        plans: &PlanStore,
+        audit: &AuditStore,
     ) {
         // ── graph snapshot ─────────────────────────────────────────────────
         if let Err(e) = self.put(COL_GRAPH, "snapshot", graph) {

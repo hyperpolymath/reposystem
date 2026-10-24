@@ -59,7 +59,9 @@ pub fn run_slot(action: &str, name: Option<String>, args: SlotArgs) -> Result<()
     match action {
         "create" | "new" => {
             let name = name.ok_or_else(|| anyhow::anyhow!("Slot name is required"))?;
-            let category = args.category.ok_or_else(|| anyhow::anyhow!("Slot category is required (--category)"))?;
+            let category = args
+                .category
+                .ok_or_else(|| anyhow::anyhow!("Slot category is required (--category)"))?;
 
             let slot_id = Slot::generate_id(&category, &name);
 
@@ -68,7 +70,8 @@ pub fn run_slot(action: &str, name: Option<String>, args: SlotArgs) -> Result<()
                 anyhow::bail!("Slot already exists: {}", slot_id);
             }
 
-            let capabilities: Vec<String> = args.capabilities
+            let capabilities: Vec<String> = args
+                .capabilities
                 .map(|c| c.split(',').map(|s| s.trim().to_string()).collect())
                 .unwrap_or_default();
 
@@ -97,20 +100,30 @@ pub fn run_slot(action: &str, name: Option<String>, args: SlotArgs) -> Result<()
                 name.clone()
             } else {
                 // Try to find by name
-                graph.slots.slots.iter()
+                graph
+                    .slots
+                    .slots
+                    .iter()
                     .find(|s| s.name == name)
                     .map(|s| s.id.clone())
                     .ok_or_else(|| anyhow::anyhow!("Slot not found: {}", name))?
             };
 
             // Check if any providers use this slot
-            let providers: Vec<_> = graph.slots.providers.iter()
+            let providers: Vec<_> = graph
+                .slots
+                .providers
+                .iter()
                 .filter(|p| p.slot_id == slot_id)
                 .map(|p| p.name.clone())
                 .collect();
 
             if !providers.is_empty() {
-                anyhow::bail!("Cannot delete slot '{}': has providers: {:?}", name, providers);
+                anyhow::bail!(
+                    "Cannot delete slot '{}': has providers: {:?}",
+                    name,
+                    providers
+                );
             }
 
             let before = graph.slots.slots.len();
@@ -133,11 +146,16 @@ pub fn run_slot(action: &str, name: Option<String>, args: SlotArgs) -> Result<()
             println!("Slots ({}):", graph.slots.slots.len());
             for slot in &graph.slots.slots {
                 let provider_count = graph.slots.providers_for_slot(&slot.id).len();
-                let version_info = slot.interface_version.as_ref()
+                let version_info = slot
+                    .interface_version
+                    .as_ref()
                     .map(|v| format!(" ({})", v))
                     .unwrap_or_default();
 
-                println!("  {}{} - {} providers", slot.id, version_info, provider_count);
+                println!(
+                    "  {}{} - {} providers",
+                    slot.id, version_info, provider_count
+                );
                 if !slot.required_capabilities.is_empty() {
                     println!("    requires: {:?}", slot.required_capabilities);
                 }
@@ -147,7 +165,10 @@ pub fn run_slot(action: &str, name: Option<String>, args: SlotArgs) -> Result<()
         "show" => {
             let name = name.ok_or_else(|| anyhow::anyhow!("Slot name or ID is required"))?;
 
-            let slot = graph.slots.slots.iter()
+            let slot = graph
+                .slots
+                .slots
+                .iter()
                 .find(|s| s.id == name || s.name == name || s.id.ends_with(&format!(".{}", name)))
                 .ok_or_else(|| anyhow::anyhow!("Slot not found: {}", name))?;
 
@@ -175,20 +196,30 @@ pub fn run_slot(action: &str, name: Option<String>, args: SlotArgs) -> Result<()
                         ProviderType::Stub => "stub",
                     };
                     let fallback = if p.is_fallback { " [fallback]" } else { "" };
-                    println!("    {} ({}, priority: {}){}", p.name, type_str, p.priority, fallback);
+                    println!(
+                        "    {} ({}, priority: {}){}",
+                        p.name, type_str, p.priority, fallback
+                    );
                 }
             }
 
-            let bindings: Vec<_> = graph.slots.bindings.iter()
+            let bindings: Vec<_> = graph
+                .slots
+                .bindings
+                .iter()
                 .filter(|b| b.slot_id == slot.id)
                 .collect();
             if !bindings.is_empty() {
                 println!("  bindings ({}):", bindings.len());
                 for b in bindings {
-                    let consumer_name = graph.get_repo(&b.consumer_id)
+                    let consumer_name = graph
+                        .get_repo(&b.consumer_id)
                         .map(|r| r.name.as_str())
                         .unwrap_or(&b.consumer_id);
-                    let provider = graph.slots.providers.iter()
+                    let provider = graph
+                        .slots
+                        .providers
+                        .iter()
                         .find(|p| p.id == b.provider_id)
                         .map(|p| p.name.as_str())
                         .unwrap_or(&b.provider_id);
@@ -198,7 +229,10 @@ pub fn run_slot(action: &str, name: Option<String>, args: SlotArgs) -> Result<()
         }
 
         other => {
-            anyhow::bail!("Unknown slot action: {}. Valid: create, delete, list, show", other);
+            anyhow::bail!(
+                "Unknown slot action: {}. Valid: create, delete, list, show",
+                other
+            );
         }
     }
 
@@ -214,7 +248,9 @@ pub fn run_provider(action: &str, name: Option<String>, args: ProviderArgs) -> R
     match action {
         "create" | "new" => {
             let name = name.ok_or_else(|| anyhow::anyhow!("Provider name is required"))?;
-            let slot_ref = args.slot.ok_or_else(|| anyhow::anyhow!("Slot ID is required (--slot)"))?;
+            let slot_ref = args
+                .slot
+                .ok_or_else(|| anyhow::anyhow!("Slot ID is required (--slot)"))?;
 
             // Normalize slot ID - try exact match, then name match, then suffix match
             let slot_id = if slot_ref.starts_with("slot:") {
@@ -226,8 +262,11 @@ pub fn run_provider(action: &str, name: Option<String>, args: ProviderArgs) -> R
                 }
             } else {
                 // Try to find by name or suffix
-                let found = graph.slots.slots.iter()
-                    .find(|s| s.name == slot_ref || s.id.ends_with(&format!(".{}", slot_ref)) || s.id == format!("slot:{}", slot_ref));
+                let found = graph.slots.slots.iter().find(|s| {
+                    s.name == slot_ref
+                        || s.id.ends_with(&format!(".{}", slot_ref))
+                        || s.id == format!("slot:{}", slot_ref)
+                });
                 match found {
                     Some(slot) => slot.id.clone(),
                     None => anyhow::bail!("Slot not found: {}", slot_ref),
@@ -246,13 +285,19 @@ pub fn run_provider(action: &str, name: Option<String>, args: ProviderArgs) -> R
                 Some("ecosystem") => ProviderType::Ecosystem,
                 Some("external") => ProviderType::External,
                 Some("stub") => ProviderType::Stub,
-                Some(other) => anyhow::bail!("Unknown provider type: {}. Valid: local, ecosystem, external, stub", other),
+                Some(other) => anyhow::bail!(
+                    "Unknown provider type: {}. Valid: local, ecosystem, external, stub",
+                    other
+                ),
                 None => ProviderType::Local,
             };
 
             // Resolve repo ID if provided
             let repo_id = if let Some(ref repo_name) = args.repo {
-                let repo = graph.store.repos.iter()
+                let repo = graph
+                    .store
+                    .repos
+                    .iter()
                     .find(|r| r.name == *repo_name || r.id == *repo_name)
                     .ok_or_else(|| anyhow::anyhow!("Repository not found: {}", repo_name))?;
                 Some(repo.id.clone())
@@ -260,7 +305,8 @@ pub fn run_provider(action: &str, name: Option<String>, args: ProviderArgs) -> R
                 None
             };
 
-            let capabilities: Vec<String> = args.capabilities
+            let capabilities: Vec<String> = args
+                .capabilities
                 .map(|c| c.split(',').map(|s| s.trim().to_string()).collect())
                 .unwrap_or_default();
 
@@ -291,20 +337,29 @@ pub fn run_provider(action: &str, name: Option<String>, args: ProviderArgs) -> R
             let provider_id = if name.starts_with("provider:") {
                 name.clone()
             } else {
-                graph.slots.providers.iter()
+                graph
+                    .slots
+                    .providers
+                    .iter()
                     .find(|p| p.name == name)
                     .map(|p| p.id.clone())
                     .ok_or_else(|| anyhow::anyhow!("Provider not found: {}", name))?
             };
 
             // Check if any bindings use this provider
-            let bindings: Vec<_> = graph.slots.bindings_for_provider(&provider_id)
+            let bindings: Vec<_> = graph
+                .slots
+                .bindings_for_provider(&provider_id)
                 .iter()
                 .map(|b| b.consumer_id.clone())
                 .collect();
 
             if !bindings.is_empty() {
-                anyhow::bail!("Cannot delete provider '{}': used by bindings: {:?}", name, bindings);
+                anyhow::bail!(
+                    "Cannot delete provider '{}': used by bindings: {:?}",
+                    name,
+                    bindings
+                );
             }
 
             let before = graph.slots.providers.len();
@@ -332,17 +387,27 @@ pub fn run_provider(action: &str, name: Option<String>, args: ProviderArgs) -> R
                     ProviderType::External => "external",
                     ProviderType::Stub => "stub",
                 };
-                let fallback = if provider.is_fallback { " [fallback]" } else { "" };
+                let fallback = if provider.is_fallback {
+                    " [fallback]"
+                } else {
+                    ""
+                };
                 let binding_count = graph.slots.bindings_for_provider(&provider.id).len();
 
-                println!("  {} ({}) - {} bindings{}", provider.id, type_str, binding_count, fallback);
+                println!(
+                    "  {} ({}) - {} bindings{}",
+                    provider.id, type_str, binding_count, fallback
+                );
             }
         }
 
         "show" => {
             let name = name.ok_or_else(|| anyhow::anyhow!("Provider name or ID is required"))?;
 
-            let provider = graph.slots.providers.iter()
+            let provider = graph
+                .slots
+                .providers
+                .iter()
                 .find(|p| p.id == name || p.name == name)
                 .ok_or_else(|| anyhow::anyhow!("Provider not found: {}", name))?;
 
@@ -351,7 +416,8 @@ pub fn run_provider(action: &str, name: Option<String>, args: ProviderArgs) -> R
             println!("  slot: {}", provider.slot_id);
             println!("  type: {:?}", provider.provider_type);
             if let Some(ref repo_id) = provider.repo_id {
-                let repo_name = graph.get_repo(repo_id)
+                let repo_name = graph
+                    .get_repo(repo_id)
                     .map(|r| r.name.as_str())
                     .unwrap_or(repo_id);
                 println!("  repo: {}", repo_name);
@@ -369,14 +435,17 @@ pub fn run_provider(action: &str, name: Option<String>, args: ProviderArgs) -> R
             println!("  fallback: {}", provider.is_fallback);
 
             // Check compatibility with its slot
-            let compat = graph.slots.check_compatibility(&provider.slot_id, &provider.id);
+            let compat = graph
+                .slots
+                .check_compatibility(&provider.slot_id, &provider.id);
             println!("  compatibility: {} ({})", compat.compatible, compat.reason);
 
             let bindings = graph.slots.bindings_for_provider(&provider.id);
             if !bindings.is_empty() {
                 println!("  used by ({}):", bindings.len());
                 for b in bindings {
-                    let consumer_name = graph.get_repo(&b.consumer_id)
+                    let consumer_name = graph
+                        .get_repo(&b.consumer_id)
                         .map(|r| r.name.as_str())
                         .unwrap_or(&b.consumer_id);
                     println!("    {}", consumer_name);
@@ -385,7 +454,10 @@ pub fn run_provider(action: &str, name: Option<String>, args: ProviderArgs) -> R
         }
 
         other => {
-            anyhow::bail!("Unknown provider action: {}. Valid: create, delete, list, show", other);
+            anyhow::bail!(
+                "Unknown provider action: {}. Valid: create, delete, list, show",
+                other
+            );
         }
     }
 
@@ -400,12 +472,21 @@ pub fn run_binding(action: &str, args: BindingArgs) -> Result<()> {
 
     match action {
         "bind" | "create" => {
-            let consumer = args.consumer.ok_or_else(|| anyhow::anyhow!("Consumer repo is required (--consumer)"))?;
-            let slot_ref = args.slot.ok_or_else(|| anyhow::anyhow!("Slot ID is required (--slot)"))?;
-            let provider_id = args.provider.ok_or_else(|| anyhow::anyhow!("Provider ID is required (--provider)"))?;
+            let consumer = args
+                .consumer
+                .ok_or_else(|| anyhow::anyhow!("Consumer repo is required (--consumer)"))?;
+            let slot_ref = args
+                .slot
+                .ok_or_else(|| anyhow::anyhow!("Slot ID is required (--slot)"))?;
+            let provider_id = args
+                .provider
+                .ok_or_else(|| anyhow::anyhow!("Provider ID is required (--provider)"))?;
 
             // Resolve consumer
-            let consumer_id = graph.store.repos.iter()
+            let consumer_id = graph
+                .store
+                .repos
+                .iter()
                 .find(|r| r.name == consumer || r.id == consumer)
                 .map(|r| r.id.clone())
                 .ok_or_else(|| anyhow::anyhow!("Consumer repo not found: {}", consumer))?;
@@ -418,8 +499,11 @@ pub fn run_binding(action: &str, args: BindingArgs) -> Result<()> {
                     anyhow::bail!("Slot not found: {}", slot_ref);
                 }
             } else {
-                let found = graph.slots.slots.iter()
-                    .find(|s| s.name == slot_ref || s.id.ends_with(&format!(".{}", slot_ref)) || s.id == format!("slot:{}", slot_ref));
+                let found = graph.slots.slots.iter().find(|s| {
+                    s.name == slot_ref
+                        || s.id.ends_with(&format!(".{}", slot_ref))
+                        || s.id == format!("slot:{}", slot_ref)
+                });
                 match found {
                     Some(slot) => slot.id.clone(),
                     None => anyhow::bail!("Slot not found: {}", slot_ref),
@@ -430,19 +514,30 @@ pub fn run_binding(action: &str, args: BindingArgs) -> Result<()> {
             let provider_id = if provider_id.starts_with("provider:") {
                 provider_id
             } else {
-                graph.slots.providers.iter()
+                graph
+                    .slots
+                    .providers
+                    .iter()
                     .find(|p| p.name == provider_id)
                     .map(|p| p.id.clone())
                     .ok_or_else(|| anyhow::anyhow!("Provider not found: {}", provider_id))?
             };
 
             // Verify provider exists and is for this slot
-            let provider = graph.slots.providers.iter()
+            let provider = graph
+                .slots
+                .providers
+                .iter()
                 .find(|p| p.id == provider_id)
                 .ok_or_else(|| anyhow::anyhow!("Provider not found: {}", provider_id))?;
 
             if provider.slot_id != slot_id {
-                anyhow::bail!("Provider {} is for slot {}, not {}", provider_id, provider.slot_id, slot_id);
+                anyhow::bail!(
+                    "Provider {} is for slot {}, not {}",
+                    provider_id,
+                    provider.slot_id,
+                    slot_id
+                );
             }
 
             // Check compatibility
@@ -470,23 +565,37 @@ pub fn run_binding(action: &str, args: BindingArgs) -> Result<()> {
             graph.slots.bindings.push(binding);
             graph.save(&data_dir)?;
 
-            let consumer_name = graph.get_repo(&consumer_id)
+            let consumer_name = graph
+                .get_repo(&consumer_id)
                 .map(|r| r.name.as_str())
                 .unwrap_or(&consumer_id);
-            let provider_name = graph.slots.providers.iter()
+            let provider_name = graph
+                .slots
+                .providers
+                .iter()
                 .find(|p| p.id == provider_id)
                 .map(|p| p.name.as_str())
                 .unwrap_or(&provider_id);
 
-            println!("Bound {} to {} via {}", consumer_name, slot_id, provider_name);
+            println!(
+                "Bound {} to {} via {}",
+                consumer_name, slot_id, provider_name
+            );
         }
 
         "unbind" | "delete" | "rm" => {
-            let consumer = args.consumer.ok_or_else(|| anyhow::anyhow!("Consumer repo is required (--consumer)"))?;
-            let slot_ref = args.slot.ok_or_else(|| anyhow::anyhow!("Slot ID is required (--slot)"))?;
+            let consumer = args
+                .consumer
+                .ok_or_else(|| anyhow::anyhow!("Consumer repo is required (--consumer)"))?;
+            let slot_ref = args
+                .slot
+                .ok_or_else(|| anyhow::anyhow!("Slot ID is required (--slot)"))?;
 
             // Resolve consumer
-            let consumer_id = graph.store.repos.iter()
+            let consumer_id = graph
+                .store
+                .repos
+                .iter()
                 .find(|r| r.name == consumer || r.id == consumer)
                 .map(|r| r.id.clone())
                 .ok_or_else(|| anyhow::anyhow!("Consumer repo not found: {}", consumer))?;
@@ -495,8 +604,11 @@ pub fn run_binding(action: &str, args: BindingArgs) -> Result<()> {
             let slot_id = if slot_ref.starts_with("slot:") {
                 slot_ref
             } else {
-                let found = graph.slots.slots.iter()
-                    .find(|s| s.name == slot_ref || s.id.ends_with(&format!(".{}", slot_ref)) || s.id == format!("slot:{}", slot_ref));
+                let found = graph.slots.slots.iter().find(|s| {
+                    s.name == slot_ref
+                        || s.id.ends_with(&format!(".{}", slot_ref))
+                        || s.id == format!("slot:{}", slot_ref)
+                });
                 match found {
                     Some(slot) => slot.id.clone(),
                     None => slot_ref, // Fall back to direct lookup
@@ -523,29 +635,42 @@ pub fn run_binding(action: &str, args: BindingArgs) -> Result<()> {
 
             println!("Bindings ({}):", graph.slots.bindings.len());
             for binding in &graph.slots.bindings {
-                let consumer_name = graph.get_repo(&binding.consumer_id)
+                let consumer_name = graph
+                    .get_repo(&binding.consumer_id)
                     .map(|r| r.name.as_str())
                     .unwrap_or(&binding.consumer_id);
-                let provider_name = graph.slots.providers.iter()
+                let provider_name = graph
+                    .slots
+                    .providers
+                    .iter()
                     .find(|p| p.id == binding.provider_id)
                     .map(|p| p.name.as_str())
                     .unwrap_or(&binding.provider_id);
                 let slot_short = binding.slot_id.replace("slot:", "");
 
-                println!("  {} --[{}]--> {}", consumer_name, slot_short, provider_name);
+                println!(
+                    "  {} --[{}]--> {}",
+                    consumer_name, slot_short, provider_name
+                );
             }
         }
 
         "show" => {
-            let consumer = args.consumer.ok_or_else(|| anyhow::anyhow!("Consumer repo is required (--consumer)"))?;
+            let consumer = args
+                .consumer
+                .ok_or_else(|| anyhow::anyhow!("Consumer repo is required (--consumer)"))?;
 
             // Resolve consumer
-            let consumer_id = graph.store.repos.iter()
+            let consumer_id = graph
+                .store
+                .repos
+                .iter()
                 .find(|r| r.name == consumer || r.id == consumer)
                 .map(|r| r.id.clone())
                 .ok_or_else(|| anyhow::anyhow!("Consumer repo not found: {}", consumer))?;
 
-            let consumer_name = graph.get_repo(&consumer_id)
+            let consumer_name = graph
+                .get_repo(&consumer_id)
                 .map(|r| r.name.as_str())
                 .unwrap_or(&consumer_id);
 
@@ -557,9 +682,14 @@ pub fn run_binding(action: &str, args: BindingArgs) -> Result<()> {
 
             println!("Bindings for {}:", consumer_name);
             for binding in bindings {
-                let provider = graph.slots.providers.iter()
+                let provider = graph
+                    .slots
+                    .providers
+                    .iter()
                     .find(|p| p.id == binding.provider_id);
-                let provider_name = provider.map(|p| p.name.as_str()).unwrap_or(&binding.provider_id);
+                let provider_name = provider
+                    .map(|p| p.name.as_str())
+                    .unwrap_or(&binding.provider_id);
                 let slot_short = binding.slot_id.replace("slot:", "");
 
                 println!("  {} -> {} ({:?})", slot_short, provider_name, binding.mode);
@@ -567,7 +697,10 @@ pub fn run_binding(action: &str, args: BindingArgs) -> Result<()> {
         }
 
         other => {
-            anyhow::bail!("Unknown binding action: {}. Valid: bind, unbind, list, show", other);
+            anyhow::bail!(
+                "Unknown binding action: {}. Valid: bind, unbind, list, show",
+                other
+            );
         }
     }
 

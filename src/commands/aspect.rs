@@ -10,7 +10,12 @@ use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 
 /// Run aspect command
-pub fn run(action: &str, target: Option<String>, aspect: Option<String>, args: AspectArgs) -> Result<()> {
+pub fn run(
+    action: &str,
+    target: Option<String>,
+    aspect: Option<String>,
+    args: AspectArgs,
+) -> Result<()> {
     let data_dir = get_data_dir()?;
     let mut graph = EcosystemGraph::load(&data_dir)
         .with_context(|| format!("Failed to load graph from {}", data_dir.display()))?;
@@ -38,7 +43,10 @@ pub fn run(action: &str, target: Option<String>, aspect: Option<String>, args: A
                 "risk" | "weakness" | "concern" => Polarity::Risk,
                 "strength" | "positive" => Polarity::Strength,
                 "neutral" | "observation" => Polarity::Neutral,
-                other => anyhow::bail!("Unknown polarity: {}. Valid: risk, strength, neutral", other),
+                other => anyhow::bail!(
+                    "Unknown polarity: {}. Valid: risk, strength, neutral",
+                    other
+                ),
             };
 
             // Generate annotation ID
@@ -74,7 +82,12 @@ pub fn run(action: &str, target: Option<String>, aspect: Option<String>, args: A
             };
 
             // Check if annotation already exists, update if so
-            if let Some(existing) = graph.aspects.annotations.iter_mut().find(|a| a.target == target_id && a.aspect_id == aspect_id) {
+            if let Some(existing) = graph
+                .aspects
+                .annotations
+                .iter_mut()
+                .find(|a| a.target == target_id && a.aspect_id == aspect_id)
+            {
                 *existing = annotation;
                 println!("Updated annotation on {} for {}", target_id, aspect_name);
             } else {
@@ -96,7 +109,10 @@ pub fn run(action: &str, target: Option<String>, aspect: Option<String>, args: A
             let aspect_id = format!("aspect:{}", aspect_name.to_lowercase());
 
             let before = graph.aspects.annotations.len();
-            graph.aspects.annotations.retain(|a| !(a.target == target_id && a.aspect_id == aspect_id));
+            graph
+                .aspects
+                .annotations
+                .retain(|a| !(a.target == target_id && a.aspect_id == aspect_id));
 
             if graph.aspects.annotations.len() < before {
                 graph.save(&data_dir)?;
@@ -110,8 +126,16 @@ pub fn run(action: &str, target: Option<String>, aspect: Option<String>, args: A
             // List available aspects
             println!("Available aspects:");
             for aspect in &graph.aspects.aspects {
-                let count = graph.aspects.annotations.iter().filter(|a| a.aspect_id == aspect.id).count();
-                println!("  {} - {} ({} annotations)", aspect.name, aspect.description, count);
+                let count = graph
+                    .aspects
+                    .annotations
+                    .iter()
+                    .filter(|a| a.aspect_id == aspect.id)
+                    .count();
+                println!(
+                    "  {} - {} ({} annotations)",
+                    aspect.name, aspect.description, count
+                );
             }
         }
 
@@ -166,7 +190,10 @@ pub fn run(action: &str, target: Option<String>, aspect: Option<String>, args: A
             println!("{} view ({} annotations):", aspect_name, annotations.len());
             for ann in annotations {
                 let target_name = if ann.target.starts_with("repo:") {
-                    graph.get_repo(&ann.target).map(|r| r.name.clone()).unwrap_or_else(|| ann.target.clone())
+                    graph
+                        .get_repo(&ann.target)
+                        .map(|r| r.name.clone())
+                        .unwrap_or_else(|| ann.target.clone())
                 } else {
                     ann.target.clone()
                 };
@@ -177,12 +204,18 @@ pub fn run(action: &str, target: Option<String>, aspect: Option<String>, args: A
                     Polarity::Neutral => "○",
                 };
 
-                println!("  {} {} [weight: {}] - {}", icon, target_name, ann.weight, ann.reason);
+                println!(
+                    "  {} {} [weight: {}] - {}",
+                    icon, target_name, ann.weight, ann.reason
+                );
             }
         }
 
         other => {
-            anyhow::bail!("Unknown action: {}. Valid: tag, remove, list, show, filter", other);
+            anyhow::bail!(
+                "Unknown action: {}. Valid: tag, remove, list, show, filter",
+                other
+            );
         }
     }
 
@@ -210,11 +243,7 @@ fn resolve_target(graph: &EcosystemGraph, target: &str) -> Result<String> {
     }
 
     // Try to find a repo by name
-    let matches: Vec<_> = graph
-        .repos()
-        .iter()
-        .filter(|r| r.name == target)
-        .collect();
+    let matches: Vec<_> = graph.repos().iter().filter(|r| r.name == target).collect();
 
     match matches.len() {
         0 => anyhow::bail!("No repo found: {}", target),

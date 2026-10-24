@@ -8,9 +8,9 @@
 //! - Config roundtrip fidelity: parse → serialize → parse = original
 //! - Dependency graph acyclicity: no cycles in acyclic mode
 
-use reposystem::graph::EcosystemGraph;
-use reposystem::types::{Edge, EdgeMeta, Forge, RelationType, Repo, Channel};
 use chrono::Utc;
+use reposystem::graph::EcosystemGraph;
+use reposystem::types::{Channel, Edge, EdgeMeta, Forge, RelationType, Repo};
 
 // =============================================================================
 // Determinism Property Tests
@@ -128,8 +128,8 @@ fn test_graph_with_multiple_repos_maintains_count() {
             default_branch: "main".into(),
             visibility: reposystem::types::Visibility::Public,
             tags: vec![],
-        estate: "estate:hyperpolymath".into(),
-        metadata: Default::default(),
+            estate: "estate:hyperpolymath".into(),
+            metadata: Default::default(),
             imports: reposystem::types::ImportMeta {
                 source: "test".into(),
                 path_hint: None,
@@ -140,7 +140,11 @@ fn test_graph_with_multiple_repos_maintains_count() {
         let _ = graph.add_repo(repo);
     }
 
-    assert_eq!(graph.node_count(), n, "Graph should contain exactly N repos");
+    assert_eq!(
+        graph.node_count(),
+        n,
+        "Graph should contain exactly N repos"
+    );
 }
 
 #[test]
@@ -243,7 +247,10 @@ fn test_graph_export_dot_format_produces_valid_syntax() {
     let dot_output = graph.to_dot();
 
     // Property: DOT output should contain basic DOT syntax
-    assert!(dot_output.contains("digraph"), "DOT should contain 'digraph' keyword");
+    assert!(
+        dot_output.contains("digraph"),
+        "DOT should contain 'digraph' keyword"
+    );
     assert!(
         dot_output.contains("{") && dot_output.contains("}"),
         "DOT should have braces"
@@ -317,14 +324,8 @@ fn test_graph_is_deterministic_across_exports() {
     let export2 = graph.to_dot();
     let export3 = graph.to_dot();
 
-    assert_eq!(
-        export1, export2,
-        "Multiple DOT exports should be identical"
-    );
-    assert_eq!(
-        export2, export3,
-        "Multiple DOT exports should be identical"
-    );
+    assert_eq!(export1, export2, "Multiple DOT exports should be identical");
+    assert_eq!(export2, export3, "Multiple DOT exports should be identical");
 }
 
 // =============================================================================
@@ -345,11 +346,7 @@ fn test_all_forges_produce_unique_codes() {
 
     let mut unique = std::collections::HashSet::new();
     for code in codes {
-        assert!(
-            unique.insert(code),
-            "Forge code {} should be unique",
-            code
-        );
+        assert!(unique.insert(code), "Forge code {} should be unique", code);
     }
 }
 

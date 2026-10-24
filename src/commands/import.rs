@@ -38,7 +38,9 @@ fn run_manifest(args: ImportArgs) -> Result<()> {
             .groups
             .or_else(|| Some(PathBuf::from("repos.groups.toml"))),
         estate_id: args.estate,
-        estate_name: args.estate_name.unwrap_or_else(|| "Hyperpolymath".to_string()),
+        estate_name: args
+            .estate_name
+            .unwrap_or_else(|| "Hyperpolymath".to_string()),
     };
 
     info!("Importing estate manifest from {}", opts.manifest.display());

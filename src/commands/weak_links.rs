@@ -32,7 +32,10 @@ pub fn run(aspect: Option<String>, severity: Option<String>) -> Result<()> {
         Some("low") | Some("1") => 1,
         Some("medium") | Some("2") => 2,
         Some("high") | Some("3") => 3,
-        Some(other) => anyhow::bail!("Unknown severity: {}. Valid: low, medium, high (or 1-3)", other),
+        Some(other) => anyhow::bail!(
+            "Unknown severity: {}. Valid: low, medium, high (or 1-3)",
+            other
+        ),
         None => 1, // Show all by default
     };
 
@@ -69,8 +72,14 @@ pub fn run(aspect: Option<String>, severity: Option<String>) -> Result<()> {
                 .iter()
                 .find(|e| e.id == annotation.target)
                 .map(|e| {
-                    let from_name = graph.get_repo(&e.from).map(|r| r.name.as_str()).unwrap_or(&e.from);
-                    let to_name = graph.get_repo(&e.to).map(|r| r.name.as_str()).unwrap_or(&e.to);
+                    let from_name = graph
+                        .get_repo(&e.from)
+                        .map(|r| r.name.as_str())
+                        .unwrap_or(&e.from);
+                    let to_name = graph
+                        .get_repo(&e.to)
+                        .map(|r| r.name.as_str())
+                        .unwrap_or(&e.to);
                     format!("{} -> {}", from_name, to_name)
                 })
                 .unwrap_or_else(|| annotation.target.clone())
@@ -96,7 +105,8 @@ pub fn run(aspect: Option<String>, severity: Option<String>) -> Result<()> {
     }
 
     // 2. Find single points of failure (repos with many incoming edges but no redundancy)
-    let mut incoming_counts: std::collections::HashMap<&str, usize> = std::collections::HashMap::new();
+    let mut incoming_counts: std::collections::HashMap<&str, usize> =
+        std::collections::HashMap::new();
     for edge in &graph.store.edges {
         *incoming_counts.entry(&edge.to).or_insert(0) += 1;
     }
@@ -104,15 +114,11 @@ pub fn run(aspect: Option<String>, severity: Option<String>) -> Result<()> {
     for (repo_id, count) in incoming_counts {
         if count >= 3 {
             // Only flag if there's a risk annotation OR no strength annotation
-            let has_reliability_strength = graph
-                .aspects
-                .annotations
-                .iter()
-                .any(|a| {
-                    a.target == repo_id
-                        && a.aspect_id == "aspect:reliability"
-                        && a.polarity == Polarity::Strength
-                });
+            let has_reliability_strength = graph.aspects.annotations.iter().any(|a| {
+                a.target == repo_id
+                    && a.aspect_id == "aspect:reliability"
+                    && a.polarity == Polarity::Strength
+            });
 
             if !has_reliability_strength {
                 let repo_name = graph
@@ -121,7 +127,10 @@ pub fn run(aspect: Option<String>, severity: Option<String>) -> Result<()> {
                     .unwrap_or_else(|| repo_id.to_string());
 
                 // Check if not already in weak_links
-                if !weak_links.iter().any(|w| w.target_id == repo_id && w.aspect == "Reliability") {
+                if !weak_links
+                    .iter()
+                    .any(|w| w.target_id == repo_id && w.aspect == "Reliability")
+                {
                     weak_links.push(WeakLink {
                         target_id: repo_id.to_string(),
                         target_name: repo_name,
@@ -137,8 +146,14 @@ pub fn run(aspect: Option<String>, severity: Option<String>) -> Result<()> {
     // 3. Find edges without evidence
     for edge in &graph.store.edges {
         if edge.evidence.is_empty() {
-            let from_name = graph.get_repo(&edge.from).map(|r| r.name.as_str()).unwrap_or(&edge.from);
-            let to_name = graph.get_repo(&edge.to).map(|r| r.name.as_str()).unwrap_or(&edge.to);
+            let from_name = graph
+                .get_repo(&edge.from)
+                .map(|r| r.name.as_str())
+                .unwrap_or(&edge.from);
+            let to_name = graph
+                .get_repo(&edge.to)
+                .map(|r| r.name.as_str())
+                .unwrap_or(&edge.to);
 
             weak_links.push(WeakLink {
                 target_id: edge.id.clone(),

@@ -8,9 +8,11 @@
 //! - **Performance**: Bounded execution time for large graphs
 //! - **Concurrency**: Parallel operations (if applicable)
 
-use reposystem::graph::EcosystemGraph;
-use reposystem::types::{Edge, EdgeMeta, Forge, ImportMeta, RelationType, Repo, Visibility, Channel};
 use chrono::Utc;
+use reposystem::graph::EcosystemGraph;
+use reposystem::types::{
+    Channel, Edge, EdgeMeta, Forge, ImportMeta, RelationType, Repo, Visibility,
+};
 use std::time::Instant;
 
 // =============================================================================
@@ -29,7 +31,10 @@ fn test_path_traversal_in_repo_id() {
     );
     // Verify determinism even with traversal sequences
     let id_same = Repo::forge_id(Forge::Local, "../../etc", "passwd");
-    assert_eq!(id_with_traversal, id_same, "ID generation should be deterministic");
+    assert_eq!(
+        id_with_traversal, id_same,
+        "ID generation should be deterministic"
+    );
 }
 
 #[test]
@@ -44,7 +49,10 @@ fn test_special_chars_in_repo_name() {
 
     for (owner, name) in special_names {
         let id = Repo::forge_id(Forge::GitHub, owner, name);
-        assert!(id.contains("repo:"), "Should generate valid ID for special chars");
+        assert!(
+            id.contains("repo:"),
+            "Should generate valid ID for special chars"
+        );
         // ID should exist and not be empty
         assert!(!id.is_empty(), "ID should not be empty");
     }
@@ -122,7 +130,11 @@ fn test_graph_handles_duplicate_repos() {
 
     // Graph should either accept both (with result2 being a no-op/update)
     // or second should fail gracefully
-    assert_eq!(graph.node_count(), 1, "Should not double-count duplicate repos");
+    assert_eq!(
+        graph.node_count(),
+        1,
+        "Should not double-count duplicate repos"
+    );
 }
 
 #[test]
@@ -201,8 +213,8 @@ fn test_large_graph_construction_bounded_time() {
             default_branch: "main".into(),
             visibility: Visibility::Public,
             tags: vec![],
-        estate: "estate:hyperpolymath".into(),
-        metadata: Default::default(),
+            estate: "estate:hyperpolymath".into(),
+            metadata: Default::default(),
             imports: ImportMeta {
                 source: "perf".into(),
                 path_hint: None,
@@ -235,8 +247,8 @@ fn test_large_graph_export_bounded_time() {
             default_branch: "main".into(),
             visibility: Visibility::Public,
             tags: vec![],
-        estate: "estate:hyperpolymath".into(),
-        metadata: Default::default(),
+            estate: "estate:hyperpolymath".into(),
+            metadata: Default::default(),
             imports: ImportMeta {
                 source: "export".into(),
                 path_hint: None,
@@ -272,8 +284,8 @@ fn test_query_operations_are_fast() {
             default_branch: "main".into(),
             visibility: Visibility::Public,
             tags: vec![],
-        estate: "estate:hyperpolymath".into(),
-        metadata: Default::default(),
+            estate: "estate:hyperpolymath".into(),
+            metadata: Default::default(),
             imports: ImportMeta {
                 source: "query".into(),
                 path_hint: None,
@@ -317,8 +329,8 @@ fn test_graph_state_consistency_after_operations() {
             default_branch: "main".into(),
             visibility: Visibility::Public,
             tags: vec![],
-        estate: "estate:hyperpolymath".into(),
-        metadata: Default::default(),
+            estate: "estate:hyperpolymath".into(),
+            metadata: Default::default(),
             imports: ImportMeta {
                 source: "cons".into(),
                 path_hint: None,
@@ -408,8 +420,8 @@ fn test_visibility_enum_coverage() {
             default_branch: "main".into(),
             visibility: vis,
             tags: vec![],
-        estate: "estate:hyperpolymath".into(),
-        metadata: Default::default(),
+            estate: "estate:hyperpolymath".into(),
+            metadata: Default::default(),
             imports: ImportMeta {
                 source: "vis".into(),
                 path_hint: None,
@@ -419,6 +431,10 @@ fn test_visibility_enum_coverage() {
         };
 
         // Should not panic
-        assert!(!repo.id.is_empty(), "Repo with visibility {:?} should create valid ID", vis);
+        assert!(
+            !repo.id.is_empty(),
+            "Repo with visibility {:?} should create valid ID",
+            vis
+        );
     }
 }

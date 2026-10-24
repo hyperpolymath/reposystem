@@ -8,10 +8,12 @@
 //! - Graph export (DOT) performance
 //! - Repository ID generation
 
+use chrono::Utc;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use reposystem::graph::EcosystemGraph;
-use reposystem::types::{Edge, EdgeMeta, Forge, ImportMeta, RelationType, Repo, Visibility, Channel};
-use chrono::Utc;
+use reposystem::types::{
+    Channel, Edge, EdgeMeta, Forge, ImportMeta, RelationType, Repo, Visibility,
+};
 
 // =============================================================================
 // Helper Functions

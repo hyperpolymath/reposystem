@@ -363,10 +363,20 @@ fn main() -> Result<()> {
 
     // Execute command
     match cli.command {
-        Commands::Scan { path, deep, shallow, metadata, detect_workspaces } => {
-            commands::scan::run(path, deep, shallow, metadata, detect_workspaces, cli.json)
-        }
-        Commands::Import { source, manifest, groups, estate, estate_name } => {
+        Commands::Scan {
+            path,
+            deep,
+            shallow,
+            metadata,
+            detect_workspaces,
+        } => commands::scan::run(path, deep, shallow, metadata, detect_workspaces, cli.json),
+        Commands::Import {
+            source,
+            manifest,
+            groups,
+            estate,
+            estate_name,
+        } => {
             let args = commands::import::ImportArgs {
                 manifest,
                 groups,
@@ -375,19 +385,35 @@ fn main() -> Result<()> {
             };
             commands::import::run(&source, args)
         }
-        Commands::View => {
-            commands::view::run()
-        }
-        Commands::Export { format, output, aspect } => {
-            commands::export::run(&format, output, aspect)
-        }
-        Commands::Edge { action, from, to, rel, channel, label, evidence } => {
-            commands::edge::run(&action, from, to, rel, channel, label, evidence)
-        }
-        Commands::Group { action, name, repos } => {
-            commands::group::run(&action, name, repos)
-        }
-        Commands::Aspect { action, target, aspect, weight, polarity, reason, evidence } => {
+        Commands::View => commands::view::run(),
+        Commands::Export {
+            format,
+            output,
+            aspect,
+        } => commands::export::run(&format, output, aspect),
+        Commands::Edge {
+            action,
+            from,
+            to,
+            rel,
+            channel,
+            label,
+            evidence,
+        } => commands::edge::run(&action, from, to, rel, channel, label, evidence),
+        Commands::Group {
+            action,
+            name,
+            repos,
+        } => commands::group::run(&action, name, repos),
+        Commands::Aspect {
+            action,
+            target,
+            aspect,
+            weight,
+            polarity,
+            reason,
+            evidence,
+        } => {
             let args = commands::aspect::AspectArgs {
                 weight,
                 polarity,
@@ -396,10 +422,15 @@ fn main() -> Result<()> {
             };
             commands::aspect::run(&action, target, aspect, args)
         }
-        Commands::Scenario { action, name, base } => {
-            commands::scenario::run(&action, name, base)
-        }
-        Commands::Slot { action, name, category, iface_version, description, capabilities } => {
+        Commands::Scenario { action, name, base } => commands::scenario::run(&action, name, base),
+        Commands::Slot {
+            action,
+            name,
+            category,
+            iface_version,
+            description,
+            capabilities,
+        } => {
             let args = commands::slot::SlotArgs {
                 category,
                 version: iface_version,
@@ -408,7 +439,18 @@ fn main() -> Result<()> {
             };
             commands::slot::run_slot(&action, name, args)
         }
-        Commands::Provider { action, name, slot, provider_type, repo, uri, iface_version, capabilities, priority, fallback } => {
+        Commands::Provider {
+            action,
+            name,
+            slot,
+            provider_type,
+            repo,
+            uri,
+            iface_version,
+            capabilities,
+            priority,
+            fallback,
+        } => {
             let args = commands::slot::ProviderArgs {
                 slot,
                 provider_type,
@@ -421,7 +463,12 @@ fn main() -> Result<()> {
             };
             commands::slot::run_provider(&action, name, args)
         }
-        Commands::Binding { action, consumer, slot, provider } => {
+        Commands::Binding {
+            action,
+            consumer,
+            slot,
+            provider,
+        } => {
             let args = commands::slot::BindingArgs {
                 consumer,
                 slot,
@@ -429,7 +476,12 @@ fn main() -> Result<()> {
             };
             commands::slot::run_binding(&action, args)
         }
-        Commands::Plan { action, name, scenario, description } => {
+        Commands::Plan {
+            action,
+            name,
+            scenario,
+            description,
+        } => {
             let args = commands::plan::PlanArgs {
                 scenario,
                 name: name.clone(),
@@ -437,7 +489,13 @@ fn main() -> Result<()> {
             };
             commands::plan::run(&action, name, args)
         }
-        Commands::Apply { action, name, dry_run, auto_rollback, skip_health_check } => {
+        Commands::Apply {
+            action,
+            name,
+            dry_run,
+            auto_rollback,
+            skip_health_check,
+        } => {
             let args = commands::apply::ApplyArgs {
                 dry_run,
                 auto_rollback,
@@ -445,14 +503,8 @@ fn main() -> Result<()> {
             };
             commands::apply::run(&action, name, args)
         }
-        Commands::WeakLinks { aspect, severity } => {
-            commands::weak_links::run(aspect, severity)
-        }
-        Commands::Config { key, value } => {
-            commands::config::run(&key, value)
-        }
-        Commands::Completions { shell } => {
-            commands::completions::run(shell)
-        }
+        Commands::WeakLinks { aspect, severity } => commands::weak_links::run(aspect, severity),
+        Commands::Config { key, value } => commands::config::run(&key, value),
+        Commands::Completions { shell } => commands::completions::run(shell),
     }
 }

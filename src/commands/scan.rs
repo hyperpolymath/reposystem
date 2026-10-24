@@ -3,7 +3,7 @@
 //! Scan command - discovers git repositories and builds the ecosystem graph
 
 use crate::graph::EcosystemGraph;
-use crate::scanner::{ScanConfig, scan_path};
+use crate::scanner::{scan_path, ScanConfig};
 use crate::types::Forge;
 use anyhow::{Context, Result};
 use std::path::PathBuf;
@@ -29,8 +29,8 @@ pub fn run(
     };
 
     // Perform the scan
-    let results = scan_path(&path, &config)
-        .with_context(|| format!("Failed to scan {}", path.display()))?;
+    let results =
+        scan_path(&path, &config).with_context(|| format!("Failed to scan {}", path.display()))?;
 
     if results.is_empty() {
         if json {
@@ -77,7 +77,8 @@ pub fn run(
 
     // Determine data directory
     let data_dir = get_data_dir()?;
-    graph.save(&data_dir)
+    graph
+        .save(&data_dir)
         .with_context(|| format!("Failed to save graph to {}", data_dir.display()))?;
 
     if json {
@@ -123,7 +124,10 @@ fn detect_and_report_workspaces(graph: &EcosystemGraph) {
         .collect();
 
     if rust_repos.len() > 1 {
-        println!("Potential Cargo workspace detected ({} Rust repos)", rust_repos.len());
+        println!(
+            "Potential Cargo workspace detected ({} Rust repos)",
+            rust_repos.len()
+        );
     }
 
     // Look for npm/deno workspaces
@@ -131,12 +135,14 @@ fn detect_and_report_workspaces(graph: &EcosystemGraph) {
         .repos()
         .iter()
         .filter(|r| {
-            r.tags.contains(&"javascript".to_string())
-                || r.tags.contains(&"deno".to_string())
+            r.tags.contains(&"javascript".to_string()) || r.tags.contains(&"deno".to_string())
         })
         .collect();
 
     if js_repos.len() > 1 {
-        println!("Potential JS/Deno workspace detected ({} repos)", js_repos.len());
+        println!(
+            "Potential JS/Deno workspace detected ({} repos)",
+            js_repos.len()
+        );
     }
 }

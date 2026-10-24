@@ -49,8 +49,14 @@ fn test_help_flag() {
     );
 
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("reposystem"), "Help should contain binary name");
-    assert!(stdout.contains("USAGE") || stdout.contains("Usage"), "Help should have usage section");
+    assert!(
+        stdout.contains("reposystem"),
+        "Help should contain binary name"
+    );
+    assert!(
+        stdout.contains("USAGE") || stdout.contains("Usage"),
+        "Help should have usage section"
+    );
 }
 
 #[test]
@@ -63,8 +69,14 @@ fn test_version_flag() {
     assert!(output.status.success(), "Version should succeed");
 
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("reposystem"), "Version should contain binary name");
-    assert!(stdout.contains("0.1.0"), "Version should contain version number");
+    assert!(
+        stdout.contains("reposystem"),
+        "Version should contain binary name"
+    );
+    assert!(
+        stdout.contains("0.1.0"),
+        "Version should contain version number"
+    );
 }
 
 #[test]
@@ -145,7 +157,10 @@ fn test_scan_with_multiple_repos() {
         .output()
         .expect("Failed to run scan");
 
-    assert!(output.status.success(), "Scan should succeed with multiple repos");
+    assert!(
+        output.status.success(),
+        "Scan should succeed with multiple repos"
+    );
 }
 
 #[test]
@@ -368,7 +383,10 @@ fn test_verbose_flag() {
         .output()
         .expect("Failed to run with -v");
 
-    assert!(output.status.success(), "Verbose flag should not break execution");
+    assert!(
+        output.status.success(),
+        "Verbose flag should not break execution"
+    );
 }
 
 #[test]
@@ -382,7 +400,10 @@ fn test_quiet_flag() {
         .output()
         .expect("Failed to run with --quiet");
 
-    assert!(output.status.success(), "Quiet flag should not break execution");
+    assert!(
+        output.status.success(),
+        "Quiet flag should not break execution"
+    );
 }
 
 #[test]
@@ -396,7 +417,10 @@ fn test_no_color_flag() {
         .output()
         .expect("Failed to run with --no-color");
 
-    assert!(output.status.success(), "No-color flag should not break execution");
+    assert!(
+        output.status.success(),
+        "No-color flag should not break execution"
+    );
 }
 
 // =============================================================================
@@ -420,7 +444,10 @@ fn test_scan_with_config_and_path() {
         .output()
         .expect("Failed to run combined command");
 
-    assert!(output.status.success(), "Scan should work with config and path");
+    assert!(
+        output.status.success(),
+        "Scan should work with config and path"
+    );
 }
 
 #[test]

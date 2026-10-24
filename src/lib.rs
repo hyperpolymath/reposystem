@@ -10,7 +10,6 @@
 #![warn(clippy::all)]
 #![warn(clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
-
 #![forbid(unsafe_code)]
 pub mod commands;
 pub mod config;
@@ -271,9 +270,7 @@ pub mod types {
         /// Generate a deterministic ID for a local-only repo
         #[must_use]
         pub fn local_id(path: &std::path::Path) -> String {
-            let canonical = path
-                .canonicalize()
-                .unwrap_or_else(|_| path.to_path_buf());
+            let canonical = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
             let mut hasher = Sha256::new();
             hasher.update(canonical.to_string_lossy().as_bytes());
             let hash = hex::encode(hasher.finalize());
@@ -430,7 +427,13 @@ pub mod types {
     impl Edge {
         /// Generate a deterministic ID for an edge
         #[must_use]
-        pub fn generate_id(from: &str, to: &str, rel: RelationType, channel: Channel, label: Option<&str>) -> String {
+        pub fn generate_id(
+            from: &str,
+            to: &str,
+            rel: RelationType,
+            channel: Channel,
+            label: Option<&str>,
+        ) -> String {
             let mut hasher = Sha256::new();
             hasher.update(from.as_bytes());
             hasher.update(to.as_bytes());
@@ -467,16 +470,66 @@ pub mod types {
         #[must_use]
         pub fn defaults() -> Vec<Self> {
             vec![
-                Self { kind: "Aspect".into(), id: "aspect:security".into(), name: "Security".into(), description: "Authentication, authorization, vulnerability exposure".into() },
-                Self { kind: "Aspect".into(), id: "aspect:reliability".into(), name: "Reliability".into(), description: "Uptime, fault tolerance, recovery".into() },
-                Self { kind: "Aspect".into(), id: "aspect:maintainability".into(), name: "Maintainability".into(), description: "Code quality, test coverage, documentation".into() },
-                Self { kind: "Aspect".into(), id: "aspect:portability".into(), name: "Portability".into(), description: "Cross-platform, containerization, dependencies".into() },
-                Self { kind: "Aspect".into(), id: "aspect:performance".into(), name: "Performance".into(), description: "Speed, resource usage, scalability".into() },
-                Self { kind: "Aspect".into(), id: "aspect:observability".into(), name: "Observability".into(), description: "Logging, metrics, tracing".into() },
-                Self { kind: "Aspect".into(), id: "aspect:ux".into(), name: "UX".into(), description: "User experience, accessibility".into() },
-                Self { kind: "Aspect".into(), id: "aspect:docs".into(), name: "Docs".into(), description: "Documentation quality and coverage".into() },
-                Self { kind: "Aspect".into(), id: "aspect:supply-chain".into(), name: "Supply Chain".into(), description: "Dependency provenance, SBOM, signing".into() },
-                Self { kind: "Aspect".into(), id: "aspect:automation".into(), name: "Automation".into(), description: "CI/CD, deployment, testing automation".into() },
+                Self {
+                    kind: "Aspect".into(),
+                    id: "aspect:security".into(),
+                    name: "Security".into(),
+                    description: "Authentication, authorization, vulnerability exposure".into(),
+                },
+                Self {
+                    kind: "Aspect".into(),
+                    id: "aspect:reliability".into(),
+                    name: "Reliability".into(),
+                    description: "Uptime, fault tolerance, recovery".into(),
+                },
+                Self {
+                    kind: "Aspect".into(),
+                    id: "aspect:maintainability".into(),
+                    name: "Maintainability".into(),
+                    description: "Code quality, test coverage, documentation".into(),
+                },
+                Self {
+                    kind: "Aspect".into(),
+                    id: "aspect:portability".into(),
+                    name: "Portability".into(),
+                    description: "Cross-platform, containerization, dependencies".into(),
+                },
+                Self {
+                    kind: "Aspect".into(),
+                    id: "aspect:performance".into(),
+                    name: "Performance".into(),
+                    description: "Speed, resource usage, scalability".into(),
+                },
+                Self {
+                    kind: "Aspect".into(),
+                    id: "aspect:observability".into(),
+                    name: "Observability".into(),
+                    description: "Logging, metrics, tracing".into(),
+                },
+                Self {
+                    kind: "Aspect".into(),
+                    id: "aspect:ux".into(),
+                    name: "UX".into(),
+                    description: "User experience, accessibility".into(),
+                },
+                Self {
+                    kind: "Aspect".into(),
+                    id: "aspect:docs".into(),
+                    name: "Docs".into(),
+                    description: "Documentation quality and coverage".into(),
+                },
+                Self {
+                    kind: "Aspect".into(),
+                    id: "aspect:supply-chain".into(),
+                    name: "Supply Chain".into(),
+                    description: "Dependency provenance, SBOM, signing".into(),
+                },
+                Self {
+                    kind: "Aspect".into(),
+                    id: "aspect:automation".into(),
+                    name: "Automation".into(),
+                    description: "CI/CD, deployment, testing automation".into(),
+                },
             ]
         }
     }
@@ -737,7 +790,10 @@ pub mod types {
         /// Generate a deterministic binding ID
         #[must_use]
         pub fn generate_id(consumer_id: &str, slot_id: &str) -> String {
-            let consumer_short = consumer_id.replace("repo:", "").replace('/', "-").replace(':', "-");
+            let consumer_short = consumer_id
+                .replace("repo:", "")
+                .replace('/', "-")
+                .replace(':', "-");
             let slot_short = slot_id.replace("slot:", "");
             format!("binding:{}:{}", consumer_short, slot_short)
         }
@@ -790,7 +846,10 @@ pub mod types {
         /// Get providers for a slot
         #[must_use]
         pub fn providers_for_slot(&self, slot_id: &str) -> Vec<&Provider> {
-            self.providers.iter().filter(|p| p.slot_id == slot_id).collect()
+            self.providers
+                .iter()
+                .filter(|p| p.slot_id == slot_id)
+                .collect()
         }
 
         /// Get binding for a consumer and slot
@@ -804,13 +863,19 @@ pub mod types {
         /// Get all bindings for a consumer
         #[must_use]
         pub fn bindings_for_consumer(&self, consumer_id: &str) -> Vec<&SlotBinding> {
-            self.bindings.iter().filter(|b| b.consumer_id == consumer_id).collect()
+            self.bindings
+                .iter()
+                .filter(|b| b.consumer_id == consumer_id)
+                .collect()
         }
 
         /// Get all bindings using a specific provider
         #[must_use]
         pub fn bindings_for_provider(&self, provider_id: &str) -> Vec<&SlotBinding> {
-            self.bindings.iter().filter(|b| b.provider_id == provider_id).collect()
+            self.bindings
+                .iter()
+                .filter(|b| b.provider_id == provider_id)
+                .collect()
         }
 
         /// Check if a provider is compatible with a slot
@@ -828,23 +893,29 @@ pub mod types {
                             version_match: false,
                             capabilities_satisfied: vec![],
                             capabilities_missing: slot.required_capabilities.clone(),
-                            reason: format!("Provider {} is for slot {}, not {}", provider_id, provider.slot_id, slot_id),
+                            reason: format!(
+                                "Provider {} is for slot {}, not {}",
+                                provider_id, provider.slot_id, slot_id
+                            ),
                         };
                     }
 
                     // Check version compatibility
-                    let version_match = match (&slot.interface_version, &provider.interface_version) {
+                    let version_match = match (&slot.interface_version, &provider.interface_version)
+                    {
                         (Some(sv), Some(pv)) => sv == pv, // Simple equality for now
                         (None, _) | (_, None) => true,    // No version requirement
                     };
 
                     // Check capabilities
-                    let caps_satisfied: Vec<_> = slot.required_capabilities
+                    let caps_satisfied: Vec<_> = slot
+                        .required_capabilities
                         .iter()
                         .filter(|c| provider.capabilities.contains(c))
                         .cloned()
                         .collect();
-                    let caps_missing: Vec<_> = slot.required_capabilities
+                    let caps_missing: Vec<_> = slot
+                        .required_capabilities
                         .iter()
                         .filter(|c| !provider.capabilities.contains(c))
                         .cloned()
@@ -854,8 +925,10 @@ pub mod types {
                     let reason = if compatible {
                         "Compatible".into()
                     } else if !version_match {
-                        format!("Version mismatch: slot requires {:?}, provider offers {:?}",
-                                slot.interface_version, provider.interface_version)
+                        format!(
+                            "Version mismatch: slot requires {:?}, provider offers {:?}",
+                            slot.interface_version, provider.interface_version
+                        )
                     } else {
                         format!("Missing capabilities: {:?}", caps_missing)
                     };
@@ -990,16 +1063,42 @@ pub mod types {
         #[must_use]
         pub fn description(&self) -> String {
             match self {
-                PlanOp::SwitchBinding { consumer_id, slot_id, from_provider_id, to_provider_id, .. } => {
-                    format!("Switch {}'s {} binding: {} → {}", consumer_id, slot_id, from_provider_id, to_provider_id)
+                PlanOp::SwitchBinding {
+                    consumer_id,
+                    slot_id,
+                    from_provider_id,
+                    to_provider_id,
+                    ..
+                } => {
+                    format!(
+                        "Switch {}'s {} binding: {} → {}",
+                        consumer_id, slot_id, from_provider_id, to_provider_id
+                    )
                 }
-                PlanOp::CreateBinding { consumer_id, slot_id, provider_id, .. } => {
-                    format!("Create binding: {} uses {} via {}", consumer_id, slot_id, provider_id)
+                PlanOp::CreateBinding {
+                    consumer_id,
+                    slot_id,
+                    provider_id,
+                    ..
+                } => {
+                    format!(
+                        "Create binding: {} uses {} via {}",
+                        consumer_id, slot_id, provider_id
+                    )
                 }
-                PlanOp::RemoveBinding { consumer_id, slot_id, .. } => {
+                PlanOp::RemoveBinding {
+                    consumer_id,
+                    slot_id,
+                    ..
+                } => {
                     format!("Remove binding: {} no longer uses {}", consumer_id, slot_id)
                 }
-                PlanOp::FileChange { repo_id, file_path, change_type, .. } => {
+                PlanOp::FileChange {
+                    repo_id,
+                    file_path,
+                    change_type,
+                    ..
+                } => {
                     format!("{:?} {} in {}", change_type, file_path, repo_id)
                 }
             }
@@ -1160,7 +1259,10 @@ pub mod types {
         /// Get plans for a scenario
         #[must_use]
         pub fn plans_for_scenario(&self, scenario_id: &str) -> Vec<&Plan> {
-            self.plans.iter().filter(|p| p.scenario_id == scenario_id).collect()
+            self.plans
+                .iter()
+                .filter(|p| p.scenario_id == scenario_id)
+                .collect()
         }
 
         /// Get the most recent plan for a scenario
@@ -1181,10 +1283,21 @@ pub mod types {
         /// Generate a rollback plan from an existing plan
         #[must_use]
         pub fn generate_rollback(plan: &Plan) -> Plan {
-            let rollback_ops: Vec<PlanOp> = plan.operations.iter().rev().filter_map(|op| {
-                match op {
-                    PlanOp::SwitchBinding { binding_id, consumer_id, slot_id, from_provider_id, to_provider_id, risk, .. } => {
-                        Some(PlanOp::SwitchBinding {
+            let rollback_ops: Vec<PlanOp> = plan
+                .operations
+                .iter()
+                .rev()
+                .filter_map(|op| {
+                    match op {
+                        PlanOp::SwitchBinding {
+                            binding_id,
+                            consumer_id,
+                            slot_id,
+                            from_provider_id,
+                            to_provider_id,
+                            risk,
+                            ..
+                        } => Some(PlanOp::SwitchBinding {
                             binding_id: binding_id.clone(),
                             consumer_id: consumer_id.clone(),
                             slot_id: slot_id.clone(),
@@ -1192,34 +1305,42 @@ pub mod types {
                             to_provider_id: from_provider_id.clone(),
                             risk: *risk,
                             reason: format!("Rollback of plan {}", plan.id),
-                        })
-                    }
-                    PlanOp::CreateBinding { consumer_id, slot_id, provider_id, risk, .. } => {
-                        Some(PlanOp::RemoveBinding {
+                        }),
+                        PlanOp::CreateBinding {
+                            consumer_id,
+                            slot_id,
+                            provider_id,
+                            risk,
+                            ..
+                        } => Some(PlanOp::RemoveBinding {
                             binding_id: SlotBinding::generate_id(consumer_id, slot_id),
                             consumer_id: consumer_id.clone(),
                             slot_id: slot_id.clone(),
                             provider_id: provider_id.clone(),
                             risk: *risk,
                             reason: format!("Rollback of plan {}", plan.id),
-                        })
-                    }
-                    PlanOp::RemoveBinding { consumer_id, slot_id, provider_id, risk, .. } => {
-                        Some(PlanOp::CreateBinding {
+                        }),
+                        PlanOp::RemoveBinding {
+                            consumer_id,
+                            slot_id,
+                            provider_id,
+                            risk,
+                            ..
+                        } => Some(PlanOp::CreateBinding {
                             consumer_id: consumer_id.clone(),
                             slot_id: slot_id.clone(),
                             provider_id: provider_id.clone(),
                             risk: *risk,
                             reason: format!("Rollback of plan {}", plan.id),
-                        })
+                        }),
+                        PlanOp::FileChange { .. } => {
+                            // File changes need more complex rollback logic
+                            // For now, we skip them - f4 will handle this
+                            None
+                        }
                     }
-                    PlanOp::FileChange { .. } => {
-                        // File changes need more complex rollback logic
-                        // For now, we skip them - f4 will handle this
-                        None
-                    }
-                }
-            }).collect();
+                })
+                .collect();
 
             Plan {
                 kind: "Plan".into(),
@@ -1341,7 +1462,10 @@ pub mod types {
         /// Get audit entries for a plan
         #[must_use]
         pub fn entries_for_plan(&self, plan_id: &str) -> Vec<&AuditEntry> {
-            self.entries.iter().filter(|e| e.plan_id == plan_id).collect()
+            self.entries
+                .iter()
+                .filter(|e| e.plan_id == plan_id)
+                .collect()
         }
 
         /// Get the latest audit entry for a plan
@@ -1364,7 +1488,11 @@ pub mod types {
 
         /// Get entries within a time range
         #[must_use]
-        pub fn entries_between(&self, start: DateTime<Utc>, end: DateTime<Utc>) -> Vec<&AuditEntry> {
+        pub fn entries_between(
+            &self,
+            start: DateTime<Utc>,
+            end: DateTime<Utc>,
+        ) -> Vec<&AuditEntry> {
             self.entries
                 .iter()
                 .filter(|e| e.started_at >= start && e.finished_at <= end)

@@ -7,9 +7,7 @@ use chrono::Utc;
 use std::path::Path;
 
 use crate::graph::EcosystemGraph;
-use crate::types::{
-    Plan, PlanDiff, PlanOp, PlanStatus, RiskLevel, SlotBinding,
-};
+use crate::types::{Plan, PlanDiff, PlanOp, PlanStatus, RiskLevel, SlotBinding};
 
 /// Arguments for plan creation
 pub struct PlanArgs {
@@ -34,20 +32,25 @@ pub fn run(action: &str, name: Option<String>, args: PlanArgs) -> Result<()> {
         "diff" => show_diff(&data_dir, name),
         "rollback" => generate_rollback(&data_dir, name),
         "delete" => delete_plan(&data_dir, name),
-        _ => bail!("Unknown action: {}. Use create, list, show, diff, rollback, or delete", action),
+        _ => bail!(
+            "Unknown action: {}. Use create, list, show, diff, rollback, or delete",
+            action
+        ),
     }
 }
 
 /// Create a plan from a scenario
 fn create_plan(data_dir: &Path, args: PlanArgs) -> Result<()> {
-    let mut graph = EcosystemGraph::load(data_dir)
-        .context("Failed to load ecosystem graph")?;
+    let mut graph = EcosystemGraph::load(data_dir).context("Failed to load ecosystem graph")?;
 
-    let scenario_id = args.scenario
+    let scenario_id = args
+        .scenario
         .ok_or_else(|| anyhow::anyhow!("--scenario is required"))?;
 
     // Verify scenario exists
-    let scenario = graph.store.scenarios
+    let scenario = graph
+        .store
+        .scenarios
         .iter()
         .find(|s| s.id == scenario_id || s.name == scenario_id)
         .ok_or_else(|| anyhow::anyhow!("Scenario not found: {}", scenario_id))?;
@@ -56,7 +59,9 @@ fn create_plan(data_dir: &Path, args: PlanArgs) -> Result<()> {
     let scenario_name = scenario.name.clone();
 
     // Get the changeset for this scenario
-    let changeset = graph.store.changesets
+    let changeset = graph
+        .store
+        .changesets
         .iter()
         .find(|c| c.scenario_id == scenario_id);
 
@@ -67,7 +72,9 @@ fn create_plan(data_dir: &Path, args: PlanArgs) -> Result<()> {
     let overall_risk = Plan::calculate_overall_risk(&operations);
 
     // Create the plan
-    let plan_name = args.name.unwrap_or_else(|| format!("Plan for {}", scenario_name));
+    let plan_name = args
+        .name
+        .unwrap_or_else(|| format!("Plan for {}", scenario_name));
     let plan = Plan {
         kind: "Plan".into(),
         id: Plan::generate_id(&scenario_id),
@@ -98,7 +105,10 @@ fn create_plan(data_dir: &Path, args: PlanArgs) -> Result<()> {
     println!("  Operations: {}", plan.operations.len());
     println!("  Overall risk: {:?}", plan.overall_risk);
     println!();
-    println!("Use 'reposystem plan diff --name {}' to preview changes", plan.id);
+    println!(
+        "Use 'reposystem plan diff --name {}' to preview changes",
+        plan.id
+    );
 
     Ok(())
 }
@@ -132,13 +142,17 @@ fn generate_plan_operations(
     // For each slot used by consumers, check if the binding should change
     for binding in &graph.slots.bindings {
         // Check if this binding's provider is marked for replacement in the scenario
-        let current_provider = graph.slots.providers
+        let current_provider = graph
+            .slots
+            .providers
             .iter()
             .find(|p| p.id == binding.provider_id);
 
         if let Some(provider) = current_provider {
             // Look for alternative providers for the same slot
-            let alternatives: Vec<_> = graph.slots.providers
+            let alternatives: Vec<_> = graph
+                .slots
+                .providers
                 .iter()
                 .filter(|p| p.slot_id == binding.slot_id && p.id != binding.provider_id)
                 .collect();
@@ -175,11 +189,13 @@ fn generate_plan_operations(
             let existing_binding = graph.slots.get_binding(&repo.id, &slot.id);
             if existing_binding.is_none() {
                 // Check if there's a compatible provider available
-                let compatible_providers: Vec<_> = graph.slots.providers
+                let compatible_providers: Vec<_> = graph
+                    .slots
+                    .providers
                     .iter()
                     .filter(|p| {
-                        p.slot_id == slot.id &&
-                        graph.slots.check_compatibility(&slot.id, &p.id).compatible
+                        p.slot_id == slot.id
+                            && graph.slots.check_compatibility(&slot.id, &p.id).compatible
                     })
                     .collect();
 
@@ -196,7 +212,9 @@ fn generate_plan_operations(
                         // For now, we're conservative and only include explicit switches
                         tracing::debug!(
                             "Could bind {} to {} via {}",
-                            repo.id, slot.id, provider.id
+                            repo.id,
+                            slot.id,
+                            provider.id
                         );
                     }
                 }
@@ -279,8 +297,7 @@ fn generate_plan_diff(plan: &Plan) -> PlanDiff {
 
 /// List all plans
 fn list_plans(data_dir: &Path) -> Result<()> {
-    let graph = EcosystemGraph::load(data_dir)
-        .context("Failed to load ecosystem graph")?;
+    let graph = EcosystemGraph::load(data_dir).context("Failed to load ecosystem graph")?;
 
     if graph.plans.plans.is_empty() {
         println!("No plans found.");
@@ -306,8 +323,14 @@ fn list_plans(data_dir: &Path) -> Result<()> {
             RiskLevel::Critical => "🔴",
         };
 
-        println!("{} {} {} - {} ({} ops)",
-            status_icon, risk_icon, plan.id, plan.name, plan.operations.len());
+        println!(
+            "{} {} {} - {} ({} ops)",
+            status_icon,
+            risk_icon,
+            plan.id,
+            plan.name,
+            plan.operations.len()
+        );
         println!("     Scenario: {}", plan.scenario_id);
         println!("     Created: {}", plan.created_at.format("%Y-%m-%d %H:%M"));
         if let Some(applied) = plan.applied_at {
@@ -321,12 +344,13 @@ fn list_plans(data_dir: &Path) -> Result<()> {
 
 /// Show plan details
 fn show_plan(data_dir: &Path, name: Option<String>) -> Result<()> {
-    let graph = EcosystemGraph::load(data_dir)
-        .context("Failed to load ecosystem graph")?;
+    let graph = EcosystemGraph::load(data_dir).context("Failed to load ecosystem graph")?;
 
     let plan_id = name.ok_or_else(|| anyhow::anyhow!("Plan name or ID required"))?;
 
-    let plan = graph.plans.plans
+    let plan = graph
+        .plans
+        .plans
         .iter()
         .find(|p| p.id == plan_id || p.name == plan_id)
         .ok_or_else(|| anyhow::anyhow!("Plan not found: {}", plan_id))?;
@@ -336,7 +360,11 @@ fn show_plan(data_dir: &Path, name: Option<String>) -> Result<()> {
     println!("  Scenario: {}", plan.scenario_id);
     println!("  Status: {:?}", plan.status);
     println!("  Overall Risk: {:?}", plan.overall_risk);
-    println!("  Created: {} by {}", plan.created_at.format("%Y-%m-%d %H:%M:%S"), plan.created_by);
+    println!(
+        "  Created: {} by {}",
+        plan.created_at.format("%Y-%m-%d %H:%M:%S"),
+        plan.created_by
+    );
     if let Some(desc) = &plan.description {
         println!("  Description: {}", desc);
     }
@@ -372,12 +400,13 @@ fn show_plan(data_dir: &Path, name: Option<String>) -> Result<()> {
 
 /// Show dry-run diff for a plan
 fn show_diff(data_dir: &Path, name: Option<String>) -> Result<()> {
-    let graph = EcosystemGraph::load(data_dir)
-        .context("Failed to load ecosystem graph")?;
+    let graph = EcosystemGraph::load(data_dir).context("Failed to load ecosystem graph")?;
 
     let plan_id = name.ok_or_else(|| anyhow::anyhow!("Plan name or ID required"))?;
 
-    let plan = graph.plans.plans
+    let plan = graph
+        .plans
+        .plans
         .iter()
         .find(|p| p.id == plan_id || p.name == plan_id)
         .ok_or_else(|| anyhow::anyhow!("Plan not found: {}", plan_id))?;
@@ -418,20 +447,38 @@ fn show_diff(data_dir: &Path, name: Option<String>) -> Result<()> {
         println!();
         println!("{}. {}", i + 1, op.description());
         match op {
-            PlanOp::SwitchBinding { from_provider_id, to_provider_id, reason, .. } => {
+            PlanOp::SwitchBinding {
+                from_provider_id,
+                to_provider_id,
+                reason,
+                ..
+            } => {
                 println!("   From: {}", from_provider_id);
                 println!("   To:   {}", to_provider_id);
                 println!("   Reason: {}", reason);
             }
-            PlanOp::CreateBinding { provider_id, reason, .. } => {
+            PlanOp::CreateBinding {
+                provider_id,
+                reason,
+                ..
+            } => {
                 println!("   Provider: {}", provider_id);
                 println!("   Reason: {}", reason);
             }
-            PlanOp::RemoveBinding { provider_id, reason, .. } => {
+            PlanOp::RemoveBinding {
+                provider_id,
+                reason,
+                ..
+            } => {
                 println!("   Was: {}", provider_id);
                 println!("   Reason: {}", reason);
             }
-            PlanOp::FileChange { file_path, change_type, diff, .. } => {
+            PlanOp::FileChange {
+                file_path,
+                change_type,
+                diff,
+                ..
+            } => {
                 println!("   File: {}", file_path);
                 println!("   Change: {:?}", change_type);
                 if let Some(d) = diff {
@@ -445,19 +492,23 @@ fn show_diff(data_dir: &Path, name: Option<String>) -> Result<()> {
     }
 
     println!();
-    println!("To apply this plan (in f4): reposystem apply --plan {}", plan.id);
+    println!(
+        "To apply this plan (in f4): reposystem apply --plan {}",
+        plan.id
+    );
 
     Ok(())
 }
 
 /// Generate a rollback plan
 fn generate_rollback(data_dir: &Path, name: Option<String>) -> Result<()> {
-    let mut graph = EcosystemGraph::load(data_dir)
-        .context("Failed to load ecosystem graph")?;
+    let mut graph = EcosystemGraph::load(data_dir).context("Failed to load ecosystem graph")?;
 
     let plan_id = name.ok_or_else(|| anyhow::anyhow!("Plan name or ID required"))?;
 
-    let plan = graph.plans.plans
+    let plan = graph
+        .plans
+        .plans
         .iter()
         .find(|p| p.id == plan_id || p.name == plan_id)
         .ok_or_else(|| anyhow::anyhow!("Plan not found: {}", plan_id))?
@@ -484,19 +535,23 @@ fn generate_rollback(data_dir: &Path, name: Option<String>) -> Result<()> {
     graph.save(data_dir)?;
 
     println!();
-    println!("Rollback plan saved. Use 'reposystem plan show --name {}' to review.", rollback_id);
+    println!(
+        "Rollback plan saved. Use 'reposystem plan show --name {}' to review.",
+        rollback_id
+    );
 
     Ok(())
 }
 
 /// Delete a plan
 fn delete_plan(data_dir: &Path, name: Option<String>) -> Result<()> {
-    let mut graph = EcosystemGraph::load(data_dir)
-        .context("Failed to load ecosystem graph")?;
+    let mut graph = EcosystemGraph::load(data_dir).context("Failed to load ecosystem graph")?;
 
     let plan_id = name.ok_or_else(|| anyhow::anyhow!("Plan name or ID required"))?;
 
-    let plan_idx = graph.plans.plans
+    let plan_idx = graph
+        .plans
+        .plans
         .iter()
         .position(|p| p.id == plan_id || p.name == plan_id)
         .ok_or_else(|| anyhow::anyhow!("Plan not found: {}", plan_id))?;

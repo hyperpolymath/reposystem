@@ -13,8 +13,8 @@
 //! 8. Undo (rollback)
 //! 9. Verify rollback
 
-use std::process::Command;
 use std::path::PathBuf;
+use std::process::Command;
 use tempfile::TempDir;
 
 /// Get the path to the reposystem binary
@@ -118,9 +118,21 @@ fn setup_graph(data_dir: &TempDir) {
     std::fs::write(data_dir.path().join("graph.json"), graph_json).unwrap();
 
     // Initialize empty stores
-    std::fs::write(data_dir.path().join("aspects.json"), r#"{"definitions":[],"annotations":[]}"#).unwrap();
-    std::fs::write(data_dir.path().join("slots.json"), r#"{"slots":[],"providers":[],"bindings":[]}"#).unwrap();
-    std::fs::write(data_dir.path().join("plans.json"), r#"{"plans":[],"diffs":[]}"#).unwrap();
+    std::fs::write(
+        data_dir.path().join("aspects.json"),
+        r#"{"definitions":[],"annotations":[]}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        data_dir.path().join("slots.json"),
+        r#"{"slots":[],"providers":[],"bindings":[]}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        data_dir.path().join("plans.json"),
+        r#"{"plans":[],"diffs":[]}"#,
+    )
+    .unwrap();
     std::fs::write(data_dir.path().join("audit.json"), r#"{"entries":[]}"#).unwrap();
 }
 
@@ -138,13 +150,22 @@ fn test_hello_yard_full_workflow() {
     // Step 2: Create the container.runtime slot
     // =========================================================================
     println!("\n=== Step 2: Creating container.runtime slot ===");
-    let output = run_reposystem(&data_dir, &[
-        "slot", "create", "container.runtime",
-        "--category", "container",
-        "--iface-version", "1.0",
-        "--description", "Container runtime for building and running containers",
-        "--capabilities", "build,run,push"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "slot",
+            "create",
+            "container.runtime",
+            "--category",
+            "container",
+            "--iface-version",
+            "1.0",
+            "--description",
+            "Container runtime for building and running containers",
+            "--capabilities",
+            "build,run,push",
+        ],
+    );
     assert_success(&output, "slot create");
     assert!(stdout_str(&output).contains("Created slot"));
 
@@ -159,41 +180,73 @@ fn test_hello_yard_full_workflow() {
     println!("\n=== Step 3: Creating providers ===");
 
     // Create podman provider (local, default)
-    let output = run_reposystem(&data_dir, &[
-        "provider", "create", "podman",
-        "--slot", "container.runtime",
-        "--provider-type", "local",
-        "--iface-version", "1.0",
-        "--capabilities", "build,run,push,rootless",
-        "--priority", "100"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "provider",
+            "create",
+            "podman",
+            "--slot",
+            "container.runtime",
+            "--provider-type",
+            "local",
+            "--iface-version",
+            "1.0",
+            "--capabilities",
+            "build,run,push,rootless",
+            "--priority",
+            "100",
+        ],
+    );
     assert_success(&output, "provider create podman");
     assert!(stdout_str(&output).contains("Created provider"));
 
     // Create cerro-torre provider (ecosystem alternative)
-    let output = run_reposystem(&data_dir, &[
-        "provider", "create", "cerro-torre",
-        "--slot", "container.runtime",
-        "--provider-type", "ecosystem",
-        "--uri", "https://github.com/cerro-torre/cerro-torre",
-        "--iface-version", "1.0",
-        "--capabilities", "build,run,push,daemonless",
-        "--priority", "50"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "provider",
+            "create",
+            "cerro-torre",
+            "--slot",
+            "container.runtime",
+            "--provider-type",
+            "ecosystem",
+            "--uri",
+            "https://github.com/cerro-torre/cerro-torre",
+            "--iface-version",
+            "1.0",
+            "--capabilities",
+            "build,run,push,daemonless",
+            "--priority",
+            "50",
+        ],
+    );
     assert_success(&output, "provider create cerro-torre");
     assert!(stdout_str(&output).contains("Created provider"));
 
     // Create docker provider (external fallback)
-    let output = run_reposystem(&data_dir, &[
-        "provider", "create", "docker",
-        "--slot", "container.runtime",
-        "--provider-type", "external",
-        "--uri", "https://docker.com",
-        "--iface-version", "1.0",
-        "--capabilities", "build,run,push",
-        "--priority", "25",
-        "--fallback"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "provider",
+            "create",
+            "docker",
+            "--slot",
+            "container.runtime",
+            "--provider-type",
+            "external",
+            "--uri",
+            "https://docker.com",
+            "--iface-version",
+            "1.0",
+            "--capabilities",
+            "build,run,push",
+            "--priority",
+            "25",
+            "--fallback",
+        ],
+    );
     assert_success(&output, "provider create docker");
 
     // Verify providers exist
@@ -210,31 +263,56 @@ fn test_hello_yard_full_workflow() {
     println!("\n=== Step 4: Creating initial bindings ===");
 
     // Bind webapp to podman
-    let output = run_reposystem(&data_dir, &[
-        "binding", "bind",
-        "--consumer", "webapp",
-        "--slot", "container.runtime",
-        "--provider", "podman"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "binding",
+            "bind",
+            "--consumer",
+            "webapp",
+            "--slot",
+            "container.runtime",
+            "--provider",
+            "podman",
+        ],
+    );
     assert_success(&output, "binding bind webapp");
-    assert!(stdout_str(&output).contains("Bound"), "Expected 'Bound' in output: {}", stdout_str(&output));
+    assert!(
+        stdout_str(&output).contains("Bound"),
+        "Expected 'Bound' in output: {}",
+        stdout_str(&output)
+    );
 
     // Bind api-service to podman
-    let output = run_reposystem(&data_dir, &[
-        "binding", "bind",
-        "--consumer", "api-service",
-        "--slot", "container.runtime",
-        "--provider", "podman"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "binding",
+            "bind",
+            "--consumer",
+            "api-service",
+            "--slot",
+            "container.runtime",
+            "--provider",
+            "podman",
+        ],
+    );
     assert_success(&output, "binding bind api-service");
 
     // Bind worker to podman
-    let output = run_reposystem(&data_dir, &[
-        "binding", "bind",
-        "--consumer", "worker",
-        "--slot", "container.runtime",
-        "--provider", "podman"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "binding",
+            "bind",
+            "--consumer",
+            "worker",
+            "--slot",
+            "container.runtime",
+            "--provider",
+            "podman",
+        ],
+    );
     assert_success(&output, "binding bind worker");
 
     // Verify bindings
@@ -242,7 +320,10 @@ fn test_hello_yard_full_workflow() {
     assert_success(&output, "binding list");
     let stdout = stdout_str(&output);
     assert!(stdout.contains("webapp"), "webapp should be bound");
-    assert!(stdout.contains("api-service"), "api-service should be bound");
+    assert!(
+        stdout.contains("api-service"),
+        "api-service should be bound"
+    );
     assert!(stdout.contains("worker"), "worker should be bound");
     assert!(stdout.contains("podman"), "All should be bound to podman");
 
@@ -261,9 +342,7 @@ fn test_hello_yard_full_workflow() {
     // Step 6: Create a scenario (switch to cerro-torre)
     // =========================================================================
     println!("\n=== Step 6: Creating migration scenario ===");
-    let output = run_reposystem(&data_dir, &[
-        "scenario", "create", "switch-to-cerro-torre"
-    ]);
+    let output = run_reposystem(&data_dir, &["scenario", "create", "switch-to-cerro-torre"]);
     assert_success(&output, "scenario create");
     assert!(stdout_str(&output).contains("Created scenario"));
 
@@ -276,11 +355,17 @@ fn test_hello_yard_full_workflow() {
     // Step 7: Create a plan from the scenario
     // =========================================================================
     println!("\n=== Step 7: Creating migration plan ===");
-    let output = run_reposystem(&data_dir, &[
-        "plan", "create",
-        "--scenario", "switch-to-cerro-torre",
-        "--description", "Migrate all services from podman to cerro-torre"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "plan",
+            "create",
+            "--scenario",
+            "switch-to-cerro-torre",
+            "--description",
+            "Migrate all services from podman to cerro-torre",
+        ],
+    );
     assert_success(&output, "plan create");
     assert!(stdout_str(&output).contains("Created plan"));
 
@@ -288,7 +373,10 @@ fn test_hello_yard_full_workflow() {
     let output = run_reposystem(&data_dir, &["plan", "list"]);
     assert_success(&output, "plan list");
     let stdout = stdout_str(&output);
-    assert!(stdout.contains("switch-to-cerro-torre"), "Plan should reference scenario");
+    assert!(
+        stdout.contains("switch-to-cerro-torre"),
+        "Plan should reference scenario"
+    );
 
     // =========================================================================
     // Step 8: Show plan diff (dry-run preview)
@@ -297,10 +385,15 @@ fn test_hello_yard_full_workflow() {
 
     // The plan should have been created - let's find it
     // Plans are named like "Plan for switch-to-cerro-torre"
-    let _output = run_reposystem(&data_dir, &[
-        "apply", "apply", "Plan for switch-to-cerro-torre",
-        "--dry-run"
-    ]);
+    let _output = run_reposystem(
+        &data_dir,
+        &[
+            "apply",
+            "apply",
+            "Plan for switch-to-cerro-torre",
+            "--dry-run",
+        ],
+    );
     // Note: This may have no operations since we didn't add changeset entries
     // The plan generation depends on changesets in the scenario
 
@@ -327,11 +420,17 @@ fn test_hello_yard_full_workflow() {
     // Verify providers
     let output = run_reposystem(&data_dir, &["provider", "show", "podman"]);
     assert_success(&output, "provider show podman");
-    assert!(stdout_str(&output).contains("Local"), "Expected 'Local' in output");
+    assert!(
+        stdout_str(&output).contains("Local"),
+        "Expected 'Local' in output"
+    );
 
     let output = run_reposystem(&data_dir, &["provider", "show", "cerro-torre"]);
     assert_success(&output, "provider show cerro-torre");
-    assert!(stdout_str(&output).contains("Ecosystem"), "Expected 'Ecosystem' in output");
+    assert!(
+        stdout_str(&output).contains("Ecosystem"),
+        "Expected 'Ecosystem' in output"
+    );
 
     // =========================================================================
     // Summary
@@ -353,39 +452,72 @@ fn test_hello_yard_binding_switch() {
     setup_graph(&data_dir);
 
     // Create slot and providers
-    let output = run_reposystem(&data_dir, &[
-        "slot", "create", "container.runtime",
-        "--category", "container",
-        "--iface-version", "1.0",
-        "--capabilities", "build,run"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "slot",
+            "create",
+            "container.runtime",
+            "--category",
+            "container",
+            "--iface-version",
+            "1.0",
+            "--capabilities",
+            "build,run",
+        ],
+    );
     assert_success(&output, "slot create");
 
-    let output = run_reposystem(&data_dir, &[
-        "provider", "create", "podman",
-        "--slot", "container.runtime",
-        "--provider-type", "local",
-        "--iface-version", "1.0",
-        "--capabilities", "build,run"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "provider",
+            "create",
+            "podman",
+            "--slot",
+            "container.runtime",
+            "--provider-type",
+            "local",
+            "--iface-version",
+            "1.0",
+            "--capabilities",
+            "build,run",
+        ],
+    );
     assert_success(&output, "provider create podman");
 
-    let output = run_reposystem(&data_dir, &[
-        "provider", "create", "cerro-torre",
-        "--slot", "container.runtime",
-        "--provider-type", "ecosystem",
-        "--iface-version", "1.0",
-        "--capabilities", "build,run"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "provider",
+            "create",
+            "cerro-torre",
+            "--slot",
+            "container.runtime",
+            "--provider-type",
+            "ecosystem",
+            "--iface-version",
+            "1.0",
+            "--capabilities",
+            "build,run",
+        ],
+    );
     assert_success(&output, "provider create cerro-torre");
 
     // Create initial binding to podman
-    let output = run_reposystem(&data_dir, &[
-        "binding", "bind",
-        "--consumer", "webapp",
-        "--slot", "container.runtime",
-        "--provider", "podman"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "binding",
+            "bind",
+            "--consumer",
+            "webapp",
+            "--slot",
+            "container.runtime",
+            "--provider",
+            "podman",
+        ],
+    );
     assert_success(&output, "initial binding");
 
     // Verify initial binding
@@ -393,27 +525,46 @@ fn test_hello_yard_binding_switch() {
     assert!(stdout_str(&output).contains("podman"));
 
     // Unbind from podman
-    let output = run_reposystem(&data_dir, &[
-        "binding", "unbind",
-        "--consumer", "webapp",
-        "--slot", "container.runtime"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "binding",
+            "unbind",
+            "--consumer",
+            "webapp",
+            "--slot",
+            "container.runtime",
+        ],
+    );
     assert_success(&output, "unbind");
 
     // Rebind to cerro-torre
-    let output = run_reposystem(&data_dir, &[
-        "binding", "bind",
-        "--consumer", "webapp",
-        "--slot", "container.runtime",
-        "--provider", "cerro-torre"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "binding",
+            "bind",
+            "--consumer",
+            "webapp",
+            "--slot",
+            "container.runtime",
+            "--provider",
+            "cerro-torre",
+        ],
+    );
     assert_success(&output, "rebind to cerro-torre");
 
     // Verify new binding
     let output = run_reposystem(&data_dir, &["binding", "list"]);
     let stdout = stdout_str(&output);
-    assert!(stdout.contains("cerro-torre"), "Should now be bound to cerro-torre");
-    assert!(!stdout.contains("podman") || stdout.contains("cerro-torre"), "Should have switched");
+    assert!(
+        stdout.contains("cerro-torre"),
+        "Should now be bound to cerro-torre"
+    );
+    assert!(
+        !stdout.contains("podman") || stdout.contains("cerro-torre"),
+        "Should have switched"
+    );
 
     println!("Successfully demonstrated manual binding switch");
 }
@@ -424,41 +575,74 @@ fn test_hello_yard_compatibility_check() {
     setup_graph(&data_dir);
 
     // Create slot requiring specific capabilities
-    let output = run_reposystem(&data_dir, &[
-        "slot", "create", "container.runtime",
-        "--category", "container",
-        "--iface-version", "1.0",
-        "--capabilities", "build,run,rootless"  // Requires rootless
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "slot",
+            "create",
+            "container.runtime",
+            "--category",
+            "container",
+            "--iface-version",
+            "1.0",
+            "--capabilities",
+            "build,run,rootless", // Requires rootless
+        ],
+    );
     assert_success(&output, "slot create");
 
     // Create provider WITH rootless capability
-    let output = run_reposystem(&data_dir, &[
-        "provider", "create", "podman",
-        "--slot", "container.runtime",
-        "--provider-type", "local",
-        "--iface-version", "1.0",
-        "--capabilities", "build,run,rootless"  // Has rootless
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "provider",
+            "create",
+            "podman",
+            "--slot",
+            "container.runtime",
+            "--provider-type",
+            "local",
+            "--iface-version",
+            "1.0",
+            "--capabilities",
+            "build,run,rootless", // Has rootless
+        ],
+    );
     assert_success(&output, "provider create podman with rootless");
 
     // Create provider WITHOUT rootless capability
-    let output = run_reposystem(&data_dir, &[
-        "provider", "create", "docker",
-        "--slot", "container.runtime",
-        "--provider-type", "external",
-        "--iface-version", "1.0",
-        "--capabilities", "build,run"  // No rootless
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "provider",
+            "create",
+            "docker",
+            "--slot",
+            "container.runtime",
+            "--provider-type",
+            "external",
+            "--iface-version",
+            "1.0",
+            "--capabilities",
+            "build,run", // No rootless
+        ],
+    );
     assert_success(&output, "provider create docker without rootless");
 
     // Binding to podman should work (has all required capabilities)
-    let output = run_reposystem(&data_dir, &[
-        "binding", "bind",
-        "--consumer", "webapp",
-        "--slot", "container.runtime",
-        "--provider", "podman"
-    ]);
+    let output = run_reposystem(
+        &data_dir,
+        &[
+            "binding",
+            "bind",
+            "--consumer",
+            "webapp",
+            "--slot",
+            "container.runtime",
+            "--provider",
+            "podman",
+        ],
+    );
     assert_success(&output, "bind to compatible provider");
 
     // Verify the binding was created

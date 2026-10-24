@@ -70,11 +70,11 @@ impl EcosystemGraph {
     pub fn load(dir: &Path) -> Result<Self> {
         let vdb = VeriSimDbClient::new();
 
-        let graph_path   = dir.join("graph.json");
+        let graph_path = dir.join("graph.json");
         let aspects_path = dir.join("aspects.json");
-        let slots_path   = dir.join("slots.json");
-        let plans_path   = dir.join("plans.json");
-        let audit_path   = dir.join("audit.json");
+        let slots_path = dir.join("slots.json");
+        let plans_path = dir.join("plans.json");
+        let audit_path = dir.join("audit.json");
 
         // ── GraphStore ─────────────────────────────────────────────────────
         let store: GraphStore = vdb
@@ -93,20 +93,21 @@ impl EcosystemGraph {
             })?;
 
         // ── AspectStore ────────────────────────────────────────────────────
-        let aspects: AspectStore = vdb
-            .load_aspects()
-            .unwrap_or(None)
-            .map(Ok)
-            .unwrap_or_else(|| {
-                if aspects_path.exists() {
-                    let content = fs::read_to_string(&aspects_path)
-                        .with_context(|| format!("Failed to read {}", aspects_path.display()))?;
-                    serde_json::from_str(&content)
-                        .with_context(|| format!("Failed to parse {}", aspects_path.display()))
-                } else {
-                    Ok(AspectStore::default())
-                }
-            })?;
+        let aspects: AspectStore =
+            vdb.load_aspects()
+                .unwrap_or(None)
+                .map(Ok)
+                .unwrap_or_else(|| {
+                    if aspects_path.exists() {
+                        let content = fs::read_to_string(&aspects_path).with_context(|| {
+                            format!("Failed to read {}", aspects_path.display())
+                        })?;
+                        serde_json::from_str(&content)
+                            .with_context(|| format!("Failed to parse {}", aspects_path.display()))
+                    } else {
+                        Ok(AspectStore::default())
+                    }
+                })?;
 
         // ── SlotStore ──────────────────────────────────────────────────────
         let slots: SlotStore = vdb
@@ -183,40 +184,46 @@ impl EcosystemGraph {
         fs::create_dir_all(dir)
             .with_context(|| format!("Failed to create directory {}", dir.display()))?;
 
-        let graph_path   = dir.join("graph.json");
+        let graph_path = dir.join("graph.json");
         let aspects_path = dir.join("aspects.json");
-        let slots_path   = dir.join("slots.json");
-        let plans_path   = dir.join("plans.json");
-        let audit_path   = dir.join("audit.json");
+        let slots_path = dir.join("slots.json");
+        let plans_path = dir.join("plans.json");
+        let audit_path = dir.join("audit.json");
 
-        let graph_json = serde_json::to_string_pretty(&self.store)
-            .context("Failed to serialize graph")?;
+        let graph_json =
+            serde_json::to_string_pretty(&self.store).context("Failed to serialize graph")?;
         fs::write(&graph_path, graph_json)
             .with_context(|| format!("Failed to write {}", graph_path.display()))?;
 
-        let aspects_json = serde_json::to_string_pretty(&self.aspects)
-            .context("Failed to serialize aspects")?;
+        let aspects_json =
+            serde_json::to_string_pretty(&self.aspects).context("Failed to serialize aspects")?;
         fs::write(&aspects_path, aspects_json)
             .with_context(|| format!("Failed to write {}", aspects_path.display()))?;
 
-        let slots_json = serde_json::to_string_pretty(&self.slots)
-            .context("Failed to serialize slots")?;
+        let slots_json =
+            serde_json::to_string_pretty(&self.slots).context("Failed to serialize slots")?;
         fs::write(&slots_path, slots_json)
             .with_context(|| format!("Failed to write {}", slots_path.display()))?;
 
-        let plans_json = serde_json::to_string_pretty(&self.plans)
-            .context("Failed to serialize plans")?;
+        let plans_json =
+            serde_json::to_string_pretty(&self.plans).context("Failed to serialize plans")?;
         fs::write(&plans_path, plans_json)
             .with_context(|| format!("Failed to write {}", plans_path.display()))?;
 
-        let audit_json = serde_json::to_string_pretty(&self.audit)
-            .context("Failed to serialize audit log")?;
+        let audit_json =
+            serde_json::to_string_pretty(&self.audit).context("Failed to serialize audit log")?;
         fs::write(&audit_path, audit_json)
             .with_context(|| format!("Failed to write {}", audit_path.display()))?;
 
         // Mirror all five stores to VeriSimDB (warnings-only on failure).
         let vdb = VeriSimDbClient::new();
-        vdb.save_all(&self.store, &self.aspects, &self.slots, &self.plans, &self.audit);
+        vdb.save_all(
+            &self.store,
+            &self.aspects,
+            &self.slots,
+            &self.plans,
+            &self.audit,
+        );
 
         Ok(())
     }
@@ -436,7 +443,10 @@ impl EcosystemGraph {
 
         // Add subgraphs for groups
         for group in &self.store.groups {
-            dot.push_str(&format!("\n  subgraph cluster_{} {{\n", group.id.replace(':', "_")));
+            dot.push_str(&format!(
+                "\n  subgraph cluster_{} {{\n",
+                group.id.replace(':', "_")
+            ));
             dot.push_str(&format!("    label=\"{}\";\n", group.name));
             dot.push_str("    style=dashed;\n");
             for member in &group.members {
@@ -480,7 +490,11 @@ impl EcosystemGraph {
                     crate::types::ProviderType::Stub => "stub",
                 };
                 let label = format!("{}\\n({})", provider.name, type_str);
-                let fillcolor = if provider.is_fallback { "lightgray" } else { "lightblue" };
+                let fillcolor = if provider.is_fallback {
+                    "lightgray"
+                } else {
+                    "lightblue"
+                };
                 dot.push_str(&format!(
                     "  \"{}\" [label=\"{}\", shape=hexagon, style=filled, fillcolor={}];\n",
                     provider.id, label, fillcolor
@@ -570,9 +584,7 @@ impl EcosystemGraph {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::{
-        Channel, EdgeMeta, Forge, ImportMeta, RelationType, Visibility,
-    };
+    use crate::types::{Channel, EdgeMeta, Forge, ImportMeta, RelationType, Visibility};
     use chrono::Utc;
 
     fn make_test_repo(name: &str) -> Repo {
@@ -651,9 +663,7 @@ mod tests {
 
     #[test]
     fn test_save_load_fidelity() {
-        use crate::types::{
-            AnnotationSource, AspectAnnotation, Evidence, Polarity,
-        };
+        use crate::types::{AnnotationSource, AspectAnnotation, Evidence, Polarity};
 
         // Create a graph with repos, edges, groups, and annotations
         let mut graph = EcosystemGraph::new();

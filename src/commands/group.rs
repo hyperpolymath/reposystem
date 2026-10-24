@@ -105,7 +105,10 @@ pub fn run(action: &str, name: Option<String>, repos: Vec<String>) -> Result<()>
             let group_id = format!("group:{}", slug(&name));
 
             let before = graph.store.groups.len();
-            graph.store.groups.retain(|g| g.id != group_id && g.name != name);
+            graph
+                .store
+                .groups
+                .retain(|g| g.id != group_id && g.name != name);
 
             if graph.store.groups.len() < before {
                 graph.save(&data_dir)?;
@@ -125,7 +128,10 @@ pub fn run(action: &str, name: Option<String>, repos: Vec<String>) -> Result<()>
             for group in &graph.store.groups {
                 println!("  {} ({} members)", group.name, group.members.len());
                 for member in &group.members {
-                    let repo_name = graph.get_repo(member).map(|r| r.name.as_str()).unwrap_or(member);
+                    let repo_name = graph
+                        .get_repo(member)
+                        .map(|r| r.name.as_str())
+                        .unwrap_or(member);
                     println!("    - {}", repo_name);
                 }
             }
@@ -159,7 +165,10 @@ pub fn run(action: &str, name: Option<String>, repos: Vec<String>) -> Result<()>
         }
 
         other => {
-            anyhow::bail!("Unknown action: {}. Valid: create, add, remove, delete, list, show", other);
+            anyhow::bail!(
+                "Unknown action: {}. Valid: create, add, remove, delete, list, show",
+                other
+            );
         }
     }
 

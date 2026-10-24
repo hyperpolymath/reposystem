@@ -160,7 +160,9 @@ fn run_app<B: ratatui::backend::Backend>(
     app: &mut App,
 ) -> io::Result<()> {
     loop {
-        terminal.draw(|f| ui(f, app)).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{e}")))?;
+        terminal
+            .draw(|f| ui(f, app))
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{e}")))?;
 
         if let Event::Key(key) = event::read()? {
             if key.kind == KeyEventKind::Press {
@@ -237,9 +239,10 @@ fn render_list(f: &mut Frame, app: &App, area: Rect) {
             .repos
             .iter()
             .map(|r| {
-                ListItem::new(Line::from(vec![
-                    Span::styled(&r.name, Style::default().fg(Color::Cyan)),
-                ]))
+                ListItem::new(Line::from(vec![Span::styled(
+                    &r.name,
+                    Style::default().fg(Color::Cyan),
+                )]))
             })
             .collect(),
         Tab::Edges => app
@@ -484,8 +487,8 @@ fn render_detail(f: &mut Frame, app: &App, area: Rect) {
         }
     };
 
-    let detail = Paragraph::new(detail_text)
-        .block(Block::default().borders(Borders::ALL).title("Details"));
+    let detail =
+        Paragraph::new(detail_text).block(Block::default().borders(Borders::ALL).title("Details"));
     f.render_widget(detail, area);
 }
 

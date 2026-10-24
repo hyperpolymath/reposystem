@@ -53,7 +53,7 @@ NOTE: Paths verified against actual repository tree. Fabricated paths from an ea
 | `src/scanner.rs` | Repository discovery: reads Cargo.toml, package.json, graph.toml to populate the graph
 | `src/config.rs` | Configuration parsing (Nickel/TOML)
 | `src/tui.rs` | Ratatui-based terminal interface (panels: groups, graph, aspects)
-| `src/verisimdb.rs` | VeriSimDB integration for temporal aspect tracking and query
+| `src/verisimdb.rs` | Legacy/custom VeriSimDB persistence client (custom collection/snapshot routes; mirrors the five JSON stores; not an adapter for the current Octad API — see `docs/VERISIMDB-MODALITY-PROFILE.adoc`)
 | `src/intervention.ads` | Ada specification stub for safety-critical intervention hooks
 | `src/abi/Types.idr` | Idris2 ABI type definitions (Idris2-ABI + Zig-FFI architecture)
 | `src/commands/` | One file per CLI subcommand: scan, view, export, group, edge, tag, scenario, aspect, apply, plan, slot, weak_links, completions, config

@@ -1,7 +1,35 @@
 // SPDX-License-Identifier: MPL-2.0
 // SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
 //
-//! VeriSimDB client for reposystem.
+//! VeriSimDB client for reposystem — **legacy/custom, contract unverified**.
+//!
+//! # Status: legacy custom client, not an Octad adapter
+//!
+//! This module implements a reposystem-local convention: one collection per
+//! former JSON file, one document per collection under the key `"snapshot"`,
+//! addressed as `PUT|GET /api/v1/{collection}/{id}`. Those route shapes and
+//! payloads are ours, not upstream's.
+//!
+//! The current upstream VeriSimDB API is built around the **Octad** — one
+//! consonance subject carried across its eight named modal witnesses — with
+//! routes such as `POST /api/v1/octads` and payloads shaped per modality
+//! (`title`, `body`, `embedding`, `types`, `relationships`, `provenance`,
+//! `spatial`, …). This client instead ships whole store snapshots
+//! (`GraphStore`, `AspectStore`, …), so:
+//!
+//! * it is **not** an adapter for the current Octad API and does not claim to
+//!   be one;
+//! * a stored document here is **not** an "octad" and **not** a "hexad" — no
+//!   fixed modality cardinality is involved;
+//! * the routes, document IDs and serialised payloads are retained verbatim
+//!   for backward compatibility. Do not rename them, and do not change the
+//!   record format, as part of a terminology cleanup — that needs an agreed
+//!   contract.
+//!
+//! See `docs/VERISIMDB-MODALITY-PROFILE.adoc` for the terminology and the
+//! evidence behind this status.
+//!
+//! # Legacy flat-file origin
 //!
 //! Reposystem historically persisted all state to five flat JSON files:
 //!
@@ -23,7 +51,7 @@
 //!
 //! - `VERISIMDB_URL` — base URL (default: `http://localhost:8080`)
 //!
-//! # Collection layout
+//! # Collection layout (reposystem convention, not an upstream schema)
 //!
 //! Each collection holds a single document keyed `"snapshot"` containing the
 //! full serialised store. This matches the existing file-per-store model while

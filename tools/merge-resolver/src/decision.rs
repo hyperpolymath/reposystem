@@ -4,9 +4,21 @@
 //!
 //! Every merge resolution decision is captured as structured JSON for:
 //! - Auditing and review
-//! - VeriSimDB hexad persistence
+//! - Persistence as JSON files (`.merge-resolver/<session>.json` and
+//!   `<session>-decisions.json`) written by [`crate::MergeResolver`]
 //! - PanLL Panel-N visualization (AI reasoning)
 //! - Rollback granularity (revert individual decisions)
+//!
+//! # Persistence terminology
+//!
+//! These records are **not** persisted to VeriSimDB by this crate, and they
+//! are not described as "hexads" (a fixed six-element grouping) or "octads"
+//! (the current upstream eight-modality model/API). A decision is one entity
+//! whose supporting evidence is whatever set of modalities it happens to
+//! carry — a **modality profile**. Any future VeriSimDB integration must be
+//! designed against the versioned upstream contract and added as its own
+//! change, without altering the JSON fields defined here.
+//! See `docs/VERISIMDB-MODALITY-PROFILE.adoc`.
 
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;

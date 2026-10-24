@@ -277,3 +277,21 @@ For this product, the danger is over-automation early.
 * Everything remains reversible and exportable
 
 This aligns with "LLM helps design the rule, never is the rule."
+
+== VeriSimDB Interoperability Vocabulary
+
+Reposystem talks to VeriSimDB through `src/verisimdb.rs`, which is a
+**legacy/custom** client: it uses reposystem's own collection/snapshot routes
+and ships whole store documents, so it is not an adapter for upstream's
+current Octad API.
+
+The vocabulary is fixed as follows:
+
+* **modality profile** — the number-agnostic term for a selected/configured
+  group of modalities (membership alone is a *modality set*);
+* **Octad** — reserved for upstream's named eight-modality model and API;
+* **hexad** — not used generically; it is a count-specific word and is
+  ambiguous in this context.
+
+See `docs/VERISIMDB-MODALITY-PROFILE.adoc` (reposystem issue #299) for the full
+rationale and the client's status.

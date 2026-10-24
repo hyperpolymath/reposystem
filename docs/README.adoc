@@ -1,3 +1,11 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 = docs/
 User-facing documentation: governance policy, Mustfile reference, and contributor guides.
+
+* `VERISIMDB-MODALITY-PROFILE.adoc` — VeriSimDB terminology ("modality profile"
+  vs. "Octad") and why `src/verisimdb.rs` is labelled legacy/custom.
+* `MUSTFILE-REFERENCE.adoc` — Mustfile command reference.
+* `PHASE-2-STANDALONE-VS-LOCAL-VERIFICATION-2026-06-02.adoc` — vendored-tree
+  reconciliation record.
+* `tech-debt-2026-05-26.adoc` — technical-debt register.
+* `governance/` — dated governance audits (historical records).

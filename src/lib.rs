@@ -19,7 +19,9 @@ pub mod graph;
 pub mod importers;
 pub mod scanner;
 pub mod tui;
-/// VeriSimDB HTTP client — replaces flat JSON file storage.
+/// Legacy/custom VeriSimDB HTTP client — mirrors the five flat JSON stores to
+/// reposystem-local collection/snapshot routes. It is **not** an adapter for
+/// the current upstream Octad API; see the module docs before reusing it.
 pub mod verisimdb;
 
 /// Core data types matching DATA-MODEL.adoc specification

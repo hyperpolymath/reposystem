@@ -1,3 +1,3 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 = src/
-Rust source for the reposystem CLI and library: entry point (`main.rs`), graph model (`graph.rs`), scanner (`scanner.rs`), TUI (`tui.rs`), VeriSimDB integration (`verisimdb.rs`), and subcommands under `commands/`.
+Rust source for the reposystem CLI and library: entry point (`main.rs`), graph model (`graph.rs`), scanner (`scanner.rs`), TUI (`tui.rs`), the legacy/custom VeriSimDB persistence client (`verisimdb.rs` — custom collection routes, not an Octad adapter; see `docs/VERISIMDB-MODALITY-PROFILE.adoc`), and subcommands under `commands/`.

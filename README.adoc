@@ -451,7 +451,7 @@ reposystem/
 │   ├── scanner.rs       # Repo/forge URL scanner
 │   ├── config.rs        # Config loading
 │   ├── tui.rs           # Terminal UI
-│   ├── verisimdb.rs     # VeriSimDB persistence client
+│   ├── verisimdb.rs     # VeriSimDB client (legacy/custom routes; not an Octad adapter)
 │   └── abi/             # Ada/Idris ABI surface
 ├── spec/
 │   ├── DATA-MODEL.adoc  # Entity specifications

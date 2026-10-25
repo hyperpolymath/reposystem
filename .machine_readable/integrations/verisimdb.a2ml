@@ -7,9 +7,14 @@
 # number-agnostic term for a selected/configured group of modalities is
 # "modality profile". See docs/VERISIMDB-MODALITY-PROFILE.adoc.
 #
-# The existing value is retained verbatim so any current reader keeps working,
-# and it is marked as a legacy, unverified alias: no feed emitter in this repo
-# has been checked against the current Octad API.
+# The value is retained verbatim because it is stamped by an estate-wide
+# generator (gitbot-fleet scripts/fix-missing-verisim-feed.sh writes the same
+# `format = "hexad"` template), and because the known emitter, stateful-artefacts'
+# verisimdb-feed bridge, does not treat it as a schema discriminator. It tags its records
+# "feed-format": "provisional-v0" and states that no upstream modality-profile
+# mapping exists. Retire the word in the generator, not here — a local rename
+# would diverge and be re-stamped for the next repo that gets a feed.
+# Retirement tracked at https://github.com/hyperpolymath/gitbot-fleet/issues/621
 
 [integration]
 name = "verisimdb"
@@ -21,9 +26,11 @@ data-store = "verisimdb-data"
 emit-scan-results = true
 emit-build-metrics = true
 emit-dependency-graph = true
-# Legacy alias, retained for compatibility. The emitted records are ordinary
-# JSON documents — not octads, and not six-element hexads.
+# Legacy alias from the estate template, retained for compatibility. The
+# emitted records are ordinary JSON documents — not octads, and not
+# six-element hexads.
 format = "hexad"
-format-status = "legacy-unverified-alias"
+format-status = "legacy-generated-alias"
 format-preferred-term = "modality-profile"
+format-retire-in = "estate template: gitbot-fleet scripts/fix-missing-verisim-feed.sh (tracked: hyperpolymath/gitbot-fleet#621)"
 destination = "verisimdb-data/feeds/"

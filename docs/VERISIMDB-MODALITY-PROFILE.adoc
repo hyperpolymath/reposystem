@@ -95,6 +95,39 @@ agreed contract exists:
 
 Renaming any of these is a wire/format change, not a documentation change.
 
+== Estate context for the `format = "hexad"` key (checked 2026-10-25)
+
+The remaining unqualified `hexad` in this repo is a single config *value* in
+`.machine_readable/integrations/verisimdb.a2ml`. It is not a reposystem-local
+choice, so changing it here would be wrong:
+
+* **It is stamped by an estate generator.** `gitbot-fleet`'s
+  `scripts/fix-missing-verisim-feed.sh` writes a feed manifest containing
+  `format = "hexad"` for repos that lack one (it is idempotent — it skips when
+  the file already exists). An org-wide code search for that template's
+  `emit-scan-results` key returned 224 hits across `hyperpolymath` repos
+  (2026-10-25), i.e. this is a shared template, not per-repo intent. (Note a
+  naming variance: the generator targets `verisim.a2ml` / `verisim-data`, while
+  reposystem has `verisimdb.a2ml` / `verisimdb-data`; ours predates this note
+  and may come from an earlier template revision.)
+* **The emitter does not read it as a schema.** The known feed bridge,
+  `stateful-artefacts`' `src/bridges/verisimdb-feed.sh`, writes records tagged
+  `"feed-format": "provisional-v0"` — not "hexad" — and carries the note
+  *"Provisional local record only; no upstream modality-profile mapping or
+  network sink."* So the manifest value is a vestigial label rather than a
+  discriminator any emitter consumes, and the emitter already uses the
+  preferred vocabulary.
+
+Consequences for this issue: the generic `hexad` should be retired **in the
+generator template**, as one estate-wide change with its consumers agreed —
+not by editing one repo's manifest, which would diverge and be re-stamped for
+the next repo that gets a feed added. That retirement is now tracked as
+https://github.com/hyperpolymath/gitbot-fleet/issues/621 (which also flags a
+naming variance: the script writes `verisim.a2ml` / `verisim-data`, reposystem
+has `verisimdb.a2ml` / `verisimdb-data`). Until then the value stays verbatim here
+with an annotation, per the freeze list above. Neither the manifest value nor
+the provisional feed records are Octad payloads; neither claims to be.
+
 == Where the wording changed
 
 [cols="2,3"]
@@ -122,9 +155,8 @@ snapshot-only.
 to stop implying that stored documents are VeriSimDB-native records.
 
 |`.machine_readable/integrations/verisimdb.a2ml`
-|The generic `format` value is retained verbatim for compatibility but is now
-annotated as a legacy, unverified alias; the feed has not been checked against
-the Octad contract.
+|The generic `format` value is retained verbatim for compatibility and is now
+annotated as a legacy alias, with the estate evidence recorded below.
 
 |`README.adoc`, `EXPLAINME.adoc`, `src/README.adoc`, `wiki/*`
 |Client descriptions corrected (persistence mirror, not "temporal aspect

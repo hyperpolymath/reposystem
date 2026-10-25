@@ -121,7 +121,10 @@ choice, so changing it here would be wrong:
 Consequences for this issue: the generic `hexad` should be retired **in the
 generator template**, as one estate-wide change with its consumers agreed —
 not by editing one repo's manifest, which would diverge and be re-stamped for
-the next repo that gets a feed added. Until then the value stays verbatim here
+the next repo that gets a feed added. That retirement is now tracked as
+https://github.com/hyperpolymath/gitbot-fleet/issues/621 (which also flags a
+naming variance: the script writes `verisim.a2ml` / `verisim-data`, reposystem
+has `verisimdb.a2ml` / `verisimdb-data`). Until then the value stays verbatim here
 with an annotation, per the freeze list above. Neither the manifest value nor
 the provisional feed records are Octad payloads; neither claims to be.
 

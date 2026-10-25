@@ -14,6 +14,7 @@
 # "feed-format": "provisional-v0" and states that no upstream modality-profile
 # mapping exists. Retire the word in the generator, not here — a local rename
 # would diverge and be re-stamped for the next repo that gets a feed.
+# Retirement tracked at https://github.com/hyperpolymath/gitbot-fleet/issues/621
 
 [integration]
 name = "verisimdb"
@@ -31,5 +32,5 @@ emit-dependency-graph = true
 format = "hexad"
 format-status = "legacy-generated-alias"
 format-preferred-term = "modality-profile"
-format-retire-in = "estate template: gitbot-fleet scripts/fix-missing-verisim-feed.sh"
+format-retire-in = "estate template: gitbot-fleet scripts/fix-missing-verisim-feed.sh (tracked: hyperpolymath/gitbot-fleet#621)"
 destination = "verisimdb-data/feeds/"

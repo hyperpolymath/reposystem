@@ -9,8 +9,8 @@
 #
 # The value is retained verbatim because it is stamped by an estate-wide
 # generator (gitbot-fleet scripts/fix-missing-verisim-feed.sh writes the same
-# `format = "hexad"` template), and because no emitter treats it as a schema
-# discriminator: stateful-artefacts' verisimdb-feed bridge tags its records
+# `format = "hexad"` template), and because the known emitter, stateful-artefacts'
+# verisimdb-feed bridge, does not treat it as a schema discriminator. It tags its records
 # "feed-format": "provisional-v0" and states that no upstream modality-profile
 # mapping exists. Retire the word in the generator, not here — a local rename
 # would diverge and be re-stamped for the next repo that gets a feed.
